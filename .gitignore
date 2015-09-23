@@ -1,2 +1,6 @@
+*.o
+go
+gmon.out
+*.root
 .__afs*
 *.root
