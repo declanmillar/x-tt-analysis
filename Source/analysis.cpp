@@ -371,6 +371,10 @@ void AnalysisZprime::CreateHistograms() {
     h_AFBstar_rB = new TH1D("AFBstarNu_r2", "AFBstarNu_r2", 25, 2.0, 4.0);
     h_real = new TH1D("real", "m_{tt}", 25, 2.0, 4.0);
     h_imaginary = new TH1D("imaginary", "m_{tt}", 25, 2.0, 4.0);
+    h_real_r1 = new TH1D("real_r1", "m_{tt}", 25, 2.0, 4.0);
+    h_imaginary_r1= new TH1D("imaginary_r1", "m_{tt}", 25, 2.0, 4.0);
+    h_real_r2 = new TH1D("real_r2", "m_{tt}", 25, 2.0, 4.0);
+    h_imaginary_r2 = new TH1D("imaginary_r2", "m_{tt}", 25, 2.0, 4.0);
   }
 }
 
@@ -388,7 +392,8 @@ void AnalysisZprime::MakeGraphs() {
   h_Mff->GetYaxis()->SetTitle(numBase + h_Mff->GetTitle() + " [" + units +"/TeV]");
   this->ApplyLuminosity(h_Mff);
 
-
+  h_real->Add(h_real_r1, h_real_r2);
+  h_imaginary->Add(h_imaginary_r1, h_imaginary_r2);
 
   h_AFBstar = this->Asymmetry("AFBstar", "A^{*}_{FB}", h_AFBstarF, h_AFBstarB);
   h_AttC = this->Asymmetry("AttC", "A_{C}", h_AttCF, h_AttCB);
@@ -491,6 +496,12 @@ void AnalysisZprime::WriteHistograms() {
 
   if (m_channel == "bbllnn") {
     // h_AllC->Write();
+    h_real->Write();
+    h_real_r1->Write();
+    h_real_r2->Write();
+    h_imaginary->Write();
+    h_imaginary_r1->Write();
+    h_imaginary_r2->Write();
     h_AFBstar_r->Write();
     h_Pz_nu->Write();
     h_Pz_nu_r->Write();
@@ -738,19 +749,27 @@ std::vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(std::vector<
   int imin = -999, jmin = -999, it = 0;
   std::vector<double> rootR(root.size());
   unsigned int nReal;
+
+  // re-weight for different iterations
+  double iteration = m_ntup->iteration();
+  double weight = m_ntup->weight_eq();
+  weight = weight*m_sigma/m_weights[iteration-1];
+
+  // convert to TeV
   double Mtt_r1 = P_r1.M()/1000;
   double Mtt_r2 = P_r2.M()/1000;
+
   if (root[0].imag() == 0 and root[1].imag() == 0) {
     nReal = 2; // Two real solutions: pick best match.
     m_nRealRoots++;
-    h_real_r1->Fill(Mtt_r1, m_ntuple->weight()/h_Mtt_r1->GetXaxis()->GetBinWidth(1));
-    h_real_r2->Fill(Mtt_r2, m_ntuple->weight()/h_Mtt_r2->GetXaxis()->GetBinWidth(1));
+    h_real_r1->Fill(Mtt_r1, weight/h_real_r1->GetXaxis()->GetBinWidth(1));
+    h_real_r2->Fill(Mtt_r2, weight/h_real_r2->GetXaxis()->GetBinWidth(1));
   }
   else {
     nReal = 1; // No real solutions: take the real part of 1 (real parts are the same)
     m_nComplexRoots++;
-    h_imaginary_r1->Fill(Mtt_r1, m_ntuple->weight()/h_Mtt_r1->GetXaxis()->GetBinWidth(1));
-    h_imaginary_r2->Fill(Mtt_r2, m_ntuple->weight()/h_Mtt_r2->GetXaxis()->GetBinWidth(1));
+    h_imaginary_r1->Fill(Mtt_r1, weight/h_imaginary_r1->GetXaxis()->GetBinWidth(1));
+    h_imaginary_r2->Fill(Mtt_r2, weight/h_imaginary_r2->GetXaxis()->GetBinWidth(1));
   }
 
   for (unsigned int i = 0; i < nReal; i++) {

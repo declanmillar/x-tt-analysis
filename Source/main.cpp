@@ -23,7 +23,7 @@ int main(int argc, char* argv[])
   TString model("SM");
   TString options("_xc_");
   TString energy("13");
-  TString points("5x5000");
+  TString points("5x2000000");
   TString filename(channel + "_" + model + "_" + energy + options + points);
   TString inputFilename(ntupleDirectory + "/" + channel + "/" + filename + ".root");
   TString weightFilename(weightsDirectory + "/" + channel + "/" + filename + ".txt");

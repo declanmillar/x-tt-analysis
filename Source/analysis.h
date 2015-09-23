@@ -144,6 +144,8 @@ private:
   // Counting
   TH1D* h_imaginary;
   TH1D* h_real;
+  TH1D* h_imaginary_r;
+  TH1D* h_real_r;
   TH1D* h_imaginary_r1;
   TH1D* h_real_r1;
   TH1D* h_imaginary_r2;
