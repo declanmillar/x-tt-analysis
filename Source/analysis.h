@@ -5,7 +5,7 @@
 #include "atlas_style.h"
 #include "TCanvas.h"
 #include "TApplication.h"
-#include <cmath> 
+#include <cmath>
 #include <TString.h>
 #include <TH2.h>
 #include "TLorentzVector.h"
@@ -20,17 +20,17 @@ class AnalysisZprime{
 public:
   AnalysisZprime(const TString channel, const TString model, const double luminosity, const TString& inputFileName, const TString& weightsFileName, const TString& outputFileName);
   virtual ~AnalysisZprime();
-  
+
 protected:
   Long64_t TotalEvents();
   Long64_t IncrementEvent(Long64_t i);
   void SetupTreesForNewFile(const TString& s);
   void CleanUp();
-  
+
   void SetupInputFiles();
   void SetupOutputFiles();
   void SetupWeightsFiles();
-  
+
   void PreLoop();
   void Loop();
   void PostLoop();
@@ -49,8 +49,8 @@ protected:
   TH1D* MakeALL();
   TH1D* MakeAL();
   vector<std::complex<double> > SolveQuadratic(double a, double b, double c);
-  std::vector<TLorentzVector> ReconstructSemiLeptonic(std::vector<TLorentzVector> p, int l_Q);
-  
+  std::vector<TLorentzVector> ReconstructSemiLeptonic(std::vector<TLorentzVector> p, int l_Q, bool solutionIsReal);
+
   bool PassCuts();
   bool PassCutsMET();
   bool PassCutsMtt();
@@ -63,11 +63,11 @@ protected:
   const void UpdateCutflow(int cut, bool passed);
 
   static inline void ProgressBar(unsigned int x, unsigned int n, unsigned int w);
-     
+
 private:
   AnalysisZprime();
-  AnalysisZprime(const AnalysisZprime& rhs);  
-  void operator = (const AnalysisZprime& rhs);  
+  AnalysisZprime(const AnalysisZprime& rhs);
+  void operator = (const AnalysisZprime& rhs);
 
   // Counters
   bool m_useLumi;
@@ -76,7 +76,7 @@ private:
   unsigned int m_nNeutrinoMatched;
   unsigned int m_nRealRoots;
   unsigned int m_nComplexRoots;
-  
+
   // Parameters
   float m_pi;
   float m_GeV;
@@ -88,7 +88,7 @@ private:
   vector<double> m_weights;
 
   // Strings
-  TString m_channel;  
+  TString m_channel;
   TString m_model;
   TString m_inputFileName;
   TString m_weightsFileName;
@@ -107,8 +107,8 @@ private:
   // Input data
   vector<TString>* m_inputFiles;
   RootTuple* m_ntup;
-  TChain* m_chainNtup; 
-  
+  TChain* m_chainNtup;
+
   // OutputFile
   TFile* m_outputFile;
 
@@ -123,7 +123,7 @@ private:
   TH1D* h_Pz_nu;
   TH1D* h_CosTheta;
   TH1D* h_CosThetaStar;
-  
+
   // Reconstruction histograms
   TH1D* h_Pz_nu_r;
   TH1D* h_Mtt_r;
@@ -137,11 +137,26 @@ private:
   TH1D* h_MttRL;
   TH1D* h_MttRR;
 
-  // Spin asymmetry historgrams
+  // Spin asymmetry histograms
   TH1D* h_ALL;
   TH1D* h_AL;
 
-  // Counting
+  // Naming conventions
+  // A = asymmetry
+  // B = backward
+  // F = forward
+  // I = imaginary (reconstructed)
+  // R = real (reconstructed)
+  // _r -> reconstructed
+  // star -> reconstructed parton centre of mass frame
+
+  // Evaluating reconstruction
+  TH1D* h_AFBstarR;
+  TH1D* h_AFBstarI;
+  TH1D* h_AFBstarFR;
+  TH1D* h_AFBstarBR;
+  TH1D* h_AFBstarFI;
+  TH1D* h_AFBstarBI;
   TH1D* h_imaginary;
   TH1D* h_real;
   TH1D* h_imaginary_r;
@@ -164,7 +179,7 @@ private:
   TH1D* h_AttCF;
   TH1D* h_AttCB;
 
-  TH1D* h_AllC;  
+  TH1D* h_AllC;
   TH1D* h_AllCF;
   TH1D* h_AllCB;
 

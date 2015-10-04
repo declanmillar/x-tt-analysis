@@ -16,7 +16,7 @@ AnalysisZprime::AnalysisZprime(const TString channel, const TString model, const
   m_ntup(NULL),
   m_chainNtup(NULL),
   m_outputFile(NULL)
-{  
+{
   this->PreLoop();
   this->Loop();
   this->PostLoop();
@@ -37,14 +37,14 @@ void AnalysisZprime::EachEvent () {
     P += p[i];
     pcm[i] = p[i];
   }
-   
+
   TVector3 V = -1*P.BoostVector();
 
   Pcm.SetPxPyPzE(0,0,0,0);
   for (unsigned int i = 0; i < p.size(); i++) {
     pcm[i].Boost(V);
     Pcm += pcm[i];
-  }  
+  }
 
   if (m_channel == "bbllnn") {
     p_r1 = this->ReconstructSemiLeptonic(p,1);
@@ -55,8 +55,8 @@ void AnalysisZprime::EachEvent () {
     for (unsigned int i = 0; i < p.size(); i++) {
       P_r1 += p_r1[i];
       P_r2 += p_r2[i];
-    }  
-    
+    }
+
     // reconstructed final particle parton CoM variables
     TVector3 V_r1 = -1*P_r1.BoostVector();
     TVector3 V_r2 = -1*P_r2.BoostVector();
@@ -67,7 +67,7 @@ void AnalysisZprime::EachEvent () {
       pcm_r2[i] = p_r2[i];
       pcm_r1[i].Boost(V_r1);
       pcm_r2[i].Boost(V_r2);
-    }  
+    }
   }
 
   // top and antitop
@@ -104,9 +104,9 @@ void AnalysisZprime::EachEvent () {
     CosThetaStar_r1 = int(ytt_r1/std::abs(ytt_r1))*CosTheta_r1;
     CosThetaStar_r2 = int(ytt_r2/std::abs(ytt_r2))*CosTheta_r2;
   }
-    
+
   if (this->PassCuts())
-  {    
+  {
     // re-weight for different iterations
     double it = m_ntup->iteration();
     double weight = m_ntup->weight_eq();
@@ -146,10 +146,10 @@ void AnalysisZprime::EachEvent () {
       h_MttLR->Fill(Mff, m_ntup->weightLR()/h_MttLR->GetXaxis()->GetBinWidth(1));
       h_MttRL->Fill(Mff, m_ntup->weightRL()/h_MttRL->GetXaxis()->GetBinWidth(1));
       h_MttRR->Fill(Mff, m_ntup->weightRR()/h_MttRR->GetXaxis()->GetBinWidth(1));
-    }    
+    }
     else if (m_channel == "bbllnn") {
       h_Pz_nu->Fill(p[3].Pz(), weight*2/h_Pz_nu->GetXaxis()->GetBinWidth(1));
-      
+
       h_ytt_r->Fill(ytt_r1, weight/h_ytt_r->GetXaxis()->GetBinWidth(1));
       h_ytt_r->Fill(ytt_r2, weight/h_ytt_r->GetXaxis()->GetBinWidth(1));
 
@@ -209,7 +209,7 @@ void AnalysisZprime::GetResults () {
 void AnalysisZprime::CheckPerformance () {
   // printf("m_nQuarksMatched = %i\n", m_nQuarksMatched);
   // printf("m_nNeutrinoMatched = %i\n", m_nNeutrinoMatched);
-  // printf("m_nReco = %i\n", m_nReco);  
+  // printf("m_nReco = %i\n", m_nReco);
 
   double quarkRecoRatio = m_nQuarksMatched/(double)m_nReco;
   double neutrinoRecoRatio = m_nNeutrinoMatched/(double)m_nReco;
@@ -269,7 +269,7 @@ void AnalysisZprime::TotalSpinAsymmetries () {
               (sigmaLL + sigmaRR + sigmaRL + sigmaLR);
 
   printf("ALL = %f\n", ALL);
-  printf("AL = %f\n", AL);  
+  printf("AL = %f\n", AL);
 }
 
 
@@ -334,56 +334,55 @@ void AnalysisZprime::AsymmetryUncertainty(TH1D* h_Asymmetry, TH1D* h_A, TH1D* h_
 
 
 void AnalysisZprime::CreateHistograms() {
-  h_AFBstarF = new TH1D("AFstar", "m_{tt}^{F*}", 50, 2.0, 4.0);
-  h_AFBstarB = new TH1D("ABstar", "m_{tt}^{B*}", 50, 2.0, 4.0);
-  h_AttCF = new TH1D("AttCF", "m_{tt}^{CF}", 50, 2.0, 4.0);
-  h_AttCB = new TH1D("AttCB", "m_{tt}^{CB}", 50, 2.0, 4.0);
+  h_AFBstarF = new TH1D("AFstar", "m_{tt}^{F*}", 50, 0.0, 13.0);
+  h_AFBstarB = new TH1D("ABstar", "m_{tt}^{B*}", 50, 0.0, 13.0);
+  h_AttCF = new TH1D("AttCF", "m_{tt}^{CF}", 50, 0.0, 13.0);
+  h_AttCB = new TH1D("AttCB", "m_{tt}^{CB}", 50, 0.0, 13.0);
   h_CosTheta = new TH1D("CosTheta", "cos#theta", 50, -1.0, 1.0);
   h_CosThetaStar = new TH1D("CosThetaStar", "cos#theta^{*}", 50, -1.0, 1.0);
 
   if (m_channel == "ll") {
-    h_Mff = new TH1D("Mff", "m_{ll}", 50, 2.0, 4.0);
+    h_Mff = new TH1D("Mff", "m_{ll}", 50, 0.0, 13.0);
   }
 
   if (m_channel == "tt") {
-    h_Mff = new TH1D("Mff", "m_{tt}", 25, 2.0, 4.0);
-    h_ytt = new TH1D("ytt", "y_{tt}", 25, -2.5, 2.5);
-    h_MttLL = new TH1D("MttLL", "m_{tt}^{LL}", 25, 2.0, 4.0);
-    h_MttLR = new TH1D("MttLR", "m_{tt}^{LR}", 25, 2.0, 4.0);
-    h_MttRL = new TH1D("MttRL", "m_{tt}^{RL}", 25, 2.0, 4.0);
-    h_MttRR = new TH1D("MttRR", "m_{tt}^{RR}", 25, 2.0, 4.0);
+    h_Mff = new TH1D("Mff", "m_{tt}", 50, 0.0, 13.0);
+    h_ytt = new TH1D("ytt", "y_{tt}", 50, -2.5, 2.5);
+    h_MttLL = new TH1D("MttLL", "m_{tt}^{LL}", 50, 0.0, 13.0);
+    h_MttLR = new TH1D("MttLR", "m_{tt}^{LR}", 50, 0.0, 13.0);
+    h_MttRL = new TH1D("MttRL", "m_{tt}^{RL}", 50, 0.0, 13.0);
+    h_MttRR = new TH1D("MttRR", "m_{tt}^{RR}", 50, 0.0, 13.0);
   }
 
   if (m_channel == "bbllnn") {
-    h_Mff = new TH1D("Mff", "m_{tt}", 25, 2.0, 4.0);
-    h_ytt = new TH1D("ytt", "y_{tt}", 25, -2.5, 2.5);
-    h_Pz_nu = new TH1D("Pz_nu", "p_{z}^{#nu}", 25,-250.0, 250.0);
-    h_CosTheta_r = new TH1D("CosTheta_r", "cos#theta_{reco}", 25, -1.0, 1.0);
-    h_CosThetaStar_r = new TH1D("CosThetaStar_r", "cos#theta_{reco}^{*}", 25, -1.0, 1.0);
-    h_ytt_r = new TH1D("ytt_r", "y_{tt}^{_r}", 25, -2.5, 2.5);
-    h_Pz_nu_r = new TH1D("Pz_nu_r", "p_{z}^{#nu} (reco)", 25, -250.0, 250.0);
-    h_Mtt_r = new TH1D("Mtt_r", "M^{reco}_{tt}", 25, 2.0, 4.0);
-    h_AlLF = new TH1D("AlLF", "AlLF", 25, 2.0, 4.0);
-    h_AlLB = new TH1D("AlLB", "AlLB", 25, 2.0, 4.0);
-    h_AllCF = new TH1D("AllCF", "AllCF", 25, 2.0, 4.0);
-    h_AllCB = new TH1D("AllCB", "AllCB", 25, 2.0, 4.0);
-    h_AFBstar_rF = new TH1D("AFBstarNu_r1", "AFBstarNu_r1", 25, 2.0, 4.0);
-    h_AFBstar_rB = new TH1D("AFBstarNu_r2", "AFBstarNu_r2", 25, 2.0, 4.0);
-    h_real = new TH1D("real", "m_{tt}", 25, 0.0, 13.0);
-    h_imaginary = new TH1D("imaginary", "m_{tt}", 25, 0.0, 13.0);
-    h_real_r1 = new TH1D("real_r1", "m_{tt}", 25, 0.0, 13.0);
-    h_imaginary_r1= new TH1D("imaginary_r1", "m_{tt}", 25, 0.0, 13.0);
-    h_real_r2 = new TH1D("real_r2", "m_{tt}", 25, 0.0, 13.0);
-    h_imaginary_r2 = new TH1D("imaginary_r2", "m_{tt}", 25, 0.0, 13.0);
+    h_Mff = new TH1D("Mff", "m_{tt}", 50, 0.0, 13.0);
+    h_ytt = new TH1D("ytt", "y_{tt}", 50, -2.5, 2.5);
+    h_Pz_nu = new TH1D("Pz_nu", "p_{z}^{#nu}", 50,-500.0, 500.0);
+    h_CosTheta_r = new TH1D("CosTheta_r", "cos#theta_{reco}", 50, -1.0, 1.0);
+    h_CosThetaStar_r = new TH1D("CosThetaStar_r", "cos#theta_{reco}^{*}", 50, -1.0, 1.0);
+    h_ytt_r = new TH1D("ytt_r", "y_{tt}^{_r}", 50, -2.5, 2.5);
+    h_Pz_nu_r = new TH1D("Pz_nu_r", "p_{z}^{#nu} (reco)", 50, -500.0, 500.0);
+    h_Mtt_r = new TH1D("Mtt_r", "M^{reco}_{tt}", 100, 0.0, 13.0);
+    h_AlLF = new TH1D("AlLF", "AlLF", 50, 0.0, 13.0);
+    h_AlLB = new TH1D("AlLB", "AlLB", 50, 0.0, 13.0);
+    h_AllCF = new TH1D("AllCF", "AllCF", 50, 0.0, 13.0);
+    h_AllCB = new TH1D("AllCB", "AllCB", 50, 0.0, 13.0);
+    h_AFBstar_rF = new TH1D("AFBstarNu_r1", "AFBstarNu_r1", 50, 0.0, 13.0);
+    h_AFBstar_rB = new TH1D("AFBstarNu_r2", "AFBstarNu_r2", 50, 0.0, 13.0);
+    h_real = new TH1D("real", "m_{tt}", 100, 0.0, 13.0);
+    h_imaginary = new TH1D("imaginary", "m_{tt}", 100, 0.0, 13.0);
+    h_real_r1 = new TH1D("real_r1", "m_{tt}", 100, 0.0, 13.0);
+    h_imaginary_r1= new TH1D("imaginary_r1", "m_{tt}", 100, 0.0, 13.0);
+    h_real_r2 = new TH1D("real_r2", "m_{tt}", 100, 0.0, 13.0);
+    h_imaginary_r2 = new TH1D("imaginary_r2", "m_{tt}", 100, 0.0, 13.0);
   }
 }
-
 
 
 void AnalysisZprime::MakeGraphs() {
   // printf("Making Graphs...\n");
   TString numBase;
-  if (m_channel == "tt") numBase = "d#sigma(pp->t#bar{t}) / d"; 
+  if (m_channel == "tt") numBase = "d#sigma(pp->t#bar{t}) / d";
   if (m_channel == "bbllnn") numBase = "d#sigma / d"; //pp->t#bar{t}->b#bar{b}l^{+}l^{-}#nu#bar{#nu}
   TString units = "pb";
   TString TeV = "[TeV]";
@@ -484,7 +483,7 @@ void AnalysisZprime::WriteHistograms() {
     h_CosTheta->Write();
     h_CosThetaStar->Write();
   }
-  
+
   if (m_channel == "tt") {
     h_MttLL->Write();
     h_MttLR->Write();
@@ -557,7 +556,7 @@ bool AnalysisZprime::PassCutsMtt () {
 }
 
 
-bool AnalysisZprime::PassCutsFiducial () { 
+bool AnalysisZprime::PassCutsFiducial () {
   for (unsigned int i = 0; i < p.size(); i++) {
     bool outsideCrack = p[i].PseudoRapidity() <= 1.37 || p[i].PseudoRapidity() >= 1.52;
     bool central      = p[i].PseudoRapidity() <= 2.47;
@@ -573,7 +572,7 @@ bool AnalysisZprime::PassCutsFiducial () {
 }
 
 
-bool AnalysisZprime::PassCutsYtt () { 
+bool AnalysisZprime::PassCutsYtt () {
   if (std::abs(P.Rapidity()) > 0)
   {
     UpdateCutflow(c_Ytt, true);
@@ -620,16 +619,15 @@ void AnalysisZprime::SetupWeightsFiles () {
 
 void AnalysisZprime::Loop () {
   // Loop over all files
-  for (Itr_s i = m_inputFiles->begin(); i != m_inputFiles->end(); ++i)
-  {
+  for (Itr_s i = m_inputFiles->begin(); i != m_inputFiles->end(); ++i) {
     cout << "Input:  '" << (*i) << "'." << endl;
     this->SetupTreesForNewFile((*i));
-    
+
     Long64_t nEntries;
     nEntries = this->TotalEvents();
     printf("--- Event Loop ---\n");
     printf("File contains %lld entries.\n", nEntries);
-    for (Long64_t jentry = 0; jentry < nEntries; ++jentry) 
+    for (Long64_t jentry = 0; jentry < nEntries; ++jentry)
     {
       Long64_t ientry = this->IncrementEvent(jentry);
       if (ientry < 0) break;
@@ -651,31 +649,31 @@ void AnalysisZprime::SetupOutputFiles() {
 
 
 void AnalysisZprime::SetupInputFiles () {
-  m_inputFiles = new vector<TString>;  
+  m_inputFiles = new vector<TString>;
   m_inputFiles->push_back(m_inputFileName);
 }
 
 
 Long64_t AnalysisZprime::TotalEvents () {
   if (m_ntup != 0){return m_ntup->totalEvents();}
-  return -999;  
+  return -999;
 }
 
 
 Long64_t AnalysisZprime::IncrementEvent(Long64_t i) {
   Long64_t ev(-1);
   if (m_ntup != 0){ev = m_ntup->LoadTree(i);}
-  return ev;  
+  return ev;
 }
 
 
 void AnalysisZprime::SetupTreesForNewFile(const TString& s) {
   TString treeToUse = "RootTuple";
-  
+
   m_chainNtup = new TChain(treeToUse,"");
   TString TStringNtuple = s + "/" + treeToUse;
   m_chainNtup->Add(TStringNtuple,0);
-  m_ntup = new RootTuple(m_chainNtup);  
+  m_ntup = new RootTuple(m_chainNtup);
 }
 
 
@@ -687,10 +685,10 @@ void AnalysisZprime::CleanUp () {
 
 std::vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(std::vector<TLorentzVector> p, int Q_l) {
   // Returns a vector of 4-momenta for all 6 particles in the final state with matching of b-quarks to each top
-  // and matching of 
+  // and matching of
   // Takes a vector of true final-state particle momenta as the argument and the charge of the final
   // state lepton: if +, t decayed leptonically; if -, t~ decayed leptonically.
-  // As going from bbllnn->bblnqq/bbqqln requires only a simple reweighting for parton truth, 
+  // As going from bbllnn->bblnqq/bbqqln requires only a simple reweighting for parton truth,
   // it saves on storage space and processing time to store all events as bbllnn. However,
   // when we reconstruct the neutrino, we must account for the fact either the top, or the anti-top
   // may decay hadronically. This means there are two distinguishable final states:
@@ -699,7 +697,7 @@ std::vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(std::vector<
   // Note that the order here is important, as the order of indicies in the vector of final state momenta
   // relates to the parent particle t=(0,2,3), t~=(1,4,5) and is fixed at the generator level.
   // If we want the results combining each final state, we must add these together.
-  // Note: Experimentally p^{x,y}_nu is equated to the MET, of course. 
+  // Note: Experimentally p^{x,y}_nu is equated to the MET, of course.
 
   // printf("---\n");
   m_nReco++;
@@ -731,6 +729,7 @@ std::vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(std::vector<
   double px_nu = p_nu.Px(), py_nu = p_nu.Py();
   std::vector<std::complex<double> > root;
   double a = -999, b = -999, c = -999, k = -999;
+  bool solutionIsReal;
 
   E_l = std::sqrt(px_l*px_l + py_l*py_l + pz_l*pz_l);
   if (std::abs(E_l - p_l.E()) > 0.00001) printf("ERROR: Lepton energy doesn't match.\n");
@@ -755,21 +754,21 @@ std::vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(std::vector<
   double weight = m_ntup->weight_eq();
   weight = weight*m_sigma/m_weights[iteration-1];
 
-  // convert to TeV
-  double Mtt_r1 = P_r1.M()/1000;
-  double Mtt_r2 = P_r2.M()/1000;
-
   if (root[0].imag() == 0 and root[1].imag() == 0) {
-    nReal = 2; // Two real solutions: pick best match.
+    // two real solutions; pick best match
+    nReal = 2;
     m_nRealRoots++;
-    h_real_r1->Fill(Mtt_r1, weight/h_real_r1->GetXaxis()->GetBinWidth(1));
-    h_real_r2->Fill(Mtt_r2, weight/h_real_r2->GetXaxis()->GetBinWidth(1));
+    // h_real_r1->Fill(Mtt_r1, weight/h_real_r1->GetXaxis()->GetBinWidth(1));
+    // h_real_r2->Fill(Mtt_r2, weight/h_real_r2->GetXaxis()->GetBinWidth(1));
   }
   else {
-    nReal = 1; // No real solutions: take the real part of 1 (real parts are the same)
+    if (Q_l == +1) m_r1solutionIsTrue = false;
+    if (Q_l == -1) m_r2solutionIsTrue = false;
+    // no real solutions; take the real part of 1 (real parts are the same)
+    nReal = 1;
     m_nComplexRoots++;
-    h_imaginary_r1->Fill(Mtt_r1, weight/h_imaginary_r1->GetXaxis()->GetBinWidth(1));
-    h_imaginary_r2->Fill(Mtt_r2, weight/h_imaginary_r2->GetXaxis()->GetBinWidth(1));
+    // h_imaginary_r1->Fill(Mtt_r1, weight/h_imaginary_r1->GetXaxis()->GetBinWidth(1));
+    // h_imaginary_r2->Fill(Mtt_r2, weight/h_imaginary_r2->GetXaxis()->GetBinWidth(1));
   }
 
   for (unsigned int i = 0; i < nReal; i++) {
@@ -796,7 +795,7 @@ std::vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(std::vector<
       }
       it++;
     }
-  } 
+  }
 
   // printf("Chosen solution: imin = %i, jmin = %i\n", imin, jmin);
 
@@ -820,7 +819,7 @@ std::vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(std::vector<
   if (b_lep == jmin) b_match = true;
   else b_match = false;
   if (b_match) m_nQuarksMatched++;
-  
+
   // Print reconstruction performance.
   // printf("True pz_nu = %f\n", p_nu.Pz());
   // printf("Possible neutrino solutions:\n");
@@ -858,7 +857,7 @@ std::vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(std::vector<
 
 
 std::vector<std::complex<double> > AnalysisZprime::SolveQuadratic(double a, double b, double c) {
-    // solves quadratic for both roots 
+    // solves quadratic for both roots
     // returns both as complex values in a complex vector x(2)
 
     std::vector<std::complex<double> > roots;
