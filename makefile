@@ -1,4 +1,4 @@
-OBJ            =  main.o atlas_style.o overlay.o superpose2d.o RootTuple.o analysis.o
+OBJ            =  main.o atlas_style.o overlay.o RootTuple.o analysis.o
 
 BIN = go
 LIB = Library
@@ -8,17 +8,17 @@ OUT = .
 ROOTCFLAGS      = $(shell root-config --cflags)
 ROOTLIBS        = $(shell root-config --libs)
 
-C               = g++  
+C               = g++
 CFLAGS          = -O -Wall -fPIC -ggdb
 
 L               = g++
 LIBS            =
 
-CFLAGS          += $(ROOTCFLAGS)   
+CFLAGS          += $(ROOTCFLAGS)
 LIBS            += $(ROOTLIBS)
 
 # Compile all files ending in .cpp in SRC
-$(LIB)/%.o: $(SRC)/%.cpp 
+$(LIB)/%.o: $(SRC)/%.cpp
 	$(C) $(CFLAGS) -c -o  $@ $<
 
 # Link mainfile and all processes
@@ -27,4 +27,3 @@ $(OUT)/$(BIN): $(patsubst %, $(LIB)/%, $(OBJ))
 
 clean:
 	rm -f $(LIB)/*.o $(OUT)/$(BIN)
- 

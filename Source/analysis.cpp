@@ -178,6 +178,26 @@ void AnalysisZprime::EachEvent () {
       if (CosThetaStar_r2 < 0) {
         h_AFBstar_rB->Fill(Mtt_r2, weight/h_AFBstar_rB->GetXaxis()->GetBinWidth(1));
       }
+
+      if (m_r1solutionIsReal) {
+        if (CosThetaStar_r1 > 0 or CosThetaStar_r1 > 0) {
+          h_AFBstarFR->Fill(Mtt_r1, weight/h_AFBstar_rF->GetXaxis()->GetBinWidth(1));
+        }
+        if (CosThetaStar_r2 < 0 or CosThetaStar_r1 < 0) {
+          h_AFBstarBR->Fill(Mtt_r2, weight/h_AFBstar_rF->GetXaxis()->GetBinWidth(1));
+        }
+      }
+
+      if (m_r2solutionIsReal == false) {
+        h_imaginary_r1->Fill(Mtt_r1, weight/h_imaginary_r1->GetXaxis()->GetBinWidth(1));
+        h_imaginary_r2->Fill(Mtt_r2, weight/h_imaginary_r2->GetXaxis()->GetBinWidth(1));
+        if (CosThetaStar_r1 < 0) {
+          h_AFBstarBI->Fill(Mtt_r1, weight/h_AFBstar_rB->GetXaxis()->GetBinWidth(1));
+        }
+        if (CosThetaStar_r2 < 0) {
+          h_AFBstarBI->Fill(Mtt_r2, weight/h_AFBstar_rB->GetXaxis()->GetBinWidth(1));
+        }
+      }
     }
   }
 }
@@ -221,6 +241,8 @@ void AnalysisZprime::CheckPerformance () {
     h_AlL = this->Asymmetry("AL", "A_{L}", h_AlLF, h_AlLB);
     h_AllC = this->Asymmetry("AllC", "A^{ll}_{C}", h_AllCF, h_AllCB);
     h_AFBstar_r = this->Asymmetry("AFBstar_r", "A_{FB}^{*} (reco)", h_AFBstar_rF, h_AFBstar_rB);
+    h_AFBstarR = this->Asymmetry("AFBstarR", "A_{FB}^{*} (reco)[real]", h_AFBstarFR, h_AFBstarBR);
+    h_AFBstarI = this->Asymmetry("AFBstarI", "A_{FB}^{*} (reco)[imaginary]", h_AFBstarFI, h_AFBstarBI);
   }
 }
 
@@ -372,9 +394,13 @@ void AnalysisZprime::CreateHistograms() {
     h_real = new TH1D("real", "m_{tt}", 100, 0.0, 13.0);
     h_imaginary = new TH1D("imaginary", "m_{tt}", 100, 0.0, 13.0);
     h_real_r1 = new TH1D("real_r1", "m_{tt}", 100, 0.0, 13.0);
-    h_imaginary_r1= new TH1D("imaginary_r1", "m_{tt}", 100, 0.0, 13.0);
+    h_imaginary_r1 = new TH1D("imaginary_r1", "m_{tt}", 100, 0.0, 13.0);
     h_real_r2 = new TH1D("real_r2", "m_{tt}", 100, 0.0, 13.0);
     h_imaginary_r2 = new TH1D("imaginary_r2", "m_{tt}", 100, 0.0, 13.0);
+    h_AFBstarFR = new TH1D("AFBstarFR", "AFBstarFR", 100, 0.0, 13.0);
+    h_AFBstarBR = new TH1D("AFBstarBR", "AFBstarBR", 100, 0.0, 13.0);
+    h_AFBstarFI = new TH1D("AFBstarFI", "AFBstarFI", 100, 0.0, 13.0);
+    h_AFBstarBI = new TH1D("AFBstarBI", "AFBstarBI", 100, 0.0, 13.0);
   }
 }
 
@@ -450,6 +476,12 @@ void AnalysisZprime::MakeGraphs() {
     h_AFBstar_r->GetYaxis()->SetTitle(h_AFBstar_r->GetTitle());
     h_AFBstar_r->GetXaxis()->SetTitle("M_{tt}^{reco} [GeV]");
 
+    h_AFBstarR->GetYaxis()->SetTitle(h_AFBstarR->GetTitle());
+    h_AFBstarR->GetXaxis()->SetTitle("M_{tt}^{reco} [GeV]");
+
+    h_AFBstarI->GetYaxis()->SetTitle(h_AFBstarI->GetTitle());
+    h_AFBstarI->GetXaxis()->SetTitle("M_{tt}^{reco} [GeV]");
+
     h_Pz_nu->GetYaxis()->SetTitle(numBase + h_Pz_nu->GetTitle() + " [" + units +"GeV]");
     h_Pz_nu->GetXaxis()->SetTitle(h_Pz_nu->GetTitle());
     this->ApplyLuminosity(h_Pz_nu);
@@ -508,6 +540,7 @@ void AnalysisZprime::WriteHistograms() {
     h_ytt_r->Write();
     h_CosTheta_r->Write();
     h_CosThetaStar_r->Write();
+
   }
   h_cutflow->Write();
   m_outputFile->Close();
@@ -729,7 +762,6 @@ std::vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(std::vector<
   double px_nu = p_nu.Px(), py_nu = p_nu.Py();
   std::vector<std::complex<double> > root;
   double a = -999, b = -999, c = -999, k = -999;
-  bool solutionIsReal;
 
   E_l = std::sqrt(px_l*px_l + py_l*py_l + pz_l*pz_l);
   if (std::abs(E_l - p_l.E()) > 0.00001) printf("ERROR: Lepton energy doesn't match.\n");
@@ -758,17 +790,15 @@ std::vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(std::vector<
     // two real solutions; pick best match
     nReal = 2;
     m_nRealRoots++;
-    // h_real_r1->Fill(Mtt_r1, weight/h_real_r1->GetXaxis()->GetBinWidth(1));
-    // h_real_r2->Fill(Mtt_r2, weight/h_real_r2->GetXaxis()->GetBinWidth(1));
+    if (Q_l == +1) m_r1solutionIsReal = true;
+    if (Q_l == -1) m_r2solutionIsReal = true;
   }
   else {
-    if (Q_l == +1) m_r1solutionIsTrue = false;
-    if (Q_l == -1) m_r2solutionIsTrue = false;
+    if (Q_l == +1) m_r1solutionIsReal = false;
+    if (Q_l == -1) m_r2solutionIsReal = false;
     // no real solutions; take the real part of 1 (real parts are the same)
     nReal = 1;
     m_nComplexRoots++;
-    // h_imaginary_r1->Fill(Mtt_r1, weight/h_imaginary_r1->GetXaxis()->GetBinWidth(1));
-    // h_imaginary_r2->Fill(Mtt_r2, weight/h_imaginary_r2->GetXaxis()->GetBinWidth(1));
   }
 
   for (unsigned int i = 0; i < nReal; i++) {

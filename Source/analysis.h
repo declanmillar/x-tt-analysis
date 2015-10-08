@@ -49,7 +49,7 @@ protected:
   TH1D* MakeALL();
   TH1D* MakeAL();
   vector<std::complex<double> > SolveQuadratic(double a, double b, double c);
-  std::vector<TLorentzVector> ReconstructSemiLeptonic(std::vector<TLorentzVector> p, int l_Q, bool solutionIsReal);
+  std::vector<TLorentzVector> ReconstructSemiLeptonic(std::vector<TLorentzVector> p, int l_Q);
 
   bool PassCuts();
   bool PassCutsMET();
@@ -151,6 +151,8 @@ private:
   // star -> reconstructed parton centre of mass frame
 
   // Evaluating reconstruction
+  bool m_r1solutionIsReal;
+  bool m_r2solutionIsReal;
   TH1D* h_AFBstarR;
   TH1D* h_AFBstarI;
   TH1D* h_AFBstarFR;
