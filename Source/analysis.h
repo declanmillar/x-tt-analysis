@@ -18,7 +18,7 @@
 
 class AnalysisZprime{
 public:
-  AnalysisZprime(const TString channel, const TString model, const double luminosity, const TString& inputFileName, const TString& weightsFileName, const TString& outputFileName);
+  AnalysisZprime(const TString channel, const TString model, const double luminosity, const int btags, const bool discardComplex, const TString& inputFileName, const TString& weightsFileName, const TString& outputFileName);
   virtual ~AnalysisZprime();
 
 protected:
@@ -70,7 +70,10 @@ private:
   void operator = (const AnalysisZprime& rhs);
 
   // Counters
+  bool m_discardEvent;
+  const bool m_discardComplex;
   bool m_useLumi;
+  const int m_btags;
   unsigned int m_nReco;
   unsigned int m_nQuarksMatched;
   unsigned int m_nNeutrinoMatched;

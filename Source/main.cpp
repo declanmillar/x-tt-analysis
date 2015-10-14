@@ -54,7 +54,7 @@ int main(int argc, char* argv[])
   TString outputFilename4(histogramDirectory + "/" + filename4 + "_hist.root");
 
   AnalysisZprime analysis(channel, model, luminosity, inputFilename, weightFilename, outputFilename);
-  // AnalysisZprime analysis2(channel2, model2, luminosity, inputFilename2, weightFilename2, outputFilename2);
+  AnalysisZprime analysis2(channel2, model2, luminosity, inputFilename2, weightFilename2, outputFilename2);
   // AnalysisZprime analysis3(channel3, model3, inputFilename3, outputFilename3);
   // AnalysisZprime analysis4(channel4, model4, inputFilename4, outputFilename4);
 

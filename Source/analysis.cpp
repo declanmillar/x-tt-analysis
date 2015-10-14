@@ -1,9 +1,11 @@
 #include "analysis.h"
 
 
-AnalysisZprime::AnalysisZprime(const TString channel, const TString model, const double luminosity, const TString& inputFileName, const TString& weightsFileName, const TString& outputFileName) :
+AnalysisZprime::AnalysisZprime(const TString channel, const TString model, const double luminosity, const int btags, const bool discardComplex, const TString& inputFileName, const TString& weightsFileName, const TString& outputFileName) :
   m_pi(3.14159265),
   m_GeV(1000.0),
+  m_discardEvent(false),
+  m_discardComplex(discardComplex),
   m_luminosity(luminosity),
   m_Wmass(80.23),
   m_tmass(175.0),
@@ -15,7 +17,8 @@ AnalysisZprime::AnalysisZprime(const TString channel, const TString model, const
   m_inputFiles(NULL),
   m_ntup(NULL),
   m_chainNtup(NULL),
-  m_outputFile(NULL)
+  m_outputFile(NULL),
+  m_btags(btags)
 {
   this->PreLoop();
   this->Loop();
@@ -49,6 +52,8 @@ void AnalysisZprime::EachEvent () {
   if (m_channel == "bbllnn") {
     p_r1 = this->ReconstructSemiLeptonic(p,1);
     p_r2 = this->ReconstructSemiLeptonic(p,-1);
+
+    if (m_discardEvent) return;
 
     P_r1.SetPxPyPzE(0,0,0,0);
     P_r2.SetPxPyPzE(0,0,0,0);
@@ -180,6 +185,8 @@ void AnalysisZprime::EachEvent () {
       }
 
       if (m_r1solutionIsReal) {
+        h_real_r1->Fill(Mtt_r1, weight/h_real_r1->GetXaxis()->GetBinWidth(1));
+        h_real_r2->Fill(Mtt_r2, weight/h_imaginary_r2->GetXaxis()->GetBinWidth(1));
         if (CosThetaStar_r1 > 0 or CosThetaStar_r1 > 0) {
           h_AFBstarFR->Fill(Mtt_r1, weight/h_AFBstar_rF->GetXaxis()->GetBinWidth(1));
         }
@@ -533,6 +540,8 @@ void AnalysisZprime::WriteHistograms() {
     h_imaginary->Write();
     h_imaginary_r1->Write();
     h_imaginary_r2->Write();
+    h_AFBstarR->Write();
+    h_AFBstarI->Write();
     h_AFBstar_r->Write();
     h_Pz_nu->Write();
     h_Pz_nu_r->Write();
@@ -794,6 +803,7 @@ std::vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(std::vector<
     if (Q_l == -1) m_r2solutionIsReal = true;
   }
   else {
+    if (m_discardComplex) m_discardEvent = true;
     if (Q_l == +1) m_r1solutionIsReal = false;
     if (Q_l == -1) m_r2solutionIsReal = false;
     // no real solutions; take the real part of 1 (real parts are the same)
