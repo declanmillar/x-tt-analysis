@@ -8,7 +8,8 @@ AtlasROOTStyle::AtlasROOTStyle()
 void AtlasROOTStyle::SetStyle()
 {
   printf("Applying ATLAS style settings...\n");
-  TStyle* atlasStyle = this->AtlasStyle();
+  // TStyle* atlasStyle = this->AtlasStyle();
+  this->AtlasStyle();
   gROOT->SetStyle("ATLAS");
   gROOT->ForceStyle();
 }
@@ -89,4 +90,3 @@ TStyle* AtlasROOTStyle::AtlasStyle()
   return atlasStyle;
 
 }
-
