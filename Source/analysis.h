@@ -69,17 +69,6 @@ private:
   AnalysisZprime(const AnalysisZprime& rhs);
   void operator = (const AnalysisZprime& rhs);
 
-  // Counters
-  bool m_discardEvent;
-  const bool m_discardComplex;
-  bool m_useLumi;
-  const int m_btags;
-  unsigned int m_nReco;
-  unsigned int m_nQuarksMatched;
-  unsigned int m_nNeutrinoMatched;
-  unsigned int m_nRealRoots;
-  unsigned int m_nComplexRoots;
-
   // Parameters
   float m_pi;
   float m_GeV;
@@ -87,12 +76,26 @@ private:
   double m_Wmass;
   double m_tmass;
 
+  // Configuration
+  TString m_channel;
+  TString m_model;
+  bool m_useLumi;
+  const int m_btags;
+  const bool m_discardComplex;
+  bool m_discardEvent;
+
+
+    // Counters
+  unsigned int m_nReco;
+  unsigned int m_nQuarksMatched;
+  unsigned int m_nNeutrinoMatched;
+  unsigned int m_nRealRoots;
+  unsigned int m_nComplexRoots;
+
   double m_sigma;
   vector<double> m_weights;
 
   // Strings
-  TString m_channel;
-  TString m_model;
   TString m_inputFileName;
   TString m_weightsFileName;
   TString m_outputFileName;
