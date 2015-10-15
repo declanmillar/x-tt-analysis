@@ -27,7 +27,8 @@ AnalysisZprime::AnalysisZprime(const TString channel, const TString model, const
 
 
 void AnalysisZprime::EachEvent () {
-  UpdateCutflow(c_Event, true);
+  m_discardEvent = false;
+  UpdateCutflow(c_entries, true);
 
   p = vector<TLorentzVector>(6);
   for (unsigned int i = 0; i < m_ntup->E()->size(); i++) {
@@ -553,6 +554,7 @@ void AnalysisZprime::WriteHistograms() {
   }
   h_cutflow->Write();
   m_outputFile->Close();
+  delete h_cutflow;
   delete m_outputFile;
 }
 
@@ -742,6 +744,7 @@ std::vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(std::vector<
   // Note: Experimentally p^{x,y}_nu is equated to the MET, of course.
 
   // printf("---\n");
+  this->UpdateCutflow(c_events, true);
   m_nReco++;
 
   std::vector<TLorentzVector> p_r(p.size()); // I am returned!
@@ -751,12 +754,14 @@ std::vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(std::vector<
   p_b[0] = p[0];
   p_b[1] = p[1];
   if (Q_l == 1) {
+    this->UpdateCutflow(c_topDecays, true);
     p_l = p[2];
     p_nu = p[3];
     p_q[0] = p[4];
     p_q[1]= p[5];
   }
   else if (Q_l == -1) {
+    this->UpdateCutflow(c_antitopDecays, true);
     p_l = p[4];
     p_nu = p[5];
     p_q[0] = p[2];
@@ -799,6 +804,7 @@ std::vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(std::vector<
     // two real solutions; pick best match
     nReal = 2;
     m_nRealRoots++;
+    this->UpdateCutflow(c_realSolutions, true);
     if (Q_l == +1) m_r1solutionIsReal = true;
     if (Q_l == -1) m_r2solutionIsReal = true;
   }
@@ -929,7 +935,11 @@ const void AnalysisZprime::UpdateCutflow(int cut, bool passed) {
 void AnalysisZprime::InitialiseCutflow() {
   m_cutflow = std::vector<int>(m_cuts, -999);
   m_cutNames = std::vector<TString>(m_cuts, "no name");
-  m_cutNames[c_Event] = "Event";
+  m_cutNames[c_entries] = "Entries";
+  m_cutNames[c_topDecays] = "t->be#nu";
+  m_cutNames[c_antitopDecays] = "#bar{t}->be#nu";
+  m_cutNames[c_events] = "Events";
+  m_cutNames[c_realSolutions] = "p^{#nu}_{z} real";
   m_cutNames[c_MET] = "MET";
   m_cutNames[c_Mtt] = "Mff";
   m_cutNames[c_Fiducial] = "Fiducial";

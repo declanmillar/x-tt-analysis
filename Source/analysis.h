@@ -102,7 +102,11 @@ private:
 
   // Cuts
   enum m_cutlist{
-    c_Event,
+    c_entries,
+    c_topDecays,
+    c_antitopDecays,
+    c_events,
+    c_realSolutions,
     c_Mtt,
     c_MET,
     c_Ytt,
