@@ -40,8 +40,8 @@ TH1D *Significance(TH1D *h1, TH1D *h2){
 }
 
 TCanvas* Overlay(const bool normalise, const bool findSignificance,
-                 TString histName1, TString histTitle1, TString fileName1, 
-                 TString histName2, TString histTitle2, TString fileName2, 
+                 TString histName1, TString histTitle1, TString fileName1,
+                 TString histName2, TString histTitle2, TString fileName2,
                  TString histName3, TString histTitle3, TString fileName3,
                  TString histName4, TString histTitle4, TString fileName4) {
 
@@ -55,7 +55,7 @@ TCanvas* Overlay(const bool normalise, const bool findSignificance,
   TString name1, name2, name3, name4;
   TString epsFileName;
 
-  const bool showErrors(true);
+  const bool showErrors(false);
   TString drawOption;
   if (showErrors) drawOption = "E1x0P";
   else drawOption = "HIST";
@@ -63,13 +63,13 @@ TCanvas* Overlay(const bool normalise, const bool findSignificance,
   TCanvas *canvas = new TCanvas(histName1, histTitle1, 1280, 751);
   canvas->cd();
 
-  double leftMargin = 0.2, rightMargin = 0.1; 
+  double leftMargin = 0.2, rightMargin = 0.1;
 
   double minValue, newMinValue, maxValue, newMaxValue;
   TPad *lowerPad, *upperPad;
 
   if (findSignificance) {
-    // double 
+    // double
     upperPad = new TPad("upperPad", "upperPad", 0, 0.2, 1, 1);
     upperPad->SetFillColor(-1);
     upperPad->Draw();
@@ -94,8 +94,10 @@ TCanvas* Overlay(const bool normalise, const bool findSignificance,
   h1->SetTitle(histTitle1);
   h1->SetMarkerStyle(20);
   h1->Draw(drawOption);
-  h1->SetMarkerColor(kCyan+4);
-  h1->SetLineColor(kCyan+4);
+  // h1->SetMarkerColor(kCyan+4);
+  // h1->SetLineColor(kCyan+4);
+  h1->SetMarkerColor(kRed);
+  h1->SetLineColor(kRed);
   h1->GetYaxis()->SetTitleOffset(1.3);
   h1->GetXaxis()->SetTitleOffset(1.2);
   maxValue = h1->GetBinContent(h1->GetMaximumBin());
@@ -112,8 +114,10 @@ TCanvas* Overlay(const bool normalise, const bool findSignificance,
     h2->SetTitle(histTitle2);
     h2->SetMarkerStyle(20);
     h2->Draw(drawOption + "SAME");
-    h2->SetLineColor(kPink-8);
-    h2->SetMarkerColor(kPink-8);
+    // h2->SetLineColor(kPink-8);
+    // h2->SetMarkerColor(kPink-8);
+    h2->SetLineColor(kBlue);
+    h2->SetMarkerColor(kBlue);
     newMinValue = h2->GetBinContent(h2->GetMinimumBin());
     if (newMinValue < minValue) minValue = newMinValue;
     newMaxValue = h2->GetBinContent(h2->GetMaximumBin());
@@ -167,7 +171,7 @@ TCanvas* Overlay(const bool normalise, const bool findSignificance,
   }
 
   // normalize histograms
-  if (normalise) { 
+  if (normalise) {
     TString yTitle;
     yTitle = h1->GetYaxis()->GetTitle();
     yTitle = "1/#sigma #times " + yTitle;
@@ -207,7 +211,7 @@ TCanvas* Overlay(const bool normalise, const bool findSignificance,
   // rangeMin = 2000;
   // rangeMax = 4000;
   // if(rangeMin != -999 && rangeMax != -999) {
-  //   h1->GetXaxis()->SetRangeUser(rangeMin, rangeMax); 
+  //   h1->GetXaxis()->SetRangeUser(rangeMin, rangeMax);
   //   if (plot3) h2->GetXaxis()->SetRangeUser(rangeMin, rangeMax);
   //   if (plot3) h3->GetXaxis()->SetRangeUser(rangeMin, rangeMax);
   //   if (plot4) h3->GetXaxis()->SetRangeUser(rangeMin, rangeMax);
@@ -218,7 +222,7 @@ TCanvas* Overlay(const bool normalise, const bool findSignificance,
   // yRangeMin = -1;
   // yRangeMax = 1;
   // if(yRangeMin != -999 && yRangeMax != -999) {
-  //   h1->GetXaxis()->SetRangeUser(yRangeMin, yRangeMax); 
+  //   h1->GetXaxis()->SetRangeUser(yRangeMin, yRangeMax);
   //   if (plot3) h2->GetXaxis()->SetRangeUser(yRangeMin, yRangeMax);
   //   if (plot3) h3->GetXaxis()->SetRangeUser(yRangeMin, yRangeMax);
   //   if (plot4) h3->GetXaxis()->SetRangeUser(yRangeMin, yRangeMax);
