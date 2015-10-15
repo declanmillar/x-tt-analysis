@@ -4,21 +4,21 @@
 AnalysisZprime::AnalysisZprime(const TString channel, const TString model, const double luminosity, const int btags, const bool discardComplex, const TString& inputFileName, const TString& weightsFileName, const TString& outputFileName) :
   m_pi(3.14159265),
   m_GeV(1000.0),
-  m_discardEvent(false),
-  m_discardComplex(discardComplex),
   m_luminosity(luminosity),
   m_Wmass(80.23),
   m_tmass(175.0),
   m_channel(channel),
   m_model(model),
+  m_btags(btags),
+  m_discardComplex(discardComplex),
+  m_discardEvent(false),
   m_inputFileName(inputFileName),
   m_weightsFileName(weightsFileName),
   m_outputFileName(outputFileName),
   m_inputFiles(NULL),
   m_ntup(NULL),
   m_chainNtup(NULL),
-  m_outputFile(NULL),
-  m_btags(btags)
+  m_outputFile(NULL)
 {
   this->PreLoop();
   this->Loop();
