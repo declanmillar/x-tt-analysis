@@ -665,7 +665,7 @@ void AnalysisZprime::PreLoop () {
 
 void AnalysisZprime::GetDataDirectory(){
   #if __linux || __linux__
-    m_dataDirectory = "/afs/cern.ch/work/d/demillar/Zp-tt_pheno";
+    m_dataDirectory = "/afs/cern.ch/work/d/demillar/Zprime";
   #elif __APPLE__ || __MACH__
     m_dataDirectory = "/Users/declan/Data/Zprime";
   #endif
