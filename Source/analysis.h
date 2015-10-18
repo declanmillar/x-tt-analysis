@@ -15,11 +15,14 @@
 #include "TLegend.h"
 #include <complex>
 #include <iomanip>
+#include <sys/stat.h>
+#include <unistd.h>
 
 class AnalysisZprime{
 public:
-  AnalysisZprime(const TString channel, const TString model, const double luminosity, const int btags, const bool discardComplex, const TString& inputFileName, const TString& weightsFileName, const TString& outputFileName);
+  AnalysisZprime(const TString channel, const TString model, const int energy, const TString options, const int vegasIterations, const int vegasPoints, const double luminosity, const int btags, const bool discardComplex);
   virtual ~AnalysisZprime();
+  TString GetOutputFilename();
 
 protected:
   Long64_t TotalEvents();
@@ -40,6 +43,9 @@ protected:
   void WriteHistograms();
   void GetResults();
   void CheckPerformance();
+  void CreateFilenames();
+  void CheckFiles();
+  void GetDataDirectory();
 
   double TotalAsymmetry(TH1D* h_A, TH1D* h_B);
   void TotalSpinAsymmetries();
@@ -69,23 +75,28 @@ private:
   AnalysisZprime(const AnalysisZprime& rhs);
   void operator = (const AnalysisZprime& rhs);
 
+  // arguments
+  TString m_channel;
+  TString m_model;
+  int m_energy;
+  TString m_options;
+  int m_vegasIterations;
+  int m_vegasPoints;
+  double m_luminosity;
+  const int m_btags;
+  const bool m_discardComplex;
+
   // Parameters
   float m_pi;
   float m_GeV;
-  double m_luminosity;
   double m_Wmass;
   double m_tmass;
 
-  // Configuration
-  TString m_channel;
-  TString m_model;
+  //
   bool m_useLumi;
-  const int m_btags;
-  const bool m_discardComplex;
   bool m_discardEvent;
 
-
-    // Counters
+  // Counters
   unsigned int m_nReco;
   unsigned int m_nQuarksMatched;
   unsigned int m_nNeutrinoMatched;
@@ -99,6 +110,7 @@ private:
   TString m_inputFileName;
   TString m_weightsFileName;
   TString m_outputFileName;
+  TString m_dataDirectory;
 
   // Cuts
   enum m_cutlist{

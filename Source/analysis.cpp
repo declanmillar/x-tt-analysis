@@ -1,20 +1,21 @@
 #include "analysis.h"
 
 
-AnalysisZprime::AnalysisZprime(const TString channel, const TString model, const double luminosity, const int btags, const bool discardComplex, const TString& inputFileName, const TString& weightsFileName, const TString& outputFileName) :
-  m_pi(3.14159265),
-  m_GeV(1000.0),
-  m_luminosity(luminosity),
-  m_Wmass(80.23),
-  m_tmass(175.0),
+AnalysisZprime::AnalysisZprime(const TString channel, const TString model, const int energy, const TString options, const int vegasIterations, const int vegasPoints, const double luminosity, const int btags, const bool discardComplex):
   m_channel(channel),
   m_model(model),
+  m_energy(energy),
+  m_options(options),
+  m_vegasIterations(vegasIterations),
+  m_vegasPoints(vegasPoints),
+  m_luminosity(luminosity),
   m_btags(btags),
   m_discardComplex(discardComplex),
+  m_pi(3.14159265),
+  m_GeV(1000.0),
+  m_Wmass(80.23),
+  m_tmass(175.0),
   m_discardEvent(false),
-  m_inputFileName(inputFileName),
-  m_weightsFileName(weightsFileName),
-  m_outputFileName(outputFileName),
   m_inputFiles(NULL),
   m_ntup(NULL),
   m_chainNtup(NULL),
@@ -25,6 +26,28 @@ AnalysisZprime::AnalysisZprime(const TString channel, const TString model, const
   this->PostLoop();
 }
 
+
+inline std::string BoolToString(bool b){return b ? "1" : "0";}
+
+void AnalysisZprime::CreateFilenames(){
+  TString base = m_dataDirectory + "/" + m_channel + "_" + m_model + "_" + std::to_string(m_energy) + m_options + std::to_string(m_vegasIterations) + "x" + std::to_string(m_vegasPoints);
+  m_inputFileName = base + ".root";
+  m_weightsFileName = base + ".txt";
+  m_outputFileName = base + "." + std::to_string(m_btags) + BoolToString(m_discardComplex) +".root";
+  printf("Input: '%s'.\n", m_inputFileName.Data());
+  printf("Output: '%s'.\n", m_outputFileName.Data());
+}
+
+// bool exists(const TString& name) {
+//   struct stat buffer;
+//   bool exist(stat (name.Data(), &buffer) == 0);
+//   printf("%s does not exist.", name);
+//   return exist;
+// }
+
+TString AnalysisZprime::GetOutputFilename(){
+  return m_outputFileName;
+}
 
 void AnalysisZprime::EachEvent () {
   m_discardEvent = false;
@@ -629,12 +652,23 @@ bool AnalysisZprime::PassCutsYtt () {
 
 void AnalysisZprime::PreLoop () {
   printf("--- Setup ---\n");
+  this->GetDataDirectory();
+  this->CreateFilenames();
+  // this->CheckFiles();
   this->ResetCounters();
   this->SetupInputFiles();
   this->SetupWeightsFiles();
   this->InitialiseCutflow();
   this->SetupOutputFiles();
   this->CreateHistograms();
+}
+
+void AnalysisZprime::GetDataDirectory(){
+  #if __linux || __linux__
+    m_dataDirectory = "/afs/cern.ch/work/d/demillar/Zp-tt_pheno";
+  #elif __APPLE__ || __MACH__
+    m_dataDirectory = "/Users/declan/Data/Zprime";
+  #endif
 }
 
 
@@ -664,7 +698,7 @@ void AnalysisZprime::SetupWeightsFiles () {
 void AnalysisZprime::Loop () {
   // Loop over all files
   for (Itr_s i = m_inputFiles->begin(); i != m_inputFiles->end(); ++i) {
-    cout << "Input:  '" << (*i) << "'." << endl;
+    // cout << "Input:  '" << (*i) << "'." << endl;
     this->SetupTreesForNewFile((*i));
 
     Long64_t nEntries;
@@ -688,7 +722,6 @@ AnalysisZprime::~AnalysisZprime() { delete m_inputFiles; }
 
 void AnalysisZprime::SetupOutputFiles() {
   m_outputFile = new TFile(m_outputFileName,"RECREATE");
-  printf("Output: '%s'.\n", m_outputFileName.Data());
 }
 
 
