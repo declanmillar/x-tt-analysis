@@ -12,7 +12,7 @@ int main(int argc, char* argv[])
   #if __linux || __linux__
     dataDirectory = "/afs/cern.ch/work/d/demillar/Zp-tt_pheno";
   #elif __APPLE__ || __MACH__
-    dataDirectory = "/Users/declan/Data/Zp-tt_pheno";
+    dataDirectory = "/Users/declan/Data/Zprime";
   #endif
 
   TString ntupleDirectory = dataDirectory + "/NTuples";
