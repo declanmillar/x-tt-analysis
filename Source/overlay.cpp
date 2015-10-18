@@ -184,7 +184,7 @@ TCanvas* Overlay(const bool normalise, const bool findSignificance,
 
   bool overlap = false;
   double sigPerOverlap = 0;
-  // find overlapping area (histograms must be have the same user ranges and same number of bins)
+  // find overlapping area (histograms must have the same user ranges and same number of bins)
   if (overlap == true) {
     if (plot3) {
       double overlapPerBin = 0;

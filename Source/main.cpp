@@ -21,10 +21,10 @@ int main(int argc, char* argv[])
 
   const double luminosity(300000);
   TString channel("bbllnn");
-  TString model("SM");
-  TString options("_");
+  TString model("GSM-SM");
+  TString options("_xc_");
   TString energy("13");
-  TString points("5x5000");
+  TString points("5x2000000");
   int btags = 2;
   bool discardComplex(false);
   TString filename(channel + "_" + model + "_" + energy + options + points);
@@ -33,11 +33,11 @@ int main(int argc, char* argv[])
   TString outputFilename(histogramDirectory + "/" + channel + "/" + filename + ".a" + std::to_string(btags) + BoolToString(discardComplex) + ".root");
 
   TString channel2("bbllnn");
-  TString model2("SM");
-  TString options2("_");
-  TString points2("5x5000");
+  TString model2("GSM-SM");
+  TString options2("_xc_");
+  TString points2("5x2000000");
   int btags2 = 2;
-  bool discardComplex2(false);
+  bool discardComplex2(true);
   TString filename2(channel2 + "_" + model2 + "_" + energy + options2 + points2);
   TString inputFilename2(ntupleDirectory + "/" + channel2 + "/" + filename2 + ".root");
   TString weightFilename2(weightsDirectory + "/" + channel + "/" + filename2 + ".txt");
