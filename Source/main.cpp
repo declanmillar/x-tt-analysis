@@ -13,8 +13,8 @@ int main(int argc, char* argv[])
   const int btags = 2;
   const bool discardComplex(false);
 
-  AnalysisZprime analysis(channel, model, energy, options, it, points, luminosity, btags, discardComplex);
-  AnalysisZprime analysis2(channel, model, energy, options, it, points, luminosity, btags, true);
+//  AnalysisZprime analysis(channel, model, energy, options, it, points, luminosity, btags, discardComplex);
+//  AnalysisZprime analysis2(channel, model, energy, options, it, points, luminosity, btags, true);
 
   TString output1 = analysis.GetOutputFilename();
   TString output2 = analysis2.GetOutputFilename();
