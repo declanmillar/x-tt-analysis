@@ -1,6 +1,8 @@
-OBJ            =  main.o atlas_style.o overlay.o RootTuple.o analysis.o
+# Makefile for zprime-top-analysis
+# declan.millar@cern.ch
 
-BIN = go
+OBJ = main.o atlas_style.o RootTuple.o analysis.o
+BIN = analysis
 LIB = Library
 SRC = Source
 OUT = .
