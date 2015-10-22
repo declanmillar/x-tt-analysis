@@ -106,6 +106,10 @@ void AnalysisZprime::EachEvent () {
   else if (m_channel == "bbllnn") {
     p_t = pcm[0] + pcm[2] + pcm[3];
     p_tb = pcm[1] + pcm[4] + pcm[5];
+    p_t_r1 = pcm_r1[0] + pcm_r1[2] + pcm_r1[3];
+    p_tb_r1 = pcm_r1[1] + pcm_r1[4] + pcm_r1[5];
+    p_t_r2 = pcm_r2[0] + pcm_r2[2] + pcm_r2[3];
+    p_tb_r2 = pcm_r2[1] + pcm_r2[4] + pcm_r2[5];
   }
 
   double Mff = P.M()/1000;
@@ -133,10 +137,19 @@ void AnalysisZprime::EachEvent () {
   if (m_channel == "bbllnn"){
     ytt_r1 = P_r1.Rapidity();
     ytt_r2 = P_r2.Rapidity();
-    mt_r1 = p_t_r1.M();
-    mtb_r1 = p_tb_r1.M();
-    mt_r2 = p_t_r2.M();
-    mtb_r2 = p_tb_r2.M();
+    mt_r1 = p_t_r1.M()/1000;
+    mtb_r1 = p_tb_r1.M()/1000;
+    mt_r2 = p_t_r2.M()/1000;
+    mtb_r2 = p_tb_r2.M()/1000;
+
+    printf("Reconstructed top mass\n---\n");
+    printf("m_top = %f TeV\n", mt);
+    printf("m_antitop = %f TeV\n", mtb);
+    printf("m_top (reco)[lep] = %f TeV\n", mt_r1);
+    printf("m_antitop (reco)[had] = %f TeV\n", mtb_r1);
+    printf("m_top (reco)[had] = %f TeV\n", mt_r2);
+    printf("m_antitop (reco)[lep] = %f TeV\n", mtb_r2);
+    printf("---\n");
 
     CosTheta_r1 = p_t_r1.CosTheta();
     CosTheta_r2 = p_t_r2.CosTheta();
@@ -555,6 +568,7 @@ void AnalysisZprime::WriteHistograms() {
 
   if (m_channel == "tt" or "bbllnn" or "ll" ) {
     h_Mff->Write();
+    h_ytt->Write();
   }
 
   if (m_channel == "tt" || m_channel == "bbllnn") {
@@ -878,7 +892,9 @@ std::vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(std::vector<
     p_nu_r.SetPxPyPzE(px_nu, py_nu, rootR[i], E_nu_r);
     for (int j = 0; j < 2; j++) {
       mblv = (p_b[std::abs(j)] + p_l + p_nu_r).M();
+      printf("Lepton-reconstructed top mass = %f\n", mblv);
       mjjb = (p_b[std::abs(j-1)] + p_q[0] + p_q[1]).M();
+      printf("Hadron-reconstructed top mass = %f\n", mjjb);
       // printf("For i = %i, j = %i: m_bjj = %.15le, mblv = %.15le\n", i, j, mjjb, mblv);
       dh = mjjb - m_tmass;
       dl = mblv - m_tmass;
