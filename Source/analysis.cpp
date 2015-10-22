@@ -408,14 +408,15 @@ void AnalysisZprime::CreateHistograms() {
   }
 
   if (m_channel == "bbllnn") {
-    h_Mff = new TH1D("Mff", "m_{tt}", 50, 0.0, 13.0);
+    h_Mff = new TH1D("Mtt", "m_{tt}", 200, 0.0, 13.0);
     h_ytt = new TH1D("ytt", "y_{tt}", 50, -2.5, 2.5);
     h_Pz_nu = new TH1D("Pz_nu", "p_{z}^{#nu}", 50,-500.0, 500.0);
     h_CosTheta_r = new TH1D("CosTheta_r", "cos#theta_{reco}", 50, -1.0, 1.0);
     h_CosThetaStar_r = new TH1D("CosThetaStar_r", "cos#theta_{reco}^{*}", 50, -1.0, 1.0);
     h_ytt_r = new TH1D("ytt_r", "y_{tt}^{_r}", 50, -2.5, 2.5);
     h_Pz_nu_r = new TH1D("Pz_nu_r", "p_{z}^{#nu} (reco)", 50, -500.0, 500.0);
-    h_Mtt_r = new TH1D("Mtt_r", "M^{reco}_{tt}", 100, 0.0, 13.0);
+
+    h_Mtt_r = new TH1D("Mtt_r", "M^{reco}_{tt}", 200, 0.0, 13.0);
     h_AlLF = new TH1D("AlLF", "AlLF", 50, 0.0, 13.0);
     h_AlLB = new TH1D("AlLB", "AlLB", 50, 0.0, 13.0);
     h_AllCF = new TH1D("AllCF", "AllCF", 50, 0.0, 13.0);
