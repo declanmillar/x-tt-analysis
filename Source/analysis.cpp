@@ -142,14 +142,14 @@ void AnalysisZprime::EachEvent () {
     mt_r2 = p_t_r2.M()/1000;
     mtb_r2 = p_tb_r2.M()/1000;
 
-    printf("Reconstructed top mass\n---\n");
-    printf("m_top = %f TeV\n", mt);
-    printf("m_antitop = %f TeV\n", mtb);
-    printf("m_top (reco)[lep] = %f TeV\n", mt_r1);
-    printf("m_antitop (reco)[had] = %f TeV\n", mtb_r1);
-    printf("m_top (reco)[had] = %f TeV\n", mt_r2);
-    printf("m_antitop (reco)[lep] = %f TeV\n", mtb_r2);
-    printf("---\n");
+    // printf("Reconstructed top mass\n---\n");
+    // printf("m_top = %f TeV\n", mt);
+    // printf("m_antitop = %f TeV\n", mtb);
+    // printf("m_top (reco)[lep] = %f TeV\n", mt_r1);
+    // printf("m_antitop (reco)[had] = %f TeV\n", mtb_r1);
+    // printf("m_top (reco)[had] = %f TeV\n", mt_r2);
+    // printf("m_antitop (reco)[lep] = %f TeV\n", mtb_r2);
+    // printf("---\n");
 
     CosTheta_r1 = p_t_r1.CosTheta();
     CosTheta_r2 = p_t_r2.CosTheta();
@@ -892,9 +892,9 @@ std::vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(std::vector<
     p_nu_r.SetPxPyPzE(px_nu, py_nu, rootR[i], E_nu_r);
     for (int j = 0; j < 2; j++) {
       mblv = (p_b[std::abs(j)] + p_l + p_nu_r).M();
-      printf("Lepton-reconstructed top mass = %f\n", mblv);
+      // printf("Lepton-reconstructed top mass = %f\n", mblv);
       mjjb = (p_b[std::abs(j-1)] + p_q[0] + p_q[1]).M();
-      printf("Hadron-reconstructed top mass = %f\n", mjjb);
+      // printf("Hadron-reconstructed top mass = %f\n", mjjb);
       // printf("For i = %i, j = %i: m_bjj = %.15le, mblv = %.15le\n", i, j, mjjb, mblv);
       dh = mjjb - m_tmass;
       dl = mblv - m_tmass;
