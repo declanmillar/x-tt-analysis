@@ -219,18 +219,18 @@ void AnalysisZprime::EachEvent () {
       h_Mtt_r->Fill(Mtt_r1, weight/h_Mtt_r->GetXaxis()->GetBinWidth(1));
       h_Mtt_r->Fill(Mtt_r2, weight/h_Mtt_r->GetXaxis()->GetBinWidth(1));
 
-      if (CosThetaStar_r1 > 0) {
-        h_AFBstar_rF->Fill(Mff, weight/h_AFBstar_rF->GetXaxis()->GetBinWidth(1));
+      if (CosThetaStar > 0) {
+        h_AFBstar_rF->Fill(Mtt_r1, weight/h_AFBstar_rF->GetXaxis()->GetBinWidth(1));
       }
-      if (CosThetaStar_r2 > 0) {
-        h_AFBstar_rF->Fill(Mff, weight/h_AFBstar_rF->GetXaxis()->GetBinWidth(1));
+      if (CosThetaStar > 0) {
+        h_AFBstar_rF->Fill(Mtt_r2, weight/h_AFBstar_rF->GetXaxis()->GetBinWidth(1));
       }
 
-      if (CosThetaStar_r1 < 0) {
-        h_AFBstar_rB->Fill(Mff, weight/h_AFBstar_rB->GetXaxis()->GetBinWidth(1));
+      if (CosThetaStar < 0) {
+        h_AFBstar_rB->Fill(Mtt_r1, weight/h_AFBstar_rB->GetXaxis()->GetBinWidth(1));
       }
-      if (CosThetaStar_r2 < 0) {
-        h_AFBstar_rB->Fill(Mff, weight/h_AFBstar_rB->GetXaxis()->GetBinWidth(1));
+      if (CosThetaStar < 0) {
+        h_AFBstar_rB->Fill(Mtt_r2, weight/h_AFBstar_rB->GetXaxis()->GetBinWidth(1));
       }
 
       if (m_r1solutionIsReal) {

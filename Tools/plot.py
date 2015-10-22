@@ -223,22 +223,25 @@ if option.eps:
 if option.adjusty:
     min_value = hist.GetBinContent(hist.GetMinimumBin())
     max_value = hist.GetBinContent(hist.GetMaximumBin())
-    if hist2.GetBinContent(hist.GetMinimumBin()) < min_value:
-        min_value = hist.GetBinContent(hist2.GetMinimumBin())
-    if hist2.GetBinContent(hist2.GetMaximumBin()) > max_value:
-        max_value = hist2.GetBinContent(hist2.GetMaximumBin())
-    if hist3.GetBinContent(hist.GetMinimumBin()) < min_value:
-        min_value = hist.GetBinContent(hist3.GetMinimumBin())
-    if hist3.GetBinContent(hist3.GetMaximumBin()) > max_value:
-        max_value = hist3.GetBinContent(hist3.GetMaximumBin())
-    if hist4.GetBinContent(hist.GetMinimumBin()) < min_value:
-        min_value = hist.GetBinContent(hist4.GetMinimumBin())
-    if hist4.GetBinContent(hist4.GetMaximumBin()) > max_value:
-        max_value = hist4.GetBinContent(hist4.GetMaximumBin())
+    if histname2 == "":
+        if hist2.GetBinContent(hist2.GetMinimumBin()) < min_value:
+            min_value = hist2.GetBinContent(hist2.GetMinimumBin())
+        if hist2.GetBinContent(hist2.GetMaximumBin()) > max_value:
+            max_value = hist2.GetBinContent(hist2.GetMaximumBin())
+    if histname3 == "":
+        if hist3.GetBinContent(hist3.GetMinimumBin()) < min_value:
+            min_value = hist3.GetBinContent(hist3.GetMinimumBin())
+        if hist3.GetBinContent(hist3.GetMaximumBin()) > max_value:
+            max_value = hist3.GetBinContent(hist3.GetMaximumBin())
+    if histname4 == "":
+        if hist4.GetBinContent(hist4.GetMinimumBin()) < min_value:
+            min_value = hist4.GetBinContent(hist4.GetMinimumBin())
+        if hist4.GetBinContent(hist4.GetMaximumBin()) > max_value:
+            max_value = hist4.GetBinContent(hist4.GetMaximumBin())
 
     max_value *= 1.2
     if min_value < 0:
-        min_value = 1.2
+        min_value *= 1.2
     elif min_value > 0:
         min_value = min_value - min_value*0.2
     else:
