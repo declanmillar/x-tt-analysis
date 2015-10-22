@@ -1,28 +1,29 @@
 #!/usr/bin/env python
 import AtlasStyle
-import ROOT, sys, optparse, os, glob, subprocess
+import ROOT, sys, optparse, os, glob, subprocess, math
 ROOT.gROOT.Reset()
 ROOT.gROOT.SetBatch(False)
 
 def BinsMatch(hist1, hist2):
     if hist1.GetNbinsX() != hist2.GetNbinsX():
-        return false
+        return False
     if hist1.GetMinimum() != hist2.GetMinimum():
-        return false
+        return False
     if hist1.GetMaximum() != hist2.GetMaximum():
-        return false
-    return true
+        return False
+    return True
 
 def PlotSignificance(hist1, hist2):
     if not BinsMatch(hist1, hist2):
-      print "Warning: bins do not matchist."
+      print "Warning: bins do not match."
     name = hist1.GetName() + "_sig"
     hist = hist1.Clone(name)
     hist.Add(hist2, -1)
     for i in range(hist.GetNbinsX()):
         error1 = hist1.GetBinError(i)
         error2 = hist2.GetBinError(i)
-        error = sqrt(error1*error1 + error2*error2)
+        print error1, error2
+        error = math.sqrt(error1*error1 + error2*error2)
         hist.SetBinContent(i, hist.GetBinContent(i)/error)
     hist.GetYaxis().SetTitle("Significance")
     labelSize = hist1.GetXaxis().GetLabelSize()
@@ -48,10 +49,16 @@ parser.add_option("-3","--filename3", default = "", action = "store" , help = "s
 parser.add_option("-4","--filename4", default = "", action = "store" , help = "specify fourth filename")
 parser.add_option("-e", "--errors", default = False, action = "store_true" , help = "display errors")
 parser.add_option("-r", "--adjust_range", default = False, action = "store" , help = "adjust range")
-parser.add_option("-d", "--adjust_domain", nargs='2', default = False, action = "store" , help = "adjust range")
+parser.add_option("-l", "--xmin", type="float", default = -99.9, action = "store" , help = "xmin")
+parser.add_option("-u", "--xmax", type="float", default = -99.9, action = "store" , help = "xmax")
 parser.add_option("-s", "--significance", default = False, action = "store_true" , help = "plot significance")
 parser.add_option("-E", "--eps", default = False, action = "store_true" , help = "save plot as eps")
 parser.add_option("-o", "--overlap", default = False, action = "store_true" , help = "find overlapping area")
+parser.add_option("--label1", default = "", action = "store" , help = "set first label")
+parser.add_option("--label2", default = "", action = "store" , help = "set second label")
+parser.add_option("--label3", default = "", action = "store" , help = "set third label")
+parser.add_option("--label4", default = "", action = "store" , help = "set fourth label")
+
 
 (option, args) = parser.parse_args()
 
@@ -84,8 +91,8 @@ if option.significance:
     lowerPad.Draw()
     lowerPad.SetBottomMargin(0.3)
     lowerPad.SetTopMargin(0)
-    lowerPad.SetRightMargin(rightMargin)
-    lowerPad.SetLeftMargin(leftMargin)
+    lowerPad.SetRightMargin(right_margin)
+    lowerPad.SetLeftMargin(left_margin)
 
 color1 = ROOT.gROOT.GetColor(20)
 color2 = ROOT.gROOT.GetColor(20)
@@ -110,13 +117,13 @@ if not file1.IsOpen():
     print "failed to open %s\n" % filename
 try:
     hist = file1.Get(histname)
-except ReferenceError:
-    sys.exit("ReferenceError: check %s contains histogram '%s'" % (filename, histnames[0]))
+    hist.Draw(draw_option)
+    legend.AddEntry(hist, filename)
+    hist.SetMarkerColor(ROOT.kRed-3)
+    hist.SetLineColor(ROOT.kRed-3)
 
-hist.Draw(draw_option)
-legend.AddEntry(hist, filename)
-hist.SetMarkerColor(1)
-hist.SetLineColor(1)
+except ReferenceError:
+    sys.exit("ReferenceError: check %s contains histogram '%s'" % (filename, histname))
 
 if filename2 != "":
     if os.path.isfile("%s" % filename2) is False:
@@ -127,8 +134,8 @@ if filename2 != "":
     try:
         hist2 = file2.Get(histname)
         hist2.Draw(draw_option)
-        hist2.SetMarkerColor(2)
-        hist2.SetLineColor(2)
+        hist2.SetMarkerColor(ROOT.kAzure+7)
+        hist2.SetLineColor(ROOT.kAzure+7)
         legend.AddEntry(hist2, filename2)
     except ReferenceError:
         sys.exit("ReferenceError: check %s contains histogram '%s'" % (filename2, histname))
@@ -153,11 +160,11 @@ if option.adjust_range:
 
 if option.significance:
     if filename2 != "":
-        sighist2 = Significance(hist2, hist1)
+        sighist2 = PlotSignificance(hist2, hist)
     if filename3 != "":
-        sighist3 = Significance(hist3, hist1)
+        sighist3 = PlotSignificance(hist3, hist)
     if filename4 != "":
-        sighist4 = Significance(hist4, hist1)
+        sighist4 = PlotSignificance(hist4, hist)
 #
 # normalize histograms
 if option.normalise:
@@ -196,19 +203,16 @@ if option.overlap:
     sigPerOverlap = overlap/hist2.Integral()*100
     printf("Signal in overlapping area: %f%%\n", sigPerOverlap)
 
-
-rangeMin = -999
-rangeMax = -999
-rangeMin = 2000
-rangeMax = 4000
-if rangeMin != -999 and rangeMax != -999:
-    hist.GetXaxis().SetRangeUser(rangeMin, rangeMax)
+xmin = option.xmin
+xmax = option.xmax
+if xmin != -99.9 and xmax != -99.9:
+    hist.GetXaxis().SetRangeUser(xmin, xmax)
     if filename2 != "":
-        hist2.GetXaxis().SetRangeUser(rangeMin, rangeMax)
+        hist2.GetXaxis().SetRangeUser(xmin, xmax)
     if filename3 != "":
-        hist3.GetXaxis().SetRangeUser(rangeMin, rangeMax)
+        hist3.GetXaxis().SetRangeUser(xmin, xmax)
     if filename4 != "":
-        hist4.GetXaxis().SetRangeUser(rangeMin, rangeMax)
+        hist4.GetXaxis().SetRangeUser(xmin, xmax)
 
 if option.overlap:
     sigOverlap = "Signal in overlapping area = " + str(sigPerOverlap) + "%%"
