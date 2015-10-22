@@ -119,8 +119,9 @@ try:
     hist = file1.Get(histname)
     hist.Draw(draw_option)
     legend.AddEntry(hist, filename)
-    hist.SetMarkerColor(ROOT.kRed-3)
+    # hist.SetMarkerColor(ROOT.kRed-3)
     hist.SetLineColor(ROOT.kRed-3)
+    hist.SetLineStyle(1)
 
 except ReferenceError:
     sys.exit("ReferenceError: check %s contains histogram '%s'" % (filename, histname))
@@ -134,11 +135,45 @@ if filename2 != "":
     try:
         hist2 = file2.Get(histname)
         hist2.Draw(draw_option)
-        hist2.SetMarkerColor(ROOT.kAzure+7)
+        # hist2.SetMarkerColor(ROOT.kAzure+7)
         hist2.SetLineColor(ROOT.kAzure+7)
+        hist.SetLineStyle(2)
         legend.AddEntry(hist2, filename2)
     except ReferenceError:
         sys.exit("ReferenceError: check %s contains histogram '%s'" % (filename2, histname))
+
+if filename3 != "":
+    if os.path.isfile("%s" % filename3) is False:
+      sys.exit("%s does not exist" % filename3)
+    file3 = ROOT.TFile(filename3, "read")
+    if not file3.IsOpen():
+        print "failed to open %s\n" % filename3
+    try:
+        hist3 = file2.Get(histname)
+        hist3.Draw(draw_option)
+        # hist3.SetMarkerColor(ROOT.kAzure+7)
+        hist3.SetLineColor(ROOT.kAzure+7)
+        hist.SetLineStyle(2)
+        legend.AddEntry(hist3, filename3)
+    except ReferenceError:
+        sys.exit("ReferenceError: check %s contains histogram '%s'" % (filename3, histname))
+
+if filename4 != "":
+    if os.path.isfile("%s" % filename4) is False:
+      sys.exit("%s does not exist" % filename4)
+    file4 = ROOT.TFile(filename4, "read")
+    if not file4.IsOpen():
+        print "failed to open %s\n" % filename4
+    try:
+        hist4 = file2.Get(histname)
+        hist4.Draw(draw_option)
+        hist4.SetMarkerColor(ROOT.kAzure+7)
+        hist4.SetLineColor(ROOT.kAzure+7)
+        hist.SetLineStyle(2)
+        legend.AddEntry(hist4, filename4)
+    except ReferenceError:
+        sys.exit("ReferenceError: check %s contains histogram '%s'" % (filename4, histname))
+
 legend.SetBorderSize(0)
 legend.Draw()
 

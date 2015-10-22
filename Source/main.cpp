@@ -10,6 +10,6 @@ int main(int argc, char* argv[])
   const double luminosity = 300000;
   const bool discardComplex(false);
 
- AnalysisZprime analysis(channel, model, energy, options, it, points, luminosity, btags, discardComplex);
- AnalysisZprime analysis2(channel, model, energy, options, it, points, luminosity, btags, true);
+  AnalysisZprime analysis(channel, model, energy, options, it, points, luminosity, btags, discardComplex);
+  AnalysisZprime analysis2(channel, model, energy, options, it, points, luminosity, btags, true);
 }

@@ -52,7 +52,6 @@ TString AnalysisZprime::GetOutputFilename(){
 void AnalysisZprime::EachEvent () {
   m_discardEvent = false;
   UpdateCutflow(c_entries, true);
-
   p = vector<TLorentzVector>(6);
   for (unsigned int i = 0; i < m_ntup->E()->size(); i++) {
     p[i].SetPxPyPzE(m_ntup->Px()->at(i), m_ntup->Py()->at(i), m_ntup->Pz()->at(i), m_ntup->E()->at(i));
@@ -107,12 +106,13 @@ void AnalysisZprime::EachEvent () {
   else if (m_channel == "bbllnn") {
     p_t = pcm[0] + pcm[2] + pcm[3];
     p_tb = pcm[1] + pcm[4] + pcm[5];
-    p_t_r1 = pcm_r1[0] + pcm_r1[2] + pcm_r1[3];
-    p_tb_r1 = pcm_r1[1] + pcm_r1[4] + pcm_r1[5];
-    p_t_r2 = pcm_r2[0] + pcm_r2[2] + pcm_r2[3];
-    p_tb_r2 = pcm_r2[1] + pcm_r2[4] + pcm_r2[5];
   }
 
+  double Mff = P.M()/1000;
+  double Mtt_r1 = P_r1.M()/1000;
+  double Mtt_r2 = P_r2.M()/1000;
+  double mt = p_t.M()/1000;
+  double mtb = p_tb.M()/1000;
   double y_t = p_t.Rapidity();
   double y_tb = p_tb.Rapidity();
   double dy = std::abs(y_t) - std::abs(y_tb);
@@ -121,13 +121,23 @@ void AnalysisZprime::EachEvent () {
   double CosThetaStar = int(ytt/std::abs(ytt))*CosTheta;
   double ytt_r1 = -999;
   double ytt_r2 = -999;
+  double mt_r1 = -999;
+  double mtb_r1 = -999;
+  double mt_r2 = -999;
+  double mtb_r2 = -999;
   double CosTheta_r1 = -999;
   double CosTheta_r2 = -999;
   double CosThetaStar_r1 = -999;
   double CosThetaStar_r2 = -999;
+
   if (m_channel == "bbllnn"){
     ytt_r1 = P_r1.Rapidity();
     ytt_r2 = P_r2.Rapidity();
+    mt_r1 = p_t_r1.M();
+    mtb_r1 = p_tb_r1.M();
+    mt_r2 = p_t_r2.M();
+    mtb_r2 = p_tb_r2.M();
+
     CosTheta_r1 = p_t_r1.CosTheta();
     CosTheta_r2 = p_t_r2.CosTheta();
     CosThetaStar_r1 = int(ytt_r1/std::abs(ytt_r1))*CosTheta_r1;
@@ -142,12 +152,9 @@ void AnalysisZprime::EachEvent () {
     weight = weight*m_sigma/m_weights[it-1];
     // printf("weight = %.15le\n", weight);
 
-    // convert to TeV
-    double Mff = P.M()/1000;
-    double Mtt_r1 = P_r1.M()/1000;
-    double Mtt_r2 = P_r2.M()/1000;
-
     // fill histograms (assumes fixed bin width!)
+    h_mt->Fill(mt, weight*2/h_Mff->GetXaxis()->GetBinWidth(1));
+    h_mtbar->Fill(mtb, weight*2/h_ytt->GetXaxis()->GetBinWidth(1));
     h_Mff->Fill(Mff, weight*2/h_Mff->GetXaxis()->GetBinWidth(1));
     h_ytt->Fill(ytt, weight*2/h_ytt->GetXaxis()->GetBinWidth(1));
     h_CosTheta->Fill(CosTheta, weight*2/h_CosTheta->GetXaxis()->GetBinWidth(1));
@@ -181,6 +188,11 @@ void AnalysisZprime::EachEvent () {
 
       h_ytt_r->Fill(ytt_r1, weight/h_ytt_r->GetXaxis()->GetBinWidth(1));
       h_ytt_r->Fill(ytt_r2, weight/h_ytt_r->GetXaxis()->GetBinWidth(1));
+
+      h_mt_r->Fill(mt_r1, weight*2/h_Mff->GetXaxis()->GetBinWidth(1));
+      h_mtbar_r->Fill(mtb_r1, weight*2/h_ytt->GetXaxis()->GetBinWidth(1));
+      h_mt_r->Fill(mt_r2, weight*2/h_Mff->GetXaxis()->GetBinWidth(1));
+      h_mtbar_r->Fill(mtb_r2, weight*2/h_ytt->GetXaxis()->GetBinWidth(1));
 
       h_CosTheta_r->Fill(CosTheta_r1, weight/h_CosTheta_r->GetXaxis()->GetBinWidth(1));
       h_CosTheta_r->Fill(CosTheta_r2, weight/h_CosTheta_r->GetXaxis()->GetBinWidth(1));
@@ -415,8 +427,13 @@ void AnalysisZprime::CreateHistograms() {
     h_CosThetaStar_r = new TH1D("CosThetaStar_r", "cos#theta_{reco}^{*}", 50, -1.0, 1.0);
     h_ytt_r = new TH1D("ytt_r", "y_{tt}^{_r}", 50, -2.5, 2.5);
     h_Pz_nu_r = new TH1D("Pz_nu_r", "p_{z}^{#nu} (reco)", 50, -500.0, 500.0);
+    h_mt = new TH1D("mt", "M^{reco}_{tt}", 200, 0.0, 1.0);
+    h_mtbar = new TH1D("mtbar", "m_{#bar{t}}", 200, 0.0, 1.0);
 
-    h_Mtt_r = new TH1D("Mtt_r", "M^{reco}_{tt}", 200, 0.0, 13.0);
+    h_Mtt_r = new TH1D("Mtt_r", "m^{reco}_{tt}", 200, 0.0, 13.0);
+    h_mt_r = new TH1D("mt_r", "m^{reco}_{t}", 200, 0.0, 1.0);
+    h_mtbar_r = new TH1D("mtbar_r", "M^{reco}_{#bar{t}}", 200, 0.0, 1.0);
+
     h_AlLF = new TH1D("AlLF", "AlLF", 50, 0.0, 13.0);
     h_AlLB = new TH1D("AlLB", "AlLB", 50, 0.0, 13.0);
     h_AllCF = new TH1D("AllCF", "AllCF", 50, 0.0, 13.0);
@@ -574,6 +591,10 @@ void AnalysisZprime::WriteHistograms() {
     h_ytt_r->Write();
     h_CosTheta_r->Write();
     h_CosThetaStar_r->Write();
+    h_mt->Write();
+    h_mtbar->Write();
+    h_mt_r->Write();
+    h_mtbar_r->Write();
 
   }
   h_cutflow->Write();
@@ -687,7 +708,7 @@ void AnalysisZprime::ResetCounters () {
 void AnalysisZprime::SetupWeightsFiles () {
   TString weightsName(m_weightsFileName);
   ifstream weights(weightsName.Data());
-  if (!weights.is_open()) printf("Error: failed to open %s\n", weightsName.Data());
+  if (!weights.is_open()) printf("Error: failed to open %s!\n", weightsName.Data());
   weights >> m_sigma;
   string line;
   double weight;

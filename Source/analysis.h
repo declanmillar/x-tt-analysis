@@ -145,6 +145,8 @@ private:
   TH1D* h_Pz_nu;
   TH1D* h_CosTheta;
   TH1D* h_CosThetaStar;
+  TH1D* h_mt;
+  TH1D* h_mtbar;
 
   // Reconstruction histograms
   TH1D* h_Pz_nu_r;
@@ -152,6 +154,8 @@ private:
   TH1D* h_CosTheta_r;
   TH1D* h_CosThetaStar_r;
   TH1D* h_ytt_r;
+  TH1D* h_mt_r;
+  TH1D* h_mtbar_r;
 
   // Polarisation weighted histograms
   TH1D* h_MttLL;
