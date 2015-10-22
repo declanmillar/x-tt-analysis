@@ -440,7 +440,7 @@ void AnalysisZprime::CreateHistograms() {
     h_CosThetaStar_r = new TH1D("CosThetaStar_r", "cos#theta_{reco}^{*}", 50, -1.0, 1.0);
     h_ytt_r = new TH1D("ytt_r", "y_{tt}^{_r}", 50, -2.5, 2.5);
     h_Pz_nu_r = new TH1D("Pz_nu_r", "p_{z}^{#nu} (reco)", 50, -500.0, 500.0);
-    h_mt = new TH1D("mt", "M^{reco}_{tt}", 200, 0.0, 1.0);
+    h_mt = new TH1D("mt", "m_{t}", 200, 0.0, 1.0);
     h_mtbar = new TH1D("mtbar", "m_{#bar{t}}", 200, 0.0, 1.0);
 
     h_Mtt_r = new TH1D("Mtt_r", "m^{reco}_{tt}", 200, 0.0, 13.0);
@@ -728,6 +728,9 @@ void AnalysisZprime::SetupWeightsFiles () {
   double weight;
   while ( weights >> weight ) m_weights.push_back(weight);
   weights.close();
+  for (int i = 0; i < m_weights.size(); i++) {
+    printf("%f\n", m_weights[i]);
+  }
 }
 
 
@@ -866,7 +869,7 @@ std::vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(std::vector<
 
   // re-weight for different iterations
   double iteration = m_ntup->iteration();
-  double weight = m_ntup->weight_eq();
+  double weight = m_ntup->weight();
   weight = weight*m_sigma/m_weights[iteration-1];
 
   if (root[0].imag() == 0 and root[1].imag() == 0) {

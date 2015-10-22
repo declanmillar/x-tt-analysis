@@ -4,31 +4,31 @@ import ROOT, sys, optparse, os, glob, subprocess, math
 ROOT.gROOT.Reset()
 ROOT.gROOT.SetBatch(False)
 
-def BinsMatch(hist1, hist2):
-    if hist1.GetNbinsX() != hist2.GetNbinsX():
+def BinsMatch(hist, hist2):
+    if hist.GetNbinsX() != hist2.GetNbinsX():
         return False
-    if hist1.GetMinimum() != hist2.GetMinimum():
+    if hist.GetMinimum() != hist2.GetMinimum():
         return False
-    if hist1.GetMaximum() != hist2.GetMaximum():
+    if hist.GetMaximum() != hist2.GetMaximum():
         return False
     return True
 
-def PlotSignificance(hist1, hist2):
-    if not BinsMatch(hist1, hist2):
+def PlotSignificance(hist, hist2):
+    if not BinsMatch(hist, hist2):
       print "Warning: bins do not match."
-    name = hist1.GetName() + "_sig"
-    hist = hist1.Clone(name)
+    name = hist.GetName() + "_sig"
+    hist = hist.Clone(name)
     hist.Add(hist2, -1)
     for i in range(hist.GetNbinsX()):
-        error1 = hist1.GetBinError(i)
+        error1 = hist.GetBinError(i)
         error2 = hist2.GetBinError(i)
         print error1, error2
         error = math.sqrt(error1*error1 + error2*error2)
         hist.SetBinContent(i, hist.GetBinContent(i)/error)
     hist.GetYaxis().SetTitle("Significance")
-    labelSize = hist1.GetXaxis().GetLabelSize()
-    titleSize = hist1.GetXaxis().GetTitleSize()
-    titleOffset = hist1.GetXaxis().GetTitleOffset()
+    labelSize = hist.GetXaxis().GetLabelSize()
+    titleSize = hist.GetXaxis().GetTitleSize()
+    titleOffset = hist.GetXaxis().GetTitleOffset()
     print "x label size: %f \n" % xLabelSize
     hist.GetXaxis().SetLabelSize(labelSize*3.2)
     hist.GetXaxis().SetTitleSize(titleSize*3.2)
@@ -51,7 +51,7 @@ parser.add_option("--h2", default = "", action = "store" , help = "specify secon
 parser.add_option("--h3", default = "", action = "store" , help = "specify third histogram")
 parser.add_option("--h4", default = "", action = "store" , help = "specify fourth histogram")
 parser.add_option("-e", "--errors", default = False, action = "store_true" , help = "display errors")
-parser.add_option("-r", "--adjust_range", default = False, action = "store" , help = "adjust range")
+parser.add_option("-y", "--adjusty", default = False, action = "store_true" , help = "adjust range")
 parser.add_option("-l", "--xmin", type="float", default = -99.9, action = "store" , help = "xmin")
 parser.add_option("-u", "--xmax", type="float", default = -99.9, action = "store" , help = "xmax")
 parser.add_option("-s", "--significance", default = False, action = "store_true" , help = "plot significance")
@@ -141,10 +141,14 @@ if not file1.IsOpen():
 try:
     hist = file1.Get(histname)
     hist.Draw(draw_option)
-    legend.AddEntry(hist, filename)
-    # hist.SetMarkerColor(ROOT.kRed-3)
+    if option.f2 == "" and option.h2 != "":
+        labelname = hist.GetTitle()
+    else:
+        labelname = filename
+    legend.AddEntry(hist, labelname)
+    hist.SetMarkerColor(ROOT.kRed-3)
     hist.SetLineColor(ROOT.kRed-3)
-    hist.SetLineStyle(1)
+    # hist.SetLineStyle(1)
 
 except ReferenceError:
     sys.exit("ReferenceError: check %s contains histogram '%s'" % (filename, histname))
@@ -158,14 +162,18 @@ if option.f2 != "" or option.h2 != "":
     try:
         hist2 = file2.Get(histname2)
         hist2.Draw(draw_option)
-        # hist2.SetMarkerColor(ROOT.kAzure+7)
+        hist2.SetMarkerColor(ROOT.kAzure+7)
         hist2.SetLineColor(ROOT.kAzure+7)
-        hist.SetLineStyle(2)
-        legend.AddEntry(hist2, filename2)
+        # hist.SetLineStyle(2)
+        if option.f2 == "" and option.h2 != "":
+            labelname2 = hist2.GetTitle()
+        else:
+            labelname2 = filename2
+        legend.AddEntry(hist2, labelname2)
     except ReferenceError:
         sys.exit("ReferenceError: check %s contains histogram '%s'" % (filename2, histname))
 
-if option.f3 != "":
+if option.f3 != "" or option.h3 != "":
     if os.path.isfile("%s" % filename3) is False:
       sys.exit("%s does not exist" % filename3)
     file3 = ROOT.TFile(filename3, "read")
@@ -174,14 +182,18 @@ if option.f3 != "":
     try:
         hist3 = file2.Get(histname3)
         hist3.Draw(draw_option)
-        # hist3.SetMarkerColor(ROOT.kAzure+7)
-        hist3.SetLineColor(ROOT.kAzure+7)
-        hist.SetLineStyle(2)
-        legend.AddEntry(hist3, filename3)
+        hist3.SetMarkerColor(ROOT.kGreen-6)
+        hist3.SetLineColor(ROOT.kGreen-6)
+        # hist.SetLineStyle(2)
+        if option.f2 == "" and option.h2 != "":
+            labelname3 = hist3.GetTitle()
+        else:
+            labelname3 = filename3
+        legend.AddEntry(hist3, labelname3)
     except ReferenceError:
         sys.exit("ReferenceError: check %s contains histogram '%s'" % (filename3, histname))
 
-if option.f4 != "":
+if option.f4 != "" or option.h4 != "":
     if os.path.isfile("%s" % filename4) is False:
       sys.exit("%s does not exist" % filename4)
     file4 = ROOT.TFile(filename4, "read")
@@ -190,10 +202,14 @@ if option.f4 != "":
     try:
         hist4 = file2.Get(histname4)
         hist4.Draw(draw_option)
-        hist4.SetMarkerColor(ROOT.kAzure+7)
-        hist4.SetLineColor(ROOT.kAzure+7)
-        hist.SetLineStyle(2)
-        legend.AddEntry(hist4, filename4)
+        hist4.SetMarkerColor(ROOT.kMagenta+7)
+        hist4.SetLineColor(ROOT.kMagenta+7)
+        # hist.SetLineStyle(2)
+        if option.f2 == "" and option.h2 != "":
+            labelname4 = hist4.GetTitle()
+        else:
+            labelname4 = filename4
+        legend.AddEntry(hist4, labelname4)
     except ReferenceError:
         sys.exit("ReferenceError: check %s contains histogram '%s'" % (filename4, histname))
 
@@ -204,9 +220,22 @@ if option.eps:
     canvas.SaveAs("%s_%s.eps" % (histname, filename))
 
 # adjust y-axis range
-if option.adjust_range:
-    min_value = hist1.GetBinContent(hist1.GetMinimumBin())
-    max_value = hist1.GetBinContent(hist1.GetMaximumBin())
+if option.adjusty:
+    min_value = hist.GetBinContent(hist.GetMinimumBin())
+    max_value = hist.GetBinContent(hist.GetMaximumBin())
+    if hist2.GetBinContent(hist.GetMinimumBin()) < min_value:
+        min_value = hist.GetBinContent(hist2.GetMinimumBin())
+    if hist2.GetBinContent(hist2.GetMaximumBin()) > max_value:
+        max_value = hist2.GetBinContent(hist2.GetMaximumBin())
+    if hist3.GetBinContent(hist.GetMinimumBin()) < min_value:
+        min_value = hist.GetBinContent(hist3.GetMinimumBin())
+    if hist3.GetBinContent(hist3.GetMaximumBin()) > max_value:
+        max_value = hist3.GetBinContent(hist3.GetMaximumBin())
+    if hist4.GetBinContent(hist.GetMinimumBin()) < min_value:
+        min_value = hist.GetBinContent(hist4.GetMinimumBin())
+    if hist4.GetBinContent(hist4.GetMaximumBin()) > max_value:
+        max_value = hist4.GetBinContent(hist4.GetMaximumBin())
+
     max_value *= 1.2
     if min_value < 0:
         min_value = 1.2
@@ -242,10 +271,10 @@ sigPerOverlap = 0
 if option.overlap:
     overlapPerBin = 0
     overlap = 0
-    for i in range(hist1.GetNbinsX()):
-        bin1 = hist1.GetBin(i)
+    for i in range(hist.GetNbinsX()):
+        bin1 = hist.GetBin(i)
         bin2 = hist2.GetBin(i)
-        one = hist1.GetBinContent(bin1)
+        one = hist.GetBinContent(bin1)
         two = hist2.GetBinContent(bin2)
         if one <= two:
             overlapPerBin = one
@@ -285,6 +314,6 @@ if option.significance:
         h3sig.Draw("HIST SAME")
     if filename4 != "":
         h4sig.Draw("HIST SAME")
-    hist1.GetXaxis().SetLabelSize(0)
+    hist.GetXaxis().SetLabelSize(0)
 
 raw_input()
