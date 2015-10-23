@@ -20,7 +20,7 @@
 
 class AnalysisZprime{
 public:
-  AnalysisZprime(const TString channel, const TString model, const int energy, const TString options, const int vegasIterations, const int vegasPoints, const double luminosity, const int btags, const bool discardComplex);
+  AnalysisZprime(const TString channel, const TString model, const int energy, const TString options, const int vegasIterations, const int vegasPoints, const double luminosity, const int btags, const bool discardComplex, const TString analysis_label);
   virtual ~AnalysisZprime();
   TString GetOutputFilename();
 
@@ -85,6 +85,7 @@ private:
   double m_luminosity;
   const int m_btags;
   const bool m_discardComplex;
+  const TString m_analysisLabel;
 
   // Parameters
   float m_pi;

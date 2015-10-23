@@ -1,7 +1,7 @@
 #include "analysis.h"
 
 
-AnalysisZprime::AnalysisZprime(const TString channel, const TString model, const int energy, const TString options, const int vegasIterations, const int vegasPoints, const double luminosity, const int btags, const bool discardComplex):
+AnalysisZprime::AnalysisZprime(const TString channel, const TString model, const int energy, const TString options, const int vegasIterations, const int vegasPoints, const double luminosity, const int btags, const bool discardComplex, const TString analysisLabel):
   m_channel(channel),
   m_model(model),
   m_energy(energy),
@@ -11,6 +11,7 @@ AnalysisZprime::AnalysisZprime(const TString channel, const TString model, const
   m_luminosity(luminosity),
   m_btags(btags),
   m_discardComplex(discardComplex),
+  m_analysisLabel(analysisLabel),
   m_pi(3.14159265),
   m_GeV(1000.0),
   m_Wmass(80.23),
@@ -33,7 +34,7 @@ void AnalysisZprime::CreateFilenames(){
   TString base = m_dataDirectory + "/" + m_channel + "_" + m_model + "_" + std::to_string(m_energy) + m_options + std::to_string(m_vegasIterations) + "x" + std::to_string(m_vegasPoints);
   m_inputFileName = base + ".root";
   m_weightsFileName = base + ".txt";
-  m_outputFileName = base + "." + std::to_string(m_btags) + BoolToString(m_discardComplex) +".root";
+  m_outputFileName = base + "." + std::to_string(m_btags) + BoolToString(m_discardComplex) + m_analysisLabel + ".root";
   printf("Input: '%s'.\n", m_inputFileName.Data());
   printf("Output: '%s'.\n", m_outputFileName.Data());
 }
@@ -222,16 +223,16 @@ void AnalysisZprime::EachEvent () {
       if (CosThetaStar_r1 > 0) {
         h_AFBstar_rF->Fill(Mtt_r1, weight/h_AFBstar_rF->GetXaxis()->GetBinWidth(1));
       }
-      // if (CosThetaStar_r2 > 0) {
-      //   h_AFBstar_rF->Fill(Mtt_r2, weight/h_AFBstar_rF->GetXaxis()->GetBinWidth(1));
-      // }
+      if (CosThetaStar_r2 > 0) {
+        h_AFBstar_rF->Fill(Mtt_r2, weight/h_AFBstar_rF->GetXaxis()->GetBinWidth(1));
+      }
 
       if (CosThetaStar_r1 < 0) {
         h_AFBstar_rB->Fill(Mtt_r1, weight/h_AFBstar_rB->GetXaxis()->GetBinWidth(1));
       }
-      // if (CosThetaStar_r2 < 0) {
-      //   h_AFBstar_rB->Fill(Mtt_r2, weight/h_AFBstar_rB->GetXaxis()->GetBinWidth(1));
-      // }
+      if (CosThetaStar_r2 < 0) {
+        h_AFBstar_rB->Fill(Mtt_r2, weight/h_AFBstar_rB->GetXaxis()->GetBinWidth(1));
+      }
 
       if (m_r1solutionIsReal) {
         h_real_r1->Fill(Mtt_r1, weight/h_real_r1->GetXaxis()->GetBinWidth(1));

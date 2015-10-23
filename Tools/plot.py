@@ -52,8 +52,10 @@ parser.add_option("--h3", default = "", action = "store" , help = "specify third
 parser.add_option("--h4", default = "", action = "store" , help = "specify fourth histogram")
 parser.add_option("-e", "--errors", default = False, action = "store_true" , help = "display errors")
 parser.add_option("-y", "--adjusty", default = False, action = "store_true" , help = "adjust range")
-parser.add_option("-l", "--xmin", type="float", default = -99.9, action = "store" , help = "xmin")
-parser.add_option("-u", "--xmax", type="float", default = -99.9, action = "store" , help = "xmax")
+parser.add_option("--xmin", type="float", default = -99.9, action = "store" , help = "xmin")
+parser.add_option("--xmax", type="float", default = -99.9, action = "store" , help = "xmax")
+parser.add_option("--ymin", type="float", default = -99.9, action = "store" , help = "ymin")
+parser.add_option("--ymax", type="float", default = -99.9, action = "store" , help = "ymax")
 parser.add_option("-s", "--significance", default = False, action = "store_true" , help = "plot significance")
 parser.add_option("-E", "--eps", default = False, action = "store_true" , help = "save plot as eps")
 parser.add_option("-o", "--overlap", default = False, action = "store_true" , help = "find overlapping area")
@@ -216,9 +218,6 @@ if option.f4 != "" or option.h4 != "":
 legend.SetBorderSize(0)
 legend.Draw()
 
-if option.eps:
-    canvas.SaveAs("%s_%s.eps" % (histname, filename))
-
 # adjust y-axis range
 if option.adjusty:
     min_value = hist.GetBinContent(hist.GetMinimumBin())
@@ -304,6 +303,17 @@ if xmin != -99.9 and xmax != -99.9:
     if filename4 != "":
         hist4.GetXaxis().SetRangeUser(xmin, xmax)
 
+ymin = option.ymin
+ymax = option.ymax
+if ymin != -99.9 and ymax != -99.9:
+    hist.GetYaxis().SetRangeUser(ymin, ymax)
+    # if filename2 != "":
+    #     hist2.GetYaxis().SetRangeUser(ymin, ymax)
+    # if filename3 != "":
+    #     hist3.GetYaxis().SetRangeUser(ymin, ymax)
+    # if filename4 != "":
+    #     hist4.GetYaxis().SetRangeUser(ymin, ymax)
+
 if option.overlap:
     sigOverlap = "Signal in overlapping area = " + str(sigPerOverlap) + "%%"
     texBox = ROOT.TLatex(0.5,0.5, SigOverlap)
@@ -320,3 +330,6 @@ if option.significance:
     hist.GetXaxis().SetLabelSize(0)
 
 raw_input()
+
+if option.eps:
+    canvas.SaveAs("%s_%s.eps" % (histname, filename))
