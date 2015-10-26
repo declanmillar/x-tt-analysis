@@ -55,6 +55,7 @@ parser.add_option("--l2", default = "", action = "store" , help = "set second la
 parser.add_option("--l3", default = "", action = "store" , help = "set third label")
 parser.add_option("--l4", default = "", action = "store" , help = "set fourth label")
 parser.add_option("-e", "--errors", default = False, action = "store_true" , help = "display errors")
+parser.add_option("-p", "--pause", default = True, action = "store_false" , help = "pause to show graphs")
 parser.add_option("-y", "--adjusty", default = False, action = "store_true" , help = "auto adjust range (some issues)")
 parser.add_option("--xmin", type="float", default = -99.9, action = "store" , help = "xmin")
 parser.add_option("--xmax", type="float", default = -99.9, action = "store" , help = "xmax")
@@ -341,7 +342,8 @@ if option.significance:
         h4sig.Draw("HIST SAME")
     hist.GetXaxis().SetLabelSize(0)
 
-raw_input()
+if option.pause:
+    raw_input()
 
 if option.eps:
     canvas.SaveAs("%s_%s.eps" % (histname, filename))
