@@ -1,8 +1,11 @@
 #!/usr/bin/env python
-import AtlasStyle
 import ROOT, sys, optparse, os, glob, subprocess, math
+import atlas_style
+
 ROOT.gROOT.Reset()
 ROOT.gROOT.SetBatch(False)
+
+ROOT.TGaxis.SetMaxDigits(4)
 
 def BinsMatch(hist, hist2):
     if hist.GetNbinsX() != hist2.GetNbinsX():
@@ -33,7 +36,7 @@ def PlotSignificance(hist, hist2):
     hist.GetXaxis().SetLabelSize(labelSize*3.2)
     hist.GetXaxis().SetTitleSize(titleSize*3.2)
     hist.GetXaxis().SetTitleOffset(titleOffset/1.5)
-
+    hist.GetYaxis().SetMaxDigits(2)
     hist.GetYaxis().SetLabelSize(labelSize*2)
     hist.GetYaxis().SetTitleSize(titleSize*3.2)
     hist.GetYaxis().SetTitleOffset(titleOffset/3.2)
@@ -61,9 +64,11 @@ parser.add_option("--xmin", type="float", default = -99.9, action = "store" , he
 parser.add_option("--xmax", type="float", default = -99.9, action = "store" , help = "xmax")
 parser.add_option("--ymin", type="float", default = -99.9, action = "store" , help = "ymin")
 parser.add_option("--ymax", type="float", default = -99.9, action = "store" , help = "ymax")
+parser.add_option("--ylabel", default = "", action = "store" , help = "ylabel")
 parser.add_option("-s", "--significance", default = False, action = "store_true" , help = "plot significance")
 parser.add_option("-E", "--eps", default = False, action = "store_true" , help = "save plot as eps")
 parser.add_option("-o", "--overlap", default = False, action = "store_true" , help = "find overlapping area")
+parser.add_option("-P", "--plot_dir", default = "/Users/declan/Code/declans-research-logbook/plots", action = "store_true" , help = "plot directory")
 
 (option, args) = parser.parse_args()
 
@@ -71,7 +76,7 @@ if len(args) < 2:
   sys.exit("%s" % usage)
 
 draw_option = "e1x0p" if option.errors else "histsame"
-legend = ROOT.TLegend(0.70, 0.70, 0.88, 0.88, "")
+legend = ROOT.TLegend(0.70, 0.70, 0.9, 0.9, "")
 
 # canvas
 canvas = ROOT.TCanvas("canvas","canvas", 1920, 1080)
@@ -151,8 +156,14 @@ try:
         else:
             labelname1 = filename
     legend.AddEntry(hist, labelname1)
-    hist.SetMarkerColor(ROOT.kRed-3)
-    hist.SetLineColor(ROOT.kRed-3)
+    hist.SetMarkerColor(ROOT.kRed-7)
+    hist.SetLineColor(ROOT.kRed-7)
+    # if option.ylabel == "":
+    #     ylabel = hist.GetYaxis.GetTitle()
+    # else:
+    #     ylabel = option.ylabel
+    # hist.GetYaxis.SetTitle(ylabel)
+
     # hist.SetLineStyle(1)
 
 except ReferenceError:
@@ -167,8 +178,8 @@ if option.f2 != "" or option.h2 != "":
     try:
         hist2 = file2.Get(histname2)
         hist2.Draw(draw_option)
-        hist2.SetMarkerColor(ROOT.kAzure+7)
-        hist2.SetLineColor(ROOT.kAzure+7)
+        hist2.SetMarkerColor(ROOT.kBlue-7)
+        hist2.SetLineColor(ROOT.kBlue-7)
         # hist.SetLineStyle(2)
         if option.l2 != "":
             labelname2 = option.l2
@@ -190,8 +201,8 @@ if option.f3 != "" or option.h3 != "":
     try:
         hist3 = file2.Get(histname3)
         hist3.Draw(draw_option)
-        hist3.SetMarkerColor(ROOT.kGreen-6)
-        hist3.SetLineColor(ROOT.kGreen-6)
+        hist3.SetMarkerColor(ROOT.kAzure-7)
+        hist3.SetLineColor(ROOT.kAzure-7)
         # hist.SetLineStyle(2)
         if option.l3 != "":
             labelname3 = option.l3
@@ -213,8 +224,8 @@ if option.f4 != "" or option.h4 != "":
     try:
         hist4 = file2.Get(histname4)
         hist4.Draw(draw_option)
-        hist4.SetMarkerColor(ROOT.kMagenta+7)
-        hist4.SetLineColor(ROOT.kMagenta+7)
+        hist4.SetMarkerColor(ROOT.kGreen-7)
+        hist4.SetLineColor(ROOT.kGreen-7)
         # hist.SetLineStyle(2)
         if option.l4 != "":
             labelname4 = option.l4
@@ -308,7 +319,6 @@ xmin = option.xmin
 xmax = option.xmax
 if xmin != -99.9 and xmax != -99.9:
     hist.GetXaxis().SetRangeUser(xmin, xmax)
-    print filename2
     if option.f2 != "":
         hist2.GetXaxis().SetRangeUser(xmin, xmax)
     if option.f3 != "":
@@ -346,4 +356,4 @@ if option.pause:
     raw_input()
 
 if option.eps:
-    canvas.SaveAs("%s_%s.eps" % (histname, filename))
+    canvas.SaveAs("%s/%s_%s.eps" % (option.plot_dir,histname, filename))

@@ -374,8 +374,8 @@ void AnalysisZprime::CreateHistograms() {
     h_ytt = new TH1D("ytt", "y_{tt}", 100, -2.5, 2.5);
     h_mt = new TH1D("mt", "m_{t}", 100, 0.0, 1.0);
     h_mtbar = new TH1D("mtbar", "m_{#bar{t}}", 100, 0.0, 1.0);
-    h_mtt_F = new TH1D("mtt_F", "m_{tt}^{F}", 50, 0.0, 13.0);
-    h_mtt_B = new TH1D("mtt_B", "m_{tt}^{B}", 50, 0.0, 13.0);
+    h_mtt_F = new TH1D("mtt_F", "m_{tt}^{forward}", 50, 0.0, 13.0);
+    h_mtt_B = new TH1D("mtt_B", "m_{tt}^{backward}", 50, 0.0, 13.0);
     h_mtt_Fy = new TH1D("mtt_Fy", "m_{tt}^{F(y)}", 50, 0.0, 13.0);
     h_mtt_By = new TH1D("mtt_By", "m_{tt}^{B(y)}", 50, 0.0, 13.0);
     h_cosTheta = new TH1D("cosTheta", "cos#theta", 100, -1.0, 1.0);
@@ -392,12 +392,12 @@ void AnalysisZprime::CreateHistograms() {
   if (m_channel == "bbllnn") {
     h_mtt_R = new TH1D("mtt_R", "m^{reco}_{tt}", 100, 0.0, 13.0);
     h_mt_R = new TH1D("mt_R", "m^{reco}_{t}", 100, 0.0, 1.0);
-    h_mtbar_R = new TH1D("mtbar_R", "M^{reco}_{#bar{t}}", 100, 0.0, 1.0);
+    h_mtbar_R = new TH1D("mtbar_R", "m^{reco}_{#bar{t}}", 100, 0.0, 1.0);
 
-    h_mtt_FR = new TH1D("mtt_FR", "m_{tt}^{F} (reco)", 50, 0.0, 13.0);
-    h_mtt_BR = new TH1D("mtt_BR", "m_{tt}^{B} (reco)", 50, 0.0, 13.0);
-    h_mtt_FD = new TH1D("mtt_FD", "m_{tt}^{F} (reco)", 50, 0.0, 13.0);
-    h_mtt_BD = new TH1D("mtt_BD", "m_{tt}^{B} (reco)", 50, 0.0, 13.0);
+    h_mtt_FR = new TH1D("mtt_FR", "m_{tt}^{forward} (reco)", 50, 0.0, 13.0);
+    h_mtt_BR = new TH1D("mtt_BR", "m_{tt}^{backward} (reco)", 50, 0.0, 13.0);
+    h_mtt_FD = new TH1D("mtt_FD", "m_{tt}^{forward} (reco)", 50, 0.0, 13.0);
+    h_mtt_BD = new TH1D("mtt_BD", "m_{tt}^{backward} (reco)", 50, 0.0, 13.0);
 
     h_mtt_Fl = new TH1D("mtt_Fl", "m_{tt}^{F,l}", 50, 0.0, 13.0);
     h_mtt_Bl = new TH1D("mtt_Bl", "m_{tt}^{B,l}", 50, 0.0, 13.0);
@@ -453,11 +453,11 @@ void AnalysisZprime::MakeGraphs() {
 
   h_AFB = this->Asymmetry("AFB", "A^{*}_{FB}", h_mtt_F, h_mtt_B);
   h_AFB->GetYaxis()->SetTitle(h_AFB->GetTitle());
-  h_AFB->GetXaxis()->SetTitle("m_{tt} [GeV]");
+  h_AFB->GetXaxis()->SetTitle("m_{tt} [TeV]");
 
   h_AC = this->Asymmetry("AC", "A_{C}", h_mtt_Fy, h_mtt_By);
   h_AC->GetYaxis()->SetTitle(h_AC->GetTitle());
-  h_AC->GetXaxis()->SetTitle("m_{tt} [GeV]");
+  h_AC->GetXaxis()->SetTitle("m_{tt} [TeV]");
 
   if (m_channel == "tt") {
     h_mtt_LL->GetYaxis()->SetTitle(numBase + h_mtt_LL->GetTitle() + " [" + units +"/TeV]");
