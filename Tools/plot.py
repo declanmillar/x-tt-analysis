@@ -49,9 +49,13 @@ parser.add_option("-3","--f3", default = "", action = "store" , help = "specify 
 parser.add_option("-4","--f4", default = "", action = "store" , help = "specify fourth filename")
 parser.add_option("--h2", default = "", action = "store" , help = "specify second histogram")
 parser.add_option("--h3", default = "", action = "store" , help = "specify third histogram")
-parser.add_option("--h4", default = "", action = "store" , help = "specify fourth histogram")
+parser.add_option("--h4", default = "", action = "store" , help = "specify fourth histogram")#
+parser.add_option("--l1", default = "", action = "store" , help = "set first label")
+parser.add_option("--l2", default = "", action = "store" , help = "set second label")
+parser.add_option("--l3", default = "", action = "store" , help = "set third label")
+parser.add_option("--l4", default = "", action = "store" , help = "set fourth label")
 parser.add_option("-e", "--errors", default = False, action = "store_true" , help = "display errors")
-parser.add_option("-y", "--adjusty", default = False, action = "store_true" , help = "adjust range")
+parser.add_option("-y", "--adjusty", default = False, action = "store_true" , help = "auto adjust range (some issues)")
 parser.add_option("--xmin", type="float", default = -99.9, action = "store" , help = "xmin")
 parser.add_option("--xmax", type="float", default = -99.9, action = "store" , help = "xmax")
 parser.add_option("--ymin", type="float", default = -99.9, action = "store" , help = "ymin")
@@ -59,11 +63,6 @@ parser.add_option("--ymax", type="float", default = -99.9, action = "store" , he
 parser.add_option("-s", "--significance", default = False, action = "store_true" , help = "plot significance")
 parser.add_option("-E", "--eps", default = False, action = "store_true" , help = "save plot as eps")
 parser.add_option("-o", "--overlap", default = False, action = "store_true" , help = "find overlapping area")
-parser.add_option("--label1", default = "", action = "store" , help = "set first label")
-parser.add_option("--label2", default = "", action = "store" , help = "set second label")
-parser.add_option("--label3", default = "", action = "store" , help = "set third label")
-parser.add_option("--label4", default = "", action = "store" , help = "set fourth label")
-
 
 (option, args) = parser.parse_args()
 
@@ -74,7 +73,7 @@ draw_option = "e1x0p" if option.errors else "histsame"
 legend = ROOT.TLegend(0.70, 0.70, 0.88, 0.88, "")
 
 # canvas
-canvas = ROOT.TCanvas("canvas","canvas", 1200, 800)
+canvas = ROOT.TCanvas("canvas","canvas", 1920, 1080)
 canvas.cd()
 
 # pad
@@ -143,11 +142,14 @@ if not file1.IsOpen():
 try:
     hist = file1.Get(histname)
     hist.Draw(draw_option)
-    if option.f2 == "" and option.h2 != "":
-        labelname = hist.GetTitle()
+    if option.l1 != "":
+        labelname1 = option.l1
     else:
-        labelname = filename
-    legend.AddEntry(hist, labelname)
+        if option.f2 == "" and option.h2 != "":
+            labelname1 = hist.GetTitle()
+        else:
+            labelname1 = filename
+    legend.AddEntry(hist, labelname1)
     hist.SetMarkerColor(ROOT.kRed-3)
     hist.SetLineColor(ROOT.kRed-3)
     # hist.SetLineStyle(1)
@@ -167,10 +169,13 @@ if option.f2 != "" or option.h2 != "":
         hist2.SetMarkerColor(ROOT.kAzure+7)
         hist2.SetLineColor(ROOT.kAzure+7)
         # hist.SetLineStyle(2)
-        if option.f2 == "" and option.h2 != "":
-            labelname2 = hist2.GetTitle()
+        if option.l2 != "":
+            labelname2 = option.l2
         else:
-            labelname2 = filename2
+            if option.f2 == "" and option.h2 != "":
+                labelname2 = hist2.GetTitle()
+            else:
+                labelname2 = filename2
         legend.AddEntry(hist2, labelname2)
     except ReferenceError:
         sys.exit("ReferenceError: check %s contains histogram '%s'" % (filename2, histname))
@@ -187,10 +192,13 @@ if option.f3 != "" or option.h3 != "":
         hist3.SetMarkerColor(ROOT.kGreen-6)
         hist3.SetLineColor(ROOT.kGreen-6)
         # hist.SetLineStyle(2)
-        if option.f2 == "" and option.h2 != "":
-            labelname3 = hist3.GetTitle()
+        if option.l3 != "":
+            labelname3 = option.l3
         else:
-            labelname3 = filename3
+            if option.f3 == "" and option.h3 != "":
+                labelname3 = hist3.GetTitle()
+            else:
+                labelname3 = filename3
         legend.AddEntry(hist3, labelname3)
     except ReferenceError:
         sys.exit("ReferenceError: check %s contains histogram '%s'" % (filename3, histname))
@@ -207,10 +215,13 @@ if option.f4 != "" or option.h4 != "":
         hist4.SetMarkerColor(ROOT.kMagenta+7)
         hist4.SetLineColor(ROOT.kMagenta+7)
         # hist.SetLineStyle(2)
-        if option.f2 == "" and option.h2 != "":
-            labelname4 = hist4.GetTitle()
+        if option.l4 != "":
+            labelname4 = option.l4
         else:
-            labelname4 = filename4
+            if option.f4 == "" and option.h4 != "":
+                labelname4 = hist4.GetTitle()
+            else:
+                labelname4 = filename4
         legend.AddEntry(hist4, labelname4)
     except ReferenceError:
         sys.exit("ReferenceError: check %s contains histogram '%s'" % (filename4, histname))
@@ -296,11 +307,12 @@ xmin = option.xmin
 xmax = option.xmax
 if xmin != -99.9 and xmax != -99.9:
     hist.GetXaxis().SetRangeUser(xmin, xmax)
-    if filename2 != "":
+    print filename2
+    if option.f2 != "":
         hist2.GetXaxis().SetRangeUser(xmin, xmax)
-    if filename3 != "":
+    if option.f3 != "":
         hist3.GetXaxis().SetRangeUser(xmin, xmax)
-    if filename4 != "":
+    if option.f4 != "":
         hist4.GetXaxis().SetRangeUser(xmin, xmax)
 
 ymin = option.ymin
