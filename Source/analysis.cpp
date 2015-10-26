@@ -74,28 +74,28 @@ void AnalysisZprime::EachEvent () {
   }
 
   if (m_channel == "bbllnn") {
-    p_r1 = this->ReconstructSemiLeptonic(p,1);
-    p_r2 = this->ReconstructSemiLeptonic(p,-1);
+    p_R1 = this->ReconstructSemiLeptonic(p,1); // top decays leptonically
+    p_R2 = this->ReconstructSemiLeptonic(p,-1); // top decays hadronically
 
     if (m_discardEvent) return;
 
-    P_r1.SetPxPyPzE(0,0,0,0);
-    P_r2.SetPxPyPzE(0,0,0,0);
+    P_R1.SetPxPyPzE(0,0,0,0);
+    P_R2.SetPxPyPzE(0,0,0,0);
     for (unsigned int i = 0; i < p.size(); i++) {
-      P_r1 += p_r1[i];
-      P_r2 += p_r2[i];
+      P_R1 += p_R1[i];
+      P_R2 += p_R2[i];
     }
 
     // reconstructed final particle parton CoM variables
-    TVector3 V_r1 = -1*P_r1.BoostVector();
-    TVector3 V_r2 = -1*P_r2.BoostVector();
-    pcm_r1 = vector<TLorentzVector>(p.size());
-    pcm_r2 = vector<TLorentzVector>(p.size());
+    TVector3 V_R1 = -1*P_R1.BoostVector();
+    TVector3 V_R2 = -1*P_R2.BoostVector();
+    pcm_R1 = vector<TLorentzVector>(p.size());
+    pcm_R2 = vector<TLorentzVector>(p.size());
     for (unsigned int i = 0; i < p.size(); i++) {
-      pcm_r1[i] = p_r1[i];
-      pcm_r2[i] = p_r2[i];
-      pcm_r1[i].Boost(V_r1);
-      pcm_r2[i].Boost(V_r2);
+      pcm_R1[i] = p_R1[i];
+      pcm_R2[i] = p_R2[i];
+      pcm_R1[i].Boost(V_R1);
+      pcm_R2[i].Boost(V_R2);
     }
   }
 
@@ -107,55 +107,55 @@ void AnalysisZprime::EachEvent () {
   else if (m_channel == "bbllnn") {
     p_t = pcm[0] + pcm[2] + pcm[3];
     p_tb = pcm[1] + pcm[4] + pcm[5];
-    p_t_r1 = pcm_r1[0] + pcm_r1[2] + pcm_r1[3];
-    p_tb_r1 = pcm_r1[1] + pcm_r1[4] + pcm_r1[5];
-    p_t_r2 = pcm_r2[0] + pcm_r2[2] + pcm_r2[3];
-    p_tb_r2 = pcm_r2[1] + pcm_r2[4] + pcm_r2[5];
+    p_t_R1 = pcm_R1[0] + pcm_R1[2] + pcm_R1[3];
+    p_tb_R1 = pcm_R1[1] + pcm_R1[4] + pcm_R1[5];
+    p_t_R2 = pcm_R2[0] + pcm_R2[2] + pcm_R2[3];
+    p_tb_R2 = pcm_R2[1] + pcm_R2[4] + pcm_R2[5];
   }
 
-  double Mff = P.M()/1000;
-  double Mtt_r1 = P_r1.M()/1000;
-  double Mtt_r2 = P_r2.M()/1000;
+  double mtt = P.M()/1000;
+  double mtt_R1 = P_R1.M()/1000;
+  double mtt_R2 = P_R2.M()/1000;
   double mt = p_t.M()/1000;
   double mtb = p_tb.M()/1000;
   double y_t = p_t.Rapidity();
   double y_tb = p_tb.Rapidity();
   double dy = std::abs(y_t) - std::abs(y_tb);
   double ytt = P.Rapidity();
-  double CosTheta = p_t.CosTheta();
-  double CosThetaStar = int(ytt/std::abs(ytt))*CosTheta;
-  double ytt_r1 = -999;
-  double ytt_r2 = -999;
-  double mt_r1 = -999;
-  double mtb_r1 = -999;
-  double mt_r2 = -999;
-  double mtb_r2 = -999;
-  double CosTheta_r1 = -999;
-  double CosTheta_r2 = -999;
-  double CosThetaStar_r1 = -999;
-  double CosThetaStar_r2 = -999;
+  double cosTheta = p_t.CosTheta();
+  double cosThetaStar = int(ytt/std::abs(ytt))*cosTheta;
+  double ytt_R1 = -999;
+  double ytt_R2 = -999;
+  double mt_R1 = -999;
+  double mtb_R1 = -999;
+  double mt_R2 = -999;
+  double mtb_R2 = -999;
+  double cosTheta_R1 = -999;
+  double cosTheta_R2 = -999;
+  double cosThetaStar_R1 = -999;
+  double cosThetaStar_R2 = -999;
 
   if (m_channel == "bbllnn"){
-    ytt_r1 = P_r1.Rapidity();
-    ytt_r2 = P_r2.Rapidity();
-    mt_r1 = p_t_r1.M()/1000;
-    mtb_r1 = p_tb_r1.M()/1000;
-    mt_r2 = p_t_r2.M()/1000;
-    mtb_r2 = p_tb_r2.M()/1000;
+    ytt_R1 = P_R1.Rapidity();
+    ytt_R2 = P_R2.Rapidity();
+    mt_R1 = p_t_R1.M()/1000;
+    mtb_R1 = p_tb_R1.M()/1000;
+    mt_R2 = p_t_R2.M()/1000;
+    mtb_R2 = p_tb_R2.M()/1000;
 
     // printf("Reconstructed top mass\n---\n");
     // printf("m_top = %f TeV\n", mt);
     // printf("m_antitop = %f TeV\n", mtb);
-    // printf("m_top (reco)[lep] = %f TeV\n", mt_r1);
-    // printf("m_antitop (reco)[had] = %f TeV\n", mtb_r1);
-    // printf("m_top (reco)[had] = %f TeV\n", mt_r2);
-    // printf("m_antitop (reco)[lep] = %f TeV\n", mtb_r2);
+    // printf("m_top (reco)[lep] = %f TeV\n", mt_R1);
+    // printf("m_antitop (reco)[had] = %f TeV\n", mtb_R1);
+    // printf("m_top (reco)[had] = %f TeV\n", mt_R2);
+    // printf("m_antitop (reco)[lep] = %f TeV\n", mtb_R2);
     // printf("---\n");
 
-    CosTheta_r1 = p_t_r1.CosTheta();
-    CosTheta_r2 = p_t_r2.CosTheta();
-    CosThetaStar_r1 = int(ytt_r1/std::abs(ytt_r1))*CosTheta_r1;
-    CosThetaStar_r2 = int(ytt_r2/std::abs(ytt_r2))*CosTheta_r2;
+    cosTheta_R1 = p_t_R1.CosTheta();
+    cosTheta_R2 = p_t_R2.CosTheta();
+    cosThetaStar_R1 = int(ytt_R1/std::abs(ytt_R1))*cosTheta_R1;
+    cosThetaStar_R2 = int(ytt_R2/std::abs(ytt_R2))*cosTheta_R2;
   }
 
   if (this->PassCuts())
@@ -164,97 +164,57 @@ void AnalysisZprime::EachEvent () {
     double it = m_ntup->iteration();
     double weight = m_ntup->weight_eq();
     weight = weight*m_sigma/m_weights[it-1];
-    // printf("weight = %.15le\n", weight);
 
     // fill histograms (assumes fixed bin width!)
-    h_mt->Fill(mt, weight*2/h_Mff->GetXaxis()->GetBinWidth(1));
-    h_mtbar->Fill(mtb, weight*2/h_ytt->GetXaxis()->GetBinWidth(1));
-    h_Mff->Fill(Mff, weight*2/h_Mff->GetXaxis()->GetBinWidth(1));
+    h_mt->Fill(mt, weight*2/h_mt->GetXaxis()->GetBinWidth(1));
+    h_mtbar->Fill(mtb, weight*2/h_mtbar->GetXaxis()->GetBinWidth(1));
+    h_mtt->Fill(mtt, weight*2/h_mtt->GetXaxis()->GetBinWidth(1));
     h_ytt->Fill(ytt, weight*2/h_ytt->GetXaxis()->GetBinWidth(1));
-    h_CosTheta->Fill(CosTheta, weight*2/h_CosTheta->GetXaxis()->GetBinWidth(1));
-    h_CosThetaStar->Fill(CosThetaStar, weight*2/h_CosThetaStar->GetXaxis()->GetBinWidth(1));
+    h_cosTheta->Fill(cosTheta, weight*2/h_cosTheta->GetXaxis()->GetBinWidth(1));
+    h_cosThetaStar->Fill(cosThetaStar, weight*2/h_cosThetaStar->GetXaxis()->GetBinWidth(1));
 
     // asymmetries
-    if (CosThetaStar > 0) {
-      h_AFBstarF->Fill(Mff, 2*weight/h_AFBstarF->GetXaxis()->GetBinWidth(1));
-    }
+    if (cosThetaStar > 0) h_mtt_F->Fill(mtt, 2*weight/h_mtt_F->GetXaxis()->GetBinWidth(1));
+    if (cosThetaStar < 0) h_mtt_B->Fill(mtt, 2*weight/h_mtt_B->GetXaxis()->GetBinWidth(1));
 
-    if (CosThetaStar < 0) {
-      h_AFBstarB->Fill(Mff, 2*weight/h_AFBstarB->GetXaxis()->GetBinWidth(1));
-    }
-
-    if (dy > 0) {
-      h_AttCF->Fill(Mff, weight/h_AttCF->GetXaxis()->GetBinWidth(1));
-    }
-
-    if (dy < 0) {
-      h_AttCB->Fill(Mff, weight/h_AttCB->GetXaxis()->GetBinWidth(1));
-    }
+    if (dy > 0) h_mtt_Fy->Fill(mtt, weight/h_mtt_Fy->GetXaxis()->GetBinWidth(1));
+    if (dy < 0) h_mtt_By->Fill(mtt, weight/h_mtt_By->GetXaxis()->GetBinWidth(1));
 
     if (m_channel == "tt") {
-      h_MttLL->Fill(Mff, m_ntup->weightLL()/h_MttLL->GetXaxis()->GetBinWidth(1));
-      h_MttLR->Fill(Mff, m_ntup->weightLR()/h_MttLR->GetXaxis()->GetBinWidth(1));
-      h_MttRL->Fill(Mff, m_ntup->weightRL()/h_MttRL->GetXaxis()->GetBinWidth(1));
-      h_MttRR->Fill(Mff, m_ntup->weightRR()/h_MttRR->GetXaxis()->GetBinWidth(1));
+      h_mtt_LL->Fill(mtt, m_ntup->weightLL()/h_mtt_LL->GetXaxis()->GetBinWidth(1));
+      h_mtt_LR->Fill(mtt, m_ntup->weightLR()/h_mtt_LR->GetXaxis()->GetBinWidth(1));
+      h_mtt_RL->Fill(mtt, m_ntup->weightRL()/h_mtt_RL->GetXaxis()->GetBinWidth(1));
+      h_mtt_RR->Fill(mtt, m_ntup->weightRR()/h_mtt_RR->GetXaxis()->GetBinWidth(1));
     }
     else if (m_channel == "bbllnn") {
-      h_Pz_nu->Fill(p[3].Pz(), weight*2/h_Pz_nu->GetXaxis()->GetBinWidth(1));
+      h_mtt_R->Fill(mtt_R1, weight/h_mtt_R->GetXaxis()->GetBinWidth(1));
+      h_mtt_R->Fill(mtt_R2, weight/h_mtt_R->GetXaxis()->GetBinWidth(1));
 
-      h_ytt_r->Fill(ytt_r1, weight/h_ytt_r->GetXaxis()->GetBinWidth(1));
-      h_ytt_r->Fill(ytt_r2, weight/h_ytt_r->GetXaxis()->GetBinWidth(1));
+      if (cosThetaStar_R1 > 0) h_mtt_FR->Fill(mtt_R1, weight/h_mtt_FR->GetXaxis()->GetBinWidth(1));
+      if (cosThetaStar_R1 < 0) h_mtt_BR->Fill(mtt_R1, weight/h_mtt_BR->GetXaxis()->GetBinWidth(1));
 
-      h_mt_r->Fill(mt_r1, weight*2/h_Mff->GetXaxis()->GetBinWidth(1));
-      h_mtbar_r->Fill(mtb_r1, weight*2/h_ytt->GetXaxis()->GetBinWidth(1));
-      h_mt_r->Fill(mt_r2, weight*2/h_Mff->GetXaxis()->GetBinWidth(1));
-      h_mtbar_r->Fill(mtb_r2, weight*2/h_ytt->GetXaxis()->GetBinWidth(1));
+      if (cosThetaStar_R2 > 0) h_mtt_FR->Fill(mtt_R2, weight/h_mtt_FR->GetXaxis()->GetBinWidth(1));
+      if (cosThetaStar_R2 < 0) h_mtt_BR->Fill(mtt_R2, weight/h_mtt_BR->GetXaxis()->GetBinWidth(1));
 
-      h_CosTheta_r->Fill(CosTheta_r1, weight/h_CosTheta_r->GetXaxis()->GetBinWidth(1));
-      h_CosTheta_r->Fill(CosTheta_r2, weight/h_CosTheta_r->GetXaxis()->GetBinWidth(1));
+      h_ytt_R->Fill(ytt_R1, weight/h_ytt_R->GetXaxis()->GetBinWidth(1));
+      h_ytt_R->Fill(ytt_R2, weight/h_ytt_R->GetXaxis()->GetBinWidth(1));
 
-      h_CosThetaStar_r->Fill(CosThetaStar_r1, weight/h_CosThetaStar_r->GetXaxis()->GetBinWidth(1));
-      h_CosThetaStar_r->Fill(CosThetaStar_r2, weight/h_CosThetaStar_r->GetXaxis()->GetBinWidth(1));
+      h_mt_R->Fill(mt_R1, weight/h_mt_R->GetXaxis()->GetBinWidth(1));
+      h_mt_R->Fill(mt_R2, weight/h_mt_R->GetXaxis()->GetBinWidth(1));
 
-      h_Pz_nu_r->Fill(p_r1[3].Pz(), weight/h_Pz_nu_r->GetXaxis()->GetBinWidth(1));
-      h_Pz_nu_r->Fill(p_r2[5].Pz(), weight/h_Pz_nu_r->GetXaxis()->GetBinWidth(1));
+      h_mtbar_R->Fill(mtb_R1, weight/h_mtbar_R->GetXaxis()->GetBinWidth(1));
+      h_mtbar_R->Fill(mtb_R2, weight/h_mtbar_R->GetXaxis()->GetBinWidth(1));
 
-      h_Mtt_r->Fill(Mtt_r1, weight/h_Mtt_r->GetXaxis()->GetBinWidth(1));
-      h_Mtt_r->Fill(Mtt_r2, weight/h_Mtt_r->GetXaxis()->GetBinWidth(1));
+      h_cosTheta_R->Fill(cosTheta_R1, weight/h_cosTheta_R->GetXaxis()->GetBinWidth(1));
+      h_cosTheta_R->Fill(cosTheta_R2, weight/h_cosTheta_R->GetXaxis()->GetBinWidth(1));
 
-      if (CosThetaStar_r1 > 0) {
-        h_AFBstar_rF->Fill(Mtt_r1, weight/h_AFBstar_rF->GetXaxis()->GetBinWidth(1));
-      }
-      if (CosThetaStar_r2 > 0) {
-        h_AFBstar_rF->Fill(Mtt_r2, weight/h_AFBstar_rF->GetXaxis()->GetBinWidth(1));
-      }
+      h_cosThetaStar_R->Fill(cosThetaStar_R1, weight/h_cosThetaStar_R->GetXaxis()->GetBinWidth(1));
+      h_cosThetaStar_R->Fill(cosThetaStar_R2, weight/h_cosThetaStar_R->GetXaxis()->GetBinWidth(1));
 
-      if (CosThetaStar_r1 < 0) {
-        h_AFBstar_rB->Fill(Mtt_r1, weight/h_AFBstar_rB->GetXaxis()->GetBinWidth(1));
-      }
-      if (CosThetaStar_r2 < 0) {
-        h_AFBstar_rB->Fill(Mtt_r2, weight/h_AFBstar_rB->GetXaxis()->GetBinWidth(1));
-      }
+      h_pzNu->Fill(p[3].Pz(), weight*2/h_pzNu->GetXaxis()->GetBinWidth(1));
 
-      if (m_r1solutionIsReal) {
-        h_real_r1->Fill(Mtt_r1, weight/h_real_r1->GetXaxis()->GetBinWidth(1));
-        h_real_r2->Fill(Mtt_r2, weight/h_imaginary_r2->GetXaxis()->GetBinWidth(1));
-        if (CosThetaStar_r1 > 0 or CosThetaStar_r1 > 0) {
-          h_AFBstarFR->Fill(Mtt_r1, weight/h_AFBstar_rF->GetXaxis()->GetBinWidth(1));
-        }
-        if (CosThetaStar_r2 < 0 or CosThetaStar_r1 < 0) {
-          h_AFBstarBR->Fill(Mtt_r2, weight/h_AFBstar_rF->GetXaxis()->GetBinWidth(1));
-        }
-      }
-
-      if (m_r2solutionIsReal == false) {
-        h_imaginary_r1->Fill(Mtt_r1, weight/h_imaginary_r1->GetXaxis()->GetBinWidth(1));
-        h_imaginary_r2->Fill(Mtt_r2, weight/h_imaginary_r2->GetXaxis()->GetBinWidth(1));
-        if (CosThetaStar_r1 < 0) {
-          h_AFBstarBI->Fill(Mtt_r1, weight/h_AFBstar_rB->GetXaxis()->GetBinWidth(1));
-        }
-        if (CosThetaStar_r2 < 0) {
-          h_AFBstarBI->Fill(Mtt_r2, weight/h_AFBstar_rB->GetXaxis()->GetBinWidth(1));
-        }
-      }
+      h_pzNu_R->Fill(p_R1[3].Pz(), weight/h_pzNu_R->GetXaxis()->GetBinWidth(1));
+      h_pzNu_R->Fill(p_R2[5].Pz(), weight/h_pzNu_R->GetXaxis()->GetBinWidth(1));
     }
   }
 }
@@ -272,7 +232,7 @@ void AnalysisZprime::PostLoop () {
 
 void AnalysisZprime::GetResults () {
   printf("--- Results ---\n");
-  double sigma = h_Mff->Integral("width");
+  double sigma = h_mtt->Integral("width");
   if (std::abs(sigma - m_sigma) > 10e-11) {
     printf("Cross section from generation and analysis stage do not match!\n");
     printf("sigma_generation = %.15le\n", m_sigma);
@@ -292,24 +252,16 @@ void AnalysisZprime::CheckPerformance () {
   double neutrinoRecoRatio = m_nNeutrinoMatched/(double)m_nReco;
   printf("--- Performance ---\n");
   printf("Quark assignment: %.1f%% correct\n", quarkRecoRatio*100);
-  printf("Pz_nu assignment: %.1f%% correct\n", neutrinoRecoRatio*100);
-
-  if (m_channel == "bbllnn") {
-    h_AlL = this->Asymmetry("AL", "A_{L}", h_AlLF, h_AlLB);
-    h_AllC = this->Asymmetry("AllC", "A^{ll}_{C}", h_AllCF, h_AllCB);
-    h_AFBstar_r = this->Asymmetry("AFBstar_r", "A_{FB}^{*} (reco)", h_AFBstar_rF, h_AFBstar_rB);
-    h_AFBstarR = this->Asymmetry("AFBstarR", "A_{FB}^{*} (reco)[real]", h_AFBstarFR, h_AFBstarBR);
-    h_AFBstarI = this->Asymmetry("AFBstarI", "A_{FB}^{*} (reco)[imaginary]", h_AFBstarFI, h_AFBstarBI);
-  }
+  printf("pzNu assignment: %.1f%% correct\n", neutrinoRecoRatio*100);
 }
 
 
 TH1D* AnalysisZprime::MakeALL () {
-  TH1D* h_A = (TH1D*) h_MttLL->Clone();
-  TH1D* h_B = (TH1D*) h_MttLR->Clone();
+  TH1D* h_A = (TH1D*) h_mtt_LL->Clone();
+  TH1D* h_B = (TH1D*) h_mtt_LR->Clone();
 
-  h_A->Add(h_MttRR);
-  h_B->Add(h_MttRL);
+  h_A->Add(h_mtt_RR);
+  h_B->Add(h_mtt_RL);
 
   double ALL = this->TotalAsymmetry(h_A,h_B);
   printf("ALL' = %f\n", ALL);
@@ -322,11 +274,11 @@ TH1D* AnalysisZprime::MakeALL () {
 
 
 TH1D* AnalysisZprime::MakeAL () {
-  TH1D* h_A = (TH1D*) h_MttLL->Clone();
-  TH1D* h_B = (TH1D*) h_MttRR->Clone();
+  TH1D* h_A = (TH1D*) h_mtt_LL->Clone();
+  TH1D* h_B = (TH1D*) h_mtt_RR->Clone();
 
-  h_A->Add(h_MttLR);
-  h_B->Add(h_MttRL);
+  h_A->Add(h_mtt_LR);
+  h_B->Add(h_mtt_RL);
 
   TH1D* h_AL = this->Asymmetry("AL", "A_{L}", h_A, h_B);
   delete h_A;
@@ -336,10 +288,10 @@ TH1D* AnalysisZprime::MakeAL () {
 
 
 void AnalysisZprime::TotalSpinAsymmetries () {
-  double sigmaLL = h_MttLL->Integral("width");
-  double sigmaLR = h_MttLR->Integral("width");
-  double sigmaRL = h_MttRL->Integral("width");
-  double sigmaRR = h_MttRR->Integral("width");
+  double sigmaLL = h_mtt_LL->Integral("width");
+  double sigmaLR = h_mtt_LR->Integral("width");
+  double sigmaRL = h_mtt_RL->Integral("width");
+  double sigmaRR = h_mtt_RR->Integral("width");
 
   double ALL = (sigmaLL + sigmaRR - sigmaRL - sigmaLR)/
                (sigmaLL + sigmaRR + sigmaRL + sigmaLR);
@@ -413,57 +365,48 @@ void AnalysisZprime::AsymmetryUncertainty(TH1D* h_Asymmetry, TH1D* h_A, TH1D* h_
 
 
 void AnalysisZprime::CreateHistograms() {
-  h_AFBstarF = new TH1D("AFstar", "m_{tt}^{F*}", 50, 0.0, 13.0);
-  h_AFBstarB = new TH1D("ABstar", "m_{tt}^{B*}", 50, 0.0, 13.0);
-  h_AttCF = new TH1D("AttCF", "m_{tt}^{CF}", 50, 0.0, 13.0);
-  h_AttCB = new TH1D("AttCB", "m_{tt}^{CB}", 50, 0.0, 13.0);
-  h_CosTheta = new TH1D("CosTheta", "cos#theta", 50, -1.0, 1.0);
-  h_CosThetaStar = new TH1D("CosThetaStar", "cos#theta^{*}", 50, -1.0, 1.0);
-
   if (m_channel == "ll") {
-    h_Mff = new TH1D("Mff", "m_{ll}", 50, 0.0, 13.0);
+    h_mtt = new TH1D("mll", "m_{ll}", 50, 0.0, 13.0);
+  }
+
+  if (m_channel == "tt" or m_channel == "bbllnn") {
+    h_mtt = new TH1D("mtt", "m_{tt}", 100, 0.0, 13.0);
+    h_ytt = new TH1D("ytt", "y_{tt}", 100, -2.5, 2.5);
+    h_mt = new TH1D("mt", "m_{t}", 100, 0.0, 1.0);
+    h_mtbar = new TH1D("mtbar", "m_{#bar{t}}", 100, 0.0, 1.0);
+    h_mtt_F = new TH1D("mtt_F", "m_{tt}^{F}", 50, 0.0, 13.0);
+    h_mtt_B = new TH1D("mtt_B", "m_{tt}^{B}", 50, 0.0, 13.0);
+    h_mtt_Fy = new TH1D("mtt_Fy", "m_{tt}^{F(y)}", 50, 0.0, 13.0);
+    h_mtt_By = new TH1D("mtt_By", "m_{tt}^{B(y)}", 50, 0.0, 13.0);
+    h_cosTheta = new TH1D("cosTheta", "cos#theta", 100, -1.0, 1.0);
+    h_cosThetaStar = new TH1D("cosThetaStar", "cos#theta^{*}", 100, -1.0, 1.0);
   }
 
   if (m_channel == "tt") {
-    h_Mff = new TH1D("Mff", "m_{tt}", 50, 0.0, 13.0);
-    h_ytt = new TH1D("ytt", "y_{tt}", 50, -2.5, 2.5);
-    h_MttLL = new TH1D("MttLL", "m_{tt}^{LL}", 50, 0.0, 13.0);
-    h_MttLR = new TH1D("MttLR", "m_{tt}^{LR}", 50, 0.0, 13.0);
-    h_MttRL = new TH1D("MttRL", "m_{tt}^{RL}", 50, 0.0, 13.0);
-    h_MttRR = new TH1D("MttRR", "m_{tt}^{RR}", 50, 0.0, 13.0);
+    h_mtt_LL = new TH1D("mtt_LL", "m_{tt}^{LL}", 100, 0.0, 13.0);
+    h_mtt_LR = new TH1D("mtt_LR", "m_{tt}^{LR}", 100, 0.0, 13.0);
+    h_mtt_RL = new TH1D("mtt_RL", "m_{tt}^{RL}", 100, 0.0, 13.0);
+    h_mtt_RR = new TH1D("mtt_RR", "m_{tt}^{RR}", 100, 0.0, 13.0);
   }
 
   if (m_channel == "bbllnn") {
-    h_Mff = new TH1D("Mtt", "m_{tt}", 200, 0.0, 13.0);
-    h_ytt = new TH1D("ytt", "y_{tt}", 50, -2.5, 2.5);
-    h_Pz_nu = new TH1D("Pz_nu", "p_{z}^{#nu}", 50,-500.0, 500.0);
-    h_CosTheta_r = new TH1D("CosTheta_r", "cos#theta_{reco}", 50, -1.0, 1.0);
-    h_CosThetaStar_r = new TH1D("CosThetaStar_r", "cos#theta_{reco}^{*}", 50, -1.0, 1.0);
-    h_ytt_r = new TH1D("ytt_r", "y_{tt}^{_r}", 50, -2.5, 2.5);
-    h_Pz_nu_r = new TH1D("Pz_nu_r", "p_{z}^{#nu} (reco)", 50, -500.0, 500.0);
-    h_mt = new TH1D("mt", "m_{t}", 200, 0.0, 1.0);
-    h_mtbar = new TH1D("mtbar", "m_{#bar{t}}", 200, 0.0, 1.0);
+    h_mtt_R = new TH1D("mtt_R", "m^{reco}_{tt}", 100, 0.0, 13.0);
+    h_mt_R = new TH1D("mt_R", "m^{reco}_{t}", 100, 0.0, 1.0);
+    h_mtbar_R = new TH1D("mtbar_R", "M^{reco}_{#bar{t}}", 100, 0.0, 1.0);
 
-    h_Mtt_r = new TH1D("Mtt_r", "m^{reco}_{tt}", 200, 0.0, 13.0);
-    h_mt_r = new TH1D("mt_r", "m^{reco}_{t}", 200, 0.0, 1.0);
-    h_mtbar_r = new TH1D("mtbar_r", "M^{reco}_{#bar{t}}", 200, 0.0, 1.0);
+    h_mtt_FR = new TH1D("mtt_FR", "m_{tt}^{F} (reco)", 50, 0.0, 13.0);
+    h_mtt_BR = new TH1D("mtt_BR", "m_{tt}^{B} (reco)", 50, 0.0, 13.0);
+    h_mtt_FD = new TH1D("mtt_FD", "m_{tt}^{F} (reco)", 50, 0.0, 13.0);
+    h_mtt_BD = new TH1D("mtt_BD", "m_{tt}^{B} (reco)", 50, 0.0, 13.0);
 
-    h_AlLF = new TH1D("AlLF", "AlLF", 50, 0.0, 13.0);
-    h_AlLB = new TH1D("AlLB", "AlLB", 50, 0.0, 13.0);
-    h_AllCF = new TH1D("AllCF", "AllCF", 50, 0.0, 13.0);
-    h_AllCB = new TH1D("AllCB", "AllCB", 50, 0.0, 13.0);
-    h_AFBstar_rF = new TH1D("AFBstarNu_r1", "AFBstarNu_r1", 50, 0.0, 13.0);
-    h_AFBstar_rB = new TH1D("AFBstarNu_r2", "AFBstarNu_r2", 50, 0.0, 13.0);
-    h_real = new TH1D("real", "m_{tt}", 100, 0.0, 13.0);
-    h_imaginary = new TH1D("imaginary", "m_{tt}", 100, 0.0, 13.0);
-    h_real_r1 = new TH1D("real_r1", "m_{tt}", 100, 0.0, 13.0);
-    h_imaginary_r1 = new TH1D("imaginary_r1", "m_{tt}", 100, 0.0, 13.0);
-    h_real_r2 = new TH1D("real_r2", "m_{tt}", 100, 0.0, 13.0);
-    h_imaginary_r2 = new TH1D("imaginary_r2", "m_{tt}", 100, 0.0, 13.0);
-    h_AFBstarFR = new TH1D("AFBstarFR", "AFBstarFR", 100, 0.0, 13.0);
-    h_AFBstarBR = new TH1D("AFBstarBR", "AFBstarBR", 100, 0.0, 13.0);
-    h_AFBstarFI = new TH1D("AFBstarFI", "AFBstarFI", 100, 0.0, 13.0);
-    h_AFBstarBI = new TH1D("AFBstarBI", "AFBstarBI", 100, 0.0, 13.0);
+    h_mtt_Fl = new TH1D("mtt_Fl", "m_{tt}^{F,l}", 50, 0.0, 13.0);
+    h_mtt_Bl = new TH1D("mtt_Bl", "m_{tt}^{B,l}", 50, 0.0, 13.0);
+
+    h_ytt_R = new TH1D("ytt_R", "y_{tt}^{reco}", 100, -2.5, 2.5);
+    h_cosTheta_R = new TH1D("cosTheta_R", "cos#theta_{reco}", 100, -1.0, 1.0);
+    h_cosThetaStar_R = new TH1D("cosThetaStar_R", "cos#theta_{reco}^{*}", 100, -1.0, 1.0);
+    h_pzNu = new TH1D("pzNu", "p_{z}^{#nu}", 100,-500.0, 500.0);
+    h_pzNu_R = new TH1D("pzNu_R", "p_{z}^{#nu} (reco)", 100, -500.0, 500.0);
   }
 }
 
@@ -476,89 +419,112 @@ void AnalysisZprime::MakeGraphs() {
   TString units = "pb";
   TString TeV = "[TeV]";
 
-  h_Mff->GetXaxis()->SetTitle(h_Mff->GetTitle() + TeV);
-  h_Mff->GetYaxis()->SetTitle(numBase + h_Mff->GetTitle() + " [" + units +"/TeV]");
-  this->ApplyLuminosity(h_Mff);
+  h_mtt->GetXaxis()->SetTitle(h_mtt->GetTitle() + TeV);
+  h_mtt->GetYaxis()->SetTitle(numBase + h_mtt->GetTitle() + " [" + units +"/TeV]");
+  this->ApplyLuminosity(h_mtt);
 
-  h_real->Add(h_real_r1, h_real_r2);
-  h_imaginary->Add(h_imaginary_r1, h_imaginary_r2);
+  h_mtt_F->GetXaxis()->SetTitle(h_mtt_F->GetTitle() + TeV);
+  h_mtt_F->GetYaxis()->SetTitle(numBase + h_mtt_F->GetTitle() + " [" + units +"/TeV]");
+  this->ApplyLuminosity(h_mtt_F);
 
-  h_AFBstar = this->Asymmetry("AFBstar", "A^{*}_{FB}", h_AFBstarF, h_AFBstarB);
-  h_AttC = this->Asymmetry("AttC", "A_{C}", h_AttCF, h_AttCB);
+  h_mtt_B->GetXaxis()->SetTitle(h_mtt_B->GetTitle() + TeV);
+  h_mtt_B->GetYaxis()->SetTitle(numBase + h_mtt_B->GetTitle() + " [" + units +"/TeV]");
+  this->ApplyLuminosity(h_mtt_B);
 
-  h_CosTheta->GetYaxis()->SetTitle(numBase + h_CosTheta->GetTitle() + " [" + units +"]");
-  h_CosTheta->GetXaxis()->SetTitle(h_CosTheta->GetTitle());
-  this->ApplyLuminosity(h_CosTheta);
+  h_mt_R->GetYaxis()->SetTitle(numBase + h_mt_R->GetTitle() + " [" + units + "/TeV]");
+  h_mt_R->GetXaxis()->SetTitle(h_mt_R->GetTitle() + TeV);
+  this->ApplyLuminosity(h_mt_R);
 
-  h_CosThetaStar->GetYaxis()->SetTitle(numBase + h_CosThetaStar->GetTitle() + " [" + units +"]");
-  h_CosThetaStar->GetXaxis()->SetTitle(h_CosThetaStar->GetTitle());
-  this->ApplyLuminosity(h_CosThetaStar);
+  h_mtbar_R->GetYaxis()->SetTitle(numBase + h_mtbar_R->GetTitle() + " [" + units + "/TeV]");
+  h_mtbar_R->GetXaxis()->SetTitle(h_mtbar_R->GetTitle() + TeV);
+  this->ApplyLuminosity(h_mtbar_R);
+
+  h_ytt->GetYaxis()->SetTitle(numBase + h_ytt->GetTitle() + " [" + units +"]");
+  h_ytt->GetXaxis()->SetTitle(h_ytt->GetTitle());
+  this->ApplyLuminosity(h_ytt);
+
+  h_cosTheta->GetYaxis()->SetTitle(numBase + h_cosTheta->GetTitle() + " [" + units +"]");
+  h_cosTheta->GetXaxis()->SetTitle(h_cosTheta->GetTitle());
+  this->ApplyLuminosity(h_cosTheta);
+
+  h_cosThetaStar->GetYaxis()->SetTitle(numBase + h_cosThetaStar->GetTitle() + " [" + units +"]");
+  h_cosThetaStar->GetXaxis()->SetTitle(h_cosThetaStar->GetTitle());
+  this->ApplyLuminosity(h_cosThetaStar);
+
+  h_AFB = this->Asymmetry("AFB", "A^{*}_{FB}", h_mtt_F, h_mtt_B);
+  h_AFB->GetYaxis()->SetTitle(h_AFB->GetTitle());
+  h_AFB->GetXaxis()->SetTitle("m_{tt} [GeV]");
+
+  h_AC = this->Asymmetry("AC", "A_{C}", h_mtt_Fy, h_mtt_By);
+  h_AC->GetYaxis()->SetTitle(h_AC->GetTitle());
+  h_AC->GetXaxis()->SetTitle("m_{tt} [GeV]");
 
   if (m_channel == "tt") {
-    h_MttLL->GetYaxis()->SetTitle(numBase + h_MttLL->GetTitle() + " [" + units +"/GeV]");
-    h_MttLR->GetYaxis()->SetTitle(numBase + h_MttLR->GetTitle() + " [" + units +"/GeV]");
-    h_MttRL->GetYaxis()->SetTitle(numBase + h_MttRL->GetTitle() + " [" + units +"/GeV]");
-    h_MttRR->GetYaxis()->SetTitle(numBase + h_MttRR->GetTitle() + " [" + units +"/GeV]");
+    h_mtt_LL->GetYaxis()->SetTitle(numBase + h_mtt_LL->GetTitle() + " [" + units +"/TeV]");
+    h_mtt_LL->GetXaxis()->SetTitle("m_{tt}^{LL} [TeV]");
+
+    h_mtt_LR->GetYaxis()->SetTitle(numBase + h_mtt_LR->GetTitle() + " [" + units +"/TeV]");
+    h_mtt_LR->GetXaxis()->SetTitle("m_{tt}^{LR} [TeV]");
+
+    h_mtt_RL->GetYaxis()->SetTitle(numBase + h_mtt_RL->GetTitle() + " [" + units +"/TeV]");
+    h_mtt_RL->GetXaxis()->SetTitle("m_{tt}^{RL} [TeV]");
+
+    h_mtt_RR->GetYaxis()->SetTitle(numBase + h_mtt_RR->GetTitle() + " [" + units +"/TeV]");
+    h_mtt_RR->GetXaxis()->SetTitle("m_{tt}^{RR} [TeV]");
+
     h_ALL = this->MakeALL();
-    h_AL = this->MakeAL();
     h_ALL->GetYaxis()->SetTitle(h_ALL->GetTitle());
+    h_ALL->GetXaxis()->SetTitle("m_{tt} [TeV]");
+
+    h_AL = this->MakeAL();
     h_AL->GetYaxis()->SetTitle(h_AL->GetTitle());
-    h_AFBstar->GetYaxis()->SetTitle(h_AFBstar->GetTitle());
-    h_AttC->GetYaxis()->SetTitle(h_AttC->GetTitle());
-    h_MttLL->GetXaxis()->SetTitle("M_{tt} [GeV]");
-    h_MttLR->GetXaxis()->SetTitle("M_{tt} [GeV]");
-    h_MttRL->GetXaxis()->SetTitle("M_{tt} [GeV]");
-    h_MttRR->GetXaxis()->SetTitle("M_{tt} [GeV]");
-    h_ALL->GetXaxis()->SetTitle("M_{tt} [GeV]");
-    h_AL->GetXaxis()->SetTitle("M_{tt} [GeV]");
-    h_AFBstar->GetXaxis()->SetTitle("M_{tt} [GeV]");
-    h_AttC->GetXaxis()->SetTitle("M_{tt} [GeV]");
+    h_AL->GetXaxis()->SetTitle("m_{tt} [TeV]");
   }
 
   if (m_channel == "bbllnn") {
+    h_mtt_R->GetYaxis()->SetTitle(numBase + h_mtt_R->GetTitle() + " [" + units + "/TeV]");
+    h_mtt_R->GetXaxis()->SetTitle(h_mtt_R->GetTitle() + TeV);
+    this->ApplyLuminosity(h_mtt_R);
 
-    h_ytt_r->GetYaxis()->SetTitle(numBase + h_ytt_r->GetTitle() + " [" + units +"]");
-    h_ytt_r->GetXaxis()->SetTitle(h_ytt_r->GetTitle());
-    this->ApplyLuminosity(h_ytt_r);
+    h_mtt_FR->GetXaxis()->SetTitle(h_mtt_FR->GetTitle() + TeV);
+    h_mtt_FR->GetYaxis()->SetTitle(numBase + h_mtt_FR->GetTitle() + " [" + units +"/TeV]");
+    this->ApplyLuminosity(h_mtt_FR);
 
-    h_ytt->GetYaxis()->SetTitle(numBase + h_ytt->GetTitle() + " [" + units +"]");
-    h_ytt->GetXaxis()->SetTitle(h_ytt->GetTitle());
-    this->ApplyLuminosity(h_ytt);
+    h_mtt_BR->GetXaxis()->SetTitle(h_mtt_BR->GetTitle() + TeV);
+    h_mtt_BR->GetYaxis()->SetTitle(numBase + h_mtt_BR->GetTitle() + " [" + units +"/TeV]");
+    this->ApplyLuminosity(h_mtt_BR);
 
-    h_AFBstar->GetYaxis()->SetTitle(h_AFBstar->GetTitle());
-    h_AFBstar->GetXaxis()->SetTitle("M_{tt} [GeV]");
+    h_mt_R->GetYaxis()->SetTitle(numBase + h_mt_R->GetTitle() + " [" + units + "/TeV]");
+    h_mt_R->GetXaxis()->SetTitle(h_mt_R->GetTitle() + TeV);
+    this->ApplyLuminosity(h_mt_R);
 
-    h_CosTheta_r->GetYaxis()->SetTitle(numBase + h_CosTheta_r->GetTitle() + " [" + units +"]");
-    h_CosTheta_r->GetXaxis()->SetTitle(h_CosTheta_r->GetTitle());
-    this->ApplyLuminosity(h_CosTheta_r);
+    h_mtbar_R->GetYaxis()->SetTitle(numBase + h_mtbar_R->GetTitle() + " [" + units + "/TeV]");
+    h_mtbar_R->GetXaxis()->SetTitle(h_mtbar_R->GetTitle() + TeV);
+    this->ApplyLuminosity(h_mtbar_R);
 
-    h_CosThetaStar_r->GetYaxis()->SetTitle(numBase + h_CosThetaStar_r->GetTitle() + " [" + units +"]");
-    h_CosThetaStar_r->GetXaxis()->SetTitle(h_CosThetaStar_r->GetTitle());
-    this->ApplyLuminosity(h_CosThetaStar_r);
+    h_ytt_R->GetYaxis()->SetTitle(numBase + h_ytt_R->GetTitle() + " [" + units + "]");
+    h_ytt_R->GetXaxis()->SetTitle(h_ytt_R->GetTitle());
+    this->ApplyLuminosity(h_ytt_R);
 
-    h_AFBstar_r->GetYaxis()->SetTitle(h_AFBstar_r->GetTitle());
-    h_AFBstar_r->GetXaxis()->SetTitle("M_{tt}^{reco} [GeV]");
+    h_cosTheta_R->GetYaxis()->SetTitle(numBase + h_cosTheta_R->GetTitle() + " [" + units + "]");
+    h_cosTheta_R->GetXaxis()->SetTitle(h_cosTheta_R->GetTitle());
+    this->ApplyLuminosity(h_cosTheta_R);
 
-    h_AFBstarR->GetYaxis()->SetTitle(h_AFBstarR->GetTitle());
-    h_AFBstarR->GetXaxis()->SetTitle("M_{tt}^{reco} [GeV]");
+    h_cosThetaStar_R->GetYaxis()->SetTitle(numBase + h_cosThetaStar_R->GetTitle() + " [" + units + "]");
+    h_cosThetaStar_R->GetXaxis()->SetTitle(h_cosThetaStar_R->GetTitle());
+    this->ApplyLuminosity(h_cosThetaStar_R);
 
-    h_AFBstarI->GetYaxis()->SetTitle(h_AFBstarI->GetTitle());
-    h_AFBstarI->GetXaxis()->SetTitle("M_{tt}^{reco} [GeV]");
+    h_pzNu->GetYaxis()->SetTitle(numBase + h_pzNu->GetTitle() + " [" + units + "/TeV]");
+    h_pzNu->GetXaxis()->SetTitle(h_pzNu->GetTitle());
+    this->ApplyLuminosity(h_pzNu);
 
-    h_Pz_nu->GetYaxis()->SetTitle(numBase + h_Pz_nu->GetTitle() + " [" + units +"GeV]");
-    h_Pz_nu->GetXaxis()->SetTitle(h_Pz_nu->GetTitle());
-    this->ApplyLuminosity(h_Pz_nu);
+    h_pzNu_R->GetYaxis()->SetTitle(numBase + h_pzNu_R->GetTitle() + " [" + units + "/TeV]");
+    h_pzNu_R->GetXaxis()->SetTitle(h_pzNu_R->GetTitle());
+    this->ApplyLuminosity(h_pzNu_R);
 
-    h_Pz_nu_r->GetYaxis()->SetTitle(numBase + h_Pz_nu_r->GetTitle() + " [" + units +"Gev]");
-    h_Pz_nu_r->GetXaxis()->SetTitle(h_Pz_nu_r->GetTitle());
-    this->ApplyLuminosity(h_Pz_nu_r);
-
-    h_Mtt_r->GetYaxis()->SetTitle(numBase + h_Mtt_r->GetTitle() + " [" + units +"/TeV]");
-    h_Mtt_r->GetXaxis()->SetTitle(h_Mtt_r->GetTitle() + TeV);
-    this->ApplyLuminosity(h_Mtt_r);
-
-    h_AllC->GetYaxis()->SetTitle(h_AllC->GetTitle());
-    h_AllC->GetXaxis()->SetTitle("M_{tt} [GeV]");
+    h_AFB_R = this->Asymmetry("AFB_R", "A_{FB}^{reco}", h_mtt_FR, h_mtt_BR);
+    h_AFB_R->GetYaxis()->SetTitle(h_AFB_R->GetTitle());
+    h_AFB_R->GetXaxis()->SetTitle("m_{tt}^{reco} [TeV]");
   }
 }
 
@@ -567,52 +533,42 @@ void AnalysisZprime::WriteHistograms() {
   m_outputFile->cd();
   m_outputFile->cd("/");
 
-  if (m_channel == "tt" or "bbllnn" or "ll" ) {
-    h_Mff->Write();
+  if (m_channel == "ll" or m_channel == "tt" or m_channel == "bbllnn") {
+    h_cutflow->Write();
+    h_mtt->Write();
+    h_mtt_F->Write();
+    h_mtt_B->Write();
+    h_mt->Write();
+    h_mtbar->Write();
     h_ytt->Write();
+    h_cosTheta->Write();
+    h_cosThetaStar->Write();
+    h_AFB->Write();
+    h_AC->Write();
   }
 
-  if (m_channel == "tt" || m_channel == "bbllnn") {
-    h_AFBstar->Write();
-    h_AttC->Write();
-    h_ytt->Write();
-    h_CosTheta->Write();
-    h_CosThetaStar->Write();
-  }
-
-  if (m_channel == "tt") {
-    h_MttLL->Write();
-    h_MttLR->Write();
-    h_MttRL->Write();
-    h_MttRR->Write();
+  if (m_channel == "ll" or m_channel == "tt") {
+    h_mtt_LL->Write();
+    h_mtt_LR->Write();
+    h_mtt_RL->Write();
+    h_mtt_RR->Write();
     h_ALL->Write();
     h_AL->Write();
   }
 
   if (m_channel == "bbllnn") {
-    // h_AllC->Write();
-    h_real->Write();
-    h_real_r1->Write();
-    h_real_r2->Write();
-    h_imaginary->Write();
-    h_imaginary_r1->Write();
-    h_imaginary_r2->Write();
-    h_AFBstarR->Write();
-    h_AFBstarI->Write();
-    h_AFBstar_r->Write();
-    h_Pz_nu->Write();
-    h_Pz_nu_r->Write();
-    h_Mtt_r->Write();
-    h_ytt_r->Write();
-    h_CosTheta_r->Write();
-    h_CosThetaStar_r->Write();
-    h_mt->Write();
-    h_mtbar->Write();
-    h_mt_r->Write();
-    h_mtbar_r->Write();
-
+    h_mtt_R->Write();
+    h_mt_R->Write();
+    h_mtbar_R->Write();
+    h_mtt_FR->Write();
+    h_mtt_BR->Write();
+    h_ytt_R->Write();
+    h_pzNu->Write();
+    h_pzNu_R->Write();
+    h_cosTheta_R->Write();
+    h_cosThetaStar_R->Write();
+    h_AFB_R->Write();
   }
-  h_cutflow->Write();
   m_outputFile->Close();
   delete h_cutflow;
   delete m_outputFile;
@@ -620,7 +576,7 @@ void AnalysisZprime::WriteHistograms() {
 
 
 bool AnalysisZprime::PassCuts() {
-  // if (this->PassCuts_Mtt())
+  // if (this->PassCuts_mtt())
   // {
   //   if (this->PassCuts_MET())
   //     {
@@ -647,15 +603,15 @@ bool AnalysisZprime::PassCutsMET () {
 
 
 bool AnalysisZprime::PassCutsMtt () {
-  // if (Mff > 1200.0)
+  // if (mtt > 1200.0)
   //   {
-  //     if (Mff < 2200.0)
+  //     if (mtt < 2200.0)
   //       {
-          UpdateCutflow(c_Mtt, true);
+          UpdateCutflow(c_mtt, true);
           return true;
   //       }
   //   }
-  // UpdateCutflow(c_Mtt, false);
+  // UpdateCutflow(c_mtt, false);
   // return false;
 }
 
@@ -666,12 +622,12 @@ bool AnalysisZprime::PassCutsFiducial () {
     bool central      = p[i].PseudoRapidity() <= 2.47;
     bool passesFiducialCuts = outsideCrack && central;
     if (passesFiducialCuts == false){
-      UpdateCutflow(c_Fiducial, false);
+      UpdateCutflow(c_fiducial, false);
       return false;
     }
     else continue;
   }
-  UpdateCutflow(c_Fiducial, true);
+  UpdateCutflow(c_fiducial, true);
   return true;
 }
 
@@ -679,10 +635,10 @@ bool AnalysisZprime::PassCutsFiducial () {
 bool AnalysisZprime::PassCutsYtt () {
   if (std::abs(P.Rapidity()) > 0)
   {
-    UpdateCutflow(c_Ytt, true);
+    UpdateCutflow(c_ytt, true);
     return true;
   }
-  UpdateCutflow(c_Mtt, false);
+  UpdateCutflow(c_mtt, false);
   return false;
 }
 
@@ -820,7 +776,7 @@ std::vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(std::vector<
   this->UpdateCutflow(c_events, true);
   m_nReco++;
 
-  std::vector<TLorentzVector> p_r(p.size()); // I am returned!
+  std::vector<TLorentzVector> p_R(p.size()); // I am returned!
   TLorentzVector p_l, p_nu;
   std::vector<TLorentzVector> p_b(2), p_q(2);
 
@@ -862,8 +818,8 @@ std::vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(std::vector<
 
   // select single solution and match 'jets'
   double X2 = -999, X2min = -999;
-  TLorentzVector p_nu_r;
-  double dh = -999, dl = -999, E_nu_r = -999, mblv = -999, mjjb = -999;
+  TLorentzVector p_nu_R;
+  double dh = -999, dl = -999, E_nu_R = -999, mblv = -999, mjjb = -999;
   int imin = -999, jmin = -999, it = 0;
   std::vector<double> rootR(root.size());
   unsigned int nReal;
@@ -878,13 +834,13 @@ std::vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(std::vector<
     nReal = 2;
     m_nRealRoots++;
     this->UpdateCutflow(c_realSolutions, true);
-    if (Q_l == +1) m_r1solutionIsReal = true;
-    if (Q_l == -1) m_r2solutionIsReal = true;
+    if (Q_l == +1) m_R1solutionIsReal = true;
+    if (Q_l == -1) m_R2solutionIsReal = true;
   }
   else {
     if (m_discardComplex) m_discardEvent = true;
-    if (Q_l == +1) m_r1solutionIsReal = false;
-    if (Q_l == -1) m_r2solutionIsReal = false;
+    if (Q_l == +1) m_R1solutionIsReal = false;
+    if (Q_l == -1) m_R2solutionIsReal = false;
     // no real solutions; take the real part of 1 (real parts are the same)
     nReal = 1;
     m_nComplexRoots++;
@@ -892,10 +848,10 @@ std::vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(std::vector<
 
   for (unsigned int i = 0; i < nReal; i++) {
     rootR[i] = root[i].real();
-    E_nu_r = sqrt(px_nu*px_nu + py_nu*py_nu + rootR[i]*rootR[i]);
-    p_nu_r.SetPxPyPzE(px_nu, py_nu, rootR[i], E_nu_r);
+    E_nu_R = sqrt(px_nu*px_nu + py_nu*py_nu + rootR[i]*rootR[i]);
+    p_nu_R.SetPxPyPzE(px_nu, py_nu, rootR[i], E_nu_R);
     for (int j = 0; j < 2; j++) {
-      mblv = (p_b[std::abs(j)] + p_l + p_nu_r).M();
+      mblv = (p_b[std::abs(j)] + p_l + p_nu_R).M();
       // printf("Lepton-reconstructed top mass = %f\n", mblv);
       mjjb = (p_b[std::abs(j-1)] + p_q[0] + p_q[1]).M();
       // printf("Hadron-reconstructed top mass = %f\n", mjjb);
@@ -954,26 +910,26 @@ std::vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(std::vector<
   // printf("---\n");
 
   // Fill output vector
-  double pz_nu_r = rootR[imin];
-  E_nu_r = std::sqrt(px_nu*px_nu + py_nu*py_nu + pz_nu_r*pz_nu_r);
-  p_nu_r.SetPxPyPzE(px_nu, py_nu, pz_nu_r, E_nu_r);
+  double pz_nu_R = rootR[imin];
+  E_nu_R = std::sqrt(px_nu*px_nu + py_nu*py_nu + pz_nu_R*pz_nu_R);
+  p_nu_R.SetPxPyPzE(px_nu, py_nu, pz_nu_R, E_nu_R);
   if (Q_l == 1){
-    p_r[0] = p_b[jmin];
-    p_r[1] = p_b[std::abs(jmin-1)];
-    p_r[2] = p[2];
-    p_r[3] = p_nu_r;
-    p_r[4] = p[4];
-    p_r[5] = p[5];
+    p_R[0] = p_b[jmin];
+    p_R[1] = p_b[std::abs(jmin-1)];
+    p_R[2] = p[2];
+    p_R[3] = p_nu_R;
+    p_R[4] = p[4];
+    p_R[5] = p[5];
   }
   else if (Q_l == -1) {
-    p_r[0] = p_b[std::abs(jmin-1)];
-    p_r[1] = p_b[jmin];
-    p_r[2] = p[2];
-    p_r[3] = p[3];
-    p_r[4] = p[4];
-    p_r[5] = p_nu_r;
+    p_R[0] = p_b[std::abs(jmin-1)];
+    p_R[1] = p_b[jmin];
+    p_R[2] = p[2];
+    p_R[3] = p[3];
+    p_R[4] = p[4];
+    p_R[5] = p_nu_R;
   }
-  return p_r;
+  return p_R;
 }
 
 
@@ -1016,8 +972,8 @@ void AnalysisZprime::InitialiseCutflow() {
   m_cutNames[c_events] = "Events";
   m_cutNames[c_realSolutions] = "p^{#nu}_{z} real";
   m_cutNames[c_MET] = "MET";
-  m_cutNames[c_Mtt] = "Mff";
-  m_cutNames[c_Fiducial] = "Fiducial";
+  m_cutNames[c_mtt] = "mtt";
+  m_cutNames[c_fiducial] = "Fiducial";
 
   h_cutflow = new TH1D("Cutflow", "Cutflow", m_cuts, 0, m_cuts);
 }

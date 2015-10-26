@@ -75,6 +75,8 @@ private:
   AnalysisZprime(const AnalysisZprime& rhs);
   void operator = (const AnalysisZprime& rhs);
 
+  typedef vector<TString>::const_iterator Itr_s;
+
   // arguments
   TString m_channel;
   TString m_model;
@@ -103,6 +105,8 @@ private:
   unsigned int m_nNeutrinoMatched;
   unsigned int m_nRealRoots;
   unsigned int m_nComplexRoots;
+  bool m_R1solutionIsReal;
+  bool m_R2solutionIsReal;
 
   double m_sigma;
   vector<double> m_weights;
@@ -120,10 +124,10 @@ private:
     c_antitopDecays,
     c_events,
     c_realSolutions,
-    c_Mtt,
+    c_mtt,
     c_MET,
-    c_Ytt,
-    c_Fiducial,
+    c_ytt,
+    c_fiducial,
     m_cuts // Keep as last entry
   };
 
@@ -136,108 +140,100 @@ private:
   TFile* m_outputFile;
 
   // Cutflow
-  TH1D* h_cutflow;
   std::vector<int> m_cutflow;
   std::vector<TString> m_cutNames;
-
-  // Regular
-  TH1D* h_Mff;
-  TH1D* h_ytt;
-  TH1D* h_Pz_nu;
-  TH1D* h_CosTheta;
-  TH1D* h_CosThetaStar;
-  TH1D* h_mt;
-  TH1D* h_mtbar;
-
-  // Reconstruction histograms
-  TH1D* h_Pz_nu_r;
-  TH1D* h_Mtt_r;
-  TH1D* h_CosTheta_r;
-  TH1D* h_CosThetaStar_r;
-  TH1D* h_ytt_r;
-  TH1D* h_mt_r;
-  TH1D* h_mtbar_r;
-
-  // Polarisation weighted histograms
-  TH1D* h_MttLL;
-  TH1D* h_MttLR;
-  TH1D* h_MttRL;
-  TH1D* h_MttRR;
-
-  // Spin asymmetry histograms
-  TH1D* h_ALL;
-  TH1D* h_AL;
-
-  // Naming conventions
-  // A = asymmetry
-  // B = backward
-  // F = forward
-  // I = imaginary (reconstructed)
-  // R = real (reconstructed)
-  // _r -> reconstructed
-  // star -> reconstructed parton centre of mass frame
-
-  // Evaluating reconstruction
-  bool m_r1solutionIsReal;
-  bool m_r2solutionIsReal;
-  TH1D* h_AFBstarR;
-  TH1D* h_AFBstarI;
-  TH1D* h_AFBstarFR;
-  TH1D* h_AFBstarBR;
-  TH1D* h_AFBstarFI;
-  TH1D* h_AFBstarBI;
-  TH1D* h_imaginary;
-  TH1D* h_real;
-  TH1D* h_imaginary_r;
-  TH1D* h_real_r;
-  TH1D* h_imaginary_r1;
-  TH1D* h_real_r1;
-  TH1D* h_imaginary_r2;
-  TH1D* h_real_r2;
-
-  // Charge asymmetry histograms
-  TH1D* h_AFBstar;
-  TH1D* h_AFBstarF;
-  TH1D* h_AFBstarB;
-
-  TH1D* h_AFBstar_r;
-  TH1D* h_AFBstar_rF;
-  TH1D* h_AFBstar_rB;
-
-  TH1D* h_AttC;
-  TH1D* h_AttCF;
-  TH1D* h_AttCB;
-
-  TH1D* h_AllC;
-  TH1D* h_AllCF;
-  TH1D* h_AllCB;
-
-  TH1D* h_AlL;
-  TH1D* h_AlLF;
-  TH1D* h_AlLB;
 
   // Final particle 4-vectors
   vector<TLorentzVector> p;
   vector<TLorentzVector> pcm;
-  vector<TLorentzVector> p_r1;
-  vector<TLorentzVector> p_r2;
-  vector<TLorentzVector> pcm_r1;
-  vector<TLorentzVector> pcm_r2;
+  vector<TLorentzVector> p_R1;
+  vector<TLorentzVector> p_R2;
+  vector<TLorentzVector> pcm_R1;
+  vector<TLorentzVector> pcm_R2;
 
   // Event 4-vectors
   TLorentzVector P;
   TLorentzVector Pcm;
-  TLorentzVector P_r1;
-  TLorentzVector P_r2;
+  TLorentzVector P_R1;
+  TLorentzVector P_R2;
 
   // Top 4-vectors
   TLorentzVector p_t;
   TLorentzVector p_tb;
-  TLorentzVector p_t_r1;
-  TLorentzVector p_tb_r1;
-  TLorentzVector p_t_r2;
-  TLorentzVector p_tb_r2;
+  TLorentzVector p_t_R1;
+  TLorentzVector p_tb_R1;
+  TLorentzVector p_t_R2;
+  TLorentzVector p_tb_R2;
 
-  typedef vector<TString>::const_iterator Itr_s;
+  // Histograms
+
+  // naming conventions
+  // p = momenta
+  // P = sum of momenta in frame
+  // c = cos
+  // m = mass
+  // A = asymmetry
+  // B = backward (in costheta*)
+  // F = forward (in costheta*)
+  // By = backward (in delta_y)
+  // Fy = forward (in delta_y)
+  // Bly = backward (in delta_y for decay lepton)
+  // Fly = forward (in delta_y for decay lepton)
+  // C = complex only (reconstructed)
+  // D = discard complex (reconstructed)
+  // R = reconstructed
+  // S = star [reconstructed parton centre of mass frame (now assumed in AFB, as original not useful here)]
+  // LL, RR, LR, RL = helicities
+
+  // Masses
+  TH1D* h_mtt;
+  TH1D* h_mt;
+  TH1D* h_mtbar;
+  TH1D* h_mtt_F;
+  TH1D* h_mtt_B;
+  TH1D* h_mtt_Fy;
+  TH1D* h_mtt_By;
+
+  TH1D* h_mtt_R;
+  TH1D* h_mt_R;
+  TH1D* h_mtbar_R;
+  TH1D* h_mtt_FR;
+  TH1D* h_mtt_BR;
+  TH1D* h_mtt_FD;
+  TH1D* h_mtt_BD;
+  TH1D* h_mtt_Fl;
+  TH1D* h_mtt_Bl;
+
+  TH1D* h_mtt_LL;
+  TH1D* h_mtt_LR;
+  TH1D* h_mtt_RL;
+  TH1D* h_mtt_RR;
+
+  // Momenta
+  TH1D* h_pzNu;
+  TH1D* h_pzNu_R;
+
+  // Rapidities
+  TH1D* h_ytt;
+  TH1D* h_ytt_R;
+
+  // Angles
+  TH1D* h_cosTheta;
+  TH1D* h_cosThetaStar;
+  TH1D* h_cosTheta_R;
+  TH1D* h_cosThetaStar_R;
+
+  // Counting
+  TH1D* h_cutflow;
+
+  // Forward Backward Asymmetries
+  TH1D* h_AFB;
+  TH1D* h_AFB_R;
+  TH1D* h_AC;
+  TH1D* h_AllC;
+
+  // Spin asymmetries
+  TH1D* h_ALL;
+  TH1D* h_AL;
 };
 #endif
