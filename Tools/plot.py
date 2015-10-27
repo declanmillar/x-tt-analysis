@@ -57,6 +57,11 @@ parser.add_option("--l1", default = "", action = "store" , help = "set first lab
 parser.add_option("--l2", default = "", action = "store" , help = "set second label")
 parser.add_option("--l3", default = "", action = "store" , help = "set third label")
 parser.add_option("--l4", default = "", action = "store" , help = "set fourth label")
+parser.add_option("--c1", default = "", action = "store" , help = "set first color")
+parser.add_option("--c2", default = "", action = "store" , help = "set second color")
+parser.add_option("--c3", default = "", action = "store" , help = "set third color")
+parser.add_option("--c4", default = "", action = "store" , help = "set fourth color")
+parser.add_option("--legend_low", default = False, action = "store_true" , help = "put legend at bottom")
 parser.add_option("-e", "--errors", default = False, action = "store_true" , help = "display errors")
 parser.add_option("-p", "--pause", default = True, action = "store_false" , help = "pause to show graphs")
 parser.add_option("-y", "--adjusty", default = False, action = "store_true" , help = "auto adjust range (some issues)")
@@ -64,7 +69,7 @@ parser.add_option("--xmin", type="float", default = -99.9, action = "store" , he
 parser.add_option("--xmax", type="float", default = -99.9, action = "store" , help = "xmax")
 parser.add_option("--ymin", type="float", default = -99.9, action = "store" , help = "ymin")
 parser.add_option("--ymax", type="float", default = -99.9, action = "store" , help = "ymax")
-parser.add_option("--ylabel", default = "", action = "store" , help = "ylabel")
+parser.add_option("--ytitle", default = "", action = "store" , help = "ytitle")
 parser.add_option("-s", "--significance", default = False, action = "store_true" , help = "plot significance")
 parser.add_option("-E", "--eps", default = False, action = "store_true" , help = "save plot as eps")
 parser.add_option("-o", "--overlap", default = False, action = "store_true" , help = "find overlapping area")
@@ -75,8 +80,11 @@ parser.add_option("-P", "--plot_dir", default = "/Users/declan/Code/declans-rese
 if len(args) < 2:
   sys.exit("%s" % usage)
 
-draw_option = "e1x0p" if option.errors else "histsame"
-legend = ROOT.TLegend(0.70, 0.70, 0.9, 0.9, "")
+draw_option = "e1x0p same" if option.errors else "hist same"
+if option.legend_low:
+    legend = ROOT.TLegend(0.7, 0.20, 0.9, 0.4, "")
+else:
+    legend = ROOT.TLegend(0.7, 0.70, 0.9, 0.9, "")
 
 # canvas
 canvas = ROOT.TCanvas("canvas","canvas", 1920, 1080)
@@ -104,11 +112,23 @@ if option.significance:
     lowerPad.SetRightMargin(right_margin)
     lowerPad.SetLeftMargin(left_margin)
 
-color1 = ROOT.gROOT.GetColor(20)
-color2 = ROOT.gROOT.GetColor(20)
-
 histname = str(args[0])
 filename = str(args[1])
+
+if option.f2 == "":
+    filename2 = filename
+else:
+    filename2 = option.f2
+
+if option.f3 == "":
+    filename3 = filename
+else:
+    filename3 = option.f3
+
+if option.f4 == "":
+    filename4 = filename
+else:
+    filename4 = option.f4
 
 if option.f2 == "":
     filename2 = filename
@@ -156,8 +176,8 @@ try:
         else:
             labelname1 = filename
     legend.AddEntry(hist, labelname1)
-    hist.SetMarkerColor(ROOT.kRed-7)
-    hist.SetLineColor(ROOT.kRed-7)
+    hist.SetMarkerColor(ROOT.kAzure-7)
+    hist.SetLineColor(ROOT.kAzure-7)
     # if option.ylabel == "":
     #     ylabel = hist.GetYaxis.GetTitle()
     # else:
@@ -178,8 +198,8 @@ if option.f2 != "" or option.h2 != "":
     try:
         hist2 = file2.Get(histname2)
         hist2.Draw(draw_option)
-        hist2.SetMarkerColor(ROOT.kBlue-7)
-        hist2.SetLineColor(ROOT.kBlue-7)
+        hist2.SetMarkerColor(ROOT.kRed-7)
+        hist2.SetLineColor(ROOT.kRed-7)
         # hist.SetLineStyle(2)
         if option.l2 != "":
             labelname2 = option.l2
@@ -201,8 +221,8 @@ if option.f3 != "" or option.h3 != "":
     try:
         hist3 = file2.Get(histname3)
         hist3.Draw(draw_option)
-        hist3.SetMarkerColor(ROOT.kAzure-7)
-        hist3.SetLineColor(ROOT.kAzure-7)
+        hist3.SetMarkerColor(ROOT.kSpring-7)
+        hist3.SetLineColor(ROOT.kSpring-7)
         # hist.SetLineStyle(2)
         if option.l3 != "":
             labelname3 = option.l3
@@ -224,8 +244,8 @@ if option.f4 != "" or option.h4 != "":
     try:
         hist4 = file2.Get(histname4)
         hist4.Draw(draw_option)
-        hist4.SetMarkerColor(ROOT.kGreen-7)
-        hist4.SetLineColor(ROOT.kGreen-7)
+        hist4.SetMarkerColor(ROOT.kViolet-7)
+        hist4.SetLineColor(ROOT.kViolet-7)
         # hist.SetLineStyle(2)
         if option.l4 != "":
             labelname4 = option.l4
@@ -238,6 +258,9 @@ if option.f4 != "" or option.h4 != "":
     except ReferenceError:
         sys.exit("ReferenceError: check %s contains histogram '%s'" % (filename4, histname))
 
+if option.ytitle != "":
+    hist.GetYaxis().SetTitle(option.ytitle)
+
 legend.SetBorderSize(0)
 legend.Draw()
 
@@ -245,17 +268,17 @@ legend.Draw()
 if option.adjusty:
     min_value = hist.GetBinContent(hist.GetMinimumBin())
     max_value = hist.GetBinContent(hist.GetMaximumBin())
-    if histname2 == "":
+    if option.h2 != "":
         if hist2.GetBinContent(hist2.GetMinimumBin()) < min_value:
             min_value = hist2.GetBinContent(hist2.GetMinimumBin())
         if hist2.GetBinContent(hist2.GetMaximumBin()) > max_value:
             max_value = hist2.GetBinContent(hist2.GetMaximumBin())
-    if histname3 == "":
+    if option.h3 != "":
         if hist3.GetBinContent(hist3.GetMinimumBin()) < min_value:
             min_value = hist3.GetBinContent(hist3.GetMinimumBin())
         if hist3.GetBinContent(hist3.GetMaximumBin()) > max_value:
             max_value = hist3.GetBinContent(hist3.GetMaximumBin())
-    if histname4 == "":
+    if option.h4 != "":
         if hist4.GetBinContent(hist4.GetMinimumBin()) < min_value:
             min_value = hist4.GetBinContent(hist4.GetMinimumBin())
         if hist4.GetBinContent(hist4.GetMaximumBin()) > max_value:
@@ -281,14 +304,17 @@ if option.significance:
 # normalize histograms
 if option.normalise:
     ytitle = hist.GetYaxis().GetTitle()
-    ytitle = "1/#sigma #times " + ytitle
-    hist.GetYaxis().SetTitle(yTitle)
+    if ytitle == "Events" or "AFB" in histname:
+        ytitle = ""
+    else:
+        ytitle = "1/#sigma #times " + ytitle
+    hist.GetYaxis().SetTitle(ytitle)
     hist.Scale(1.0/abs(hist.Integral()))
-    if filename2 != "":
+    if option.f2 != "" or option.h2 != "":
         hist2.Scale(1.0/abs(hist2.Integral()))
-    if filename2 != "":
+    if option.f3 != "" or option.h3 != "":
         hist3.Scale(1.0/abs(hist3.Integral()))
-    if filename2 != "":
+    if option.f4 != "" or option.h4 != "":
         hist4.Scale(1.0/abs(hist4.Integral()))
 
 sigPerOverlap = 0

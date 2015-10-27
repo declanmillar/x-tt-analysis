@@ -1,7 +1,7 @@
 #include "analysis.h"
 
 
-AnalysisZprime::AnalysisZprime(const TString channel, const TString model, const int energy, const TString options, const int vegasIterations, const int vegasPoints, const double luminosity, const int btags, const bool discardComplex, const TString analysisLabel):
+AnalysisZprime::AnalysisZprime(const TString channel, const TString model, const int energy, const TString options, const int vegasIterations, const int vegasPoints, const int luminosity, const int btags, const bool discardComplex, const TString analysisLabel):
   m_channel(channel),
   m_model(model),
   m_energy(energy),
@@ -34,7 +34,9 @@ void AnalysisZprime::CreateFilenames(){
   TString base = m_dataDirectory + "/" + m_channel + "_" + m_model + "_" + std::to_string(m_energy) + m_options + std::to_string(m_vegasIterations) + "x" + std::to_string(m_vegasPoints);
   m_inputFileName = base + ".root";
   m_weightsFileName = base + ".txt";
-  m_outputFileName = base + "." + std::to_string(m_btags) + BoolToString(m_discardComplex) + m_analysisLabel + ".root";
+  m_outputFileName = base + "." + std::to_string(m_btags) + BoolToString(m_discardComplex) + m_analysisLabel;
+  if (m_luminosity > 0) m_outputFileName += "_" + std::to_string(m_luminosity);
+  m_outputFileName += ".root";
   printf("Input: '%s'.\n", m_inputFileName.Data());
   printf("Output: '%s'.\n", m_outputFileName.Data());
 }
@@ -116,8 +118,8 @@ void AnalysisZprime::EachEvent () {
   double mtt = P.M()/1000;
   double mtt_R1 = P_R1.M()/1000;
   double mtt_R2 = P_R2.M()/1000;
-  double mt = p_t.M()/1000;
-  double mtb = p_tb.M()/1000;
+  double mt = p_t.M();
+  double mtb = p_tb.M();
   double y_t = p_t.Rapidity();
   double y_tb = p_tb.Rapidity();
   double dy = std::abs(y_t) - std::abs(y_tb);
@@ -138,10 +140,10 @@ void AnalysisZprime::EachEvent () {
   if (m_channel == "bbllnn"){
     ytt_R1 = P_R1.Rapidity();
     ytt_R2 = P_R2.Rapidity();
-    mt_R1 = p_t_R1.M()/1000;
-    mtb_R1 = p_tb_R1.M()/1000;
-    mt_R2 = p_t_R2.M()/1000;
-    mtb_R2 = p_tb_R2.M()/1000;
+    mt_R1 = p_t_R1.M();
+    mtb_R1 = p_tb_R1.M();
+    mt_R2 = p_t_R2.M();
+    mtb_R2 = p_tb_R2.M();
 
     // printf("Reconstructed top mass\n---\n");
     // printf("m_top = %f TeV\n", mt);
@@ -330,14 +332,14 @@ void AnalysisZprime::ApplyLuminosity(TH1D* h) {
   // printf("Name: %s\n", h->GetTitle());
   // printf("Luminosity: %f\n", m_luminosity);
   double sigma = -999, N = -999, dN = -999;
-  double efficiency = 1.0;
+  double efficiency = 1.0, pb = 1000;
   for (int i = 1; i < h->GetNbinsX(); i++) {
     sigma = h->GetBinContent(i)*h->GetBinWidth(i);
-    N = m_luminosity*efficiency*sigma;
+    N = m_luminosity*pb*efficiency*sigma;
     h->SetBinContent(i, N);
     dN = std::sqrt(N);
     h->SetBinError(i, dN);
-    // printf("sigma = %f, N = %f, dN = %f\n", sigma, N, dN);
+    printf("sigma = %f, N = %f, dN = %f\n", sigma, N, dN);
   }
   TString events = "Events";
   h->GetYaxis()->SetTitle(events);
@@ -350,12 +352,13 @@ void AnalysisZprime::AsymmetryUncertainty(TH1D* h_Asymmetry, TH1D* h_A, TH1D* h_
   double sigmaA, sigmaB, sigma;
   double deltaA;
   double N;
+  double pb = 1000;
   for (int i = 1; i < h_Asymmetry->GetNbinsX(); i++) {
     A = h_Asymmetry->GetBinContent(i);
     sigmaA = h_A->GetBinContent(i);
     sigmaB = h_B->GetBinContent(i);
     sigma = (sigmaA + sigmaB)*(h_Asymmetry->GetBinWidth(i));
-    N = m_luminosity*efficiency*sigma;
+    N = m_luminosity*pb*efficiency*sigma;
     if (N > 0) deltaA = std::sqrt((1.0 - A*A)/N);
     else deltaA = 0;
     // printf("A = %f, dA= %f, N= %f\n", A, deltaA, N);
@@ -370,29 +373,29 @@ void AnalysisZprime::CreateHistograms() {
   }
 
   if (m_channel == "tt" or m_channel == "bbllnn") {
-    h_mtt = new TH1D("mtt", "m_{tt}", 100, 0.0, 13.0);
-    h_ytt = new TH1D("ytt", "y_{tt}", 100, -2.5, 2.5);
-    h_mt = new TH1D("mt", "m_{t}", 100, 0.0, 1.0);
-    h_mtbar = new TH1D("mtbar", "m_{#bar{t}}", 100, 0.0, 1.0);
+    h_mtt = new TH1D("mtt", "m_{tt}", 50, 0, 13);
+    h_ytt = new TH1D("ytt", "y_{tt}", 50, -2.5, 2.5);
+    h_mt = new TH1D("mt", "m_{t}", 50, 0, 350);
+    h_mtbar = new TH1D("mtbar", "m_{#bar{t}}", 50, 0, 350);
     h_mtt_F = new TH1D("mtt_F", "m_{tt}^{forward}", 50, 0.0, 13.0);
     h_mtt_B = new TH1D("mtt_B", "m_{tt}^{backward}", 50, 0.0, 13.0);
     h_mtt_Fy = new TH1D("mtt_Fy", "m_{tt}^{F(y)}", 50, 0.0, 13.0);
     h_mtt_By = new TH1D("mtt_By", "m_{tt}^{B(y)}", 50, 0.0, 13.0);
-    h_cosTheta = new TH1D("cosTheta", "cos#theta", 100, -1.0, 1.0);
-    h_cosThetaStar = new TH1D("cosThetaStar", "cos#theta^{*}", 100, -1.0, 1.0);
+    h_cosTheta = new TH1D("cosTheta", "cos#theta", 50, -1.0, 1.0);
+    h_cosThetaStar = new TH1D("cosThetaStar", "cos#theta^{*}", 50, -1.0, 1.0);
   }
 
   if (m_channel == "tt") {
-    h_mtt_LL = new TH1D("mtt_LL", "m_{tt}^{LL}", 100, 0.0, 13.0);
-    h_mtt_LR = new TH1D("mtt_LR", "m_{tt}^{LR}", 100, 0.0, 13.0);
-    h_mtt_RL = new TH1D("mtt_RL", "m_{tt}^{RL}", 100, 0.0, 13.0);
-    h_mtt_RR = new TH1D("mtt_RR", "m_{tt}^{RR}", 100, 0.0, 13.0);
+    h_mtt_LL = new TH1D("mtt_LL", "m_{tt}^{LL}", 50, 0.0, 13.0);
+    h_mtt_LR = new TH1D("mtt_LR", "m_{tt}^{LR}", 50, 0.0, 13.0);
+    h_mtt_RL = new TH1D("mtt_RL", "m_{tt}^{RL}", 50, 0.0, 13.0);
+    h_mtt_RR = new TH1D("mtt_RR", "m_{tt}^{RR}", 50, 0.0, 13.0);
   }
 
   if (m_channel == "bbllnn") {
-    h_mtt_R = new TH1D("mtt_R", "m^{reco}_{tt}", 100, 0.0, 13.0);
-    h_mt_R = new TH1D("mt_R", "m^{reco}_{t}", 100, 0.0, 1.0);
-    h_mtbar_R = new TH1D("mtbar_R", "m^{reco}_{#bar{t}}", 100, 0.0, 1.0);
+    h_mtt_R = new TH1D("mtt_R", "m^{reco}_{tt}", 50, 0.0, 13.0);
+    h_mt_R = new TH1D("mt_R", "m^{reco}_{t}", 50, 0, 350);
+    h_mtbar_R = new TH1D("mtbar_R", "m^{reco}_{#bar{t}}", 50, 0, 350);
 
     h_mtt_FR = new TH1D("mtt_FR", "m_{tt}^{forward} (reco)", 50, 0.0, 13.0);
     h_mtt_BR = new TH1D("mtt_BR", "m_{tt}^{backward} (reco)", 50, 0.0, 13.0);
@@ -402,11 +405,11 @@ void AnalysisZprime::CreateHistograms() {
     h_mtt_Fl = new TH1D("mtt_Fl", "m_{tt}^{F,l}", 50, 0.0, 13.0);
     h_mtt_Bl = new TH1D("mtt_Bl", "m_{tt}^{B,l}", 50, 0.0, 13.0);
 
-    h_ytt_R = new TH1D("ytt_R", "y_{tt}^{reco}", 100, -2.5, 2.5);
-    h_cosTheta_R = new TH1D("cosTheta_R", "cos#theta_{reco}", 100, -1.0, 1.0);
-    h_cosThetaStar_R = new TH1D("cosThetaStar_R", "cos#theta_{reco}^{*}", 100, -1.0, 1.0);
-    h_pzNu = new TH1D("pzNu", "p_{z}^{#nu}", 100,-500.0, 500.0);
-    h_pzNu_R = new TH1D("pzNu_R", "p_{z}^{#nu} (reco)", 100, -500.0, 500.0);
+    h_ytt_R = new TH1D("ytt_R", "y_{tt}^{reco}", 50, -2.5, 2.5);
+    h_cosTheta_R = new TH1D("cosTheta_R", "cos#theta_{reco}", 50, -1.0, 1.0);
+    h_cosThetaStar_R = new TH1D("cosThetaStar_R", "cos#theta_{reco}^{*}", 50, -1.0, 1.0);
+    h_pzNu = new TH1D("pzNu", "p_{z}^{#nu}", 50,-500.0, 500.0);
+    h_pzNu_R = new TH1D("pzNu_R", "p_{z}^{#nu} (reco)", 50, -500.0, 500.0);
   }
 }
 
@@ -417,7 +420,8 @@ void AnalysisZprime::MakeGraphs() {
   if (m_channel == "tt") numBase = "d#sigma(pp->t#bar{t}) / d";
   if (m_channel == "bbllnn") numBase = "d#sigma / d"; //pp->t#bar{t}->b#bar{b}l^{+}l^{-}#nu#bar{#nu}
   TString units = "pb";
-  TString TeV = "[TeV]";
+  TString TeV = " [TeV]";
+  TString GeV = " [GeV]";
 
   h_mtt->GetXaxis()->SetTitle(h_mtt->GetTitle() + TeV);
   h_mtt->GetYaxis()->SetTitle(numBase + h_mtt->GetTitle() + " [" + units +"/TeV]");
@@ -431,12 +435,20 @@ void AnalysisZprime::MakeGraphs() {
   h_mtt_B->GetYaxis()->SetTitle(numBase + h_mtt_B->GetTitle() + " [" + units +"/TeV]");
   this->ApplyLuminosity(h_mtt_B);
 
-  h_mt_R->GetYaxis()->SetTitle(numBase + h_mt_R->GetTitle() + " [" + units + "/TeV]");
-  h_mt_R->GetXaxis()->SetTitle(h_mt_R->GetTitle() + TeV);
+  h_mt->GetYaxis()->SetTitle(numBase + h_mt->GetTitle() + " [" + units + "/GeV]");
+  h_mt->GetXaxis()->SetTitle(h_mt->GetTitle() + GeV);
+  this->ApplyLuminosity(h_mt);
+
+  h_mtbar->GetYaxis()->SetTitle(numBase + h_mtbar->GetTitle() + " [" + units + "/GeV]");
+  h_mtbar->GetXaxis()->SetTitle(h_mtbar->GetTitle() + GeV);
+  this->ApplyLuminosity(h_mtbar);
+
+  h_mt_R->GetYaxis()->SetTitle(numBase + h_mt_R->GetTitle() + " [" + units + "/GeV]");
+  h_mt_R->GetXaxis()->SetTitle(h_mt_R->GetTitle() + GeV);
   this->ApplyLuminosity(h_mt_R);
 
-  h_mtbar_R->GetYaxis()->SetTitle(numBase + h_mtbar_R->GetTitle() + " [" + units + "/TeV]");
-  h_mtbar_R->GetXaxis()->SetTitle(h_mtbar_R->GetTitle() + TeV);
+  h_mtbar_R->GetYaxis()->SetTitle(numBase + h_mtbar_R->GetTitle() + " [" + units + "/GeV]");
+  h_mtbar_R->GetXaxis()->SetTitle(h_mtbar_R->GetTitle() + GeV);
   this->ApplyLuminosity(h_mtbar_R);
 
   h_ytt->GetYaxis()->SetTitle(numBase + h_ytt->GetTitle() + " [" + units +"]");
@@ -667,7 +679,7 @@ void AnalysisZprime::GetDataDirectory(){
 
 void AnalysisZprime::ResetCounters () {
   if (m_luminosity >= 0) m_useLumi = true;
-  else m_luminosity = false;
+  else m_useLumi = false;
   m_nQuarksMatched = 0;
   m_nNeutrinoMatched = 0;
   m_nReco = 0;
@@ -685,9 +697,9 @@ void AnalysisZprime::SetupWeightsFiles () {
   double weight;
   while ( weights >> weight ) m_weights.push_back(weight);
   weights.close();
-  for (int i = 0; i < m_weights.size(); i++) {
-    printf("%f\n", m_weights[i]);
-  }
+  // for (int i = 0; i < m_weights.size(); i++) {
+  //   printf("%f\n", m_weights[i]);
+  // }
 }
 
 
