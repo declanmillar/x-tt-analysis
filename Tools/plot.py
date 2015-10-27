@@ -4,6 +4,8 @@ import atlas_style
 
 ROOT.gROOT.Reset()
 ROOT.gROOT.SetBatch(False)
+ROOT.gStyle.SetHatchesSpacing(0.3);
+ROOT.gStyle.SetHatchesLineWidth(1);
 
 ROOT.TGaxis.SetMaxDigits(4)
 
@@ -80,7 +82,7 @@ parser.add_option("-P", "--plot_dir", default = "/Users/declan/Code/declans-rese
 if len(args) < 2:
   sys.exit("%s" % usage)
 
-draw_option = "e1x0p same" if option.errors else "hist same"
+draw_option = "e2 hist same" if option.errors else "hist same"
 if option.legend_low:
     legend = ROOT.TLegend(0.7, 0.20, 0.9, 0.4, "")
 else:
@@ -167,7 +169,11 @@ if not file1.IsOpen():
     print "failed to open %s\n" % filename
 try:
     hist = file1.Get(histname)
-    hist.Draw(draw_option)
+    xmin = option.xmin
+    xmax = option.xmax
+    if xmin != -99.9 and xmax != -99.9:
+        hist.GetXaxis().SetRangeUser(xmin, xmax)
+
     if option.l1 != "":
         labelname1 = option.l1
     else:
@@ -175,16 +181,24 @@ try:
             labelname1 = hist.GetTitle()
         else:
             labelname1 = filename
-    legend.AddEntry(hist, labelname1)
-    hist.SetMarkerColor(ROOT.kAzure-7)
-    hist.SetLineColor(ROOT.kAzure-7)
-    # if option.ylabel == "":
-    #     ylabel = hist.GetYaxis.GetTitle()
-    # else:
-    #     ylabel = option.ylabel
-    # hist.GetYaxis.SetTitle(ylabel)
 
-    # hist.SetLineStyle(1)
+    if option.normalise:
+        ytitle = hist.GetYaxis().GetTitle()
+        print hist.Integral()
+        if ytitle == "Events" or "AFB" in histname:
+            ytitle = ""
+        else:
+            ytitle = "1/#sigma #times " + ytitle
+        hist.GetYaxis().SetTitle(ytitle)
+        hist.Scale(1.0/abs(hist.Integral()))
+    hist.SetLineColor(ROOT.kAzure-7)
+    hist.SetMarkerColor(ROOT.kAzure-7)
+    hist.SetMarkerStyle(0)
+    hist.DrawCopy("h hist")
+    hist.SetFillColor(ROOT.kAzure-7)
+    hist.SetFillStyle(3354)
+    hist.DrawCopy("e2 same")
+    legend.AddEntry(hist, labelname1)
 
 except ReferenceError:
     sys.exit("ReferenceError: check %s contains histogram '%s'" % (filename, histname))
@@ -197,10 +211,8 @@ if option.f2 != "" or option.h2 != "":
         print "failed to open %s\n" % filename2
     try:
         hist2 = file2.Get(histname2)
-        hist2.Draw(draw_option)
-        hist2.SetMarkerColor(ROOT.kRed-7)
-        hist2.SetLineColor(ROOT.kRed-7)
-        # hist.SetLineStyle(2)
+        if xmin != -99.9 and xmax != -99.9:
+            hist2.GetXaxis().SetRangeUser(xmin, xmax)
         if option.l2 != "":
             labelname2 = option.l2
         else:
@@ -208,6 +220,22 @@ if option.f2 != "" or option.h2 != "":
                 labelname2 = hist2.GetTitle()
             else:
                 labelname2 = filename2
+            print hist2.Integral()
+        if option.normalise:
+            ytitle2 = hist2.GetYaxis().GetTitle()
+            if ytitle2 == "Events" or "AFB" in histname2:
+                ytitle2 = ""
+            else:
+                ytitle2 = "1/#sigma #times " + ytitle2
+            hist2.GetYaxis().SetTitle(ytitle2)
+            hist2.Scale(1.0/abs(hist2.Integral()))
+        hist2.SetMarkerColor(ROOT.kRed-7)
+        hist2.SetLineColor(ROOT.kRed-7)
+        hist2.SetMarkerStyle(0)
+        hist2.DrawCopy("h hist same")
+        hist2.SetFillColor(ROOT.kRed-7)
+        hist2.SetFillStyle(3354)
+        hist2.DrawCopy("e2 same")
         legend.AddEntry(hist2, labelname2)
     except ReferenceError:
         sys.exit("ReferenceError: check %s contains histogram '%s'" % (filename2, histname))
@@ -223,6 +251,7 @@ if option.f3 != "" or option.h3 != "":
         hist3.Draw(draw_option)
         hist3.SetMarkerColor(ROOT.kSpring-7)
         hist3.SetLineColor(ROOT.kSpring-7)
+        hist3.SetMarkerStyle(0)
         # hist.SetLineStyle(2)
         if option.l3 != "":
             labelname3 = option.l3
@@ -246,6 +275,7 @@ if option.f4 != "" or option.h4 != "":
         hist4.Draw(draw_option)
         hist4.SetMarkerColor(ROOT.kViolet-7)
         hist4.SetLineColor(ROOT.kViolet-7)
+        hist4.SetMarkerStyle(0)
         # hist.SetLineStyle(2)
         if option.l4 != "":
             labelname4 = option.l4
@@ -300,22 +330,6 @@ if option.significance:
         sighist3 = PlotSignificance(hist3, hist)
     if filename4 != "":
         sighist4 = PlotSignificance(hist4, hist)
-#
-# normalize histograms
-if option.normalise:
-    ytitle = hist.GetYaxis().GetTitle()
-    if ytitle == "Events" or "AFB" in histname:
-        ytitle = ""
-    else:
-        ytitle = "1/#sigma #times " + ytitle
-    hist.GetYaxis().SetTitle(ytitle)
-    hist.Scale(1.0/abs(hist.Integral()))
-    if option.f2 != "" or option.h2 != "":
-        hist2.Scale(1.0/abs(hist2.Integral()))
-    if option.f3 != "" or option.h3 != "":
-        hist3.Scale(1.0/abs(hist3.Integral()))
-    if option.f4 != "" or option.h4 != "":
-        hist4.Scale(1.0/abs(hist4.Integral()))
 
 sigPerOverlap = 0
 # find overlapping area (histograms must have the same user ranges and same number of bins)
@@ -341,17 +355,6 @@ if option.overlap:
     sigPerOverlap = overlap/hist2.Integral()*100
     printf("Signal in overlapping area: %f%%\n", sigPerOverlap)
 
-xmin = option.xmin
-xmax = option.xmax
-if xmin != -99.9 and xmax != -99.9:
-    hist.GetXaxis().SetRangeUser(xmin, xmax)
-    if option.f2 != "":
-        hist2.GetXaxis().SetRangeUser(xmin, xmax)
-    if option.f3 != "":
-        hist3.GetXaxis().SetRangeUser(xmin, xmax)
-    if option.f4 != "":
-        hist4.GetXaxis().SetRangeUser(xmin, xmax)
-
 ymin = option.ymin
 ymax = option.ymax
 if ymin != -99.9 and ymax != -99.9:
@@ -367,6 +370,17 @@ if option.overlap:
     sigOverlap = "Signal in overlapping area = " + str(sigPerOverlap) + "%%"
     texBox = ROOT.TLatex(0.5,0.5, SigOverlap)
     texBox.Draw()
+
+xmin = option.xmin
+xmax = option.xmax
+if xmin != -99.9 and xmax != -99.9:
+    hist.GetXaxis().SetRangeUser(xmin, xmax)
+    if option.f2 != "":
+        hist2.GetXaxis().SetRangeUser(xmin, xmax)
+    if option.f3 != "":
+        hist3.GetXaxis().SetRangeUser(xmin, xmax)
+    if option.f4 != "":
+        hist4.GetXaxis().SetRangeUser(xmin, xmax)
 
 if option.significance:
     lower_pad.cd()
