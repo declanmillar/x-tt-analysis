@@ -224,7 +224,7 @@ void AnalysisZprime::EachEvent () {
 
 void AnalysisZprime::PostLoop () {
   this->GetResults();
-  this->CheckPerformance();
+  if (m_channel == "bbllnn") this->CheckPerformance();
   this->MakeGraphs();
   this->PrintCutflow();
   this->WriteHistograms();
@@ -443,14 +443,6 @@ void AnalysisZprime::MakeGraphs() {
   h_mtbar->GetXaxis()->SetTitle(h_mtbar->GetTitle() + GeV);
   this->ApplyLuminosity(h_mtbar);
 
-  h_mt_R->GetYaxis()->SetTitle(numBase + h_mt_R->GetTitle() + " [" + units + "/GeV]");
-  h_mt_R->GetXaxis()->SetTitle(h_mt_R->GetTitle() + GeV);
-  this->ApplyLuminosity(h_mt_R);
-
-  h_mtbar_R->GetYaxis()->SetTitle(numBase + h_mtbar_R->GetTitle() + " [" + units + "/GeV]");
-  h_mtbar_R->GetXaxis()->SetTitle(h_mtbar_R->GetTitle() + GeV);
-  this->ApplyLuminosity(h_mtbar_R);
-
   h_ytt->GetYaxis()->SetTitle(numBase + h_ytt->GetTitle() + " [" + units +"]");
   h_ytt->GetXaxis()->SetTitle(h_ytt->GetTitle());
   this->ApplyLuminosity(h_ytt);
@@ -506,11 +498,11 @@ void AnalysisZprime::MakeGraphs() {
     h_mtt_BR->GetYaxis()->SetTitle(numBase + h_mtt_BR->GetTitle() + " [" + units +"/TeV]");
     this->ApplyLuminosity(h_mtt_BR);
 
-    h_mt_R->GetYaxis()->SetTitle(numBase + h_mt_R->GetTitle() + " [" + units + "/TeV]");
+    h_mt_R->GetYaxis()->SetTitle(numBase + h_mt_R->GetTitle() + " [" + units + "/TGV]");
     h_mt_R->GetXaxis()->SetTitle(h_mt_R->GetTitle() + TeV);
     this->ApplyLuminosity(h_mt_R);
 
-    h_mtbar_R->GetYaxis()->SetTitle(numBase + h_mtbar_R->GetTitle() + " [" + units + "/TeV]");
+    h_mtbar_R->GetYaxis()->SetTitle(numBase + h_mtbar_R->GetTitle() + " [" + units + "/GeV]");
     h_mtbar_R->GetXaxis()->SetTitle(h_mtbar_R->GetTitle() + TeV);
     this->ApplyLuminosity(h_mtbar_R);
 

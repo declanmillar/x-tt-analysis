@@ -173,6 +173,10 @@ try:
     xmax = option.xmax
     if xmin != -99.9 and xmax != -99.9:
         hist.GetXaxis().SetRangeUser(xmin, xmax)
+    ymin = option.ymin
+    ymax = option.ymax
+    if ymin != -99.9 and ymax != -99.9:
+        hist.GetYaxis().SetRangeUser(ymin, ymax)
 
     if option.l1 != "":
         labelname1 = option.l1
@@ -184,9 +188,9 @@ try:
 
     if option.normalise:
         ytitle = hist.GetYaxis().GetTitle()
-        print hist.Integral()
+        # print hist.Integral()
         if ytitle == "Events" or "AFB" in histname:
-            ytitle = ""
+            ytitle = "Normalised " + ytitle
         else:
             ytitle = "1/#sigma #times " + ytitle
         hist.GetYaxis().SetTitle(ytitle)
@@ -220,11 +224,11 @@ if option.f2 != "" or option.h2 != "":
                 labelname2 = hist2.GetTitle()
             else:
                 labelname2 = filename2
-            print hist2.Integral()
+            # print hist2.Integral()
         if option.normalise:
             ytitle2 = hist2.GetYaxis().GetTitle()
             if ytitle2 == "Events" or "AFB" in histname2:
-                ytitle2 = ""
+                ytitle2 = "Normalised " + ytitle2
             else:
                 ytitle2 = "1/#sigma #times " + ytitle2
             hist2.GetYaxis().SetTitle(ytitle2)
@@ -247,12 +251,9 @@ if option.f3 != "" or option.h3 != "":
     if not file3.IsOpen():
         print "failed to open %s\n" % filename3
     try:
-        hist3 = file2.Get(histname3)
-        hist3.Draw(draw_option)
-        hist3.SetMarkerColor(ROOT.kSpring-7)
-        hist3.SetLineColor(ROOT.kSpring-7)
-        hist3.SetMarkerStyle(0)
-        # hist.SetLineStyle(2)
+        hist3 = file3.Get(histname3)
+        if xmin != -99.9 and xmax != -99.9:
+            hist3.GetXaxis().SetRangeUser(xmin, xmax)
         if option.l3 != "":
             labelname3 = option.l3
         else:
@@ -260,6 +261,22 @@ if option.f3 != "" or option.h3 != "":
                 labelname3 = hist3.GetTitle()
             else:
                 labelname3 = filename3
+            # print hist3.Integral()
+        if option.normalise:
+            ytitle3 = hist3.GetYaxis().GetTitle()
+            if ytitle3 == "Events" or "AFB" in histname3:
+                ytitle3 = "Normalised " + ytitle3
+            else:
+                ytitle3 = "1/#sigma #times " + ytitle3
+            hist3.GetYaxis().SetTitle(ytitle3)
+            hist3.Scale(1.0/abs(hist3.Integral()))
+        hist3.SetMarkerColor(ROOT.kSpring-7)
+        hist3.SetLineColor(ROOT.kSpring-7)
+        hist3.SetMarkerStyle(0)
+        hist3.DrawCopy("h hist same")
+        hist3.SetFillColor(ROOT.kSpring-7)
+        hist3.SetFillStyle(3354)
+        hist3.DrawCopy("e2 same")
         legend.AddEntry(hist3, labelname3)
     except ReferenceError:
         sys.exit("ReferenceError: check %s contains histogram '%s'" % (filename3, histname))
