@@ -8,6 +8,7 @@ AnalysisZprime::AnalysisZprime(const TString channel, const TString model, const
   m_options(options),
   m_vegasIterations(vegasIterations),
   m_vegasPoints(vegasPoints),
+  m_addQCD(false),
   m_luminosity(luminosity),
   m_btags(btags),
   m_discardComplex(discardComplex),
@@ -33,6 +34,7 @@ inline std::string BoolToString(bool b){return b ? "1" : "0";}
 void AnalysisZprime::CreateFilenames(){
   TString base = m_dataDirectory + "/" + m_channel + "_" + m_model + "_" + std::to_string(m_energy) + m_options + std::to_string(m_vegasIterations) + "x" + std::to_string(m_vegasPoints);
   m_inputFileName = base + ".root";
+  m_QCDfilename = m_dataDirectory + "/" + m_channel + "_QCD_" + std::to_string(m_energy) + m_options + std::to_string(m_vegasIterations) + "x" + std::to_string(m_vegasPoints) + ".root";
   m_weightsFileName = base + ".txt";
   m_outputFileName = base + "." + std::to_string(m_btags) + BoolToString(m_discardComplex) + m_analysisLabel;
   if (m_luminosity > 0) m_outputFileName += "_" + std::to_string(m_luminosity);
@@ -727,6 +729,7 @@ void AnalysisZprime::SetupOutputFiles() {
 
 void AnalysisZprime::SetupInputFiles () {
   m_inputFiles = new vector<TString>;
+  if (m_addQCD) m_inputFiles->push_back(m_QCDfilename);
   m_inputFiles->push_back(m_inputFileName);
 }
 

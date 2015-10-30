@@ -84,6 +84,7 @@ private:
   TString m_options;
   int m_vegasIterations;
   int m_vegasPoints;
+  int m_addQCD;
   int m_luminosity;
   const int m_btags;
   const bool m_discardComplex;
@@ -113,6 +114,7 @@ private:
 
   // Strings
   TString m_inputFileName;
+  TString m_QCDfilename;
   TString m_weightsFileName;
   TString m_outputFileName;
   TString m_dataDirectory;
