@@ -324,7 +324,7 @@ TH1D* AnalysisZprime::Asymmetry(TString name, TString title, TH1D* h_A, TH1D* h_
   h_denominator->Add(h_B, 1);
   h_numerator->Divide(h_denominator);
   delete h_denominator;
-  if (m_luminosity > 0) this->AsymmetryUncertainty(h_numerator, h_A, h_B);
+  if (m_luminosity > -1) this->AsymmetryUncertainty(h_numerator, h_A, h_B);
   return h_numerator;
 }
 
@@ -336,7 +336,7 @@ void AnalysisZprime::ApplyLuminosity(TH1D* h) {
   double sigma = -999, N = -999, dN = -999;
   double efficiency = 1.0, pb = 1000;
   for (int i = 1; i < h->GetNbinsX(); i++) {
-    sigma = h->GetBinContent(i)*h->GetBinWidth(i);
+    sigma = h->GetBinContent(i);//*h->GetBinWidth(i);
     N = m_luminosity*pb*efficiency*sigma;
     h->SetBinContent(i, N);
     dN = std::sqrt(N);
@@ -359,7 +359,7 @@ void AnalysisZprime::AsymmetryUncertainty(TH1D* h_Asymmetry, TH1D* h_A, TH1D* h_
     A = h_Asymmetry->GetBinContent(i);
     sigmaA = h_A->GetBinContent(i);
     sigmaB = h_B->GetBinContent(i);
-    sigma = (sigmaA + sigmaB)*(h_Asymmetry->GetBinWidth(i));
+    sigma = (sigmaA + sigmaB);//*(h_Asymmetry->GetBinWidth(i));
     N = m_luminosity*pb*efficiency*sigma;
     if (N > 0) deltaA = std::sqrt((1.0 - A*A)/N);
     else deltaA = 0;
@@ -432,10 +432,12 @@ void AnalysisZprime::MakeGraphs() {
   h_mtt_F->GetXaxis()->SetTitle(h_mtt_F->GetTitle() + TeV);
   h_mtt_F->GetYaxis()->SetTitle(numBase + h_mtt_F->GetTitle() + " [" + units +"/TeV]");
   this->ApplyLuminosity(h_mtt_F);
+  h_mtt_F->Divide(h_mtt);
 
   h_mtt_B->GetXaxis()->SetTitle(h_mtt_B->GetTitle() + TeV);
   h_mtt_B->GetYaxis()->SetTitle(numBase + h_mtt_B->GetTitle() + " [" + units +"/TeV]");
   this->ApplyLuminosity(h_mtt_B);
+  h_mtt_B->Divide(h_mtt);
 
   h_mt->GetYaxis()->SetTitle(numBase + h_mt->GetTitle() + " [" + units + "/GeV]");
   h_mt->GetXaxis()->SetTitle(h_mt->GetTitle() + GeV);
@@ -495,10 +497,12 @@ void AnalysisZprime::MakeGraphs() {
     h_mtt_FR->GetXaxis()->SetTitle(h_mtt_FR->GetTitle() + TeV);
     h_mtt_FR->GetYaxis()->SetTitle(numBase + h_mtt_FR->GetTitle() + " [" + units +"/TeV]");
     this->ApplyLuminosity(h_mtt_FR);
+    h_mtt_FR->Divide(h_mtt_R);
 
     h_mtt_BR->GetXaxis()->SetTitle(h_mtt_BR->GetTitle() + TeV);
     h_mtt_BR->GetYaxis()->SetTitle(numBase + h_mtt_BR->GetTitle() + " [" + units +"/TeV]");
     this->ApplyLuminosity(h_mtt_BR);
+    h_mtt_BR->Divide(h_mtt_R);
 
     h_mt_R->GetYaxis()->SetTitle(numBase + h_mt_R->GetTitle() + " [" + units + "/TGV]");
     h_mt_R->GetXaxis()->SetTitle(h_mt_R->GetTitle() + TeV);
