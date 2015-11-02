@@ -341,7 +341,7 @@ void AnalysisZprime::ApplyLuminosity(TH1D* h) {
     h->SetBinContent(i, N);
     dN = std::sqrt(N);
     h->SetBinError(i, dN);
-    printf("sigma = %f, N = %f, dN = %f\n", sigma, N, dN);
+    // printf("sigma = %f, N = %f, dN = %f\n", sigma, N, dN);
   }
   TString events = "Events";
   h->GetYaxis()->SetTitle(events);
@@ -349,18 +349,12 @@ void AnalysisZprime::ApplyLuminosity(TH1D* h) {
 
 
 void AnalysisZprime::AsymmetryUncertainty(TH1D* h_Asymmetry, TH1D* h_A, TH1D* h_B) {
-  double efficiency = 1.0;
-  double A;
-  double sigmaA, sigmaB, sigma;
-  double deltaA;
-  double N;
-  double pb = 1000;
+  double A, deltaA, N, N_A, N_B;
   for (int i = 1; i < h_Asymmetry->GetNbinsX(); i++) {
     A = h_Asymmetry->GetBinContent(i);
-    sigmaA = h_A->GetBinContent(i);
-    sigmaB = h_B->GetBinContent(i);
-    sigma = (sigmaA + sigmaB);//*(h_Asymmetry->GetBinWidth(i));
-    N = m_luminosity*pb*efficiency*sigma;
+    N_A = h_A->GetBinContent(i);
+    N_B = h_B->GetBinContent(i);
+    N = N_A + N_B;
     if (N > 0) deltaA = std::sqrt((1.0 - A*A)/N);
     else deltaA = 0;
     // printf("A = %f, dA= %f, N= %f\n", A, deltaA, N);
