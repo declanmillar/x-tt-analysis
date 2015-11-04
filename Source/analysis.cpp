@@ -369,7 +369,7 @@ void AnalysisZprime::AsymmetryUncertainty(TH1D* h_Asymmetry, TH1D* h_A, TH1D* h_
 
 void AnalysisZprime::CreateHistograms() {
 
-  double binWidth = 0.05;
+  double binWidth = 0.1;
   double Emin = 0.0;
   double Emax = 13.0;
   double nbins = (Emax-Emin)/binWidth;
@@ -463,8 +463,8 @@ void AnalysisZprime::MakeGraphs() {
 
   if (m_channel == "bbllnn") {
     this->MakeDistribution(h_mtt_R, "TeV");
-    this->MakeDistribution(h_mtt_F, "TeV");
-    this->MakeDistribution(h_mtt_B, "TeV");
+    this->MakeDistribution(h_mtt_FR, "TeV");
+    this->MakeDistribution(h_mtt_BR, "TeV");
     this->MakeDistribution(h_mt_R, "TeV");
     this->MakeDistribution(h_mtbar_R, "TeV");
     this->MakeDistribution(h_ytt_R, "TeV");
