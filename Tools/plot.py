@@ -49,8 +49,8 @@ usage = "usage: overlay.py hist file [options]"
 parser = optparse.OptionParser(usage)
 
 parser.add_option("-n", "--normalise", default = False, action = "store_true" , help = "normalise plots")
-parser.add_option("-2","--f2", default = "", action = "store" , help = "specify second f")
-parser.add_option("-3","--f3", default = "", action = "store" , help = "specify third f")
+parser.add_option("-2","--f2", default = "", action = "store" , help = "specify second filename")
+parser.add_option("-3","--f3", default = "", action = "store" , help = "specify third filename")
 parser.add_option("-4","--f4", default = "", action = "store" , help = "specify fourth filename")
 parser.add_option("--h2", default = "", action = "store" , help = "specify second histogram")
 parser.add_option("--h3", default = "", action = "store" , help = "specify third histogram")
@@ -64,6 +64,8 @@ parser.add_option("--c2", default = "", action = "store" , help = "set second co
 parser.add_option("--c3", default = "", action = "store" , help = "set third color")
 parser.add_option("--c4", default = "", action = "store" , help = "set fourth color")
 parser.add_option("--legend_low", default = False, action = "store_true" , help = "put legend at bottom")
+parser.add_option("--legend_left", default = False, action = "store_true" , help = "put legend on left")
+parser.add_option("--legend_low_left", default = False, action = "store_true" , help = "put legend on bottom left")
 parser.add_option("-e", "--errors", default = False, action = "store_true" , help = "display errors")
 parser.add_option("-p", "--pause", default = True, action = "store_false" , help = "pause to show graphs")
 parser.add_option("-y", "--adjusty", default = False, action = "store_true" , help = "auto adjust range (some issues)")
@@ -85,6 +87,10 @@ if len(args) < 2:
 draw_option = "e2 hist same" if option.errors else "hist same"
 if option.legend_low:
     legend = ROOT.TLegend(0.7, 0.20, 0.9, 0.4, "")
+elif option.legend_left:
+    legend = ROOT.TLegend(0.15, 0.7, 0.4, 0.9, "")
+elif option.legend_low_left:
+    legend = ROOT.TLegend(0.15, 0.2, 0.4, 0.4, "")
 else:
     legend = ROOT.TLegend(0.7, 0.70, 0.9, 0.9, "")
 
@@ -162,6 +168,11 @@ if option.h4 == "":
 else:
     histname4 = option.h4
 
+color1 = ROOT.kAzure-7
+color2 = ROOT.kRed-7
+color3 = ROOT.kSpring-7
+color4 = ROOT.kViolet-7
+
 if os.path.isfile("%s" % filename) is False:
   sys.exit("%s does not exist" % filename)
 file1 = ROOT.TFile(filename, "read")
@@ -195,17 +206,17 @@ try:
             ytitle = "1/#sigma #times " + ytitle
         hist.GetYaxis().SetTitle(ytitle)
         hist.Scale(1.0/abs(hist.Integral()))
-    hist.SetLineColor(ROOT.kAzure-7)
-    hist.SetMarkerColor(ROOT.kAzure-7)
+    hist.SetLineColor(color1)
+    hist.SetMarkerColor(color1)
     hist.SetMarkerStyle(0)
     hist.DrawCopy("h hist")
-    hist.SetFillColor(ROOT.kAzure-7)
+    hist.SetFillColor(color1)
     hist.SetFillStyle(3354)
     hist.DrawCopy("e2 same")
     legend.AddEntry(hist, labelname1)
 
-except ReferenceError:
-    sys.exit("ReferenceError: check %s contains histogram '%s'" % (filename, histname))
+except:
+    sys.exit("Error: check %s contains histogram '%s'" % (filename, histname))
 
 if option.f2 != "" or option.h2 != "":
     if os.path.isfile("%s" % filename2) is False:
@@ -233,11 +244,11 @@ if option.f2 != "" or option.h2 != "":
                 ytitle2 = "1/#sigma #times " + ytitle2
             hist2.GetYaxis().SetTitle(ytitle2)
             hist2.Scale(1.0/abs(hist2.Integral()))
-        hist2.SetMarkerColor(ROOT.kRed-7)
-        hist2.SetLineColor(ROOT.kRed-7)
+        hist2.SetMarkerColor(color2)
+        hist2.SetLineColor(color2)
         hist2.SetMarkerStyle(0)
         hist2.DrawCopy("h hist same")
-        hist2.SetFillColor(ROOT.kRed-7)
+        hist2.SetFillColor(color2)
         hist2.SetFillStyle(3354)
         hist2.DrawCopy("e2 same")
         legend.AddEntry(hist2, labelname2)
@@ -270,11 +281,11 @@ if option.f3 != "" or option.h3 != "":
                 ytitle3 = "1/#sigma #times " + ytitle3
             hist3.GetYaxis().SetTitle(ytitle3)
             hist3.Scale(1.0/abs(hist3.Integral()))
-        hist3.SetMarkerColor(ROOT.kSpring-7)
-        hist3.SetLineColor(ROOT.kSpring-7)
+        hist3.SetMarkerColor(color3)
+        hist3.SetLineColor(color3)
         hist3.SetMarkerStyle(0)
         hist3.DrawCopy("h hist same")
-        hist3.SetFillColor(ROOT.kSpring-7)
+        hist3.SetFillColor(color3)
         hist3.SetFillStyle(3354)
         hist3.DrawCopy("e2 same")
         legend.AddEntry(hist3, labelname3)
@@ -288,12 +299,9 @@ if option.f4 != "" or option.h4 != "":
     if not file4.IsOpen():
         print "failed to open %s\n" % filename4
     try:
-        hist4 = file2.Get(histname4)
-        hist4.Draw(draw_option)
-        hist4.SetMarkerColor(ROOT.kViolet-7)
-        hist4.SetLineColor(ROOT.kViolet-7)
-        hist4.SetMarkerStyle(0)
-        # hist.SetLineStyle(2)
+        hist4 = file4.Get(histname4)
+        if xmin != -99.9 and xmax != -99.9:
+            hist4.GetXaxis().SetRangeUser(xmin, xmax)
         if option.l4 != "":
             labelname4 = option.l4
         else:
@@ -301,6 +309,22 @@ if option.f4 != "" or option.h4 != "":
                 labelname4 = hist4.GetTitle()
             else:
                 labelname4 = filename4
+            # print hist4.Integral()
+        if option.normalise:
+            ytitle4 = hist4.GetYaxis().GetTitle()
+            if ytitle4 == "Events" or "AFB" in histname4:
+                ytitle4 = "Normalised " + ytitle4
+            else:
+                ytitle4 = "1/#sigma #times " + ytitle4
+            hist4.GetYaxis().SetTitle(ytitle4)
+            hist4.Scale(1.0/abs(hist4.Integral()))
+        hist4.SetMarkerColor(color4)
+        hist4.SetLineColor(color4)
+        hist4.SetMarkerStyle(0)
+        hist4.DrawCopy("h hist same")
+        hist4.SetFillColor(color4)
+        hist4.SetFillStyle(3354)
+        hist4.DrawCopy("e2 same")
         legend.AddEntry(hist4, labelname4)
     except ReferenceError:
         sys.exit("ReferenceError: check %s contains histogram '%s'" % (filename4, histname))

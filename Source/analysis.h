@@ -40,6 +40,7 @@ protected:
   void EachEvent();
   void CreateHistograms();
   void MakeGraphs();
+  void MakeDistribution(TH1D* h, TString units);
   void WriteHistograms();
   void GetResults();
   void CheckPerformance();
@@ -186,6 +187,7 @@ private:
   // R = reconstructed
   // S = star [reconstructed parton centre of mass frame (now assumed in AFB, as original not useful here)]
   // LL, RR, LR, RL = helicities
+  // n = normalised, e.g. mtt_F/mtt
 
   // Masses
   TH1D* h_mtt;
@@ -193,6 +195,8 @@ private:
   TH1D* h_mtbar;
   TH1D* h_mtt_F;
   TH1D* h_mtt_B;
+  TH1D* h_mtt_Fn;
+  TH1D* h_mtt_Bn;
   TH1D* h_mtt_Fy;
   TH1D* h_mtt_By;
 
@@ -201,6 +205,8 @@ private:
   TH1D* h_mtbar_R;
   TH1D* h_mtt_FR;
   TH1D* h_mtt_BR;
+  TH1D* h_mtt_FRn;
+  TH1D* h_mtt_BRn;
   TH1D* h_mtt_FD;
   TH1D* h_mtt_BD;
   TH1D* h_mtt_Fl;
