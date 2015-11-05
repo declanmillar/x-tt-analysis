@@ -168,9 +168,9 @@ if option.h4 == "":
 else:
     histname4 = option.h4
 
-color1 = ROOT.kAzure-7
+color3 = ROOT.kAzure-7
 color2 = ROOT.kRed-7
-color3 = ROOT.kSpring-7
+color1 = ROOT.kSpring-7
 color4 = ROOT.kViolet-7
 
 if os.path.isfile("%s" % filename) is False:
