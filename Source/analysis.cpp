@@ -1,14 +1,28 @@
-#include "analysis.h"
+#include "analysis.hpp"
+
+using namespace std;
+using namespace boost;
+
+string trim(string const& str)
+{
+    if(str.empty())
+        return str;
+
+    size_t firstScan = str.find_first_not_of(' ');
+    size_t first     = firstScan == string::npos ? str.length() : firstScan;
+    size_t last      = str.find_last_not_of(' ');
+    return str.substr(first, last-first+1);
+}
 
 
-AnalysisZprime::AnalysisZprime(const TString channel, const TString model, const int energy, const TString options, const int vegasIterations, const int vegasPoints, const int luminosity, const int btags, const bool discardComplex, const TString analysisLabel):
+AnalysisZprime::AnalysisZprime(const TString channel, const TString model, const int energy, const TString options, const int vegasIterations, const int vegasPoints, const bool addQCD, const int luminosity, const int btags, const bool discardComplex, const TString analysisLabel):
   m_channel(channel),
   m_model(model),
   m_energy(energy),
   m_options(options),
   m_vegasIterations(vegasIterations),
   m_vegasPoints(vegasPoints),
-  m_addQCD(false),
+  m_addQCD(addQCD),
   m_luminosity(luminosity),
   m_btags(btags),
   m_discardComplex(discardComplex),
@@ -19,6 +33,7 @@ AnalysisZprime::AnalysisZprime(const TString channel, const TString model, const
   m_tmass(175.0),
   m_discardEvent(false),
   m_inputFiles(NULL),
+  m_weightFiles(NULL),
   m_ntup(NULL),
   m_chainNtup(NULL),
   m_outputFile(NULL)
@@ -28,19 +43,33 @@ AnalysisZprime::AnalysisZprime(const TString channel, const TString model, const
   this->PostLoop();
 }
 
+// if (final_state == 0) then
+//   ! multiply by branching ratios
+//   fac_ee = brtbln*brtbln
+//   fac_emu = 2*brtbln*brtbln
+//   fac_eq = brtbln*brtbqq
+//   fac_qq = brtbqq*brtbqq
+// else if (final_state > 0) then
+//   ! scale dilepton to other classifications
+//   fac_ee = 1
+//   fac_emu = 2
+//   fac_eq = 12
+//   fac_qq = 36
+// end if
 
-inline std::string BoolToString(bool b){return b ? "1" : "0";}
+inline string BoolToString(bool b){return b ? "1" : "0";}
 
 void AnalysisZprime::CreateFilenames(){
-  TString base = m_dataDirectory + "/" + m_channel + "_" + m_model + "_" + std::to_string(m_energy) + m_options + std::to_string(m_vegasIterations) + "x" + std::to_string(m_vegasPoints);
+  TString base = m_dataDirectory + "/" + m_channel + "_" + m_model + "_" + to_string(m_energy) + m_options + to_string(m_vegasIterations) + "x" + to_string(m_vegasPoints);
   m_inputFileName = base + ".root";
-  m_QCDfilename = m_dataDirectory + "/" + m_channel + "_QCD_" + std::to_string(m_energy) + m_options + std::to_string(m_vegasIterations) + "x" + std::to_string(m_vegasPoints);
+  m_QCDfilename = m_dataDirectory + "/" + m_channel + "_QCD_" + to_string(m_energy) + m_options + to_string(m_vegasIterations) + "x" + to_string(m_vegasPoints);
   // m_inputFilenames.push_back(m_QCDfilename)
   // m_inputFilenames.push_back(base)
+  m_QCDweightFile = m_QCDfilename + ".txt";
   m_QCDfilename = m_QCDfilename + ".root";
   m_weightsFileName = base + ".txt";
-  m_outputFileName = base + "." + std::to_string(m_btags) + BoolToString(m_discardComplex) + m_analysisLabel;
-  if (m_luminosity > 0) m_outputFileName += "_" + std::to_string(m_luminosity);
+  m_outputFileName = base + "." + to_string(m_btags) + BoolToString(m_discardComplex) + m_analysisLabel;
+  if (m_luminosity > 0) m_outputFileName += "_" + to_string(m_luminosity);
   m_outputFileName += ".root";
   // printf("Input: '%s'.\n", m_inputFileName.Data());
   printf("Output: '%s'.\n", m_outputFileName.Data());
@@ -127,10 +156,10 @@ void AnalysisZprime::EachEvent () {
   double mtb = p_tb.M();
   double y_t = p_t.Rapidity();
   double y_tb = p_tb.Rapidity();
-  double dy = std::abs(y_t) - std::abs(y_tb);
+  double dy = abs(y_t) - abs(y_tb);
   double ytt = P.Rapidity();
   double cosTheta = p_t.CosTheta();
-  double cosThetaStar = int(ytt/std::abs(ytt))*cosTheta;
+  double cosThetaStar = int(ytt/abs(ytt))*cosTheta;
   double ytt_R1 = -999;
   double ytt_R2 = -999;
   double mt_R1 = -999;
@@ -161,16 +190,16 @@ void AnalysisZprime::EachEvent () {
 
     cosTheta_R1 = p_t_R1.CosTheta();
     cosTheta_R2 = p_t_R2.CosTheta();
-    cosThetaStar_R1 = int(ytt_R1/std::abs(ytt_R1))*cosTheta_R1;
-    cosThetaStar_R2 = int(ytt_R2/std::abs(ytt_R2))*cosTheta_R2;
+    cosThetaStar_R1 = int(ytt_R1/abs(ytt_R1))*cosTheta_R1;
+    cosThetaStar_R2 = int(ytt_R2/abs(ytt_R2))*cosTheta_R2;
   }
 
   if (this->PassCuts())
   {
     // re-weight for different iterations
     double it = m_ntup->iteration();
-    double weight = m_ntup->weight_eq();
-    weight = weight*m_sigma/m_weights[it-1];
+    double weight = m_ntup->weight();
+    weight = weight*m_sigma/iteration_weights[it-1];
 
     // fill histograms (assumes fixed bin width!)
     h_mt->Fill(mt, weight*2/h_mt->GetXaxis()->GetBinWidth(1));
@@ -240,7 +269,7 @@ void AnalysisZprime::PostLoop () {
 void AnalysisZprime::GetResults () {
   printf("--- Results ---\n");
   double sigma = h_mtt->Integral("width");
-  if (std::abs(sigma - m_sigma) > 10e-11) {
+  if (abs(sigma - m_sigma) > 10e-11) {
     printf("Cross section from generation and analysis stage do not match!\n");
     printf("sigma_generation = %.15le\n", m_sigma);
     printf("sigma_analysis   = %.15le\n", sigma);
@@ -329,7 +358,7 @@ void AnalysisZprime::ApplyLuminosity(TH1D* h) {
     sigma = h->GetBinContent(i)*h->GetBinWidth(i);
     N = m_luminosity*pb*efficiency*sigma;
     h->SetBinContent(i, N);
-    dN = std::sqrt(N);
+    dN = sqrt(N);
     h->SetBinError(i, dN);
     // printf("sigma = %f, N = %f, dN = %f\n", sigma, N, dN);
   }
@@ -359,7 +388,7 @@ void AnalysisZprime::AsymmetryUncertainty(TH1D* h_Asymmetry, TH1D* h_A, TH1D* h_
     N_A = h_A->GetBinContent(i);
     N_B = h_B->GetBinContent(i);
     N = N_A + N_B;
-    if (N > 0) deltaA = std::sqrt((1.0 - A*A)/N);
+    if (N > 0) deltaA = sqrt((1.0 - A*A)/N);
     else deltaA = 0;
     // printf("A = %f, dA= %f, N= %f\n", A, deltaA, N);
     h_Asymmetry->SetBinError(i, deltaA);
@@ -376,46 +405,75 @@ void AnalysisZprime::CreateHistograms() {
 
   if (m_channel == "ll") {
     h_mtt = new TH1D("mll", "m_{ll}", nbins, Emin, Emax);
+    h_mtt->Sumw2();
   }
 
   if (m_channel == "tt" or m_channel == "bbllnn") {
     h_mtt = new TH1D("mtt", "m_{tt}", nbins, Emin, Emax);
+    h_mtt->Sumw2();
     h_ytt = new TH1D("ytt", "y_{tt}", nbins, -2.5, 2.5);
+    h_ytt->Sumw2();
     h_mt = new TH1D("mt", "m_{t}", nbins, 0, 350);
+    h_mt->Sumw2();
     h_mtbar = new TH1D("mtbar", "m_{#bar{t}}", nbins, 0, 350);
+    h_mtbar->Sumw2();
     h_mtt_F = new TH1D("mtt_F", "m_{tt}^{forward}", nbins, Emin, Emax);
+    h_mtt_F->Sumw2();
     h_mtt_B = new TH1D("mtt_B", "m_{tt}^{backward}", nbins, Emin, Emax);
+    h_mtt_B->Sumw2();
     h_mtt_Fy = new TH1D("mtt_Fy", "m_{tt}^{F(y)}", nbins, Emin, Emax);
+    h_mtt_Fy->Sumw2();
     h_mtt_By = new TH1D("mtt_By", "m_{tt}^{B(y)}", nbins, Emin, Emax);
+    h_mtt_By->Sumw2();
     h_cosTheta = new TH1D("cosTheta", "cos#theta", nbins, -1.0, 1.0);
+    h_cosTheta->Sumw2();
     h_cosThetaStar = new TH1D("cosThetaStar", "cos#theta^{*}", nbins, -1.0, 1.0);
+    h_cosThetaStar->Sumw2();
   }
 
   if (m_channel == "tt") {
     h_mtt_LL = new TH1D("mtt_LL", "m_{tt}^{LL}", nbins, Emin, Emax);
+    h_mtt_LL->Sumw2();
     h_mtt_LR = new TH1D("mtt_LR", "m_{tt}^{LR}", nbins, Emin, Emax);
+    h_mtt_LR->Sumw2();
     h_mtt_RL = new TH1D("mtt_RL", "m_{tt}^{RL}", nbins, Emin, Emax);
+    h_mtt_RL->Sumw2();
     h_mtt_RR = new TH1D("mtt_RR", "m_{tt}^{RR}", nbins, Emin, Emax);
+    h_mtt_RR->Sumw2();
   }
 
   if (m_channel == "bbllnn") {
     h_mtt_R = new TH1D("mtt_R", "m_{tt}^{reco}", nbins, Emin, Emax);
+    h_mtt_R->Sumw2();
     h_mt_R = new TH1D("mt_R", "m_{t}^{reco}", nbins, 0, 350);
+    h_mt_R->Sumw2();
     h_mtbar_R = new TH1D("mtbar_R", "m^{reco}_{#bar{t}}", nbins, 0, 350);
+    h_mtbar_R->Sumw2();
 
     h_mtt_FR = new TH1D("mtt_FR", "m_{tt}^{forward} (reco)", nbins, Emin, Emax);
+    h_mtt_FR->Sumw2();
     h_mtt_BR = new TH1D("mtt_BR", "m_{tt}^{backward} (reco)", nbins, Emin, Emax);
+    h_mtt_BR->Sumw2();
     h_mtt_FD = new TH1D("mtt_FD", "m_{tt}^{forward} (reco)", nbins, Emin, Emax);
+    h_mtt_FD->Sumw2();
     h_mtt_BD = new TH1D("mtt_BD", "m_{tt}^{backward} (reco)", nbins, Emin, Emax);
+    h_mtt_BD->Sumw2();
 
     h_mtt_Fl = new TH1D("mtt_Fl", "m_{tt}^{F,l}", nbins, Emin, Emax);
+    h_mtt_Fl->Sumw2();
     h_mtt_Bl = new TH1D("mtt_Bl", "m_{tt}^{B,l}", nbins, Emin, Emax);
+    h_mtt_Bl->Sumw2();
 
     h_ytt_R = new TH1D("ytt_R", "y_{tt}^{reco}", nbins, -2.5, 2.5);
+    h_ytt_R->Sumw2();
     h_cosTheta_R = new TH1D("cosTheta_R", "cos#theta_{reco}", nbins, -1.0, 1.0);
+    h_cosTheta_R->Sumw2();
     h_cosThetaStar_R = new TH1D("cosThetaStar_R", "cos#theta_{reco}^{*}", nbins, -1.0, 1.0);
+    h_cosThetaStar_R->Sumw2();
     h_pzNu = new TH1D("pzNu", "p_{z}^{#nu}", nbins, -500.0, 500.0);
+    h_pzNu->Sumw2();
     h_pzNu_R = new TH1D("pzNu_R", "p_{z}^{#nu} (reco)", nbins, -500.0, 500.0);
+    h_pzNu_R->Sumw2();
   }
 }
 
@@ -596,7 +654,7 @@ bool AnalysisZprime::PassCutsFiducial () {
 
 
 bool AnalysisZprime::PassCutsYtt () {
-  if (std::abs(P.Rapidity()) > 0)
+  if (abs(P.Rapidity()) > 0)
   {
     UpdateCutflow(c_ytt, true);
     return true;
@@ -613,7 +671,6 @@ void AnalysisZprime::PreLoop () {
   // this->CheckFiles();
   this->ResetCounters();
   this->SetupInputFiles();
-  this->SetupWeightsFiles();
   this->InitialiseCutflow();
   this->SetupOutputFiles();
   this->CreateHistograms();
@@ -639,18 +696,30 @@ void AnalysisZprime::ResetCounters () {
 }
 
 
-void AnalysisZprime::SetupWeightsFiles () {
-  TString weightsName(m_weightsFileName);
-  ifstream weights(weightsName.Data());
-  if (!weights.is_open()) printf("Error: failed to open %s!\n", weightsName.Data());
-  weights >> m_sigma;
+void AnalysisZprime::GetIterationWeights() {
+  iteration_weights.clear();
+  TString log(m_weightFiles->at(m_ifile));
+  ifstream logstream(log.Data());
+  if (!logstream.is_open()) printf("Error: failed to open %s!\n", log.Data());
+
   string line;
-  double weight;
-  while ( weights >> weight ) m_weights.push_back(weight);
-  weights.close();
-  // for (int i = 0; i < m_weights.size(); i++) {
-  //   printf("%f\n", m_weights[i]);
-  // }
+  string target = "Iteration weighting";
+  vector<string> parts;
+    while(getline(logstream, line)){
+      trim(line);
+      split(parts, line, is_any_of(":"));
+      for(auto part: parts){
+        trim(part);
+      }
+      // printf("Part 0: %s\n", parts[0].c_str());
+      if (parts[0] == target){
+        iteration_weights.push_back(stod(parts[2]));
+      }
+    }
+  logstream.close();
+  for (auto iteration_weight: iteration_weights) {
+    printf("VEGAS iteration weight = %f\n", iteration_weight);
+  }
 }
 
 
@@ -659,7 +728,7 @@ void AnalysisZprime::Loop () {
   for (Itr_s i = m_inputFiles->begin(); i != m_inputFiles->end(); ++i) {
     cout << "Processing:  '" << (*i) << "'." << endl;
     this->SetupTreesForNewFile((*i));
-
+    this->GetIterationWeights();
     Long64_t nEntries;
     nEntries = this->TotalEvents();
     printf("--- Event Loop ---\n");
@@ -672,6 +741,7 @@ void AnalysisZprime::Loop () {
       this->ProgressBar(jentry, nEntries-1, 50);
     }
     this->CleanUp();
+    m_ifile++;
   }
 }
 
@@ -686,8 +756,16 @@ void AnalysisZprime::SetupOutputFiles() {
 
 void AnalysisZprime::SetupInputFiles () {
   m_inputFiles = new vector<TString>;
-  if (m_addQCD) m_inputFiles->push_back(m_QCDfilename);
+  m_weightFiles = new vector<TString>;
+  if (m_addQCD) {
+    m_inputFiles->push_back(m_QCDfilename);
+    m_weightFiles->push_back(m_QCDweightFile);
+  }
   m_inputFiles->push_back(m_inputFileName);
+  // printf("m_weightsFileName = %s\n",m_weightsFileName.Data());
+  // printf("size = %i\n", m_weightFiles->size());
+  m_weightFiles->push_back(m_weightsFileName);
+
 }
 
 
@@ -720,7 +798,7 @@ void AnalysisZprime::CleanUp () {
 }
 
 
-std::vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(std::vector<TLorentzVector> p, int Q_l) {
+vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVector> p, int Q_l) {
   // Returns a vector of 4-momenta for all 6 particles in the final state with matching of b-quarks to each top
   // and matching of
   // Takes a vector of true final-state particle momenta as the argument and the charge of the final
@@ -740,9 +818,9 @@ std::vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(std::vector<
   this->UpdateCutflow(c_events, true);
   m_nReco++;
 
-  std::vector<TLorentzVector> p_R(p.size()); // I am returned!
+  vector<TLorentzVector> p_R(p.size()); // I am returned!
   TLorentzVector p_l, p_nu;
-  std::vector<TLorentzVector> p_b(2), p_q(2);
+  vector<TLorentzVector> p_b(2), p_q(2);
 
   p_b[0] = p[0];
   p_b[1] = p[1];
@@ -767,11 +845,11 @@ std::vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(std::vector<
   // Calculate neutrino pz solutions
   double px_l = p_l.Px(), py_l = p_l.Py(), pz_l = p_l.Pz(), E_l;
   double px_nu = p_nu.Px(), py_nu = p_nu.Py();
-  std::vector<std::complex<double> > root;
+  vector<complex<double> > root;
   double a = -999, b = -999, c = -999, k = -999;
 
-  E_l = std::sqrt(px_l*px_l + py_l*py_l + pz_l*pz_l);
-  if (std::abs(E_l - p_l.E()) > 0.00001) printf("ERROR: Lepton energy doesn't match.\n");
+  E_l = sqrt(px_l*px_l + py_l*py_l + pz_l*pz_l);
+  if (abs(E_l - p_l.E()) > 0.00001) printf("ERROR: Lepton energy doesn't match.\n");
 
   k = m_Wmass*m_Wmass/2 + px_l*px_nu + py_l*py_nu;
   a = px_l*px_l + py_l*py_l;
@@ -785,13 +863,15 @@ std::vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(std::vector<
   TLorentzVector p_nu_R;
   double dh = -999, dl = -999, E_nu_R = -999, mblv = -999, mjjb = -999;
   int imin = -999, jmin = -999, it = 0;
-  std::vector<double> rootR(root.size());
+  vector<double> rootR(root.size());
   unsigned int nReal;
 
   // re-weight for different iterations
   double iteration = m_ntup->iteration();
   double weight = m_ntup->weight();
-  weight = weight*m_sigma/m_weights[iteration-1];
+  weight = weight*m_sigma/iteration_weights[iteration-1];
+
+  printf("bork\n");
 
   if (root[0].imag() == 0 and root[1].imag() == 0) {
     // two real solutions; pick best match
@@ -815,9 +895,9 @@ std::vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(std::vector<
     E_nu_R = sqrt(px_nu*px_nu + py_nu*py_nu + rootR[i]*rootR[i]);
     p_nu_R.SetPxPyPzE(px_nu, py_nu, rootR[i], E_nu_R);
     for (int j = 0; j < 2; j++) {
-      mblv = (p_b[std::abs(j)] + p_l + p_nu_R).M();
+      mblv = (p_b[abs(j)] + p_l + p_nu_R).M();
       // printf("Lepton-reconstructed top mass = %f\n", mblv);
-      mjjb = (p_b[std::abs(j-1)] + p_q[0] + p_q[1]).M();
+      mjjb = (p_b[abs(j-1)] + p_q[0] + p_q[1]).M();
       // printf("Hadron-reconstructed top mass = %f\n", mjjb);
       // printf("For i = %i, j = %i: m_bjj = %.15le, mblv = %.15le\n", i, j, mjjb, mblv);
       dh = mjjb - m_tmass;
@@ -843,8 +923,8 @@ std::vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(std::vector<
   // Assess neutrino reconstruction performance.
 
   double pz_nu_truth = p_nu.Pz();
-  double Root0MinusTruth = std::abs(root[0].real() - pz_nu_truth);
-  double Root1MinusTruth = std::abs(root[1].real() - pz_nu_truth);
+  double Root0MinusTruth = abs(root[0].real() - pz_nu_truth);
+  double Root1MinusTruth = abs(root[1].real() - pz_nu_truth);
   int bestRoot;
   if (Root0MinusTruth < Root1MinusTruth) bestRoot = 0;
   else if (Root1MinusTruth < Root0MinusTruth) bestRoot = 1;
@@ -875,18 +955,18 @@ std::vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(std::vector<
 
   // Fill output vector
   double pz_nu_R = rootR[imin];
-  E_nu_R = std::sqrt(px_nu*px_nu + py_nu*py_nu + pz_nu_R*pz_nu_R);
+  E_nu_R = sqrt(px_nu*px_nu + py_nu*py_nu + pz_nu_R*pz_nu_R);
   p_nu_R.SetPxPyPzE(px_nu, py_nu, pz_nu_R, E_nu_R);
   if (Q_l == 1){
     p_R[0] = p_b[jmin];
-    p_R[1] = p_b[std::abs(jmin-1)];
+    p_R[1] = p_b[abs(jmin-1)];
     p_R[2] = p[2];
     p_R[3] = p_nu_R;
     p_R[4] = p[4];
     p_R[5] = p[5];
   }
   else if (Q_l == -1) {
-    p_R[0] = p_b[std::abs(jmin-1)];
+    p_R[0] = p_b[abs(jmin-1)];
     p_R[1] = p_b[jmin];
     p_R[2] = p[2];
     p_R[3] = p[3];
@@ -897,18 +977,18 @@ std::vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(std::vector<
 }
 
 
-std::vector<std::complex<double> > AnalysisZprime::SolveQuadratic(double a, double b, double c) {
+vector<complex<double> > AnalysisZprime::SolveQuadratic(double a, double b, double c) {
     // solves quadratic for both roots
     // returns both as complex values in a complex vector x(2)
 
-    std::vector<std::complex<double> > roots;
-    std::complex<double> term1;
-    std::complex<double> term2;
-    std::complex<double> discriminator;
+    vector<complex<double> > roots;
+    complex<double> term1;
+    complex<double> term2;
+    complex<double> discriminator;
 
     term1 = -b/(2*a);
     discriminator = b*b - 4*a*c;
-    term2 = std::sqrt(discriminator)/(2*a);
+    term2 = sqrt(discriminator)/(2*a);
 
     // print terms
     // printf("term1 = %f + %fi\n", term1.real(), term1.imag());
@@ -928,8 +1008,8 @@ const void AnalysisZprime::UpdateCutflow(int cut, bool passed) {
 
 
 void AnalysisZprime::InitialiseCutflow() {
-  m_cutflow = std::vector<int>(m_cuts, -999);
-  m_cutNames = std::vector<TString>(m_cuts, "no name");
+  m_cutflow = vector<int>(m_cuts, -999);
+  m_cutNames = vector<TString>(m_cuts, "no name");
   m_cutNames[c_entries] = "Entries";
   m_cutNames[c_topDecays] = "t->be#nu";
   m_cutNames[c_antitopDecays] = "#bar{t}->be#nu";
@@ -963,9 +1043,9 @@ inline void AnalysisZprime::ProgressBar(unsigned int x, unsigned int n, unsigned
   float ratio = x/(float)n;
   unsigned int c = ratio * w;
 
-  cout << std::setw(3) << (int)(ratio*100) << "% [";
+  cout << setw(3) << (int)(ratio*100) << "% [";
   for (unsigned int i = 0; i < c; i++) cout << "=";
   for (unsigned int i = c; i < w; i++) cout << " ";
-  if (x == n) cout << "\n" << std::flush;
-  else cout << "]\r" << std::flush;
+  if (x == n) cout << "\n" << flush;
+  else cout << "]\r" << flush;
 }

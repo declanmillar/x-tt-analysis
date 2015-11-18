@@ -11,22 +11,22 @@ class genNtupleCode(object):
     self.variables = self.allVariables()
     self.alphabeticalVars = self.sortAllVars()
     self.libpwd = os.environ.get("PWD") + '/lib'
- 
+
   def determineTrees(self):
     keys = gDirectory.GetListOfKeys()
     trees=[]
-    for i in keys:      
+    for i in keys:
       # if str(i.GetName()).find('physics') != -1  and str(i.GetName()).find('Meta') == -1:
       if str(i.GetName()).find('RootTuple') != -1:
         trees.append(self.inputFile.Get(i.GetName()))
-    return trees      
-  
+    return trees
+
   def allVariables(self):
     variables={}
     for i in self.trees:
       variables[i.GetName()]=self.singleTreeVars(i)
     return variables
-          
+
   def singleTreeVars(self,treeName):
     dict={}
     leaves = TObjArray(treeName.GetListOfLeaves())
@@ -44,17 +44,17 @@ class genNtupleCode(object):
         dict[branch.GetName().partition('.')[0]] = typeName
 
     return dict
-   
+
   def sortAllVars(self):
     sortedVars={}
     for i in self.trees:
       sortedVars[i.GetName()]=self.sortSingleTree(i.GetName())
     return sortedVars
-   
+
   def sortSingleTree(self,treeName):
     dict = self.variables[treeName]
     return self.sortDict(dict)
-   
+
   def sortDict(self,dict):
     keys = dict.keys()
     keys.sort()
@@ -71,30 +71,30 @@ class genNtupleCode(object):
     file.write('//  *   Author: John Morris (john.morris@cern.ch)                             * \n')
     file.write('//  *           Queen Mary University of London                               * \n')
     file.write('//  *   Editor: Declan Millar (declan.millar@cern.ch)                         * \n')
-    file.write('//  *   File Generated on ' + datetime.now().ctime() +'                            * \n')              
+    file.write('//  *   File Generated on ' + datetime.now().ctime() +'                            * \n')
     file.write('//  *                                                                         * \n')
-    file.write('//  ***************************************************************************/ \n')   
+    file.write('//  ***************************************************************************/ \n')
     file.write('\n')
-  
+
   def genAllTreeCode(self):
     for i in self.trees:
       print i.GetName()
       if i.GetName().find('L1CaloDB') == -1 and i.GetName().find('TriggerTree') == -1:
         self.genHeader(i.GetName())
         self.genCpp(i.GetName())
-      
+
   def genHeader(self,outputClass):
     varNames = self.alphabeticalVars[outputClass]
     myVars = self.variables[outputClass]
     # if not os.path.exists('D3PDLibs/'):
-    #   os.system('mkdir D3PDLibs')  
+    #   os.system('mkdir D3PDLibs')
     # fileName = 'D3PDLibs/' + outputClass + '.h'
-    fileName = outputClass + '.h'
+    fileName = outputClass + '.hpp'
     file = open(fileName,'w')
     self.gnugpl(file)
     file.write('// This class is for accessing the ' + outputClass + ' Ntuples  \n')
     file.write('// You should not have to edit this file \n')
-    file.write('\n') 
+    file.write('\n')
     file.write('#ifndef _NTUPLE_' + outputClass.upper() + '_H_ \n')
     file.write('#define _NTUPLE_' + outputClass.upper() + '_H_ \n')
     file.write('\n')
@@ -118,30 +118,30 @@ class genNtupleCode(object):
     file.write('    virtual ~' + outputClass + '(); \n')
     file.write('    Long64_t totalEvents(); \n')
     file.write('    Long64_t LoadTree(Long64_t entry); \n')
-    file.write('\n') 
+    file.write('\n')
     file.write('    // public inline member functions -- Use these to get access to the TTree variables \n')
     for i in varNames:
       file.write('    inline ' + myVars[i] + '  ' + i + '() const {b_' + i + '->GetEntry(m_currentEvent);return m_' + i + ';} \n')
-    file.write('\n')  
+    file.write('\n')
     file.write('    inline Long64_t currentEvent() const {return m_currentEvent;} \n')
     file.write('\n')
     file.write('  protected: \n')
     file.write('    Int_t    GetEntry(Long64_t entry); \n')
     file.write('    void     Init(TTree *tree); \n')
-    file.write('\n')  
+    file.write('\n')
     file.write('  private: \n')
     file.write('    ' + outputClass +'(); \n')
-    file.write('    ' + outputClass + '(const ' + outputClass + '& rhs);  \n')              
+    file.write('    ' + outputClass + '(const ' + outputClass + '& rhs);  \n')
     file.write('    void operator=(const ' + outputClass + '& rhs); \n')
     file.write('\n')
     file.write('    bool m_isMC; \n')
     file.write('    bool m_isAFII; \n')
-    file.write('\n')    
+    file.write('\n')
     file.write('    TTree          *fChain; \n')
     file.write('    int             fCurrent; \n')
     file.write('\n')
     file.write('    Long64_t m_currentEvent; \n')
-    file.write('\n')  
+    file.write('\n')
     for i in varNames:
       file.write('    ' + myVars[i] + '  m_' + i + '; \n')
     file.write('\n')
@@ -149,10 +149,10 @@ class genNtupleCode(object):
       file.write('    TBranch*  b_' + i + '; \n')
     file.write('}; \n')
     file.write('#endif \n')
-    file.write('\n')          
+    file.write('\n')
     file.close()
 
-       
+
   def genCpp(self,outputClass):
     varNames = self.alphabeticalVars[outputClass]
     myVars = self.variables[outputClass]
@@ -164,8 +164,8 @@ class genNtupleCode(object):
     self.gnugpl(file)
     file.write('// This class is for accessing the ' + outputClass + ' Ntuples  \n')
     file.write('// You should not have to edit this file \n')
-    file.write('\n') 
-    file.write('#include "' + outputClass + '.h" \n')
+    file.write('\n')
+    file.write('#include "' + outputClass + '.hpp" \n')
     file.write('\n')
     file.write(outputClass + '::' + outputClass + '(TTree* tree) : \n')
     file.write('  m_isMC(false), \n')
@@ -182,23 +182,23 @@ class genNtupleCode(object):
     file.write('  m_currentEvent = 0; \n')
     file.write('  this->Init(tree); \n')
     file.write('} \n')
-    file.write('\n')    
-    file.write(outputClass + '::~' + outputClass + '(){ \n') 
+    file.write('\n')
+    file.write(outputClass + '::~' + outputClass + '(){ \n')
     file.write('  if (!fChain) return; \n')
     for i in varNames:
       if myVars[i].find('vector') != -1:
-        file.write('  delete m_' + i + '; \n')    
+        file.write('  delete m_' + i + '; \n')
     file.write('} \n')
-    file.write('\n') 
+    file.write('\n')
     file.write('int ' + outputClass + '::GetEntry(Long64_t entry){ \n')
     file.write('  if (!fChain) return 0; \n')
     file.write('  return fChain->GetEntry(entry); \n')
     file.write('} \n')
-    file.write('\n')   
+    file.write('\n')
     file.write('Long64_t ' + outputClass + '::totalEvents(){ \n')
     file.write('  return fChain->GetEntriesFast(); \n')
     file.write('} \n')
-    file.write('\n')       
+    file.write('\n')
     file.write('Long64_t ' + outputClass + '::LoadTree(Long64_t entry){ \n')
     file.write('  m_currentEvent = entry; \n')
     file.write('  if (!fChain) return -5; \n')
@@ -211,20 +211,20 @@ class genNtupleCode(object):
     file.write('  } \n')
     file.write('  return centry; \n')
     file.write('} \n')
-    file.write('\n')  
+    file.write('\n')
     file.write('void ' + outputClass + '::Init(TTree* tree){ \n')
     for i in varNames:
       file.write('  m_' + i + ' = 0; \n')
-    file.write('\n')     
+    file.write('\n')
     file.write('  if (!tree) return; \n')
     file.write('  fChain = tree; \n')
     file.write('  fCurrent = -1; \n')
-    file.write('  fChain->SetMakeClass(1); \n')    
-    file.write('\n') 
+    file.write('  fChain->SetMakeClass(1); \n')
+    file.write('\n')
     for i in varNames:
       file.write('  fChain->SetBranchAddress("' + i + '", &m_' + i + ', &b_' + i + '); \n')
     file.write('} \n')
-    file.write('\n')               
+    file.write('\n')
     file.close()
 
 if __name__ == '__main__':
@@ -235,10 +235,3 @@ if __name__ == '__main__':
 
   g = genNtupleCode(sys.argv[1])
   g.genAllTreeCode()
-
-
-    
-
-      
-      
-      

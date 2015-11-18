@@ -7,17 +7,17 @@ LIB = Library
 SRC = Source
 OUT = .
 
-ROOTCFLAGS      = $(shell root-config --cflags)
-ROOTLIBS        = $(shell root-config --libs)
+ROOTCFLAGS      = $(shell root-config --cflags) -isystem /usr/local/Cellar/boost/1.59.0/include
+ROOTLIBS        = $(shell root-config --libs) -L /usr/local/Cellar/boost/1.59.0/lib -lboost_system
 
 C               = g++
-CFLAGS          = -O -Wall -fPIC -ggdb
+CFLAGS          = -O -Wall -fPIC -ggdb -std=c++11
 
 L               = g++
 LIBS            =
 
 CFLAGS          += $(ROOTCFLAGS)
-LIBS            += $(ROOTLIBS)
+LIBS            += $(ROOTLIBS) $(BOOSTLIBS)
 
 # Compile all files ending in .cpp in SRC
 $(LIB)/%.o: $(SRC)/%.cpp

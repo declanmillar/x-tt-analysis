@@ -1,8 +1,8 @@
 #ifndef _ANALYSIS_ZPRIME_H_
 #define _ANALYSIS_ZPRIME_H_
 
-#include "RootTuple.h"
-#include "atlas_style.h"
+#include "RootTuple.hpp"
+#include "atlas_style.hpp"
 #include "TCanvas.h"
 #include "TApplication.h"
 #include <cmath>
@@ -17,10 +17,12 @@
 #include <iomanip>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <boost/algorithm/string.hpp>
+#include <boost/asio.hpp>
 
 class AnalysisZprime{
 public:
-  AnalysisZprime(const TString channel, const TString model, const int energy, const TString options, const int vegasIterations, const int vegasPoints, const int luminosity, const int btags, const bool discardComplex, const TString analysis_label);
+  AnalysisZprime(const TString channel, const TString model, const int energy, const TString options, const int vegasIterations, const int vegasPoints, const bool addQCD, const int luminosity, const int btags, const bool discardComplex, const TString analysis_label);
   virtual ~AnalysisZprime();
   TString GetOutputFilename();
 
@@ -32,7 +34,7 @@ protected:
 
   void SetupInputFiles();
   void SetupOutputFiles();
-  void SetupWeightsFiles();
+  void GetIterationWeights();
 
   void PreLoop();
   void Loop();
@@ -102,6 +104,7 @@ private:
   bool m_discardEvent;
 
   // Counters
+  int m_ifile;
   unsigned int m_nReco;
   unsigned int m_nQuarksMatched;
   unsigned int m_nNeutrinoMatched;
@@ -111,11 +114,12 @@ private:
   bool m_R2solutionIsReal;
 
   double m_sigma;
-  vector<double> m_weights;
+  vector<double> iteration_weights;
 
   // Strings
   TString m_inputFileName;
   TString m_QCDfilename;
+  TString m_QCDweightFile;
   TString m_weightsFileName;
   TString m_outputFileName;
   TString m_dataDirectory;
@@ -136,6 +140,7 @@ private:
 
   // Input data
   vector<TString>* m_inputFiles;
+  vector<TString>* m_weightFiles;
   RootTuple* m_ntup;
   TChain* m_chainNtup;
 

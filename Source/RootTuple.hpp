@@ -51,10 +51,6 @@ class RootTuple{
     inline Double_t  weightLR() const {b_weightLR->GetEntry(m_currentEvent);return m_weightLR;}
     inline Double_t  weightRL() const {b_weightRL->GetEntry(m_currentEvent);return m_weightRL;}
     inline Double_t  weightRR() const {b_weightRR->GetEntry(m_currentEvent);return m_weightRR;}
-    inline Double_t  weight_ee() const {b_weight_ee->GetEntry(m_currentEvent);return m_weight_ee;}
-    inline Double_t  weight_emu() const {b_weight_emu->GetEntry(m_currentEvent);return m_weight_emu;}
-    inline Double_t  weight_eq() const {b_weight_eq->GetEntry(m_currentEvent);return m_weight_eq;}
-    inline Double_t  weight_qq() const {b_weight_qq->GetEntry(m_currentEvent);return m_weight_qq;}
 
     inline Long64_t currentEvent() const {return m_currentEvent;}
 

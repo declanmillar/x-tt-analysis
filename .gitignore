@@ -1,5 +1,5 @@
 *.o
-./analysis
+analysis
 gmon.out
 *.root
 .__afs*
