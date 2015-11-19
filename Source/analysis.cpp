@@ -43,20 +43,6 @@ AnalysisZprime::AnalysisZprime(const TString channel, const TString model, const
   this->PostLoop();
 }
 
-// if (final_state == 0) then
-//   ! multiply by branching ratios
-//   fac_ee = brtbln*brtbln
-//   fac_emu = 2*brtbln*brtbln
-//   fac_eq = brtbln*brtbqq
-//   fac_qq = brtbqq*brtbqq
-// else if (final_state > 0) then
-//   ! scale dilepton to other classifications
-//   fac_ee = 1
-//   fac_emu = 2
-//   fac_eq = 12
-//   fac_qq = 36
-// end if
-
 inline string BoolToString(bool b){return b ? "1" : "0";}
 
 void AnalysisZprime::CreateFilenames(){
@@ -196,15 +182,35 @@ void AnalysisZprime::EachEvent () {
 
   if (this->PassCuts())
   {
+    TString log(m_weightFiles->at(m_ifile));
+    ifstream logstream(log.Data());
+    if (!logstream.is_open()) printf("Error: failed to open %s!\n", log.Data());
+    string line;
+    string target = "Cross section";
+    vector<string> parts;
+    while(getline(logstream, line)){
+      trim(line);
+      split(parts, line, is_any_of(":"));
+      for(auto part: parts){
+        trim(part);
+      }
+      // printf("Part 0: %s\n", parts[0].c_str());
+      if (parts[0] == target){
+        m_sigma = stod(parts[2]);
+      }
+    }
+    logstream.close();
     // re-weight for different iterations
     double it = m_ntup->iteration();
     double weight = m_ntup->weight();
+    printf("weight = %f\n", weight);
     weight = weight*m_sigma/iteration_weights[it-1];
+    printf("weight = %f\n", weight);
 
     // fill histograms (assumes fixed bin width!)
     h_mt->Fill(mt, weight*2/h_mt->GetXaxis()->GetBinWidth(1));
     h_mtbar->Fill(mtb, weight*2/h_mtbar->GetXaxis()->GetBinWidth(1));
-    h_mtt->Fill(mtt, weight*2/h_mtt->GetXaxis()->GetBinWidth(1));
+    h_mtt->Fill(mtt, weight/h_mtt->GetXaxis()->GetBinWidth(1));
     h_ytt->Fill(ytt, weight*2/h_ytt->GetXaxis()->GetBinWidth(1));
     h_cosTheta->Fill(cosTheta, weight*2/h_cosTheta->GetXaxis()->GetBinWidth(1));
     h_cosThetaStar->Fill(cosThetaStar, weight*2/h_cosThetaStar->GetXaxis()->GetBinWidth(1));
@@ -274,7 +280,7 @@ void AnalysisZprime::GetResults () {
     printf("sigma_generation = %.15le\n", m_sigma);
     printf("sigma_analysis   = %.15le\n", sigma);
   }
-  else printf("sigma = %f [pb]\n", sigma);
+  else printf("sigma = %.15le [pb]\n", sigma);
   if (m_channel == "tt") this->TotalSpinAsymmetries();
 }
 
@@ -705,17 +711,17 @@ void AnalysisZprime::GetIterationWeights() {
   string line;
   string target = "Iteration weighting";
   vector<string> parts;
-    while(getline(logstream, line)){
-      trim(line);
-      split(parts, line, is_any_of(":"));
-      for(auto part: parts){
-        trim(part);
-      }
-      // printf("Part 0: %s\n", parts[0].c_str());
-      if (parts[0] == target){
-        iteration_weights.push_back(stod(parts[2]));
-      }
+  while(getline(logstream, line)){
+    trim(line);
+    split(parts, line, is_any_of(":"));
+    for(auto part: parts){
+      trim(part);
     }
+    // printf("Part 0: %s\n", parts[0].c_str());
+    if (parts[0] == target){
+      iteration_weights.push_back(stod(parts[2]));
+    }
+  }
   logstream.close();
   for (auto iteration_weight: iteration_weights) {
     printf("VEGAS iteration weight = %f\n", iteration_weight);
@@ -870,8 +876,6 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVe
   double iteration = m_ntup->iteration();
   double weight = m_ntup->weight();
   weight = weight*m_sigma/iteration_weights[iteration-1];
-
-  printf("bork\n");
 
   if (root[0].imag() == 0 and root[1].imag() == 0) {
     // two real solutions; pick best match
