@@ -208,12 +208,12 @@ void AnalysisZprime::EachEvent () {
     printf("weight = %f\n", weight);
 
     // fill histograms (assumes fixed bin width!)
-    h_mt->Fill(mt, weight*2/h_mt->GetXaxis()->GetBinWidth(1));
-    h_mtbar->Fill(mtb, weight*2/h_mtbar->GetXaxis()->GetBinWidth(1));
+    h_mt->Fill(mt, weight/h_mt->GetXaxis()->GetBinWidth(1));
+    h_mtbar->Fill(mtb, weight/h_mtbar->GetXaxis()->GetBinWidth(1));
     h_mtt->Fill(mtt, weight/h_mtt->GetXaxis()->GetBinWidth(1));
-    h_ytt->Fill(ytt, weight*2/h_ytt->GetXaxis()->GetBinWidth(1));
-    h_cosTheta->Fill(cosTheta, weight*2/h_cosTheta->GetXaxis()->GetBinWidth(1));
-    h_cosThetaStar->Fill(cosThetaStar, weight*2/h_cosThetaStar->GetXaxis()->GetBinWidth(1));
+    h_ytt->Fill(ytt, weight/h_ytt->GetXaxis()->GetBinWidth(1));
+    h_cosTheta->Fill(cosTheta, weight/h_cosTheta->GetXaxis()->GetBinWidth(1));
+    h_cosThetaStar->Fill(cosThetaStar, weight/h_cosThetaStar->GetXaxis()->GetBinWidth(1));
 
     // asymmetries
     if (cosThetaStar > 0) h_mtt_F->Fill(mtt, 2*weight/h_mtt_F->GetXaxis()->GetBinWidth(1));
@@ -253,7 +253,7 @@ void AnalysisZprime::EachEvent () {
       h_cosThetaStar_R->Fill(cosThetaStar_R1, weight/h_cosThetaStar_R->GetXaxis()->GetBinWidth(1));
       h_cosThetaStar_R->Fill(cosThetaStar_R2, weight/h_cosThetaStar_R->GetXaxis()->GetBinWidth(1));
 
-      h_pzNu->Fill(p[3].Pz(), weight*2/h_pzNu->GetXaxis()->GetBinWidth(1));
+      h_pzNu->Fill(p[3].Pz(), weight/h_pzNu->GetXaxis()->GetBinWidth(1));
 
       h_pzNu_R->Fill(p_R1[3].Pz(), weight/h_pzNu_R->GetXaxis()->GetBinWidth(1));
       h_pzNu_R->Fill(p_R2[5].Pz(), weight/h_pzNu_R->GetXaxis()->GetBinWidth(1));
