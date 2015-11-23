@@ -182,30 +182,12 @@ void AnalysisZprime::EachEvent () {
 
   if (this->PassCuts())
   {
-    TString log(m_weightFiles->at(m_ifile));
-    ifstream logstream(log.Data());
-    if (!logstream.is_open()) printf("Error: failed to open %s!\n", log.Data());
-    string line;
-    string target = "Cross section";
-    vector<string> parts;
-    while(getline(logstream, line)){
-      trim(line);
-      split(parts, line, is_any_of(":"));
-      for(auto part: parts){
-        trim(part);
-      }
-      // printf("Part 0: %s\n", parts[0].c_str());
-      if (parts[0] == target){
-        m_sigma = stod(parts[2]);
-      }
-    }
-    logstream.close();
+
     // re-weight for different iterations
     double it = m_ntup->iteration();
     double weight = m_ntup->weight();
-    printf("weight = %f\n", weight);
     weight = weight*m_sigma/iteration_weights[it-1];
-    printf("weight = %f\n", weight);
+    double weight_R = weight/2;
 
     // fill histograms (assumes fixed bin width!)
     h_mt->Fill(mt, weight/h_mt->GetXaxis()->GetBinWidth(1));
@@ -216,8 +198,8 @@ void AnalysisZprime::EachEvent () {
     h_cosThetaStar->Fill(cosThetaStar, weight/h_cosThetaStar->GetXaxis()->GetBinWidth(1));
 
     // asymmetries
-    if (cosThetaStar > 0) h_mtt_F->Fill(mtt, 2*weight/h_mtt_F->GetXaxis()->GetBinWidth(1));
-    if (cosThetaStar < 0) h_mtt_B->Fill(mtt, 2*weight/h_mtt_B->GetXaxis()->GetBinWidth(1));
+    if (cosThetaStar > 0) h_mtt_F->Fill(mtt, weight/h_mtt_F->GetXaxis()->GetBinWidth(1));
+    if (cosThetaStar < 0) h_mtt_B->Fill(mtt, weight/h_mtt_B->GetXaxis()->GetBinWidth(1));
 
     if (dy > 0) h_mtt_Fy->Fill(mtt, weight/h_mtt_Fy->GetXaxis()->GetBinWidth(1));
     if (dy < 0) h_mtt_By->Fill(mtt, weight/h_mtt_By->GetXaxis()->GetBinWidth(1));
@@ -229,41 +211,68 @@ void AnalysisZprime::EachEvent () {
       h_mtt_RR->Fill(mtt, m_ntup->weightRR()/h_mtt_RR->GetXaxis()->GetBinWidth(1));
     }
     else if (m_channel == "bbllnn") {
-      h_mtt_R->Fill(mtt_R1, weight/h_mtt_R->GetXaxis()->GetBinWidth(1));
-      h_mtt_R->Fill(mtt_R2, weight/h_mtt_R->GetXaxis()->GetBinWidth(1));
+      h_mtt_R->Fill(mtt_R1, weight_R/h_mtt_R->GetXaxis()->GetBinWidth(1));
+      h_mtt_R->Fill(mtt_R2, weight_R/h_mtt_R->GetXaxis()->GetBinWidth(1));
 
-      if (cosThetaStar_R1 > 0) h_mtt_FR->Fill(mtt_R1, weight/h_mtt_FR->GetXaxis()->GetBinWidth(1));
-      if (cosThetaStar_R1 < 0) h_mtt_BR->Fill(mtt_R1, weight/h_mtt_BR->GetXaxis()->GetBinWidth(1));
+      if (cosThetaStar_R1 > 0) h_mtt_FR->Fill(mtt_R1, weight_R/h_mtt_FR->GetXaxis()->GetBinWidth(1));
+      if (cosThetaStar_R1 < 0) h_mtt_BR->Fill(mtt_R1, weight_R/h_mtt_BR->GetXaxis()->GetBinWidth(1));
 
-      if (cosThetaStar_R2 > 0) h_mtt_FR->Fill(mtt_R2, weight/h_mtt_FR->GetXaxis()->GetBinWidth(1));
-      if (cosThetaStar_R2 < 0) h_mtt_BR->Fill(mtt_R2, weight/h_mtt_BR->GetXaxis()->GetBinWidth(1));
+      if (cosThetaStar_R2 > 0) h_mtt_FR->Fill(mtt_R2, weight_R/h_mtt_FR->GetXaxis()->GetBinWidth(1));
+      if (cosThetaStar_R2 < 0) h_mtt_BR->Fill(mtt_R2, weight_R/h_mtt_BR->GetXaxis()->GetBinWidth(1));
 
-      h_ytt_R->Fill(ytt_R1, weight/h_ytt_R->GetXaxis()->GetBinWidth(1));
-      h_ytt_R->Fill(ytt_R2, weight/h_ytt_R->GetXaxis()->GetBinWidth(1));
+      h_ytt_R->Fill(ytt_R1, weight_R/h_ytt_R->GetXaxis()->GetBinWidth(1));
+      h_ytt_R->Fill(ytt_R2, weight_R/h_ytt_R->GetXaxis()->GetBinWidth(1));
 
-      h_mt_R->Fill(mt_R1, weight/h_mt_R->GetXaxis()->GetBinWidth(1));
-      h_mt_R->Fill(mt_R2, weight/h_mt_R->GetXaxis()->GetBinWidth(1));
+      h_mt_R->Fill(mt_R1, weight_R/h_mt_R->GetXaxis()->GetBinWidth(1));
+      h_mt_R->Fill(mt_R2, weight_R/h_mt_R->GetXaxis()->GetBinWidth(1));
 
-      h_mtbar_R->Fill(mtb_R1, weight/h_mtbar_R->GetXaxis()->GetBinWidth(1));
-      h_mtbar_R->Fill(mtb_R2, weight/h_mtbar_R->GetXaxis()->GetBinWidth(1));
+      h_mtbar_R->Fill(mtb_R1, weight_R/h_mtbar_R->GetXaxis()->GetBinWidth(1));
+      h_mtbar_R->Fill(mtb_R2, weight_R/h_mtbar_R->GetXaxis()->GetBinWidth(1));
 
-      h_cosTheta_R->Fill(cosTheta_R1, weight/h_cosTheta_R->GetXaxis()->GetBinWidth(1));
-      h_cosTheta_R->Fill(cosTheta_R2, weight/h_cosTheta_R->GetXaxis()->GetBinWidth(1));
+      h_cosTheta_R->Fill(cosTheta_R1, weight_R/h_cosTheta_R->GetXaxis()->GetBinWidth(1));
+      h_cosTheta_R->Fill(cosTheta_R2, weight_R/h_cosTheta_R->GetXaxis()->GetBinWidth(1));
 
-      h_cosThetaStar_R->Fill(cosThetaStar_R1, weight/h_cosThetaStar_R->GetXaxis()->GetBinWidth(1));
-      h_cosThetaStar_R->Fill(cosThetaStar_R2, weight/h_cosThetaStar_R->GetXaxis()->GetBinWidth(1));
+      h_cosThetaStar_R->Fill(cosThetaStar_R1, weight_R/h_cosThetaStar_R->GetXaxis()->GetBinWidth(1));
+      h_cosThetaStar_R->Fill(cosThetaStar_R2, weight_R/h_cosThetaStar_R->GetXaxis()->GetBinWidth(1));
 
-      h_pzNu->Fill(p[3].Pz(), weight/h_pzNu->GetXaxis()->GetBinWidth(1));
+      h_pzNu->Fill(p[3].Pz(), weight_R/h_pzNu->GetXaxis()->GetBinWidth(1));
 
-      h_pzNu_R->Fill(p_R1[3].Pz(), weight/h_pzNu_R->GetXaxis()->GetBinWidth(1));
-      h_pzNu_R->Fill(p_R2[5].Pz(), weight/h_pzNu_R->GetXaxis()->GetBinWidth(1));
+      h_pzNu_R->Fill(p_R1[3].Pz(), weight_R/h_pzNu_R->GetXaxis()->GetBinWidth(1));
+      h_pzNu_R->Fill(p_R2[5].Pz(), weight_R/h_pzNu_R->GetXaxis()->GetBinWidth(1));
     }
   }
 }
 
+void AnalysisZprime::GetCrossSection(){
+  TString log(m_weightFiles->at(m_ifile));
+  ifstream logstream(log.Data());
+  if (!logstream.is_open()) printf("Error: failed to open %s!\n", log.Data());
+  string line;
+  string target = "Cross section";
+  vector<string> parts;
+  bool found = false;
+  while(getline(logstream, line)){
+    trim(line);
+    split(parts, line, is_any_of(":"));
+    for(auto part: parts){
+      trim(part);
+    }
+    // printf("Part 0: %s\n", parts[0].c_str());
+    if (parts[0] == target){
+      m_sigma = stod(parts[2]);
+      found = true;
+    }
+  }
+  logstream.close();
+  if (!found) {
+    printf("Error: Failed to read generation cross section. Check target log file: %s", m_weightsFileName.Data());
+    exit(1);
+  }
+}
 
 void AnalysisZprime::PostLoop () {
-  this->GetResults();
+  this->CheckResults();
+  if (m_channel == "tt") this->TotalSpinAsymmetries();
   if (m_channel == "bbllnn") this->CheckPerformance();
   this->MakeGraphs();
   this->PrintCutflow();
@@ -272,8 +281,8 @@ void AnalysisZprime::PostLoop () {
 }
 
 
-void AnalysisZprime::GetResults () {
-  printf("--- Results ---\n");
+void AnalysisZprime::CheckResults() {
+  // printf("--- Results ---\n");
   double sigma = h_mtt->Integral("width");
   if (abs(sigma - m_sigma) > 10e-11) {
     printf("Cross section from generation and analysis stage do not match!\n");
@@ -281,7 +290,6 @@ void AnalysisZprime::GetResults () {
     printf("sigma_analysis   = %.15le\n", sigma);
   }
   else printf("sigma = %.15le [pb]\n", sigma);
-  if (m_channel == "tt") this->TotalSpinAsymmetries();
 }
 
 
@@ -595,10 +603,10 @@ void AnalysisZprime::WriteHistograms() {
     h_mtt_BRn->Write();
     h_AFB_R->Write();
   }
-
   m_outputFile->Close();
-  delete h_cutflow;
+  // delete h_cutflow;
   delete m_outputFile;
+
 }
 
 
@@ -674,11 +682,14 @@ void AnalysisZprime::PreLoop () {
   printf("--- Setup ---\n");
   this->GetDataDirectory();
   this->CreateFilenames();
-  // this->CheckFiles();
-  this->ResetCounters();
   this->SetupInputFiles();
-  this->InitialiseCutflow();
   this->SetupOutputFiles();
+  this->ResetCounters();
+  this->GetCrossSection();
+  this->GetIterationWeights();
+  this->GetChannelFactors();
+  // this->CheckFiles();
+  this->InitialiseCutflow();
   this->CreateHistograms();
 }
 
@@ -711,6 +722,7 @@ void AnalysisZprime::GetIterationWeights() {
   string line;
   string target = "Iteration weighting";
   vector<string> parts;
+  bool found = false;
   while(getline(logstream, line)){
     trim(line);
     split(parts, line, is_any_of(":"));
@@ -719,13 +731,19 @@ void AnalysisZprime::GetIterationWeights() {
     }
     // printf("Part 0: %s\n", parts[0].c_str());
     if (parts[0] == target){
+      // printf("parts[2] = %s\n", parts[2].c_str());
       iteration_weights.push_back(stod(parts[2]));
+      found = true;
     }
   }
   logstream.close();
-  for (auto iteration_weight: iteration_weights) {
-    printf("VEGAS iteration weight = %f\n", iteration_weight);
+  if (!found) {
+    printf("Error: Failed to read vegas iteration weights. Check target log file: %s", m_weightsFileName.Data());
+    exit(1);
   }
+  // for (auto iteration_weight: iteration_weights) {
+  //   printf("VEGAS iteration weight = %f\n", iteration_weight);
+  // }
 }
 
 
@@ -734,7 +752,6 @@ void AnalysisZprime::Loop () {
   for (Itr_s i = m_inputFiles->begin(); i != m_inputFiles->end(); ++i) {
     cout << "Processing:  '" << (*i) << "'." << endl;
     this->SetupTreesForNewFile((*i));
-    this->GetIterationWeights();
     Long64_t nEntries;
     nEntries = this->TotalEvents();
     printf("--- Event Loop ---\n");
@@ -872,10 +889,10 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVe
   vector<double> rootR(root.size());
   unsigned int nReal;
 
-  // re-weight for different iterations
-  double iteration = m_ntup->iteration();
-  double weight = m_ntup->weight();
-  weight = weight*m_sigma/iteration_weights[iteration-1];
+  // re-weight for different iterations NOT SURE WHY IM DOING THIS HERE?
+  // double iteration = m_ntup->iteration();
+  // double weight = m_ntup->weight();
+  // weight = weight*m_sigma/iteration_weights[iteration-1];
 
   if (root[0].imag() == 0 and root[1].imag() == 0) {
     // two real solutions; pick best match
@@ -978,6 +995,7 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVe
     p_R[5] = p_nu_R;
   }
   return p_R;
+  printf("finished reconstruction\n");
 }
 
 
@@ -1002,6 +1020,38 @@ vector<complex<double> > AnalysisZprime::SolveQuadratic(double a, double b, doub
     roots.push_back(term1 - term2);
 
     return roots;
+}
+
+void AnalysisZprime::GetChannelFactors() {
+
+  // branching ratio for t->benu=bmuv=btaumu (1/9 with QCD corrections)
+  const double brtbln = 0.10779733;
+  // branching ratio for t->bqq is leftover after 3 l generations
+  const double brtbqq = 1 - brtbln*3;
+
+  if (m_channel == "tt") {
+    // multiply by branching ratios
+    // fac_ee = brtbln*brtbln;
+    // fac_emu = 2*brtbln*brtbln
+    m_sigma = m_sigma*2*brtbln*brtbqq;
+    // fac_qq = brtbqq*brtbqq
+  }
+  else if (m_channel == "bbllnn") {
+    // scale dilepton to other classifications
+    // fac_ee = 1
+    // fac_emu = 2
+    m_sigma = m_sigma*12;
+    // fac_qq = 36
+  }
+
+  // sigma_ee = sigma*fac_ee
+  // error_sigma_ee = error_sigma*fac_ee
+  // sigma_emu = sigma*fac_emu
+  // error_sigma_emu = error_sigma*fac_emu
+  // sigma_eq = sigma*fac_eq
+  // error_sigma_eq = error_sigma*fac_eq
+  // sigma_qq = sigma*fac_qq
+  // error_sigma_qq = error_sigma*fac_qq
 }
 
 

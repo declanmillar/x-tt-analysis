@@ -44,11 +44,13 @@ protected:
   void MakeGraphs();
   void MakeDistribution(TH1D* h, TString units);
   void WriteHistograms();
-  void GetResults();
+  void CheckResults();
   void CheckPerformance();
   void CreateFilenames();
   void CheckFiles();
+  void GetCrossSection();
   void GetDataDirectory();
+  void GetChannelFactors();
 
   double TotalAsymmetry(TH1D* h_A, TH1D* h_B);
   void TotalSpinAsymmetries();
@@ -114,6 +116,8 @@ private:
   bool m_R2solutionIsReal;
 
   double m_sigma;
+  double channelFactor;
+  double channelFactor_R;
   vector<double> iteration_weights;
 
   // Strings
