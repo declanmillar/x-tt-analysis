@@ -259,7 +259,7 @@ void AnalysisZprime::GetCrossSection(){
     }
     // printf("Part 0: %s\n", parts[0].c_str());
     if (parts[0] == target){
-      m_sigma = stod(parts[2]);
+      m_sigma = stod(parts[1]);
       found = true;
     }
   }
@@ -268,6 +268,7 @@ void AnalysisZprime::GetCrossSection(){
     printf("Error: Failed to read generation cross section. Check target log file: %s", m_weightsFileName.Data());
     exit(1);
   }
+  else printf("Generation Cross section = %.15le [pb]\n", m_sigma);
 }
 
 void AnalysisZprime::PostLoop () {
@@ -284,12 +285,12 @@ void AnalysisZprime::PostLoop () {
 void AnalysisZprime::CheckResults() {
   // printf("--- Results ---\n");
   double sigma = h_mtt->Integral("width");
-  if (abs(sigma - m_sigma) > 10e-11) {
+  if ((abs(sigma - m_sigma) > 10e-11) and (m_cuts < 2)) {
     printf("Cross section from generation and analysis stage do not match!\n");
     printf("sigma_generation = %.15le\n", m_sigma);
     printf("sigma_analysis   = %.15le\n", sigma);
   }
-  else printf("sigma = %.15le [pb]\n", sigma);
+  else printf("Analysis Cross Section = %.15le [pb]\n", sigma);
 }
 
 
@@ -1043,7 +1044,6 @@ void AnalysisZprime::GetChannelFactors() {
     m_sigma = m_sigma*12;
     // fac_qq = 36
   }
-
   // sigma_ee = sigma*fac_ee
   // error_sigma_ee = error_sigma*fac_ee
   // sigma_emu = sigma*fac_emu
