@@ -57,7 +57,7 @@ void AnalysisZprime::CreateFilenames(){
   TString QCDadded;
   if (m_addQCD) QCDadded = "QCD";
   else QCDadded = "";
-  m_outputFileName = base + "." + to_string(QCDadded) + to_string(m_btags) + BoolToString(m_discardComplex) + m_analysisLabel;
+  m_outputFileName = base + "." + QCDadded + to_string(m_btags) + BoolToString(m_discardComplex) + m_analysisLabel;
   if (m_luminosity > 0) m_outputFileName += "_" + to_string(m_luminosity);
   m_outputFileName += ".root";
   // printf("Input: '%s'.\n", m_inputFileName.Data());
