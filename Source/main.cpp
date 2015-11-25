@@ -37,7 +37,5 @@ int main(int argc, char* argv[])
   const bool discardComplex = opts["discard"].as<bool>();
   const bool addQCD = opts["qcd"].as<bool>();
 
-  printf("channel = %s\n", channel.Data());
-
   AnalysisZprime analysis(channel, model, energy, options, it, points, addQCD, luminosity, btags, discardComplex, analysisLabel);
 }
