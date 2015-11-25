@@ -1,10 +1,6 @@
-from ROOT import gROOT,gPad,gStyle,TCanvas,TFile,TLine,TLatex,TAxis,TLegend,TPostScript
-from ROOT import TH2D,TArrow,TCut,TPad,TPaveText,TGraph,TGraphAsymmErrors
-from ROOT import TGraph2D,TStyle,TBranch,gSystem,gDirectory
-from ROOT import TPave,TPaveStats
+import ROOT
 
-
-atlasStyle= TStyle("ATLAS","Atlas style")
+atlasStyle= ROOT.TStyle("ATLAS","Atlas style")
 
 # use plain black on white colors
 icol=0
@@ -65,32 +61,32 @@ atlasStyle.SetOptFit(0)
 atlasStyle.SetPadTickX(1)
 atlasStyle.SetPadTickY(1)
 
-gROOT.SetStyle("Plain")
+ROOT.gROOT.SetStyle("Plain")
 
 #gStyle.SetPadTickX(1)
 #gStyle.SetPadTickY(1)
-gROOT.SetStyle("ATLAS")
-gROOT.ForceStyle() 
-gStyle.SetOptTitle(0)
-gStyle.SetOptStat(0) 
-gStyle.SetOptFit(0) 
+ROOT.gROOT.SetStyle("ATLAS")
+ROOT.gROOT.ForceStyle()
+ROOT.gStyle.SetOptTitle(0)
+ROOT.gStyle.SetOptStat(0)
+ROOT.gStyle.SetOptFit(0)
 # overwrite atlas styles
 
 atlasStyle.SetMarkerSize(1.0)
-atlasStyle.SetPadLeftMargin(0.14)  
-atlasStyle.SetPadRightMargin(0.03)    
-atlasStyle.SetPadBottomMargin(0.12)	
-atlasStyle.SetPadTopMargin(0.02)  
+atlasStyle.SetPadLeftMargin(0.14)
+atlasStyle.SetPadRightMargin(0.03)
+atlasStyle.SetPadBottomMargin(0.12)
+atlasStyle.SetPadTopMargin(0.02)
 atlasStyle.SetFrameFillColor(0)
 
-def ATLASLabel(x,y,shift,Preliminary=False,color=1): 
-  l=TLatex() 
+def ATLASLabel(x,y,shift,Preliminary=False,color=1):
+  l=ROOT.ROOT.TLatex()
   l.SetNDC()
   l.SetTextFont(72)
   l.SetTextColor(color)
   l.DrawLatex(x,y,"ATLAS")
   if (Preliminary):
-    p=TLatex()
+    p=ROOT.TLatex()
     p.SetNDC();
     p.SetTextFont(42)
     p.SetTextColor(color)
@@ -98,9 +94,9 @@ def ATLASLabel(x,y,shift,Preliminary=False,color=1):
 
 
 
-def ATLASVersion(version="1.0",x=0.88,y=0.975,color=1): 
-  if (version): 
-    l=TLatex() 
+def ATLASVersion(version="1.0",x=0.88,y=0.975,color=1):
+  if (version):
+    l=ROOT.TLatex()
     l.SetTextAlign(22)
     l.SetTextSize(0.04)
     l.SetNDC()
@@ -108,26 +104,26 @@ def ATLASVersion(version="1.0",x=0.88,y=0.975,color=1):
     l.SetTextColor(color)
     l.DrawLatex(x,y,versionString)
 
-def myText(x,y,color=1,size=0.08,text=""): 
-  l=TLatex()
-  l.SetTextSize(size); 
+def myText(x,y,color=1,size=0.08,text=""):
+  l=ROOT.TLatex()
+  l.SetTextSize(size);
   l.SetNDC();
   l.SetTextColor(color);
   l.DrawLatex(x,y,text);
 
 
-def ATLAS_LABEL(x,y,color=1): 
-  l=TLatex() 
+def ATLAS_LABEL(x,y,color=1):
+  l=ROOT.TLatex()
   l.SetNDC()
   l.SetTextFont(72)
   l.SetTextColor(color);
   l.DrawLatex(x,y,"ATLAS");
 
 
-def myBoxText(x,y,boxsize,mcolor,text): 
+def myBoxText(x,y,boxsize,mcolor,text):
   tsize=0.06;
 
-  l=TLatex(); l.SetTextAlign(12);  
+  l=ROOT.TLatex(); l.SetTextAlign(12);
   l.SetNDC();
   l.DrawLatex(x,y,text);
 
@@ -147,4 +143,3 @@ def myBoxText(x,y,boxsize,mcolor,text):
   mline.SetLineStyle(1)
   y=(y1+y2)/2.
   mline.DrawLineNDC(x1,y,x2,y)
-
