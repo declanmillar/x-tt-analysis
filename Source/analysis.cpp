@@ -51,9 +51,9 @@ void AnalysisZprime::CreateFilenames(){
   m_QCDfilename = m_dataDirectory + "/" + m_channel + "_QCD_" + to_string(m_energy) + m_options + to_string(m_vegasIterations) + "x" + to_string(m_vegasPoints);
   // m_inputFilenames.push_back(m_QCDfilename)
   // m_inputFilenames.push_back(base)
-  m_QCDweightFile = m_QCDfilename + ".txt";
+  m_QCDweightFile = m_QCDfilename + ".log";
   m_QCDfilename = m_QCDfilename + ".root";
-  m_weightsFileName = base + ".txt";
+  m_weightsFileName = base + ".log";
   m_outputFileName = base + "." + to_string(m_btags) + BoolToString(m_discardComplex) + m_analysisLabel;
   if (m_luminosity > 0) m_outputFileName += "_" + to_string(m_luminosity);
   m_outputFileName += ".root";
