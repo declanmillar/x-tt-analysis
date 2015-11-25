@@ -19,6 +19,7 @@
 #include <unistd.h>
 #include <boost/algorithm/string.hpp>
 #include <boost/asio.hpp>
+#include <boost/program_options.hpp>
 
 class AnalysisZprime{
 public:
