@@ -8,7 +8,7 @@ SRC = Source
 OUT = .
 
 ROOTCFLAGS      = $(shell root-config --cflags) -isystem /usr/local/Cellar/boost/1.59.0/include
-ROOTLIBS        = $(shell root-config --libs) -L /usr/local/Cellar/boost/1.59.0/lib -lboost_system
+ROOTLIBS        = $(shell root-config --libs) -L /usr/local/Cellar/boost/1.59.0/lib -lboost_system -lboost_program_options
 
 C               = g++
 CFLAGS          = -O -Wall -fPIC -ggdb -std=c++11
