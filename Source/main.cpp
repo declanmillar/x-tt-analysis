@@ -7,10 +7,10 @@ int main(int argc, char* argv[])
   po::options_description desc("Allowed options");
   desc.add_options()
       ("help", "produce help message")
-      ("channel,c", po::value<string>()->default_value("bbllnn"), "final state")
-      ("model,m", po::value<string>()->default_value("SM"), "model")
-      ("options,o", po::value<string>()->default_value("_xc_"), "options")
-      ("label,l", po::value<string>()->default_value(""), "options")
+      ("channel,c", po::value<TString>()->default_value("bbllnn"), "final state")
+      ("model,m", po::value<TString>()->default_value("SM"), "model")
+      ("options,o", po::value<TString>()->default_value("_xc_"), "options")
+      ("label,l", po::value<TString>()->default_value(""), "labeTS")
       ("energy,e", po::value<int>()->default_value(13), "energy")
       ("it,i", po::value<int>()->default_value(5), "vegas iterations")
       ("points,p", po::value<int>()->default_value(2000000), "vegas points")
@@ -25,10 +25,10 @@ int main(int argc, char* argv[])
   AtlasROOTStyle atlasStyle;
   atlasStyle.SetStyle();
 
-  const string channel = opts["channel"].as<string>();
-  const string model = opts["model"].as<string>();
-  const string options = opts["options"].as<string>();
-  const string analysisLabel = opts["label"].as<string>();
+  const TString channel = opts["channel"].as<TString>();
+  const TString model = opts["model"].as<TString>();
+  const TString options = opts["options"].as<TString>();
+  const TString analysisLabel = opts["label"].as<TString>();
   const int energy = opts["energy"].as<int>();
   const int it = opts["it"].as<int>();
   const int points = opts["points"].as<int>();
