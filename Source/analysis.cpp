@@ -24,7 +24,7 @@ AnalysisZprime::AnalysisZprime(const TString channel, const TString model, const
   m_vegasPoints(vegasPoints),
   m_addQCD(addQCD),
   m_luminosity(luminosity),
-  m_btags(btags),
+  nBtags(btags),
   m_discardComplex(discardComplex),
   m_analysisLabel(analysisLabel),
   m_pi(3.14159265),
@@ -57,7 +57,7 @@ void AnalysisZprime::CreateFilenames(){
   TString QCDadded;
   if (m_addQCD) QCDadded = "QCD";
   else QCDadded = "";
-  m_outputFileName = base + "." + QCDadded + to_string(m_btags) + BoolToString(m_discardComplex) + m_analysisLabel;
+  m_outputFileName = base + "." + QCDadded + to_string(nBtags) + BoolToString(m_discardComplex) + m_analysisLabel;
   if (m_luminosity > 0) m_outputFileName += "_" + to_string(m_luminosity);
   m_outputFileName += ".root";
   // printf("Input: '%s'.\n", m_inputFileName.Data());
@@ -844,10 +844,11 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVe
   // printf("---\n");
   this->UpdateCutflow(c_events, true);
   m_nReco++;
+  int nNoTag = 4 - nBtags;
 
   vector<TLorentzVector> p_R(p.size()); // I am returned!
   TLorentzVector p_l, p_nu;
-  vector<TLorentzVector> p_b(2), p_q(2);
+  vector<TLorentzVector> p_b(nBtags), p_q(nNoTag);
 
   p_b[0] = p[0];
   p_b[1] = p[1];
@@ -889,7 +890,7 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVe
   double X2 = -999, X2min = -999;
   TLorentzVector p_nu_R;
   double dh = -999, dl = -999, E_nu_R = -999, mblv = -999, mjjb = -999;
-  int imin = -999, jmin = -999, it = 0;
+  int imin = -999, jmin = -999, kmin = -999, it = 0;
   vector<double> rootR(root.size());
   unsigned int nReal;
 
@@ -919,30 +920,33 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVe
     rootR[i] = root[i].real();
     E_nu_R = sqrt(px_nu*px_nu + py_nu*py_nu + rootR[i]*rootR[i]);
     p_nu_R.SetPxPyPzE(px_nu, py_nu, rootR[i], E_nu_R);
-    for (int j = 0; j < 2; j++) {
-      mblv = (p_b[abs(j)] + p_l + p_nu_R).M();
-      // printf("Lepton-reconstructed top mass = %f\n", mblv);
-      mjjb = (p_b[abs(j-1)] + p_q[0] + p_q[1]).M();
-      // printf("Hadron-reconstructed top mass = %f\n", mjjb);
-      // printf("For i = %i, j = %i: m_bjj = %.15le, mblv = %.15le\n", i, j, mjjb, mblv);
-      dh = mjjb - m_tmass;
-      dl = mblv - m_tmass;
-      X2 = dh*dh + dl*dl;
-      // printf("For i = %i, j = %i: X2 = %.15le\n", i, j, X2);
-      if (it == 0) {
-        X2min = X2;
-        imin = i;
-        jmin = j;
+    for (int j = 0; j < nBtags; j++) {
+      for (int k = 0; k < nNoTag; k++) {
+        mblv = (p_b[abs(j)] + p_l + p_nu_R).M();
+        // printf("Lepton-reconstructed top mass = %f\n", mblv);
+        mjjb = (p_b[abs(j-1)] + p_q[abs(k)] + p_q[abs(k-1)]).M();
+        // printf("Hadron-reconstructed top mass = %f\n", mjjb);
+        // printf("For i = %i, j = %i: m_bjj = %.15le, mblv = %.15le\n", i, j, mjjb, mblv);
+        dh = mjjb - m_tmass;
+        dl = mblv - m_tmass;
+        X2 = dh*dh + dl*dl;
+        // printf("For i = %i, j = %i: X2 = %.15le\n", i, j, X2);
+        if (it == 0) {
+          X2min = X2;
+          imin = i;
+          jmin = j;
+          kmin = k;
+        }
+        if (X2 < X2min) {
+          X2min = X2;
+          imin = i;
+          jmin = j;
+          kmin =k;
+        }
+        it++;
       }
-      if (X2 < X2min) {
-        X2min = X2;
-        imin = i;
-        jmin = j;
-      }
-      it++;
     }
   }
-
   // printf("Chosen solution: imin = %i, jmin = %i\n", imin, jmin);
 
   // Assess neutrino reconstruction performance.
@@ -987,14 +991,14 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVe
     p_R[1] = p_b[abs(jmin-1)];
     p_R[2] = p[2];
     p_R[3] = p_nu_R;
-    p_R[4] = p[4];
-    p_R[5] = p[5];
+    p_R[4] = p_q[abs(kmin)];
+    p_R[5] = p_q[abs(kmin-1)];
   }
   else if (Q_l == -1) {
     p_R[0] = p_b[abs(jmin-1)];
     p_R[1] = p_b[jmin];
-    p_R[2] = p[2];
-    p_R[3] = p[3];
+    p_R[2] = p_q[abs(kmin)];
+    p_R[3] = p_q[abs(kmin-1)];
     p_R[4] = p[4];
     p_R[5] = p_nu_R;
   }
