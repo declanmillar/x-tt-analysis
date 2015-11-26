@@ -92,7 +92,7 @@ private:
   int m_vegasPoints;
   int m_addQCD;
   int m_luminosity;
-  const int m_btags;
+  const int nBtags;
   const bool m_discardComplex;
   const TString m_analysisLabel;
 
