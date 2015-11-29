@@ -18,6 +18,7 @@ int main(int argc, char* argv[])
       ("luminosity,L", po::value<double>()->default_value(-1), "luminosity")
       ("discard,d", po::value<bool>()->default_value(false), "discard complex")
       ("qcd,q", po::value<bool>()->default_value(true), "add QCD")
+      ("verbose,v", po::value<bool>()->default_value(false), "run in verbose mode")
   ;
   po::variables_map opts;
   po::store(po::parse_command_line(argc, argv, desc), opts);
