@@ -894,232 +894,52 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVe
     p_nu_R.push_back(p);
   }
 
-  if (nBtags == 0) {
-  //   vector<TLorentzVector> p_q(4);
-  //
-  //   p_q[0] = p[0];
-  //   p_q[1] = p[1];
-  //   if (Q_l == 1) {
-  //     p_q[2] = p[4];
-  //     p_q[3]= p[5];
-  //   }
-  //   else if (Q_l == -1) {
-  //     p_q[2] = p[2];
-  //     p_q[3]= p[3];
-  //   }
-  //
-  //   for (unsigned int i = 0; i < nReal; i++) {
-  //     rootR[i] = root[i].real();
-  //     E_nu_R = sqrt(px_nu*px_nu + py_nu*py_nu + rootR[i]*rootR[i]);
-  //     p_nu_R.SetPxPyPzE(px_nu, py_nu, rootR[i], E_nu_R);
-  //     do {
-  //       mblv = (p_q[1] + p_l + p_nu_R).M();
-  //       mjjb = (p_q[2] + p_q[3] + p_q[4]).M();
-  //
-  //       dh = mjjb - m_tmass;
-  //       dl = mblv - m_tmass;
-  //       chi2 = dh*dh + dl*dl;
-  //
-  //       if (chi2 < chi2min) {
-  //         chi2min = chi2;
-  //         imin = i;
-  //         jmin = j;
-  //       }
-  //     } while ( std::next_permutation(p_q, p_q+4) );
-  //   }
-  //
-  //   // printf("Chosen solution: imin = %i, jmin = %i\n", imin, jmin);
-  //
-  //   // Assess neutrino reconstruction performance.
-  //
-  //   double pz_nu_truth = p_nu.Pz();
-  //   double Root0MinusTruth = abs(root[0].real() - pz_nu_truth);
-  //   double Root1MinusTruth = abs(root[1].real() - pz_nu_truth);
-  //   int bestRoot;
-  //   if (Root0MinusTruth < Root1MinusTruth) bestRoot = 0;
-  //   else if (Root1MinusTruth < Root0MinusTruth) bestRoot = 1;
-  //   else bestRoot = 0;
-  //   if (imin == bestRoot) m_nNeutrinoMatched++;
-  //
-  //   // Access q-matching performance
-  //   int b_lep = -999;
-  //   if (Q_l == 1) b_lep = 0;
-  //   if (Q_l == -1) b_lep = 1;
-  //
-  //   bool b_match;
-  //   if (b_lep == jmin) b_match = true;
-  //   else b_match = false;
-  //   if (b_match) m_nQuarksMatched++;
-  //
-  //   // Fill output vector
-  //   double pz_nu_R = rootR[imin];
-  //   E_nu_R = sqrt(px_nu*px_nu + py_nu*py_nu + pz_nu_R*pz_nu_R);
-  //   p_nu_R.SetPxPyPzE(px_nu, py_nu, pz_nu_R, E_nu_R);
-  //   if (Q_l == 1){
-  //     p_R[0] = p_q[1];
-  //     p_R[1] = p_q[2];
-  //     p_R[2] = p[2];
-  //     p_R[3] = p_nu_R;
-  //     p_R[4] = p[4];
-  //     p_R[5] = p[5];
-  //   }
-  //   else if (Q_l == -1) {
-  //     p_R[0] = p_q[1];
-  //     p_R[1] = p_q[2];
-  //     p_R[2] = p[3];
-  //     p_R[3] = p[4];
-  //     p_R[4] = p[5];
-  //     p_R[5] = p_nu_R;
-  //   }
-  //   return p_R;
-  //   printf("finished reconstruction\n");
-  }
-
-  else if (nBtags == 1) {
-  //
-  //     TLorentzVector p_b;
-  //     vector<TLorentzVector> p_q(3);
-  //
-  //     srand( time(NULL) ); // Randomize seed initialization
-  //     int ran = rand() % 2; // Generate a random number between 0 and 1
-  //     p_b = p[ran];
-  //     p_q[0] = p[1-ran];
-  //     if (Q_l == 1) {
-  //       p_q[1] = p[4];
-  //       p_q[2]= p[5];
-  //     }
-  //     else if (Q_l == -1) {
-  //       p_q[1] = p[2];
-  //       p_q[2]= p[3];
-  //     }
-  //
-  //     for (unsigned int i = 0; i < nReal; i++) {
-  //       rootR[i] = root[i].real();
-  //       E_nu_R = sqrt(px_nu*px_nu + py_nu*py_nu + rootR[i]*rootR[i]);
-  //       p_nu_R.SetPxPyPzE(px_nu, py_nu, rootR[i], E_nu_R);
-  //       do {
-  //         mblv = (p_q[1] + p_l + p_nu_R).M();
-  //         mjjb = (p_q[2] + p_q[3] + p_q[4]).M();
-  //
-  //         dh = mjjb - m_tmass;
-  //         dl = mblv - m_tmass;
-  //         chi2 = dh*dh + dl*dl;
-  //
-  //         if (it == 0) {
-  //           chi2min = chi2;
-  //           imin = i;
-  //           jmin = j;
-  //         }
-  //         if (chi2 < chi2min) {
-  //           chi2min = chi2;
-  //           imin = i;
-  //           jmin = j;
-  //         }
-  //         it++;
-  //       } while ( std::next_permutation(p_q, p_q+4) );
-  //     }
-  //
-  //     // printf("Chosen solution: imin = %i, jmin = %i\n", imin, jmin);
-  //
-  //     // Assess neutrino reconstruction performance.
-  //
-  //     double pz_nu_truth = p_nu.Pz();
-  //     double Root0MinusTruth = abs(root[0].real() - pz_nu_truth);
-  //     double Root1MinusTruth = abs(root[1].real() - pz_nu_truth);
-  //     int bestRoot;
-  //     if (Root0MinusTruth < Root1MinusTruth) bestRoot = 0;
-  //     else if (Root1MinusTruth < Root0MinusTruth) bestRoot = 1;
-  //     else bestRoot = 0;
-  //     if (imin == bestRoot) m_nNeutrinoMatched++;
-  //
-  //     // Access q-matching performance
-  //     int b_lep = -999;
-  //     if (Q_l == 1) b_lep = 0;
-  //     if (Q_l == -1) b_lep = 1;
-  //
-  //     bool b_match;
-  //     if (b_lep == jmin) b_match = true;
-  //     else b_match = false;
-  //     if (b_match) m_nQuarksMatched++;
-  //
-  //     // Fill output vector
-  //     double pz_nu_R = rootR[imin];
-  //     E_nu_R = sqrt(px_nu*px_nu + py_nu*py_nu + pz_nu_R*pz_nu_R);
-  //     p_nu_R.SetPxPyPzE(px_nu, py_nu, pz_nu_R, E_nu_R);
-  //     if (Q_l == 1){
-  //       p_R[0] = p_b[jmin];
-  //       p_R[1] = p_b[1-jmin];
-  //       p_R[2] = p[2];
-  //       p_R[3] = p_nu_R;
-  //       p_R[4] = p[4];
-  //       p_R[5] = p[5];
-  //     }
-  //     else if (Q_l == -1) {
-  //       p_R[0] = p_q[1];
-  //       p_R[1] = p_b[2];
-  //       p_R[2] = p[3];
-  //       p_R[3] = p[4];
-  //       p_R[4] = p[5];
-  //       p_R[5] = p_nu_R;
-  //     }
-  //     return p_R;
-  //     printf("finished reconstruction\n");
-    }
-
-  else if (nBtags == 2) {
-    vector<TLorentzVector> p_b(2), p_q(2);
-
-    p_b[0] = p[0];
-    p_b[1] = p[1];
-    if (Q_l == 1) {
-      p_q[0] = p[4];
-      p_q[1]= p[5];
-    }
-    else {
-      p_q[0] = p[2];
-      p_q[1]= p[3];
-    }
-
-    for (int i = 0; i < p_nu_R.size(); i++)  {
-      for (int j = 0; j < 2; j++) {
-        mblv = (p_b[j] + p_l + p_nu_R[i]).M();
-        mjjb = (p_b[1-j] + p_q[0] + p_q[1]).M();
-        dh = mjjb - m_tmass;
-        dl = mblv - m_tmass;
-        chi2 = dh*dh + dl*dl;
-        if (chi2 < chi2min) {
-          chi2min = chi2;
-          imin = i;
-          jmin = j;
-        }
-        // printf("i = %i, j = %i: m_bjj = %.15le, mblv = %.15le, chi2 = %.15le\n", i, j, mjjb, mblv, chi2);
-      }
-    }
-
-    if (Q_l == 1){
-      p_R[0] = p_b[jmin];
-      p_R[1] = p_b[1-jmin];
-      p_R[2] = p[2];
-      p_R[3] = p_nu_R[imin];
-      p_R[4] = p[4];
-      p_R[5] = p[5];
-    }
-    else if (Q_l == -1) {
-      p_R[0] = p_b[1-jmin];
-      p_R[1] = p_b[jmin];
-      p_R[2] = p[2];
-      p_R[3] = p[3];
-      p_R[4] = p[4];
-      p_R[5] = p_nu_R[imin];
-    }
-    // // Assess neutrino reconstruction performance.
-    // double pz_nu_truth = p_nu.Pz();
-    // double Root0MinusTruth = abs(root[0].real() - pz_nu_truth);
-    // double Root1MinusTruth = abs(root[1].real() - pz_nu_truth);
-    // int bestRoot;
-    // if (Root1MinusTruth < Root0MinusTruth) bestRoot = 1;
-    // else bestRoot = 0;
-    // if (imin == bestRoot) m_nNeutrinoMatched++;
+  // if (nBtags == 2) {
+    // vector<TLorentzVector> p_b(2), p_q(2);
+    //
+    // p_b[0] = p[0];
+    // p_b[1] = p[1];
+    // if (Q_l == 1) {
+    //   p_q[0] = p[4];
+    //   p_q[1]= p[5];
+    // }
+    // else {
+    //   p_q[0] = p[2];
+    //   p_q[1]= p[3];
+    // }
+    //
+    // for (int i = 0; i < p_nu_R.size(); i++)  {
+    //   for (int j = 0; j < 2; j++) {
+    //     mblv = (p_b[j] + p_l + p_nu_R[i]).M();
+    //     mjjb = (p_b[1-j] + p_q[0] + p_q[1]).M();
+    //     dh = mjjb - m_tmass;
+    //     dl = mblv - m_tmass;
+    //     chi2 = dh*dh + dl*dl;
+    //     if (chi2 < chi2min) {
+    //       chi2min = chi2;
+    //       imin = i;
+    //       jmin = j;
+    //     }
+    //     // printf("i = %i, j = %i: m_bjj = %.15le, mblv = %.15le, chi2 = %.15le\n", i, j, mjjb, mblv, chi2);
+    //   }
+    // }
+    //
+    // if (Q_l == 1){
+    //   p_R[0] = p_b[jmin];
+    //   p_R[1] = p_b[1-jmin];
+    //   p_R[2] = p[2];
+    //   p_R[3] = p_nu_R[imin];
+    //   p_R[4] = p[4];
+    //   p_R[5] = p[5];
+    // }
+    // else if (Q_l == -1) {
+    //   p_R[0] = p_b[1-jmin];
+    //   p_R[1] = p_b[jmin];
+    //   p_R[2] = p[2];
+    //   p_R[3] = p[3];
+    //   p_R[4] = p[4];
+    //   p_R[5] = p_nu_R[imin];
+    // }
     // // Assess b-matching performance
     // int b_lep;
     // if (Q_l == 1) b_lep = 0;
@@ -1136,12 +956,71 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVe
     // if (b_match) printf("b-assignment: correct. \n");
     // else printf("b-assignment: incorrect. \n");
     // printf("---\n");
-  }
+  // }
+  // // Assess neutrino reconstruction performance.
+  // double pz_nu_truth = p_nu.Pz();
+  // double Root0MinusTruth = abs(root[0].real() - pz_nu_truth);
+  // double Root1MinusTruth = abs(root[1].real() - pz_nu_truth);
+  // int bestRoot;
+  // if (Root0MinusTruth < Root1MinusTruth) bestRoot = 0;
+  // else if (Root1MinusTruth < Root0MinusTruth) bestRoot = 1;
+  // else bestRoot = 0;
+  // if (imin == bestRoot) m_nNeutrinoMatched++;
+  // else {
+    vector<TLorentzVector> p_q(4);
 
+    p_q[0] = p[0];
+    p_q[1] = p[1];
+    if (Q_l == 1) {
+      p_q[2] = p[4];
+      p_q[3]= p[5];
+    }
+    else if (Q_l == -1) {
+      p_q[2] = p[2];
+      p_q[3]= p[3];
+    }
+    vector<vector<int>> q_perms;
+    if (nBtags == 2) q_perms = {{0, 1, 2, 3}, {1, 0, 2, 3}};
+    if (nBtags == 1) q_perms = {{0, 1, 2, 3}, {0, 2, 1, 3}, {0, 3, 1, 2},
+                                {1, 0, 2, 3}, {2, 0, 1, 3}, {3, 0, 1, 2}};
+    if (nBtags == 0) q_perms = {{0, 1, 2, 3}, {0, 2, 1, 3}, {0, 3, 1, 2},
+                                {1, 0, 2, 3}, {2, 0, 1, 3}, {3, 0, 1, 2},
+                                {2, 0, 1, 3}, {2, 1, 0, 3}, {2, 3, 0, 1},
+                                {3, 0, 1, 2}, {3, 1, 0, 2}, {3, 2, 0, 1}};
+
+    for (int j = 0; j < q_perms.size(); j++) {
+      for (int i = 0; i < p_nu_R.size(); i++)  {
+        dh = (p_q[q_perms[j][0]] + p_l + p_nu_R[i]).M() - m_tmass;
+        dl = (p_q[q_perms[j][1]] + p_q[q_perms[j][2]] + p_q[q_perms[j][3]]).M() - m_tmass;
+        chi2 = dh*dh + dl*dl;
+        if (chi2 < chi2min) {
+          chi2min = chi2;
+          imin = i;
+          jmin = j;
+        }
+      }
+    }
+
+    if (Q_l == 1){
+      p_R[0] = p_q[q_perms[jmin][0]];
+      p_R[1] = p_q[q_perms[jmin][1]];
+      p_R[2] = p_l;
+      p_R[3] = p_nu_R[imin];
+      p_R[3] = p_q[q_perms[jmin][2]];
+      p_R[5] = p_q[q_perms[jmin][3]];
+    }
+    else if (Q_l == -1) {
+      p_R[0] = p_q[q_perms[jmin][1]];
+      p_R[1] = p_q[q_perms[jmin][0]];
+      p_R[2] = p_q[q_perms[jmin][2]];
+      p_R[3] = p_q[q_perms[jmin][3]];
+      p_R[4] = p_l;
+      p_R[5] = p_nu_R[imin];
+    }
+  // }
   return p_R;
   printf("finished reconstruction\n");
 }
-
 
 vector<complex<double> > AnalysisZprime::SolveQuadratic(double a, double b, double c) {
     // solves quadratic for both roots
