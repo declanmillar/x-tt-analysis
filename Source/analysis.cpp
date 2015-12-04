@@ -416,9 +416,9 @@ void AnalysisZprime::AsymmetryUncertainty(TH1D* h_Asymmetry, TH1D* h_A, TH1D* h_
 
 void AnalysisZprime::CreateHistograms() {
 
-  double binWidth = 0.05;
-  double Emin = 0.025;
-  double Emax = 13.025;
+  double binWidth = 0.1;
+  double Emin = 1.95;
+  double Emax = 4.05;
   double nbins = (Emax-Emin)/binWidth;
 
   if (m_channel == "ll") {
@@ -1011,16 +1011,16 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVe
   else bestRoot = 0;
   if (imin == bestRoot) m_nNeutrinoMatched++;
   // Print reconstruction performance.
-  printf("True pz_nu = %f\n", p_nu.Pz());
-  printf("Possible neutrino solutions:\n");
-  printf("                             %f + %fi\n", roots[0].real(), roots[0].imag());
-  printf("                             %f + %fi\n", roots[1].real(), roots[1].imag());
-  printf("Chosen solution:             %f + %fi\n", roots[imin].real(), roots[imin].imag());
-  if (imin == bestRoot) printf("Neutrino solution: correct. \n");
-  else printf("Neutrino solution: incorrect. \n");
-  if (b_lep == jmin) printf("b-assignment: correct. \n");
-  else printf("b-assignment: incorrect. \n");
-  printf("---\n");
+  // printf("True pz_nu = %f\n", p_nu.Pz());
+  // printf("Possible neutrino solutions:\n");
+  // printf("                             %f + %fi\n", roots[0].real(), roots[0].imag());
+  // printf("                             %f + %fi\n", roots[1].real(), roots[1].imag());
+  // printf("Chosen solution:             %f + %fi\n", roots[imin].real(), roots[imin].imag());
+  // if (imin == bestRoot) printf("Neutrino solution: correct. \n");
+  // else printf("Neutrino solution: incorrect. \n");
+  // if (b_lep == jmin) printf("b-assignment: correct. \n");
+  // else printf("b-assignment: incorrect. \n");
+  // printf("---\n");
 
   return p_R;
   printf("finished reconstruction\n");
