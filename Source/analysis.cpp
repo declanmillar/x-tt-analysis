@@ -877,6 +877,7 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVe
   c = (px_nu*px_nu + py_nu*py_nu)*E_l*E_l - k*k;
 
   roots = this->SolveQuadratic(a, b, c);
+  p_nu_R.clear();
   if (roots[0].imag() == 0 and roots[1].imag() == 0) {
     // two real solutions; pick best match
     this->UpdateCutflow(c_realSolutions, true);
@@ -908,7 +909,8 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVe
       p_q[0] = p[2];
       p_q[1]= p[3];
     }
-
+    imin = 0;
+    jmin = 0;
     for (int i = 0; i < p_nu_R.size(); i++)  {
       for (int j = 0; j < 2; j++) {
         mblv = (p_b[j] + p_l + p_nu_R[i]).M();
@@ -995,6 +997,7 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVe
       p_R[5] = p_nu_R[imin];
     }
   }
+
   // Assess b-matching performance
   int b_lep;
   if (Q_l == 1) b_lep = 0;
@@ -1021,9 +1024,7 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVe
   // if (b_lep == jmin) printf("b-assignment: correct. \n");
   // else printf("b-assignment: incorrect. \n");
   // printf("---\n");
-
   return p_R;
-  printf("finished reconstruction\n");
 }
 
 vector<complex<double> > AnalysisZprime::SolveQuadratic(double a, double b, double c) {
