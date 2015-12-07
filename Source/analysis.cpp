@@ -965,6 +965,8 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVe
                                 {2, 0, 1, 3}, {2, 1, 0, 3}, {2, 3, 0, 1},
                                 {3, 0, 1, 2}, {3, 1, 0, 2}, {3, 2, 0, 1}};
 
+    imin = 0;
+    jmin = 0;
     for (int i = 0; i < p_nu_R.size(); i++)  {
       for (int j = 0; j < q_perms.size(); j++) {
         mblv = (p_q[q_perms[j][0]] + p_l + p_nu_R[i]).M();
