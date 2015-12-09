@@ -168,6 +168,9 @@ void AnalysisZprime::EachEvent () {
     mt_R2 = p_t_R2.M();
     mtb_R2 = p_tb_R2.M();
 
+
+
+
     // printf("Reconstructed top mass\n---\n");
     // printf("m_top = %f TeV\n", mt);
     // printf("m_antitop = %f TeV\n", mtb);
@@ -176,6 +179,8 @@ void AnalysisZprime::EachEvent () {
     // printf("m_top (reco)[had] = %f TeV\n", mt_R2);
     // printf("m_antitop (reco)[lep] = %f TeV\n", mtb_R2);
     // printf("---\n");
+
+
 
     cosTheta_R1 = p_t_R1.CosTheta();
     cosTheta_R2 = p_t_R2.CosTheta();
@@ -416,9 +421,9 @@ void AnalysisZprime::AsymmetryUncertainty(TH1D* h_Asymmetry, TH1D* h_A, TH1D* h_
 
 void AnalysisZprime::CreateHistograms() {
 
-  double binWidth = 0.1;
-  double Emin = 1.95;
-  double Emax = 4.05;
+  double binWidth = 0.05;
+  double Emin = 2.00;
+  double Emax = 4.00;
   double nbins = (Emax-Emin)/binWidth;
 
   if (m_channel == "ll") {
