@@ -772,6 +772,7 @@ void AnalysisZprime::GetIterationWeights() {
 
 void AnalysisZprime::Loop () {
   // Loop over all files
+  m_ifile = 0;
   for (Itr_s i = m_inputFiles->begin(); i != m_inputFiles->end(); ++i) {
     cout << "Processing:  '" << (*i) << "'." << endl;
     this->SetupTreesForNewFile((*i));
