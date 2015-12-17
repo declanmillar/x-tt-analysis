@@ -705,6 +705,7 @@ void AnalysisZprime::PreLoop () {
   this->SetupInputFiles();
   this->SetupOutputFiles();
   this->ResetCounters();
+  printf("Here708\n");
   this->GetCrossSection();
   this->GetIterationWeights();
   this->GetChannelFactors();
