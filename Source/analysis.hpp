@@ -35,7 +35,6 @@ protected:
 
   void SetupInputFiles();
   void SetupOutputFiles();
-  void GetIterationWeights();
 
   void PreLoop();
   void Loop();
@@ -49,7 +48,9 @@ protected:
   void CheckPerformance();
   void CreateFilenames();
   void CheckFiles();
-  void GetCrossSection();
+  void GetCrossSection(TString log);
+  void GetIterationWeights(TString log);
+
   void GetDataDirectory();
   void GetChannelFactors();
 
@@ -107,7 +108,6 @@ private:
   bool m_discardEvent;
 
   // Counters
-  int m_ifile;
   unsigned int m_nReco;
   unsigned int m_nQuarksMatched;
   unsigned int m_nNeutrinoMatched;

@@ -255,37 +255,6 @@ void AnalysisZprime::EachEvent () {
   }
 }
 
-void AnalysisZprime::GetCrossSection(){
-  printf("here\n");
-  TString log(m_weightFiles->at(m_ifile));
-  printf("here261\n");
-  ifstream logstream(log.Data());
-  if (!logstream.is_open()) printf("Error: failed to open %s!\n", log.Data());
-  string line;
-  string target = "Cross section";
-  vector<string> parts;
-  bool found = false;
-  printf("here\n");
-  while(getline(logstream, line)){
-    trim(line);
-    split(parts, line, is_any_of(":"));
-    for(auto part: parts){
-      trim(part);
-    }
-    // printf("Part 0: %s\n", parts[0].c_str());
-    if (parts[0] == target){
-      m_sigma = stod(parts[1]);
-      found = true;
-    }
-  }
-  logstream.close();
-  if (!found) {
-    printf("Error: Failed to read generation cross section. Check target log file: %s", m_weightsFileName.Data());
-    exit(1);
-  }
-  else printf("Generation Cross section = %.15le [pb]\n", m_sigma);
-}
-
 void AnalysisZprime::PostLoop () {
   this->CheckResults();
   if (m_channel == "tt") this->TotalSpinAsymmetries();
@@ -704,14 +673,9 @@ void AnalysisZprime::PreLoop () {
   this->GetDataDirectory();
   this->CreateFilenames();
   this->SetupInputFiles();
-  printf("Here706\n");
   this->SetupOutputFiles();
   this->ResetCounters();
-  printf("Here708\n");
-  this->GetCrossSection();
-  this->GetIterationWeights();
   this->GetChannelFactors();
-  // this->CheckFiles();
   this->InitialiseCutflow();
   this->CreateHistograms();
 }
@@ -725,7 +689,7 @@ void AnalysisZprime::GetDataDirectory(){
 }
 
 
-void AnalysisZprime::ResetCounters () {
+void AnalysisZprime::ResetCounters() {
   if (m_luminosity >= 0) m_useLumi = true;
   else m_useLumi = false;
   m_nQuarksMatched = 0;
@@ -735,13 +699,39 @@ void AnalysisZprime::ResetCounters () {
   m_nComplexRoots = 0;
 }
 
-
-void AnalysisZprime::GetIterationWeights() {
-  iteration_weights.clear();
-  TString log(m_weightFiles->at(m_ifile));
+void AnalysisZprime::GetCrossSection(TString log){
+  log.Replace(log.Last('.'), 5, ".log");
+  printf("%s\n", log.Data());
   ifstream logstream(log.Data());
   if (!logstream.is_open()) printf("Error: failed to open %s!\n", log.Data());
+  string line;
+  string target = "Cross section";
+  vector<string> parts;
+  bool found = false;
+  while(getline(logstream, line)){
+    trim(line);
+    split(parts, line, is_any_of(":"));
+    for(auto part: parts){
+      trim(part);
+      // printf("%s\n", part.c_str());
+    }
+    if (parts[0] == target){
+      m_sigma = stod(parts[1]);
+      found = true;
+    }
+  }
+  logstream.close();
+  if (!found) {
+    printf("Error: Failed to read generation cross section. Check target log file: %s", log.Data());
+    exit(1);
+  }
+  else printf("Generation Cross section = %.15le [pb]\n", m_sigma);
+}
 
+void AnalysisZprime::GetIterationWeights(TString log) {
+  log.Replace(log.Last('.'), 5, ".log");
+  ifstream logstream(log.Data());
+  if (!logstream.is_open()) printf("Error: failed to open %s!\n", log.Data());
   string line;
   string target = "Iteration weighting";
   vector<string> parts;
@@ -752,9 +742,7 @@ void AnalysisZprime::GetIterationWeights() {
     for(auto part: parts){
       trim(part);
     }
-    // printf("Part 0: %s\n", parts[0].c_str());
     if (parts[0] == target){
-      // printf("parts[2] = %s\n", parts[2].c_str());
       iteration_weights.push_back(stod(parts[2]));
       found = true;
     }
@@ -764,18 +752,16 @@ void AnalysisZprime::GetIterationWeights() {
     printf("Error: Failed to read vegas iteration weights. Check target log file: %s", m_weightsFileName.Data());
     exit(1);
   }
-  // for (auto iteration_weight: iteration_weights) {
-  //   printf("VEGAS iteration weight = %f\n", iteration_weight);
-  // }
 }
 
 
 void AnalysisZprime::Loop () {
   // Loop over all files
-  m_ifile = 0;
   for (Itr_s i = m_inputFiles->begin(); i != m_inputFiles->end(); ++i) {
     cout << "Processing:  '" << (*i) << "'." << endl;
     this->SetupTreesForNewFile((*i));
+    this->GetCrossSection(*i);
+    this->GetIterationWeights(*i);
     Long64_t nEntries;
     nEntries = this->TotalEvents();
     printf("--- Event Loop ---\n");
@@ -788,7 +774,6 @@ void AnalysisZprime::Loop () {
       this->ProgressBar(jentry, nEntries-1, 50);
     }
     this->CleanUp();
-    m_ifile++;
   }
 }
 
@@ -809,10 +794,7 @@ void AnalysisZprime::SetupInputFiles () {
     m_weightFiles->push_back(m_QCDweightFile);
   }
   m_inputFiles->push_back(m_inputFileName);
-  printf("m_weightsFileName = %s\n",m_weightsFileName.Data());
-  printf("size = %i\n", m_weightFiles->size());
   m_weightFiles->push_back(m_weightsFileName);
-  printf("size = %i\n", m_weightFiles->size());
 }
 
 
