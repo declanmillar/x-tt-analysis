@@ -699,26 +699,16 @@ bool AnalysisZprime::PassCutsYtt () {
 void AnalysisZprime::PreLoop () {
   printf("--- Setup ---\n");
   this->GetDataDirectory();
-  printf("--- Setup ---\n");
   this->CreateFilenames();
-  printf("--- Setup ---\n");
   this->SetupInputFiles();
-  printf("--- Setup ---\n");
   this->SetupOutputFiles();
-  printf("--- Setup ---\n");
   this->ResetCounters();
-  printf("--- Setup ---\n");
   this->GetCrossSection();
-  printf("--- Setup ---\n");
   this->GetIterationWeights();
-  printf("--- Setup ---\n");
   this->GetChannelFactors();
-  printf("--- Setup ---\n");
   // this->CheckFiles();
   this->InitialiseCutflow();
-  printf("--- Setup ---\n");
   this->CreateHistograms();
-  printf("--- End of Preloop ---\n");
 }
 
 void AnalysisZprime::GetDataDirectory(){
