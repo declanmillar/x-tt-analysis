@@ -12,7 +12,7 @@ int main(int argc, char* argv[])
       ("options,o", po::value<string>()->default_value("_xc_"), "options")
       ("label,l", po::value<string>()->default_value(""), "labeTS")
       ("energy,e", po::value<int>()->default_value(13), "energy")
-      ("it,i", po::value<int>()->default_value(5), "vegas iterations")
+      ("itmx,N", po::value<int>()->default_value(5), "vegas iterations")
       ("points,n", po::value<int>()->default_value(5000000), "vegas points")
       ("btags,b", po::value<int>()->default_value(2), "btags")
       ("luminosity,L", po::value<double>()->default_value(-1), "luminosity")
@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
   const TString options = opts["options"].as<string>();
   const TString analysisLabel = opts["label"].as<string>();
   const int energy = opts["energy"].as<int>();
-  const int it = opts["it"].as<int>();
+  const int it = opts["itmx"].as<int>();
   const int points = opts["points"].as<int>();
   const int btags = opts["btags"].as<int>();
   const int luminosity = opts["luminosity"].as<double>();
