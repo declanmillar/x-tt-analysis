@@ -258,6 +258,7 @@ void AnalysisZprime::EachEvent () {
 void AnalysisZprime::GetCrossSection(){
   printf("here\n");
   TString log(m_weightFiles->at(m_ifile));
+  printf("here261\n");
   ifstream logstream(log.Data());
   if (!logstream.is_open()) printf("Error: failed to open %s!\n", log.Data());
   string line;
