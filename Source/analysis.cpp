@@ -98,7 +98,7 @@ void AnalysisZprime::EachEvent () {
     Pcm += pcm[i];
   }
 
-  if (m_channel == "bbllnn" or m_channel == "tt_bbllvv") {
+  if (m_channel == "bbllnn" or m_channel == "tt-bbllvv") {
     p_R1 = this->ReconstructSemiLeptonic(p,1); // top decays leptonically
     p_R2 = this->ReconstructSemiLeptonic(p,-1); // top decays hadronically
 
@@ -129,7 +129,7 @@ void AnalysisZprime::EachEvent () {
     p_t = pcm[0];
     p_tb = pcm[1];
   }
-  else if (m_channel == "bbllnn" or m_channel == "tt_bbllvv") {
+  else if (m_channel == "bbllnn" or m_channel == "tt-bbllvv") {
     p_t = pcm[0] + pcm[2] + pcm[3];
     p_tb = pcm[1] + pcm[4] + pcm[5];
     p_t_R1 = pcm_R1[0] + pcm_R1[2] + pcm_R1[3];
@@ -138,6 +138,7 @@ void AnalysisZprime::EachEvent () {
     p_tb_R2 = pcm_R2[1] + pcm_R2[4] + pcm_R2[5];
   }
 
+  double deltaPhi;
   double mtt = P.M()/1000;
   double mtt_R1 = P_R1.M()/1000;
   double mtt_R2 = P_R2.M()/1000;
@@ -160,13 +161,14 @@ void AnalysisZprime::EachEvent () {
   double cosThetaStar_R1 = -999;
   double cosThetaStar_R2 = -999;
 
-  if (m_channel == "bbllnn" or m_channel == "tt_bbllvv"){
+  if (m_channel == "bbllnn" or m_channel == "tt-bbllvv"){
     ytt_R1 = P_R1.Rapidity();
     ytt_R2 = P_R2.Rapidity();
     mt_R1 = p_t_R1.M();
     mtb_R1 = p_tb_R1.M();
     mt_R2 = p_t_R2.M();
     mtb_R2 = p_tb_R2.M();
+    deltaPhi = p[2].Phi() - p[4].Phi();
 
 
 
@@ -218,7 +220,9 @@ void AnalysisZprime::EachEvent () {
       h_mtt_RL->Fill(mtt, m_ntup->weightRL()/h_mtt_RL->GetXaxis()->GetBinWidth(1));
       h_mtt_RR->Fill(mtt, m_ntup->weightRR()/h_mtt_RR->GetXaxis()->GetBinWidth(1));
     }
-    else if (m_channel == "bbllnn" or m_channel == "tt_bbllvv") {
+    else if (m_channel == "bbllnn" or m_channel == "tt-bbllvv") {
+      h_deltaPhi->Fill(deltaPhi, weight/h_deltaPhi->GetXaxis()->GetBinWidth(1));
+
       h_mtt_R->Fill(mtt_R1, weight_R/h_mtt_R->GetXaxis()->GetBinWidth(1));
       h_mtt_R->Fill(mtt_R2, weight_R/h_mtt_R->GetXaxis()->GetBinWidth(1));
 
@@ -282,7 +286,7 @@ void AnalysisZprime::GetCrossSection(){
 void AnalysisZprime::PostLoop () {
   this->CheckResults();
   if (m_channel == "tt") this->TotalSpinAsymmetries();
-  if (m_channel == "bbllnn" or m_channel == "tt_bbllvv") this->CheckPerformance();
+  if (m_channel == "bbllnn" or m_channel == "tt-bbllvv") this->CheckPerformance();
   this->MakeGraphs();
   this->PrintCutflow();
   this->WriteHistograms();
@@ -431,7 +435,7 @@ void AnalysisZprime::CreateHistograms() {
     h_mtt->Sumw2();
   }
 
-  if (m_channel == "tt" or m_channel == "bbllnn" or m_channel == "tt_bbllvv") {
+  if (m_channel == "tt" or m_channel == "bbllnn" or m_channel == "tt-bbllvv") {
     h_mtt = new TH1D("mtt", "m_{tt}", nbins, Emin, Emax);
     h_mtt->Sumw2();
     h_ytt = new TH1D("ytt", "y_{tt}", nbins, -2.5, 2.5);
@@ -465,7 +469,7 @@ void AnalysisZprime::CreateHistograms() {
     h_mtt_RR->Sumw2();
   }
 
-  if (m_channel == "bbllnn" or m_channel == "tt_bbllvv") {
+  if (m_channel == "bbllnn" or m_channel == "tt-bbllvv") {
     h_mtt_R = new TH1D("mtt_R", "m_{tt}^{reco}", nbins, Emin, Emax);
     h_mtt_R->Sumw2();
     h_mt_R = new TH1D("mt_R", "m_{t}^{reco}", nbins, 0, 350);
@@ -489,6 +493,9 @@ void AnalysisZprime::CreateHistograms() {
 
     h_ytt_R = new TH1D("ytt_R", "y_{tt}^{reco}", nbins, -2.5, 2.5);
     h_ytt_R->Sumw2();
+
+    h_deltaPhi = new TH1D("deltaPhi", "#delta#phi", nbins, -2*m_pi, 2*m_pi);
+    h_deltaPhi->Sumw2();
     h_cosTheta_R = new TH1D("cosTheta_R", "cos#theta_{reco}", nbins, -1.0, 1.0);
     h_cosTheta_R->Sumw2();
     h_cosThetaStar_R = new TH1D("cosThetaStar_R", "cos#theta_{reco}^{*}", nbins, -1.0, 1.0);
@@ -542,7 +549,8 @@ void AnalysisZprime::MakeGraphs() {
     h_AL->GetXaxis()->SetTitle("m_{tt} [TeV]");
   }
 
-  if (m_channel == "bbllnn" or m_channel == "tt_bbllvv") {
+  if (m_channel == "bbllnn" or m_channel == "tt-bbllvv") {
+    this->MakeDistribution(h_deltaPhi, "");
     this->MakeDistribution(h_mtt_R, "TeV");
     this->MakeDistribution(h_mtt_FR, "TeV");
     this->MakeDistribution(h_mtt_BR, "TeV");
@@ -591,7 +599,7 @@ void AnalysisZprime::WriteHistograms() {
   m_outputFile->cd();
   m_outputFile->cd("/");
 
-  if (m_channel == "ll" or m_channel == "tt" or m_channel == "bbllnn" or m_channel == "tt_bbllvv") {
+  if (m_channel == "ll" or m_channel == "tt" or m_channel == "bbllnn" or m_channel == "tt-bbllvv") {
     h_mtt_Fn->Write();
     h_mtt_Bn->Write();
     h_AFB->Write();
@@ -607,7 +615,8 @@ void AnalysisZprime::WriteHistograms() {
     h_AL->Write();
   }
 
-  if (m_channel == "bbllnn" or m_channel == "tt_bbllvv") {
+  if (m_channel == "bbllnn" or m_channel == "tt-bbllvv") {
+    h_deltaPhi->Write();
     h_mtt_FRn->Write();
     h_mtt_BRn->Write();
     h_AFB_R->Write();
@@ -638,7 +647,7 @@ bool AnalysisZprime::PassCutsMET () {
   bool pass;
   if (m_channel == "ll") pass = true;
   else if (m_channel == "tt") pass = true;
-  else if (m_channel == "bbllnn" or m_channel == "tt_bbllvv") pass = true;
+  else if (m_channel == "bbllnn" or m_channel == "tt-bbllvv") pass = true;
   else pass = true;
 
   this->UpdateCutflow(c_MET, pass);
@@ -1072,7 +1081,7 @@ void AnalysisZprime::GetChannelFactors() {
     m_sigma = m_sigma*2*brtbln*brtbqq;
     // fac_qq = brtbqq*brtbqq
   }
-  else if (m_channel == "bbllnn" or m_channel == "tt_bbllvv") {
+  else if (m_channel == "bbllnn" or m_channel == "tt-bbllvv") {
     // scale dilepton to other classifications
     // fac_ee = 1
     // fac_emu = 2

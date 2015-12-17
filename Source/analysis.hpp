@@ -236,6 +236,7 @@ private:
   TH1D* h_ytt_R;
 
   // Angles
+  TH1D* h_deltaPhi;
   TH1D* h_cosTheta;
   TH1D* h_cosThetaStar;
   TH1D* h_cosTheta_R;

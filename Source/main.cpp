@@ -7,7 +7,7 @@ int main(int argc, char* argv[])
   po::options_description desc("Allowed options");
   desc.add_options()
       ("help", "produce help message")
-      ("channel,c", po::value<string>()->default_value("tt_bbllvv"), "final state")
+      ("channel,c", po::value<string>()->default_value("tt-bbllvv"), "final state")
       ("model,m", po::value<string>()->default_value("SM"), "model")
       ("options,o", po::value<string>()->default_value("_xc_"), "options")
       ("label,l", po::value<string>()->default_value(""), "labeTS")
