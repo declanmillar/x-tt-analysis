@@ -263,6 +263,7 @@ void AnalysisZprime::GetCrossSection(){
   string target = "Cross section";
   vector<string> parts;
   bool found = false;
+  printf("here\n");
   while(getline(logstream, line)){
     trim(line);
     split(parts, line, is_any_of(":"));
