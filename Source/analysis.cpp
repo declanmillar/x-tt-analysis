@@ -809,8 +809,8 @@ void AnalysisZprime::SetupInputFiles () {
     m_weightFiles->push_back(m_QCDweightFile);
   }
   m_inputFiles->push_back(m_inputFileName);
-  // printf("m_weightsFileName = %s\n",m_weightsFileName.Data());
-  // printf("size = %i\n", m_weightFiles->size());
+  printf("m_weightsFileName = %s\n",m_weightsFileName.Data());
+  printf("size = %i\n", m_weightFiles->size());
   m_weightFiles->push_back(m_weightsFileName);
 
 }
