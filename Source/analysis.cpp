@@ -703,6 +703,7 @@ void AnalysisZprime::PreLoop () {
   this->GetDataDirectory();
   this->CreateFilenames();
   this->SetupInputFiles();
+  printf("Here706\n");
   this->SetupOutputFiles();
   this->ResetCounters();
   printf("Here708\n");
