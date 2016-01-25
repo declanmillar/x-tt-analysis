@@ -729,6 +729,7 @@ void AnalysisZprime::GetCrossSection(TString log){
 }
 
 void AnalysisZprime::GetIterationWeights(TString log) {
+  iteration_weights.clear();
   log.Replace(log.Last('.'), 5, ".log");
   ifstream logstream(log.Data());
   if (!logstream.is_open()) printf("Error: failed to open %s!\n", log.Data());
