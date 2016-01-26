@@ -198,7 +198,7 @@ void AnalysisZprime::EachEvent () {
     double weight = m_ntup->weight();
     weight = weight*m_sigma/iteration_weights[it-1];
     printf("Sigma = %.15le\n", m_sigma);
-    printf("Weight = %.15le\n", weight);
+    printf("Iteration weight = %.15le\n", iteration_weights[it-1]);
     double weight_R = weight/2;
 
     // fill histograms (assumes fixed bin width!)
