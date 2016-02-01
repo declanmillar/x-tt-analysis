@@ -677,7 +677,6 @@ void AnalysisZprime::PreLoop () {
   this->SetupInputFiles();
   this->SetupOutputFiles();
   this->ResetCounters();
-  this->GetChannelFactors();
   this->InitialiseCutflow();
   this->CreateHistograms();
 }
@@ -765,6 +764,7 @@ void AnalysisZprime::Loop () {
     this->SetupTreesForNewFile((*i));
     this->GetCrossSection(*i);
     this->GetIterationWeights(*i);
+    this->GetChannelFactors();
     Long64_t nEntries;
     nEntries = this->TotalEvents();
     printf("--- Event Loop ---\n");
