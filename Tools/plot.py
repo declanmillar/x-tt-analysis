@@ -6,44 +6,7 @@ ROOT.gROOT.Reset()
 ROOT.gROOT.SetBatch(False)
 ROOT.gStyle.SetHatchesSpacing(0.3);
 ROOT.gStyle.SetHatchesLineWidth(1);
-
 ROOT.TGaxis.SetMaxDigits(4)
-
-def BinsMatch(hist, hist2):
-    if hist.GetNbinsX() != hist2.GetNbinsX():
-        return False
-    if hist.GetMinimum() != hist2.GetMinimum():
-        return False
-    if hist.GetMaximum() != hist2.GetMaximum():
-        return False
-    return True
-
-def PlotSignificance(hist, hist2):
-    if not BinsMatch(hist, hist2):
-      print "Warning: bins do not match."
-    name = hist.GetName() + "_sig"
-    hist = hist.Clone(name)
-    hist.Add(hist2, -1)
-    for i in range(hist.GetNbinsX()):
-        error1 = hist.GetBinError(i)
-        error2 = hist2.GetBinError(i)
-        print error1, error2
-        error = math.sqrt(error1*error1 + error2*error2)
-        hist.SetBinContent(i, hist.GetBinContent(i)/error)
-    hist.GetYaxis().SetTitle("Significance")
-    labelSize = hist.GetXaxis().GetLabelSize()
-    titleSize = hist.GetXaxis().GetTitleSize()
-    titleOffset = hist.GetXaxis().GetTitleOffset()
-    print "x label size: %f \n" % xLabelSize
-    hist.GetXaxis().SetLabelSize(labelSize*3.2)
-    hist.GetXaxis().SetTitleSize(titleSize*3.2)
-    hist.GetXaxis().SetTitleOffset(titleOffset/1.5)
-    hist.GetYaxis().SetMaxDigits(2)
-    hist.GetYaxis().SetLabelSize(labelSize*2)
-    hist.GetYaxis().SetTitleSize(titleSize*3.2)
-    hist.GetYaxis().SetTitleOffset(titleOffset/3.2)
-    # hist.GetYaxis().SetNdivisions(3)
-    return hist
 
 usage = "usage: overlay.py hist file [options]"
 parser = optparse.OptionParser(usage)
@@ -63,9 +26,9 @@ parser.add_option("--c1", default = "", action = "store" , help = "set first col
 parser.add_option("--c2", default = "", action = "store" , help = "set second color")
 parser.add_option("--c3", default = "", action = "store" , help = "set third color")
 parser.add_option("--c4", default = "", action = "store" , help = "set fourth color")
-parser.add_option("--legend_low", default = False, action = "store_true" , help = "put legend at bottom")
+parser.add_option("--legend_bottom", default = False, action = "store_true" , help = "put legend at bottom")
 parser.add_option("--legend_left", default = False, action = "store_true" , help = "put legend on left")
-parser.add_option("--legend_low_left", default = False, action = "store_true" , help = "put legend on bottom left")
+parser.add_option("--legend_bottom_left", default = False, action = "store_true" , help = "put legend on bottom left")
 parser.add_option("-e", "--errors", default = False, action = "store_true" , help = "display errors")
 parser.add_option("-p", "--pause", default = True, action = "store_false" , help = "pause to show graphs")
 parser.add_option("-y", "--adjusty", default = False, action = "store_true" , help = "auto adjust range (some issues)")
@@ -81,15 +44,50 @@ parser.add_option("-P", "--plot_dir", default = "/Users/declan/Code/declans-rese
 
 (option, args) = parser.parse_args()
 
+def BinsMatch(hist, hist2):
+    if hist.GetNbinsX() != hist2.GetNbinsX():
+        return False
+    if hist.GetMinimum() != hist2.GetMinimum():
+        return False
+    if hist.GetMaximum() != hist2.GetMaximum():
+        return False
+    return True
+
+def PlotSignificance(hist, hist2):
+    if not BinsMatch(hist, hist2):
+      print "Warning: bins do not match."
+    name = hist.GetName() + "_sig"
+    hist = hist.Clone(name)
+    hist.Add(hist2, -1)
+    for i in range(hist.GetNbinsX()):
+        error1 = hist.GetBinError(i)
+        error2 = hist2.GetBinError(i)
+        # print error1, error2
+        error = math.sqrt(error1*error1 + error2*error2)
+        hist.SetBinContent(i, hist.GetBinContent(i)/error)
+    hist.GetYaxis().SetTitle("Significance")
+    labelSize = hist.GetXaxis().GetLabelSize()
+    titleSize = hist.GetXaxis().GetTitleSize()
+    titleOffset = hist.GetXaxis().GetTitleOffset()
+    hist.GetXaxis().SetLabelSize(labelSize*3.2)
+    hist.GetXaxis().SetTitleSize(titleSize*3.2)
+    hist.GetXaxis().SetTitleOffset(titleOffset/1.5)
+    # hist.GetYaxis().SetMaxDigits(2)
+    hist.GetYaxis().SetLabelSize(labelSize*2)
+    hist.GetYaxis().SetTitleSize(titleSize*3.2)
+    hist.GetYaxis().SetTitleOffset(titleOffset/3.2)
+    # hist.GetYaxis().SetNdivisions(3)
+    return hist
+
 if len(args) < 2:
-  sys.exit("%s" % usage)
+    sys.exit("%s" % usage)
 
 draw_option = "e2 hist same" if option.errors else "hist same"
-if option.legend_low:
+if option.legend_bottom:
     legend = ROOT.TLegend(0.7, 0.20, 0.9, 0.4, "")
 elif option.legend_left:
     legend = ROOT.TLegend(0.15, 0.7, 0.4, 0.9, "")
-elif option.legend_low_left:
+elif option.legend_bottom_left:
     legend = ROOT.TLegend(0.15, 0.2, 0.4, 0.4, "")
 else:
     legend = ROOT.TLegend(0.7, 0.70, 0.9, 0.9, "")
@@ -99,8 +97,13 @@ canvas = ROOT.TCanvas("canvas","canvas", 1920, 1080)
 canvas.cd()
 
 # pad
-
-upper_pad = ROOT.TPad("upper_pad","upper_pad", 0, 0, 1, 1)
+if option.significance:
+    upper_pad = ROOT.TPad("upper_pad","upper_pad", 0, 0.3, 1, 1)
+    upper_pad.Draw()
+    lower_pad = ROOT.TPad("lower_pad", "lower_pad", 0, 0.05, 1, 0.3)
+    lower_pad.Draw()
+else:
+    upper_pad = ROOT.TPad("upper_pad","upper_pad", 0, 0, 1, 1)
 upper_pad.SetFillColor(-1)
 top_margin = 0.07
 right_margin = 0.05
@@ -109,16 +112,6 @@ bottom_margin = 0.12
 upper_pad.SetMargin(left_margin, right_margin, bottom_margin, top_margin)
 upper_pad.Draw()
 upper_pad.cd()
-
-if option.significance:
-    lowerPad = ROOT.TPad("lower_pad", "lower_pad", 0, 0.05, 1, 0.3)
-    lowerPad.SetFillColor(-1)
-    lowerPad.SetTopMargin(0)
-    lowerPad.Draw()
-    lowerPad.SetBottomMargin(0.3)
-    lowerPad.SetTopMargin(0)
-    lowerPad.SetRightMargin(right_margin)
-    lowerPad.SetLeftMargin(left_margin)
 
 histname = str(args[0])
 filename = str(args[1])
@@ -168,9 +161,9 @@ if option.h4 == "":
 else:
     histname4 = option.h4
 
-color3 = ROOT.kAzure-7
-color2 = ROOT.kRed-7
 color1 = ROOT.kSpring-7
+color2 = ROOT.kRed-7
+color3 = ROOT.kAzure-7
 color4 = ROOT.kViolet-7
 
 if os.path.isfile("%s" % filename) is False:
@@ -366,11 +359,11 @@ if option.adjusty:
 
 if option.significance:
     if filename2 != "":
-        sighist2 = PlotSignificance(hist2, hist)
+        sighist2 = PlotSignificance(hist, hist4)
     if filename3 != "":
-        sighist3 = PlotSignificance(hist3, hist)
+        sighist3 = PlotSignificance(hist2, hist4)
     if filename4 != "":
-        sighist4 = PlotSignificance(hist4, hist)
+        sighist4 = PlotSignificance(hist3, hist4)
 
 sigPerOverlap = 0
 # find overlapping area (histograms must have the same user ranges and same number of bins)
@@ -424,13 +417,20 @@ if xmin != -99.9 and xmax != -99.9:
         hist4.GetXaxis().SetRangeUser(xmin, xmax)
 
 if option.significance:
+    # lower_pad = ROOT.TPad("lower_pad", "lower_pad", 0, 0.05, 1, 0.3)
+    lower_pad.SetFillColor(-1)
+    lower_pad.SetTopMargin(0)
+    lower_pad.SetBottomMargin(0.3)
+    lower_pad.SetTopMargin(0)
+    lower_pad.SetRightMargin(right_margin)
+    lower_pad.SetLeftMargin(left_margin)
     lower_pad.cd()
     if filename2 != "":
-        hist2sig.Draw("HIST")
+        sighist2.Draw("HIST")
     if filename3 != "":
-        h3sig.Draw("HIST SAME")
+        sighist3.Draw("HIST SAME")
     if filename4 != "":
-        h4sig.Draw("HIST SAME")
+        sighist4.Draw("HIST SAME")
     hist.GetXaxis().SetLabelSize(0)
 
 if option.pause:

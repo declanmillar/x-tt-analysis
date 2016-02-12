@@ -1067,16 +1067,16 @@ void AnalysisZprime::GetChannelFactors() {
 
   if (m_channel == "tt") {
     // multiply by branching ratios
-    m_sigma = m_sigma*brtbln*brtbln;
+    // m_sigma = m_sigma*brtbln*brtbln;
     // fac_emu = 2*brtbln*brtbln
-    // m_sigma = m_sigma*2*brtbln*brtbqq;
+    m_sigma = m_sigma*2*brtbln*brtbqq;
     // fac_qq = brtbqq*brtbqq
   }
   else if (m_channel == "bbllnn" or m_channel == "tt-bbllvv") {
     // scale dilepton to other classifications
     // fac_ee = 1
     // fac_emu = 2
-    // m_sigma = m_sigma*12;
+    m_sigma = m_sigma*12;
     // fac_qq = 36
   }
   // sigma_ee = sigma*fac_ee
