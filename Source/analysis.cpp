@@ -591,6 +591,7 @@ void AnalysisZprime::WriteHistograms() {
 
   if (m_channel == "bbllnn" or m_channel == "tt-bbllvv") {
     h_deltaPhi->Write();
+
     h_mtt_FRn->Write();
     h_mtt_BRn->Write();
     h_AFB_R->Write();
@@ -1079,14 +1080,6 @@ void AnalysisZprime::GetChannelFactors() {
     m_sigma = m_sigma*12;
     // fac_qq = 36
   }
-  // sigma_ee = sigma*fac_ee
-  // error_sigma_ee = error_sigma*fac_ee
-  // sigma_emu = sigma*fac_emu
-  // error_sigma_emu = error_sigma*fac_emu
-  // sigma_eq = sigma*fac_eq
-  // error_sigma_eq = error_sigma*fac_eq
-  // sigma_qq = sigma*fac_qq
-  // error_sigma_qq = error_sigma*fac_qq
 }
 
 
