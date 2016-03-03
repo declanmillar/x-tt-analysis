@@ -164,7 +164,7 @@ else:
 color1 = ROOT.kSpring-7
 color2 = ROOT.kRed-7
 color3 = ROOT.kAzure-7
-color4 = ROOT.kViolet-7
+color4 = ROOT.kGray+2 # ROOT.kViolet-7
 
 if os.path.isfile("%s" % filename) is False:
   sys.exit("%s does not exist" % filename)

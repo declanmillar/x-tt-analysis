@@ -391,7 +391,7 @@ void AnalysisZprime::AsymmetryUncertainty(TH1D* h_Asymmetry, TH1D* h_A, TH1D* h_
     N = N_A + N_B;
     if (N > 0) deltaA = sqrt((1.0 - A*A)/N);
     else deltaA = 0;
-    // printf("A = %f, dA= %f, N= %f\n", A, deltaA, N);
+    printf("A = %f, dA= %f, N= %f\n", A, deltaA, N);
     h_Asymmetry->SetBinError(i, deltaA);
   }
 }
@@ -399,9 +399,9 @@ void AnalysisZprime::AsymmetryUncertainty(TH1D* h_Asymmetry, TH1D* h_A, TH1D* h_
 
 void AnalysisZprime::CreateHistograms() {
 
-  double binWidth = 0.1;
-  double Emin = 2.05;
-  double Emax = 3.95;
+  double binWidth = 0.05;
+  double Emin = 1.05;
+  double Emax = 2.95;
   double nbins = (Emax-Emin)/binWidth;
 
   if (m_channel == "ll") {
@@ -610,7 +610,10 @@ bool AnalysisZprime::PassCuts() {
   //     {
   //       if (this->PassCutsFiducial())
   //       {
-        return true;
+  //         if (this->PassCutsLeptonET())
+  //         {
+          return true;
+  //         }
   //       }
   //     }
   // }
@@ -658,6 +661,19 @@ bool AnalysisZprime::PassCutsFiducial () {
   UpdateCutflow(c_fiducial, true);
   return true;
 }
+
+// bool AnalysisZprime::PassLeptonET () {
+//     if (mtt > 1200.0)
+//       {
+//         if (mtt < 2200.0)
+//           {
+//             UpdateCutflow(c_mtt, true);
+//             return true;
+//           }
+//       }
+//     UpdateCutflow(c_mtt, false);
+//     return false;
+// }
 
 
 bool AnalysisZprime::PassCutsYtt () {
@@ -1070,14 +1086,14 @@ void AnalysisZprime::GetChannelFactors() {
     // multiply by branching ratios
     // m_sigma = m_sigma*brtbln*brtbln;
     // fac_emu = 2*brtbln*brtbln
-    m_sigma = m_sigma*2*brtbln*brtbqq;
+    // m_sigma = m_sigma*2*brtbln*brtbqq*2;
     // fac_qq = brtbqq*brtbqq
   }
   else if (m_channel == "bbllnn" or m_channel == "tt-bbllvv") {
     // scale dilepton to other classifications
     // fac_ee = 1
     // fac_emu = 2
-    m_sigma = m_sigma*12;
+    m_sigma = m_sigma*24;
     // fac_qq = 36
   }
 }
