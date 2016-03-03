@@ -387,7 +387,7 @@ void AnalysisZprime::AsymmetryUncertainty(TH1D* h_Asymmetry, TH1D* h_A, TH1D* h_
 
 void AnalysisZprime::CreateHistograms(){
 
-  double binWidth = 0.05;
+  double binWidth = 0.01;
   double Emin = 1.05;
   double Emax = 2.95;
   double nbins = (Emax-Emin)/binWidth;
