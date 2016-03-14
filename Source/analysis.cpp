@@ -387,9 +387,9 @@ void AnalysisZprime::AsymmetryUncertainty(TH1D* h_Asymmetry, TH1D* h_A, TH1D* h_
 
 void AnalysisZprime::CreateHistograms(){
 
-  double binWidth = 0.01;
-  double Emin = 1.05;
-  double Emax = 2.95;
+  double binWidth = 0.1;
+  double Emin = 2.05;
+  double Emax = 3.95;
   double nbins = (Emax-Emin)/binWidth;
 
   if (m_channel == "ll"){
@@ -593,6 +593,7 @@ void AnalysisZprime::WriteHistograms(){
 
 bool AnalysisZprime::PassCuts(){
   // if (this->PassCuts_mtt())
+  if (this->PassCuts_ytt())
   //{
   //   if (this->PassCuts_MET())
   //    {
@@ -605,7 +606,8 @@ bool AnalysisZprime::PassCuts(){
   //       }
   //     }
   // }
-  // return false;
+  }
+  return false;
 }
 
 
@@ -632,6 +634,17 @@ bool AnalysisZprime::PassCutsMtt (){
   //   }
   // UpdateCutflow(c_mtt, false);
   // return false;
+}
+
+bool AnalysisZprime::PassCutsYtt (){
+  ytt = P.Rapidity();
+  if (ytt > 0.5)
+  {
+          // UpdateCutflow(c_mtt, true);
+          return true;
+  }
+  // UpdateCutflow(c_mtt, false);
+  return false;
 }
 
 
@@ -1072,7 +1085,7 @@ void AnalysisZprime::GetChannelFactors(){
 
   if (m_channel == "tt"){
     // multiply by branching ratios
-    // m_sigma = m_sigma*brtbln*brtbln;
+    m_sigma = m_sigma*brtbln*brtbln;
     // fac_emu = 2*brtbln*brtbln
     // m_sigma = m_sigma*2*brtbln*brtbqq*2;
     // fac_qq = brtbqq*brtbqq
