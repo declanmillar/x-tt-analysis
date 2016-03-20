@@ -24,13 +24,15 @@ AnalysisZprime::AnalysisZprime(const TString channel, const TString model, const
   m_vegasPoints(vegasPoints),
   m_addQCD(addQCD),
   m_luminosity(luminosity),
+  m_efficiency(1.0),
   nBtags(btags),
   m_discardComplex(discardComplex),
   m_analysisLabel(analysisLabel),
   m_pi(3.14159265),
   m_GeV(1000.0),
   m_Wmass(80.23),
-  m_tmass(175.0),
+  m_tmass(173.0),
+  m_ytt(0),
   m_discardEvent(false),
   m_inputFiles(NULL),
   m_weightFiles(NULL),
@@ -54,11 +56,17 @@ void AnalysisZprime::CreateFilenames(){
   m_QCDweightFile = m_QCDfilename + ".log";
   m_QCDfilename = m_QCDfilename + ".root";
   m_weightsFileName = base + ".log";
+
   TString QCDadded;
-  if (m_addQCD) QCDadded = "QCD";
+  if (m_addQCD) QCDadded = ".G";
   else QCDadded = "";
-  m_outputFileName = base + "." + QCDadded + to_string(nBtags) + BoolToString(m_discardComplex) + m_analysisLabel;
-  if (m_luminosity > 0) m_outputFileName += "_" + to_string(m_luminosity);
+
+  m_outputFileName = base + ".a" + QCDadded;
+  if (m_channel == "tt-bbllvv") m_outputFileName += ".btags" + to_string(nBtags) + ".C" + BoolToString(m_discardComplex);
+  if (m_ytt > 0) m_outputFileName += ".ytt";
+  if (m_efficiency < 1.0) m_outputFileName += ".eff";
+  if (m_luminosity > 0) m_outputFileName += "." + to_string(m_luminosity) + "fb";
+  m_outputFileName += m_analysisLabel;
   m_outputFileName += ".root";
   // printf("Input: '%s'.\n", m_inputFileName.Data());
   printf("Output: '%s'.\n", m_outputFileName.Data());
@@ -180,11 +188,12 @@ void AnalysisZprime::EachEvent(){
 
   if (this->PassCuts())
 {
-
+    // printf("Event passed all cuts.\n");
     // re-weight for different iterations
     double it = m_ntup->iteration();
     double weight = m_ntup->weight();
-    weight = weight*m_sigma/iteration_weights[it-1];
+    double fb = 1000;
+    weight = fb*weight*m_sigma/iteration_weights[it-1];
     // printf("Sigma = %.15le\n", m_sigma);
     // printf("Iteration weight = %.15le\n", iteration_weights[it-1]);
     double weight_R = weight/2;
@@ -204,13 +213,14 @@ void AnalysisZprime::EachEvent(){
     if (dy > 0) h_mtt_Fy->Fill(mtt, weight/h_mtt_Fy->GetXaxis()->GetBinWidth(1));
     if (dy < 0) h_mtt_By->Fill(mtt, weight/h_mtt_By->GetXaxis()->GetBinWidth(1));
 
-    if (m_channel == "tt"){
+    if (m_channel == "tt" or m_channel == "ll"){
       h_mtt_LL->Fill(mtt, m_ntup->weightLL()/h_mtt_LL->GetXaxis()->GetBinWidth(1));
       h_mtt_LR->Fill(mtt, m_ntup->weightLR()/h_mtt_LR->GetXaxis()->GetBinWidth(1));
       h_mtt_RL->Fill(mtt, m_ntup->weightRL()/h_mtt_RL->GetXaxis()->GetBinWidth(1));
       h_mtt_RR->Fill(mtt, m_ntup->weightRR()/h_mtt_RR->GetXaxis()->GetBinWidth(1));
     }
-    else if (m_channel == "tt-bbllvv"){
+
+    if (m_channel == "tt-bbllvv"){
       h_deltaPhi->Fill(deltaPhi, weight/h_deltaPhi->GetXaxis()->GetBinWidth(1));
 
       h_mtt_R->Fill(mtt_R1, weight_R/h_mtt_R->GetXaxis()->GetBinWidth(1));
@@ -342,10 +352,10 @@ void AnalysisZprime::ApplyLuminosity(TH1D* h){
   // printf("Name: %s\n", h->GetTitle());
   // printf("Luminosity: %f\n", m_luminosity);
   double sigma = -999, N = -999, dN = -999;
-  double efficiency = 0.1, pb = 1000;
+  double pb = 1000;
   for (int i = 1; i < h->GetNbinsX(); i++){
     sigma = h->GetBinContent(i)*h->GetBinWidth(i);
-    N = m_luminosity*pb*efficiency*sigma;
+    N = m_luminosity*pb*m_efficiency*sigma;
     h->SetBinContent(i, N);
     dN = sqrt(N);
     h->SetBinError(i, dN);
@@ -388,13 +398,31 @@ void AnalysisZprime::AsymmetryUncertainty(TH1D* h_Asymmetry, TH1D* h_A, TH1D* h_
 void AnalysisZprime::CreateHistograms(){
 
   double binWidth = 0.1;
-  double Emin = 2.05;
-  double Emax = 3.95;
+  double Emin = 0.45;
+  double Emax = 4.05;
   double nbins = (Emax-Emin)/binWidth;
 
   if (m_channel == "ll"){
     h_mtt = new TH1D("mll", "m_{ll}", nbins, Emin, Emax);
     h_mtt->Sumw2();
+    h_ytt = new TH1D("yll", "y_{ll}", nbins, -2.5, 2.5);
+    h_ytt->Sumw2();
+    h_mt = new TH1D("ml", "m_{l-}", nbins, 0, 350);
+    h_mt->Sumw2();
+    h_mtbar = new TH1D("mlbar", "m_{l+}", nbins, 0, 350);
+    h_mtbar->Sumw2();
+    h_mtt_F = new TH1D("mll_F", "m_{ll}^{forward}", nbins, Emin, Emax);
+    h_mtt_F->Sumw2();
+    h_mtt_B = new TH1D("mll_B", "m_{ll}^{backward}", nbins, Emin, Emax);
+    h_mtt_B->Sumw2();
+    h_mtt_Fy = new TH1D("mll_Fy", "m_{ll}^{F(y)}", nbins, Emin, Emax);
+    h_mtt_Fy->Sumw2();
+    h_mtt_By = new TH1D("mll_By", "m_{ll}^{B(y)}", nbins, Emin, Emax);
+    h_mtt_By->Sumw2();
+    h_cosTheta = new TH1D("cosTheta", "cos#theta", nbins, -1.0, 1.0);
+    h_cosTheta->Sumw2();
+    h_cosThetaStar = new TH1D("cosThetaStar", "cos#theta^{*}", nbins, -1.0, 1.0);
+    h_cosThetaStar->Sumw2();
   }
 
   if (m_channel == "tt" or m_channel == "tt-bbllvv"){
@@ -420,7 +448,7 @@ void AnalysisZprime::CreateHistograms(){
     h_cosThetaStar->Sumw2();
   }
 
-  if (m_channel == "tt"){
+  if (m_channel == "tt" or m_channel == "ll"){
     h_mtt_LL = new TH1D("mtt_LL", "m_{tt}^{LL}", nbins, Emin, Emax);
     h_mtt_LL->Sumw2();
     h_mtt_LR = new TH1D("mtt_LR", "m_{tt}^{LR}", nbins, Emin, Emax);
@@ -474,6 +502,7 @@ void AnalysisZprime::MakeGraphs(){
   printf("Making Graphs...\n");
 
   this->MakeDistribution(h_mtt, "TeV");
+
   this->MakeDistribution(h_mtt_F, "TeV");
   this->MakeDistribution(h_mtt_B, "TeV");
   this->MakeDistribution(h_mt, "TeV");
@@ -496,7 +525,8 @@ void AnalysisZprime::MakeGraphs(){
   h_AC->GetYaxis()->SetTitle(h_AC->GetTitle());
   h_AC->GetXaxis()->SetTitle("m_{tt} [TeV]");
 
-  if (m_channel == "tt"){
+
+  if (m_channel == "ll" or m_channel == "tt"){
     this->MakeDistribution(h_mtt_LL, "TeV");
     this->MakeDistribution(h_mtt_LR, "TeV");
     this->MakeDistribution(h_mtt_RL, "TeV");
@@ -593,8 +623,8 @@ void AnalysisZprime::WriteHistograms(){
 
 bool AnalysisZprime::PassCuts(){
   // if (this->PassCuts_mtt())
-  if (this->PassCuts_ytt())
-  //{
+  if (this->PassCutsYtt())
+  {
   //   if (this->PassCuts_MET())
   //    {
   //       if (this->PassCutsFiducial())
@@ -636,18 +666,6 @@ bool AnalysisZprime::PassCutsMtt (){
   // return false;
 }
 
-bool AnalysisZprime::PassCutsYtt (){
-  ytt = P.Rapidity();
-  if (ytt > 0.5)
-  {
-          // UpdateCutflow(c_mtt, true);
-          return true;
-  }
-  // UpdateCutflow(c_mtt, false);
-  return false;
-}
-
-
 bool AnalysisZprime::PassCutsFiducial (){
   for (unsigned int i = 0; i < p.size(); i++){
     bool outsideCrack = p[i].PseudoRapidity() <= 1.37 || p[i].PseudoRapidity() >= 1.52;
@@ -678,12 +696,12 @@ bool AnalysisZprime::PassCutsFiducial (){
 
 
 bool AnalysisZprime::PassCutsYtt (){
-  if (abs(P.Rapidity()) > 0)
+  if (abs(P.Rapidity()) > m_ytt)
 {
     UpdateCutflow(c_ytt, true);
     return true;
   }
-  UpdateCutflow(c_mtt, false);
+  UpdateCutflow(c_ytt, false);
   return false;
 }
 
@@ -1085,7 +1103,7 @@ void AnalysisZprime::GetChannelFactors(){
 
   if (m_channel == "tt"){
     // multiply by branching ratios
-    m_sigma = m_sigma*brtbln*brtbln;
+    // m_sigma = m_sigma*brtbln*brtbln;
     // fac_emu = 2*brtbln*brtbln
     // m_sigma = m_sigma*2*brtbln*brtbqq*2;
     // fac_qq = brtbqq*brtbqq
@@ -1094,7 +1112,7 @@ void AnalysisZprime::GetChannelFactors(){
     // scale dilepton to other classifications
     // fac_ee = 1
     // fac_emu = 2
-    m_sigma = m_sigma*24;
+    // m_sigma = m_sigma*24;
     // fac_qq = 36
   }
 }
@@ -1116,6 +1134,7 @@ void AnalysisZprime::InitialiseCutflow(){
   m_cutNames[c_realSolutions] = "p^{#nu}_{z} real";
   m_cutNames[c_MET] = "MET";
   m_cutNames[c_mtt] = "mtt";
+  m_cutNames[c_ytt] = "ytt";
   m_cutNames[c_fiducial] = "Fiducial";
 
   h_cutflow = new TH1D("Cutflow", "Cutflow", m_cuts, 0, m_cuts);

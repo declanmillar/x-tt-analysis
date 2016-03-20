@@ -130,6 +130,8 @@ private:
   TString m_dataDirectory;
 
   // Cuts
+  double m_efficiency;
+  double m_ytt;
   enum m_cutlist{
     c_entries,
     c_topDecays,

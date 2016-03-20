@@ -38,6 +38,7 @@ parser.add_option("--ymin", type="float", default = -99.9, action = "store" , he
 parser.add_option("--ymax", type="float", default = -99.9, action = "store" , help = "ymax")
 parser.add_option("--ytitle", default = "", action = "store" , help = "ytitle")
 parser.add_option("-s", "--significance", default = False, action = "store_true" , help = "plot significance")
+parser.add_option("-l", "--logy", default = False, action = "store_true" , help = "log y axis")
 parser.add_option("-E", "--eps", default = False, action = "store_true" , help = "save plot as eps")
 parser.add_option("-o", "--overlap", default = False, action = "store_true" , help = "find overlapping area")
 parser.add_option("-P", "--plot_dir", default = "/Users/declan/Code/declans-research-logbook/plots", action = "store_true" , help = "plot directory")
@@ -105,6 +106,9 @@ if option.significance:
 else:
     upper_pad = ROOT.TPad("upper_pad","upper_pad", 0, 0, 1, 1)
 upper_pad.SetFillColor(-1)
+if (option.logy):
+    upper_pad.SetLogy()
+
 top_margin = 0.07
 right_margin = 0.05
 left_margin = 0.1
@@ -161,9 +165,9 @@ if option.h4 == "":
 else:
     histname4 = option.h4
 
-color1 = ROOT.kSpring-7
+color3 = ROOT.kSpring-7
 color2 = ROOT.kRed-7
-color3 = ROOT.kAzure-7
+color1 = ROOT.kAzure-7
 color4 = ROOT.kGray+2 # ROOT.kViolet-7
 
 if os.path.isfile("%s" % filename) is False:
