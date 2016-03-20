@@ -352,10 +352,10 @@ void AnalysisZprime::ApplyLuminosity(TH1D* h){
   // printf("Name: %s\n", h->GetTitle());
   // printf("Luminosity: %f\n", m_luminosity);
   double sigma = -999, N = -999, dN = -999;
-  double pb = 1000;
+  double fb = 1;
   for (int i = 1; i < h->GetNbinsX(); i++){
     sigma = h->GetBinContent(i)*h->GetBinWidth(i);
-    N = m_luminosity*pb*m_efficiency*sigma;
+    N = m_luminosity*fb*m_efficiency*sigma;
     h->SetBinContent(i, N);
     dN = sqrt(N);
     h->SetBinError(i, dN);
