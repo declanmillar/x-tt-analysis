@@ -36,7 +36,9 @@ int main(int argc, char* argv[])
   const int btags = opts["btags"].as<int>();
   const int luminosity = opts["luminosity"].as<double>();
   const bool discardComplex = opts["discard"].as<bool>();
-  const bool addQCD = opts["qcd"].as<bool>();
+  bool addQCD = opts["qcd"].as<bool>();
+
+  if(channel == "ll") addQCD = false;
 
   AnalysisZprime analysis(channel, model, energy, options, it, points, addQCD, luminosity, btags, discardComplex, analysisLabel);
 }

@@ -32,7 +32,7 @@ AnalysisZprime::AnalysisZprime(const TString channel, const TString model, const
   m_GeV(1000.0),
   m_Wmass(80.23),
   m_tmass(173.0),
-  m_ytt(0.5),
+  m_ytt(0.0),
   m_discardEvent(false),
   m_inputFiles(NULL),
   m_weightFiles(NULL),
@@ -397,9 +397,9 @@ void AnalysisZprime::AsymmetryUncertainty(TH1D* h_Asymmetry, TH1D* h_A, TH1D* h_
 
 void AnalysisZprime::CreateHistograms(){
 
-  double binWidth = 0.1;
-  double Emin = 2.05;
-  double Emax = 2.95;
+  double binWidth = 0.01;
+  double Emin = 0.5;
+  double Emax = 4.0;
   double nbins = (Emax-Emin)/binWidth;
 
   if (m_channel == "ll"){

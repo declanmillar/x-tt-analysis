@@ -40,6 +40,7 @@ parser.add_option("--ytitle", default = "", action = "store" , help = "ytitle")
 parser.add_option("-s", "--significance", default = False, action = "store_true" , help = "plot significance")
 parser.add_option("-l", "--logy", default = False, action = "store_true" , help = "log y axis")
 parser.add_option("-E", "--eps", default = False, action = "store_true" , help = "save plot as eps")
+parser.add_option("-D", "--pdf", default = False, action = "store_true" , help = "save plot as pdf")
 parser.add_option("-o", "--overlap", default = False, action = "store_true" , help = "find overlapping area")
 parser.add_option("-P", "--plot_dir", default = "/Users/declan/Code/declans-research-logbook/plots", action = "store_true" , help = "plot directory")
 
@@ -99,9 +100,9 @@ canvas.cd()
 
 # pad
 if option.significance:
-    upper_pad = ROOT.TPad("upper_pad","upper_pad", 0, 0.3, 1, 1)
+    upper_pad = ROOT.TPad("upper_pad","upper_pad", 0, 0.16, 1, 1)
     upper_pad.Draw()
-    lower_pad = ROOT.TPad("lower_pad", "lower_pad", 0, 0.05, 1, 0.3)
+    lower_pad = ROOT.TPad("lower_pad", "lower_pad", 0, 0, 1, 0.25)
     lower_pad.Draw()
 else:
     upper_pad = ROOT.TPad("upper_pad","upper_pad", 0, 0, 1, 1)
@@ -177,6 +178,11 @@ if not file1.IsOpen():
     print "failed to open %s\n" % filename
 try:
     hist = file1.Get(histname)
+    if option.significance:
+        hist.GetXaxis().SetLabelSize(0)
+        # hist.GetXaxis().SetTickLength(0)
+        hist.GetXaxis().SetLabelOffset(999)
+        hist.GetXaxis().SetTitleOffset(999)
     xmin = option.xmin
     xmax = option.xmax
     if xmin != -99.9 and xmax != -99.9:
@@ -368,6 +374,14 @@ if option.significance:
         sighist3 = PlotSignificance(hist2, hist4)
     if filename4 != "":
         sighist4 = PlotSignificance(hist3, hist4)
+    if option.significance:
+        sighist2.GetXaxis().SetLabelSize(0.15)
+        sighist2.GetXaxis().SetTickLength(0.1)
+        sighist2.GetXaxis().SetLabelOffset(0.01)
+        sighist2.GetXaxis().SetTitleOffset(0.9)
+        sighist2.GetYaxis().SetLabelSize(0.12)
+        sighist2.GetYaxis().SetLabelOffset(0.01)
+        sighist2.GetYaxis().SetTitleOffset(0.3)
 
 sigPerOverlap = 0
 # find overlapping area (histograms must have the same user ranges and same number of bins)
@@ -435,10 +449,12 @@ if option.significance:
         sighist3.Draw("HIST SAME")
     if filename4 != "":
         sighist4.Draw("HIST SAME")
-    hist.GetXaxis().SetLabelSize(0)
 
 if option.pause:
     raw_input()
 
 if option.eps:
     canvas.SaveAs("%s/%s_%s.eps" % (option.plot_dir,histname, filename))
+
+if option.pdf:
+    canvas.SaveAs("%s/%s_%s.pdf" % (option.plot_dir,histname, filename))
