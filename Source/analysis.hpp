@@ -64,11 +64,11 @@ protected:
   vector<std::complex<double> > SolveQuadratic(double a, double b, double c);
   std::vector<TLorentzVector> ReconstructSemiLeptonic(std::vector<TLorentzVector> p, int l_Q);
 
-  bool PassCuts();
+  bool PassCuts(string type);
   bool PassCutsMET();
   bool PassCutsMtt();
   bool PassCutsFiducial();
-  bool PassCutsYtt();
+  bool PassCutsYtt(string type);
 
   void ResetCounters();
   void InitialiseCutflow();
