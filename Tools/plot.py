@@ -166,10 +166,10 @@ if option.h4 == "":
 else:
     histname4 = option.h4
 
-color3 = ROOT.kSpring-7
+color4 = ROOT.kSpring-7
 color2 = ROOT.kRed-7
 color1 = ROOT.kAzure-7
-color4 = ROOT.kGray+2 # ROOT.kViolet-7
+color3 = ROOT.kGray+2 # ROOT.kViolet-7
 
 if os.path.isfile("%s" % filename) is False:
   sys.exit("%s does not exist" % filename)

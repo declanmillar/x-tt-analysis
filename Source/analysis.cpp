@@ -198,6 +198,7 @@ void AnalysisZprime::EachEvent(){
 
   if (this->PassCuts("truth")){
     // fill histograms (assumes fixed bin width!)
+    // printf("Event passed all truth cuts.\n");
     h_mt->Fill(mt, weight/h_mt->GetXaxis()->GetBinWidth(1));
     h_mtbar->Fill(mtb, weight/h_mtbar->GetXaxis()->GetBinWidth(1));
     h_mtt->Fill(mtt, weight/h_mtt->GetXaxis()->GetBinWidth(1));
@@ -394,9 +395,9 @@ void AnalysisZprime::AsymmetryUncertainty(TH1D* h_Asymmetry, TH1D* h_A, TH1D* h_
 
 void AnalysisZprime::CreateHistograms(){
 
-  double binWidth = 0.01;
-  double Emin = 0.5;
-  double Emax = 4.0;
+  double binWidth = 0.1;
+  double Emin = 0.0;
+  double Emax = 13.0;
   double nbins = (Emax-Emin)/binWidth;
 
   if (m_channel == "ll"){
@@ -516,7 +517,8 @@ void AnalysisZprime::MakeGraphs(){
 
   h_AFB = this->Asymmetry("AFB", "A^{*}_{FB}", h_mtt_F, h_mtt_B);
   h_AFB->GetYaxis()->SetTitle(h_AFB->GetTitle());
-  h_AFB->GetXaxis()->SetTitle("m_{tt} [TeV]");
+  if (m_channel == "ll") h_AFB->GetXaxis()->SetTitle("m_{tt} [TeV]");
+  else h_AFB->GetXaxis()->SetTitle("m_{ll} [TeV]");
 
   h_AC = this->Asymmetry("AC", "A_{C}", h_mtt_Fy, h_mtt_By);
   h_AC->GetYaxis()->SetTitle(h_AC->GetTitle());
@@ -619,7 +621,7 @@ void AnalysisZprime::WriteHistograms(){
 
 
 bool AnalysisZprime::PassCuts(string type){
-  if(type != "truth" or type != "R1" or type != "R2" ) return false;
+  if(!(type == "truth" or type == "R1" or type == "R2" )) return false;
   // if (this->PassCuts_mtt())
   if (this->PassCutsYtt(type))
   {
@@ -695,12 +697,14 @@ bool AnalysisZprime::PassCutsFiducial (){
 
 bool AnalysisZprime::PassCutsYtt(string type){
   double ytt;
+  // printf("Fetching ytt to cut on.\n");
   if (type == "truth") ytt = abs(P.Rapidity());
   else if (type == "R1") ytt = abs(P_R1.Rapidity());
   else if (type == "R2") ytt = abs(P_R2.Rapidity());
   else return false;
-
+  // printf("Fetched ytt to cut on.\n");
   if (ytt > m_ytt){
+    // printf("Passed ytt cut.\n");
     UpdateCutflow(c_ytt, true);
     return true;
   }
