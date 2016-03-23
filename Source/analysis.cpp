@@ -517,8 +517,8 @@ void AnalysisZprime::MakeGraphs(){
 
   h_AFB = this->Asymmetry("AFB", "A^{*}_{FB}", h_mtt_F, h_mtt_B);
   h_AFB->GetYaxis()->SetTitle(h_AFB->GetTitle());
-  if (m_channel == "ll") h_AFB->GetXaxis()->SetTitle("m_{tt} [TeV]");
-  else h_AFB->GetXaxis()->SetTitle("m_{ll} [TeV]");
+  if (m_channel == "ll") h_AFB->GetXaxis()->SetTitle("m_{ll} [TeV]");
+  else h_AFB->GetXaxis()->SetTitle("m_{tt} [TeV]");
 
   h_AC = this->Asymmetry("AC", "A_{C}", h_mtt_Fy, h_mtt_By);
   h_AC->GetYaxis()->SetTitle(h_AC->GetTitle());

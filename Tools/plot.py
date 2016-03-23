@@ -92,7 +92,7 @@ elif option.legend_left:
 elif option.legend_bottom_left:
     legend = ROOT.TLegend(0.15, 0.2, 0.4, 0.4, "")
 else:
-    legend = ROOT.TLegend(0.7, 0.70, 0.9, 0.9, "")
+    legend = ROOT.TLegend(0.6, 0.6, 0.9, 0.9, "")
 
 # canvas
 canvas = ROOT.TCanvas("canvas","canvas", 1920, 1080)
