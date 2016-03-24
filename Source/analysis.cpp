@@ -531,13 +531,13 @@ void AnalysisZprime::MakeGraphs(){
     this->MakeDistribution(h_mtt_RL, "TeV");
     this->MakeDistribution(h_mtt_RR, "TeV");
 
-    h_ALL = this->MakeALL();
-    h_ALL->GetYaxis()->SetTitle(h_ALL->GetTitle());
-    h_ALL->GetXaxis()->SetTitle("m_{tt} [TeV]");
-
-    h_AL = this->MakeAL();
-    h_AL->GetYaxis()->SetTitle(h_AL->GetTitle());
-    h_AL->GetXaxis()->SetTitle("m_{tt} [TeV]");
+    // h_ALL = this->MakeALL();
+    // h_ALL->GetYaxis()->SetTitle(h_ALL->GetTitle());
+    // h_ALL->GetXaxis()->SetTitle("m_{tt} [TeV]");
+    //
+    // h_AL = this->MakeAL();
+    // h_AL->GetYaxis()->SetTitle(h_AL->GetTitle());
+    // h_AL->GetXaxis()->SetTitle("m_{tt} [TeV]");
   }
 
   if (m_channel == "tt-bbllvv"){
@@ -602,8 +602,8 @@ void AnalysisZprime::WriteHistograms(){
     h_mtt_LR->Write();
     h_mtt_RL->Write();
     h_mtt_RR->Write();
-    h_ALL->Write();
-    h_AL->Write();
+    // h_ALL->Write();
+    // h_AL->Write();
   }
 
   if (m_channel == "tt-bbllvv"){
