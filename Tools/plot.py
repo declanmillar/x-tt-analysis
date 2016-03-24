@@ -60,27 +60,29 @@ def PlotSignificance(hist, hist2):
     if not BinsMatch(hist, hist2):
       print "Warning: bins do not match."
     name = hist.GetName() + "_sig"
-    hist = hist.Clone(name)
-    hist.Add(hist2, -1)
-    for i in range(hist.GetNbinsX()):
+    sighist = hist.Clone(name)
+    for i in range(sighist.GetNbinsX()):
+        if i == 0:
+            continue
+        n = hist.GetBinContent(i)
+        n2 = hist2.GetBinContent(i)
         error1 = hist.GetBinError(i)
         error2 = hist2.GetBinError(i)
-        # print error1, error2
         error = math.sqrt(error1*error1 + error2*error2)
-        hist.SetBinContent(i, hist.GetBinContent(i)/error)
-    hist.GetYaxis().SetTitle("Significance")
-    labelSize = hist.GetXaxis().GetLabelSize()
-    titleSize = hist.GetXaxis().GetTitleSize()
-    titleOffset = hist.GetXaxis().GetTitleOffset()
-    hist.GetXaxis().SetLabelSize(labelSize*3.2)
-    hist.GetXaxis().SetTitleSize(titleSize*3.2)
-    hist.GetXaxis().SetTitleOffset(titleOffset/1.5)
-    # hist.GetYaxis().SetMaxDigits(2)
-    hist.GetYaxis().SetLabelSize(labelSize*2)
-    hist.GetYaxis().SetTitleSize(titleSize*3.2)
-    hist.GetYaxis().SetTitleOffset(titleOffset/3.2)
+        sighist.SetBinContent(i, abs(n-n2)/error)
+    sighist.GetYaxis().SetTitle("Significance")
+    labelSize = sighist.GetXaxis().GetLabelSize()
+    titleSize = sighist.GetXaxis().GetTitleSize()
+    titleOffset = sighist.GetXaxis().GetTitleOffset()
+    sighist.GetXaxis().SetLabelSize(labelSize*3.2)
+    sighist.GetXaxis().SetTitleSize(titleSize*3.2)
+    sighist.GetXaxis().SetTitleOffset(titleOffset/1.5)
+    # sighist.GetYaxis().SetMaxDigits(2)
+    sighist.GetYaxis().SetLabelSize(labelSize*2)
+    sighist.GetYaxis().SetTitleSize(titleSize*3.2)
+    sighist.GetYaxis().SetTitleOffset(titleOffset/3.2)
     # hist.GetYaxis().SetNdivisions(3)
-    return hist
+    return sighist
 
 if len(args) < 2:
     sys.exit("%s" % usage)
