@@ -37,6 +37,7 @@ parser.add_option("--xmax", type="float", default = -99.9, action = "store" , he
 parser.add_option("--ymin", type="float", default = -99.9, action = "store" , help = "ymin")
 parser.add_option("--ymax", type="float", default = -99.9, action = "store" , help = "ymax")
 parser.add_option("--ytitle", default = "", action = "store" , help = "ytitle")
+parser.add_option("-d", "--distribution", default = True, action = "store_false" , help = "plot distribution")
 parser.add_option("-s", "--significance", default = False, action = "store_true" , help = "plot significance")
 parser.add_option("-l", "--logy", default = False, action = "store_true" , help = "log y axis")
 parser.add_option("-E", "--eps", default = False, action = "store_true" , help = "save plot as eps")
@@ -99,7 +100,7 @@ canvas = ROOT.TCanvas("canvas","canvas", 1920, 1080)
 canvas.cd()
 
 # pad
-if option.significance:
+if option.significance and option.distribution:
     upper_pad = ROOT.TPad("upper_pad","upper_pad", 0, 0.16, 1, 1)
     upper_pad.Draw()
     lower_pad = ROOT.TPad("lower_pad", "lower_pad", 0, 0, 1, 0.25)
@@ -126,14 +127,14 @@ if option.f2 == "":
 else:
     filename2 = option.f2
 
-if option.f3 == "":
-    filename3 = filename
-else:
+# if option.f3 == "":
+#     filename3 = filename
+# else:
     filename3 = option.f3
 
-if option.f4 == "":
-    filename4 = filename
-else:
+# if option.f4 == "":
+#     filename4 = filename
+# else:
     filename4 = option.f4
 
 if option.f2 == "":
@@ -141,15 +142,15 @@ if option.f2 == "":
 else:
     filename2 = option.f2
 
-if option.f3 == "":
-    filename3 = filename
-else:
-    filename3 = option.f3
-
-if option.f4 == "":
-    filename4 = filename
-else:
-    filename4 = option.f4
+# if option.f3 == "":
+#     filename3 = filename
+# else:
+#     filename3 = option.f3
+#
+# if option.f4 == "":
+#     filename4 = filename
+# else:
+#     filename4 = option.f4
 
 if option.h2 == "":
     histname2 = histname
@@ -369,12 +370,12 @@ if option.adjusty:
 
 if option.significance:
     if filename2 != "":
-        sighist2 = PlotSignificance(hist, hist4)
+        sighist2 = PlotSignificance(hist, hist2)
     if filename3 != "":
-        sighist3 = PlotSignificance(hist2, hist4)
+        sighist3 = PlotSignificance(hist3, hist2)
     if filename4 != "":
-        sighist4 = PlotSignificance(hist3, hist4)
-    if option.significance:
+        sighist4 = PlotSignificance(hist4, hist2)
+    if option.distribution:
         sighist2.GetXaxis().SetLabelSize(0.15)
         sighist2.GetXaxis().SetTickLength(0.1)
         sighist2.GetXaxis().SetLabelOffset(0.01)
@@ -382,7 +383,15 @@ if option.significance:
         sighist2.GetYaxis().SetLabelSize(0.12)
         sighist2.GetYaxis().SetLabelOffset(0.01)
         sighist2.GetYaxis().SetTitleOffset(0.3)
-
+    else:
+        sighist2.GetXaxis().SetLabelSize(0.05)
+        sighist2.GetXaxis().SetTickLength(0.1)
+        sighist2.GetXaxis().SetLabelOffset(0.01)
+        sighist2.GetXaxis().SetTitleOffset(0.9)
+        sighist2.GetYaxis().SetLabelSize(0.05)
+        sighist2.GetYaxis().SetLabelOffset(0.01)
+        sighist2.GetYaxis().SetTitleOffset(0.3)
+        sighist2.GetYaxis().SetTitleSize(1)
 sigPerOverlap = 0
 # find overlapping area (histograms must have the same user ranges and same number of bins)
 if option.overlap:
@@ -435,14 +444,15 @@ if xmin != -99.9 and xmax != -99.9:
         hist4.GetXaxis().SetRangeUser(xmin, xmax)
 
 if option.significance:
-    # lower_pad = ROOT.TPad("lower_pad", "lower_pad", 0, 0.05, 1, 0.3)
-    lower_pad.SetFillColor(-1)
-    lower_pad.SetTopMargin(0)
-    lower_pad.SetBottomMargin(0.3)
-    lower_pad.SetTopMargin(0)
-    lower_pad.SetRightMargin(right_margin)
-    lower_pad.SetLeftMargin(left_margin)
-    lower_pad.cd()
+    if option.distribution:
+        # lower_pad = ROOT.TPad("lower_pad", "lower_pad", 0, 0.05, 1, 0.3)
+        lower_pad.SetFillColor(-1)
+        lower_pad.SetTopMargin(0)
+        lower_pad.SetBottomMargin(0.3)
+        lower_pad.SetTopMargin(0)
+        lower_pad.SetRightMargin(right_margin)
+        lower_pad.SetLeftMargin(left_margin)
+        lower_pad.cd()
     if filename2 != "":
         sighist2.Draw("HIST")
     if filename3 != "":

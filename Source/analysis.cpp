@@ -387,7 +387,7 @@ void AnalysisZprime::AsymmetryUncertainty(TH1D* h_Asymmetry, TH1D* h_A, TH1D* h_
     N = N_A + N_B;
     if (N > 0) deltaA = sqrt((1.0 - A*A)/N);
     else deltaA = 0;
-    printf("A = %f, dA= %f, N= %f\n", A, deltaA, N);
+    // printf("A = %f, dA= %f, N= %f\n", A, deltaA, N);
     h_Asymmetry->SetBinError(i, deltaA);
   }
 }
@@ -396,8 +396,8 @@ void AnalysisZprime::AsymmetryUncertainty(TH1D* h_Asymmetry, TH1D* h_A, TH1D* h_
 void AnalysisZprime::CreateHistograms(){
 
   double binWidth = 0.01;
-  double Emin = 0.5;
-  double Emax = 4.0;
+  double Emin = 1.0;
+  double Emax = 5.0;
   double nbins = (Emax-Emin)/binWidth;
 
   if (m_channel == "ll"){
