@@ -520,9 +520,9 @@ void AnalysisZprime::MakeGraphs(){
   if (m_channel == "ll") h_AFB->GetXaxis()->SetTitle("m_{ll} [TeV]");
   else h_AFB->GetXaxis()->SetTitle("m_{tt} [TeV]");
 
-  h_AC = this->Asymmetry("AC", "A_{C}", h_mtt_Fy, h_mtt_By);
-  h_AC->GetYaxis()->SetTitle(h_AC->GetTitle());
-  h_AC->GetXaxis()->SetTitle("m_{tt} [TeV]");
+  // h_AC = this->Asymmetry("AC", "A_{C}", h_mtt_Fy, h_mtt_By);
+  // h_AC->GetYaxis()->SetTitle(h_AC->GetTitle());
+  // h_AC->GetXaxis()->SetTitle("m_{tt} [TeV]");
 
 
   if (m_channel == "ll" or m_channel == "tt"){
@@ -594,7 +594,7 @@ void AnalysisZprime::WriteHistograms(){
     h_mtt_Fn->Write();
     h_mtt_Bn->Write();
     h_AFB->Write();
-    h_AC->Write();
+    // h_AC->Write();
   }
 
   if (m_channel == "ll" or m_channel == "tt"){
