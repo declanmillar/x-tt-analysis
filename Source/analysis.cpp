@@ -387,7 +387,7 @@ void AnalysisZprime::AsymmetryUncertainty(TH1D* h_Asymmetry, TH1D* h_A, TH1D* h_
     N = N_A + N_B;
     if (N > 0) deltaA = sqrt((1.0 - A*A)/N);
     else deltaA = 0;
-    // printf("A = %f, dA= %f, N= %f\n", A, deltaA, N);
+    printf("A = %f, dA= %f, N= %f, N_A= %f, N_B= %f \n",  A, deltaA, N, N_A, N_B);
     h_Asymmetry->SetBinError(i, deltaA);
   }
 }
