@@ -169,10 +169,10 @@ if option.h4 == "":
 else:
     histname4 = option.h4
 
-color4 = ROOT.kSpring-7
-color2 = ROOT.kRed-7
-color1 = ROOT.kAzure-7
-color3 = ROOT.kGray+2 # ROOT.kViolet-7
+color3 = ROOT.kSpring-7
+color1 = ROOT.kRed-7
+color4 = ROOT.kAzure-7
+color2 = ROOT.kGray+2 # ROOT.kViolet-7
 
 if os.path.isfile("%s" % filename) is False:
   sys.exit("%s does not exist" % filename)
@@ -219,7 +219,7 @@ try:
     hist.SetFillColor(color1)
     hist.SetFillStyle(3354)
     hist.DrawCopy("e2 same")
-    legend.AddEntry(hist, labelname1)
+    # legend.AddEntry(hist, labelname1)
 
 except:
     sys.exit("Error: check %s contains histogram '%s'" % (filename, histname))
@@ -257,7 +257,7 @@ if option.f2 != "" or option.h2 != "":
         hist2.SetFillColor(color2)
         hist2.SetFillStyle(3354)
         hist2.DrawCopy("e2 same")
-        legend.AddEntry(hist2, labelname2)
+        # legend.AddEntry(hist2, labelname2)
     except ReferenceError:
         sys.exit("ReferenceError: check %s contains histogram '%s'" % (filename2, histname))
 
@@ -294,7 +294,7 @@ if option.f3 != "" or option.h3 != "":
         hist3.SetFillColor(color3)
         hist3.SetFillStyle(3354)
         hist3.DrawCopy("e2 same")
-        legend.AddEntry(hist3, labelname3)
+        # legend.AddEntry(hist3, labelname3)
     except ReferenceError:
         sys.exit("ReferenceError: check %s contains histogram '%s'" % (filename3, histname))
 
@@ -331,7 +331,7 @@ if option.f4 != "" or option.h4 != "":
         hist4.SetFillColor(color4)
         hist4.SetFillStyle(3354)
         hist4.DrawCopy("e2 same")
-        legend.AddEntry(hist4, labelname4)
+        # legend.AddEntry(hist4, labelname4)
     except ReferenceError:
         sys.exit("ReferenceError: check %s contains histogram '%s'" % (filename4, histname))
 
@@ -374,9 +374,9 @@ if option.significance:
     if filename2 != "":
         sighist2 = PlotSignificance(hist, hist2)
     if filename3 != "":
-        sighist3 = PlotSignificance(hist3, hist2)
-    if filename4 != "":
-        sighist4 = PlotSignificance(hist4, hist2)
+        sighist3 = PlotSignificance(hist3, hist4)
+    # if filename4 != "":
+    #     sighist4 = PlotSignificance(hist4, hist2)
     if option.distribution:
         sighist2.GetXaxis().SetLabelSize(0.15)
         sighist2.GetXaxis().SetTickLength(0.1)
@@ -389,11 +389,12 @@ if option.significance:
         sighist2.GetXaxis().SetLabelSize(0.05)
         sighist2.GetXaxis().SetTickLength(0.1)
         sighist2.GetXaxis().SetLabelOffset(0.01)
-        sighist2.GetXaxis().SetTitleOffset(0.9)
+        sighist2.GetXaxis().SetTitleOffset(1.0)
+        sighist2.GetXaxis().SetTitleSize(0.05)
         sighist2.GetYaxis().SetLabelSize(0.05)
         sighist2.GetYaxis().SetLabelOffset(0.01)
-        sighist2.GetYaxis().SetTitleOffset(0.3)
-        sighist2.GetYaxis().SetTitleSize(1)
+        sighist2.GetYaxis().SetTitleOffset(0.8)
+        sighist2.GetYaxis().SetTitleSize(0.05)
 sigPerOverlap = 0
 # find overlapping area (histograms must have the same user ranges and same number of bins)
 if option.overlap:
@@ -457,16 +458,23 @@ if option.significance:
         lower_pad.cd()
     if filename2 != "":
         sighist2.Draw("HIST")
+        legend.AddEntry(sighist2, labelname1)
     if filename3 != "":
         sighist3.Draw("HIST SAME")
-    if filename4 != "":
-        sighist4.Draw("HIST SAME")
+        legend.AddEntry(sighist3, labelname2)
+    # if filename4 != "":
+    #     sighist4.Draw("HIST SAME")
+    legend.Draw()
 
 if option.pause:
     raw_input()
 
+siglabel = ""
+if option.distribution is False and option.significance is True:
+    siglabel += "_sig"
+
 if option.eps:
-    canvas.SaveAs("%s/%s_%s.eps" % (option.plot_dir,histname, filename))
+    canvas.SaveAs("%s/%s%s_%s.eps" % (option.plot_dir,histname, siglabel,filename))
 
 if option.pdf:
-    canvas.SaveAs("%s/%s_%s.pdf" % (option.plot_dir,histname, filename))
+    canvas.SaveAs("%s/%s%s_%s.pdf" % (option.plot_dir,histname,siglabel, filename))
