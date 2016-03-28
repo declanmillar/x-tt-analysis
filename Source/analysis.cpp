@@ -979,7 +979,7 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVe
     }
     imin = 0;
     jmin = 0;
-    for (int i = 0; i < p_nu_R.size(); i++) {
+    for (int i = 0; i < (int) p_nu_R.size(); i++) {
       for (int j = 0; j < 2; j++){
         mblv = (p_b[j] + p_l + p_nu_R[i]).M();
         mjjb = (p_b[1-j] + p_q[0] + p_q[1]).M();
@@ -1035,7 +1035,7 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVe
 
     imin = 0;
     jmin = 0;
-    for (int i = 0; i < p_nu_R.size(); i++) {
+    for (int i = 0; i < (int) p_nu_R.size(); i++) {
       for (int j = 0; j < q_perms.size(); j++){
         mblv = (p_q[q_perms[j][0]] + p_l + p_nu_R[i]).M();
         mjjb = (p_q[q_perms[j][1]] + p_q[q_perms[j][2]] + p_q[q_perms[j][3]]).M();
@@ -1078,7 +1078,7 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVe
   double pz_nu_truth = p_nu.Pz();
   double Root0MinusTruth = abs(roots[0].real() - pz_nu_truth);
   double Root1MinusTruth = abs(roots[1].real() - pz_nu_truth);
-  int bestRoot;
+  unsigned int bestRoot;
   if (Root0MinusTruth < Root1MinusTruth) bestRoot = 0;
   else if (Root1MinusTruth < Root0MinusTruth) bestRoot = 1;
   else bestRoot = 0;
