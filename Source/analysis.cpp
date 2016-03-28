@@ -99,6 +99,22 @@ void AnalysisZprime::EachEvent(){
     Pcm += pcm[i];
   }
 
+  TVector3 Vtop = -1*(p[0]+p[2]+p[3]).BoostVector();
+
+  Ptop.SetPxPyPzE(0,0,0,0);
+  for (unsigned int i = 0; i < p.size(); i++){
+    ptop[i].Boost(Vtop);
+    Ptop += ptop[i];
+  }
+
+  TVector3 Vatop = -1*(p[1]+p[4]+p[5]).BoostVector();
+
+  Patop.SetPxPyPzE(0,0,0,0);
+  for (unsigned int i = 0; i < p.size(); i++){
+    patop[i].Boost(Vatop);
+    Patop += patop[i];
+  }
+
   if (m_channel == "tt-bbllvv"){
     p_R1 = this->ReconstructSemiLeptonic(p,1); // top decays leptonically
     p_R2 = this->ReconstructSemiLeptonic(p,-1); // top decays hadronically
@@ -161,6 +177,8 @@ void AnalysisZprime::EachEvent(){
   double cosTheta_R2 = -999;
   double cosThetaStar_R1 = -999;
   double cosThetaStar_R2 = -999;
+  double cosThetalp_top = -999;
+  double cosThetalm_atop = -999;
 
   if (m_channel == "tt-bbllvv"){
     ytt_R1 = P_R1.Rapidity();
@@ -170,6 +188,8 @@ void AnalysisZprime::EachEvent(){
     mt_R2 = p_t_R2.M();
     mtb_R2 = p_tb_R2.M();
     deltaPhi = p[2].Phi() - p[4].Phi();
+    cosThetalp_top = ptop[2].CosTheta();
+    cosThetalm_atop = patop[4].CosTheta();
 
     // printf("Reconstructed top mass\n---\n");
     // printf("m_top = %f TeV\n", mt);
@@ -897,7 +917,7 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVe
   TLorentzVector p_l, p_nu;
   double a, b, c, k, dh, dl, mblv, mjjb, chi2, chi2min = 1.0e10;
   unsigned int imin, jmin;
-  vector<complex<double>> roots;
+  vector<complex<double> > roots;
 
   // Calculate neutrino p_z solutions
   if (Q_l == 1){
@@ -1004,14 +1024,14 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVe
       p_q[2] = p[2];
       p_q[3]= p[3];
     }
-    vector<vector<int>> q_perms;
-    if (nBtags == 2) q_perms ={{0, 1, 2, 3},{1, 0, 2, 3}};
-    if (nBtags == 1) q_perms ={{0, 1, 2, 3},{0, 2, 1, 3},{0, 3, 1, 2},
-                              {1, 0, 2, 3},{2, 0, 1, 3},{3, 0, 1, 2}};
-    if (nBtags == 0) q_perms ={{0, 1, 2, 3},{0, 2, 1, 3},{0, 3, 1, 2},
-                              {1, 0, 2, 3},{2, 0, 1, 3},{3, 0, 1, 2},
-                              {2, 0, 1, 3},{2, 1, 0, 3},{2, 3, 0, 1},
-                              {3, 0, 1, 2},{3, 1, 0, 2},{3, 2, 0, 1}};
+    vector<vector<int> > q_perms;
+    if (nBtags == 2) q_perms = { {0, 1, 2, 3}, {1, 0, 2, 3} };
+    if (nBtags == 1) q_perms = { {0, 1, 2, 3}, {0, 2, 1, 3}, {0, 3, 1, 2},
+                                 {1, 0, 2, 3}, {2, 0, 1, 3}, {3, 0, 1, 2} };
+    if (nBtags == 0) q_perms = { {0, 1, 2, 3}, {0, 2, 1, 3}, {0, 3, 1, 2},
+                                 {1, 0, 2, 3}, {2, 0, 1, 3}, {3, 0, 1, 2},
+                                 {2, 0, 1, 3}, {2, 1, 0, 3}, {2, 3, 0, 1},
+                                 {3, 0, 1, 2}, {3, 1, 0, 2}, {3, 2, 0, 1} };
 
     imin = 0;
     jmin = 0;

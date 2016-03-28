@@ -161,6 +161,8 @@ private:
   // Final particle 4-vectors
   vector<TLorentzVector> p;
   vector<TLorentzVector> pcm;
+  vector<TLorentzVector> ptop;
+  vector<TLorentzVector> patop;
   vector<TLorentzVector> p_R1;
   vector<TLorentzVector> p_R2;
   vector<TLorentzVector> pcm_R1;
@@ -169,6 +171,8 @@ private:
   // Event 4-vectors
   TLorentzVector P;
   TLorentzVector Pcm;
+  TLorentzVector Ptop;
+  TLorentzVector Patop;
   TLorentzVector P_R1;
   TLorentzVector P_R2;
 
