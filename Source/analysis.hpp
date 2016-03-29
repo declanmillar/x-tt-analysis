@@ -93,6 +93,7 @@ private:
   int m_vegasPoints;
   int m_addQCD;
   int m_luminosity;
+  double m_efficiency;
   const int nBtags;
   const bool m_discardComplex;
   const TString m_analysisLabel;
@@ -103,7 +104,22 @@ private:
   double m_Wmass;
   double m_tmass;
 
-  //
+  // Cuts
+  double m_ytt;
+  enum m_cutlist{
+    c_entries,
+    c_topDecays,
+    c_antitopDecays,
+    c_events,
+    c_realSolutions,
+    c_mtt,
+    c_MET,
+    c_ytt,
+    c_fiducial,
+    m_cuts // Keep as last entry
+  };
+
+  // others
   bool m_useLumi;
   bool m_discardEvent;
 
@@ -128,22 +144,6 @@ private:
   TString m_weightsFileName;
   TString m_outputFileName;
   TString m_dataDirectory;
-
-  // Cuts
-  double m_efficiency;
-  double m_ytt;
-  enum m_cutlist{
-    c_entries,
-    c_topDecays,
-    c_antitopDecays,
-    c_events,
-    c_realSolutions,
-    c_mtt,
-    c_MET,
-    c_ytt,
-    c_fiducial,
-    m_cuts // Keep as last entry
-  };
 
   // Input data
   vector<TString>* m_inputFiles;
