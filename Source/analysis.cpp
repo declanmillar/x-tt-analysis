@@ -76,6 +76,7 @@ TString AnalysisZprime::GetOutputFilename(){
 }
 
 void AnalysisZprime::EachEvent(){
+  printf("Processing an event...\n");
   m_discardEvent = false;
   UpdateCutflow(c_entries, true);
   p = vector<TLorentzVector>(6);
@@ -219,7 +220,7 @@ void AnalysisZprime::EachEvent(){
 
   if (this->PassCuts("truth")){
     // fill histograms (assumes fixed bin width!)
-    // printf("Event passed all truth cuts.\n");
+    printf("Event passed all truth cuts.\n");
     h_mt->Fill(mt, weight/h_mt->GetXaxis()->GetBinWidth(1));
     h_mtbar->Fill(mtb, weight/h_mtbar->GetXaxis()->GetBinWidth(1));
     h_mtt->Fill(mtt, weight/h_mtt->GetXaxis()->GetBinWidth(1));
