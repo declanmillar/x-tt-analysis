@@ -263,5 +263,11 @@ private:
   // Spin asymmetries
   TH1D* h_ALL;
   TH1D* h_AL;
+
+  // 2D histograms
+  TH2D* h2_mtt_deltaPhi;
+  TH2D* h2_mtt_cosThetalp;
+  TH2D* h2_mtt_cosThetalm;
+  TH2D* h2_mtt_coslpcoslm;
 };
 #endif

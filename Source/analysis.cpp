@@ -223,9 +223,6 @@ void AnalysisZprime::EachEvent(){
     h_ytt->Fill(ytt, weight/h_ytt->GetXaxis()->GetBinWidth(1));
     h_cosTheta->Fill(cosTheta, weight/h_cosTheta->GetXaxis()->GetBinWidth(1));
     h_cosThetaStar->Fill(cosThetaStar, weight/h_cosThetaStar->GetXaxis()->GetBinWidth(1));
-    h_cosThetalp_top->Fill(cosThetalp_top, weight/h_cosThetalp_top->GetXaxis()->GetBinWidth(1));
-    h_cosThetalm_atop->Fill(cosThetalm_atop, weight/h_cosThetalm_atop->GetXaxis()->GetBinWidth(1));
-    h_coslpcoslm_top->Fill(coslpcoslm_top, weight/h_coslpcoslm_top->GetXaxis()->GetBinWidth(1));
 
     // asymmetries
     if (cosThetaStar > 0) h_mtt_F->Fill(mtt, weight/h_mtt_F->GetXaxis()->GetBinWidth(1));
@@ -244,6 +241,15 @@ void AnalysisZprime::EachEvent(){
     if (m_channel == "tt-bbllvv"){
 
       h_deltaPhi->Fill(deltaPhi, weight/h_deltaPhi->GetXaxis()->GetBinWidth(1));
+      h_cosThetalp_top->Fill(cosThetalp_top, weight/h_cosThetalp_top->GetXaxis()->GetBinWidth(1));
+      h_cosThetalm_atop->Fill(cosThetalm_atop, weight/h_cosThetalm_atop->GetXaxis()->GetBinWidth(1));
+      h_coslpcoslm_top->Fill(coslpcoslm_top, weight/h_coslpcoslm_top->GetXaxis()->GetBinWidth(1));
+      h2_mtt_deltaPhi->Fill(mtt, deltaPhi, weight/h_deltaPhi->GetXaxis()->GetBinWidth(1));
+      h2_mtt_cosThetalp_top->Fill(mtt, cosThetalp_top, weight/h_cosThetalp_top->GetXaxis()->GetBinWidth(1));
+      h2_mtt_cosThetalm_atop->Fill(mtt, cosThetalm_atop, weight/h_cosThetalm_atop->GetXaxis()->GetBinWidth(1));
+      h2_mtt_coslpcoslm_top->Fill(mtt, coslpcoslm_top, weight/h_coslpcoslm_top->GetXaxis()->GetBinWidth(1));
+
+
 
       if(this->PassCuts("R1")){
         h_mtt_R->Fill(mtt_R1, weight_R/h_mtt_R->GetXaxis()->GetBinWidth(1));
@@ -516,6 +522,10 @@ void AnalysisZprime::CreateHistograms(){
     h_cosThetalp_top = new TH1D("cosThetalp_top", "cos#theta_{l+}", nbins, -1.0, 1.0);
     h_cosThetalm_atop = new TH1D("cosThetalm_atop", "cos#theta_{l-}", nbins, -1.0, 1.0);
     h_coslpcoslm_top = new TH1D("coslpcoslm_top", "cos#theta_{l+}cos#theta_{l-}", nbins, -1.0, 1.0);
+
+    h2_mtt_cosThetalp= new TH2D("mtt_cosThetalp_top", "m_{tt} cos#theta_{l+}", nbins, Emin, Emax, nbins, -1.0, 1.0);
+    h2_mtt_cosThetalm = new TH2D("mtt_cosThetalm_atop", "m_{tt} cos#theta_{l-}", nbins, Emin, Emax, nbins, -1.0, 1.0);
+    h2_mtt_coslpcoslm= new TH2D("mtt_coslpcoslm_top", "m_{tt} cos#theta_{l+}cos#theta_{l-}", nbins, Emin, Emax, nbins, -1.0, 1.0);
   }
 }
 
