@@ -697,7 +697,7 @@ bool AnalysisZprime::PassCutsMtt (){
 }
 
 bool AnalysisZprime::PassCutsFiducial (){
-  for (int i = 0; i < p.size(); i++){
+  for (unsigned int i = 0; i < p.size(); i++){
     bool outsideCrack = p[i].PseudoRapidity() <= 1.37 || p[i].PseudoRapidity() >= 1.52;
     bool central      = p[i].PseudoRapidity() <= 2.47;
     bool passesFiducialCuts = outsideCrack && central;
@@ -1045,8 +1045,8 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVe
 
     imin = 0;
     jmin = 0;
-    for (int i = 0; i < (int) p_nu_R.size(); i++) {
-      for (int j = 0; j < q_perms.size(); j++){
+    for (unsigned int i = 0; i < p_nu_R.size(); i++) {
+      for (unsigned int j = 0; j < q_perms.size(); j++){
         mblv = (p_q[q_perms[j][0]] + p_l + p_nu_R[i]).M();
         mjjb = (p_q[q_perms[j][1]] + p_q[q_perms[j][2]] + p_q[q_perms[j][3]]).M();
         dh = mjjb - m_tmass;
