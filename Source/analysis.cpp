@@ -179,6 +179,7 @@ void AnalysisZprime::EachEvent(){
   double cosThetaStar_R2 = -999;
   double cosThetalp_top = -999;
   double cosThetalm_atop = -999;
+  double coslpcoslm_top = -999;
 
   if (m_channel == "tt-bbllvv"){
     ytt_R1 = P_R1.Rapidity();
@@ -190,6 +191,7 @@ void AnalysisZprime::EachEvent(){
     deltaPhi = p[2].Phi() - p[4].Phi();
     cosThetalp_top = ptop[2].CosTheta();
     cosThetalm_atop = patop[4].CosTheta();
+    coslpcoslm_top = cosThetalp_top*cosThetalm_atop;
 
     // printf("Reconstructed top mass\n---\n");
     // printf("m_top = %f TeV\n", mt);
@@ -225,6 +227,9 @@ void AnalysisZprime::EachEvent(){
     h_ytt->Fill(ytt, weight/h_ytt->GetXaxis()->GetBinWidth(1));
     h_cosTheta->Fill(cosTheta, weight/h_cosTheta->GetXaxis()->GetBinWidth(1));
     h_cosThetaStar->Fill(cosThetaStar, weight/h_cosThetaStar->GetXaxis()->GetBinWidth(1));
+    h_cosThetalp_top->Fill(cosThetalp_top, weight/h_cosThetalp_top->GetXaxis()->GetBinWidth(1));
+    h_cosThetalm_atop->Fill(cosThetalm_atop, weight/h_cosThetalm_atop->GetXaxis()->GetBinWidth(1));
+    h_coslpcoslm_top->Fill(coslpcoslm_top, weight/h_coslpcoslm_top->GetXaxis()->GetBinWidth(1));
 
     // asymmetries
     if (cosThetaStar > 0) h_mtt_F->Fill(mtt, weight/h_mtt_F->GetXaxis()->GetBinWidth(1));
@@ -512,6 +517,9 @@ void AnalysisZprime::CreateHistograms(){
     h_pzNu->Sumw2();
     h_pzNu_R = new TH1D("pzNu_R", "p_{z}^{#nu} (reco)", nbins, -500.0, 500.0);
     h_pzNu_R->Sumw2();
+    h_cosThetalp_top = new TH1D("cosThetalp_top", "cos#theta_{l+}", nbins, -1.0, 1.0);
+    h_cosThetalm_atop = new TH1D("cosThetalm_atop", "cos#theta_{l-}", nbins, -1.0, 1.0);
+    h_coslpcoslm_top = new TH1D("coslpcoslm_top", "cos#theta_{l+}cos#theta_{l-}", nbins, -1.0, 1.0);
   }
 }
 
@@ -572,6 +580,9 @@ void AnalysisZprime::MakeGraphs(){
     this->MakeDistribution(h_cosThetaStar_R, "");
     this->MakeDistribution(h_pzNu, "GeV");
     this->MakeDistribution(h_pzNu_R, "GeV");
+    this->MakeDistribution(h_cosThetalp_top, "");
+    this->MakeDistribution(h_cosThetalm_atop, "");
+    this->MakeDistribution(h_coslpcoslm_top, "");
 
     h_mtt_FRn = (TH1D*) h_mtt_FR->Clone("h_mtt_FRn");
     h_mtt_FRn->Divide(h_mtt_R);

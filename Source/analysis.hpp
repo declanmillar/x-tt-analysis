@@ -244,6 +244,9 @@ private:
   // Angles
   TH1D* h_deltaPhi;
   TH1D* h_cosTheta;
+  TH1D* h_cosThetalp_top;
+  TH1D* h_cosThetalm_atop;
+  TH1D* h_coslpcoslm_top;
   TH1D* h_cosThetaStar;
   TH1D* h_cosTheta_R;
   TH1D* h_cosThetaStar_R;
