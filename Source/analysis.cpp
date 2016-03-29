@@ -154,7 +154,6 @@ void AnalysisZprime::EachEvent(){
     p_tb_R2 = pcm_R2[1] + pcm_R2[4] + pcm_R2[5];
   }
 
-  double deltaPhi;
   double mtt = P.M()/1000;
   double mtt_R1 = P_R1.M()/1000;
   double mtt_R2 = P_R2.M()/1000;
@@ -176,6 +175,7 @@ void AnalysisZprime::EachEvent(){
   double cosTheta_R2 = -999;
   double cosThetaStar_R1 = -999;
   double cosThetaStar_R2 = -999;
+  double deltaPhi = -999;
   double cosThetalp_top = -999;
   double cosThetalm_atop = -999;
   double coslpcoslm_top = -999;
@@ -697,7 +697,7 @@ bool AnalysisZprime::PassCutsMtt (){
 }
 
 bool AnalysisZprime::PassCutsFiducial (){
-  for (unsigned int i = 0; i < p.size(); i++){
+  for (int i = 0; i < p.size(); i++){
     bool outsideCrack = p[i].PseudoRapidity() <= 1.37 || p[i].PseudoRapidity() >= 1.52;
     bool central      = p[i].PseudoRapidity() <= 2.47;
     bool passesFiducialCuts = outsideCrack && central;
@@ -1079,7 +1079,7 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVe
   }
 
   // Assess b-matching performance
-  int b_lep;
+  unsigned int b_lep;
   if (Q_l == 1) b_lep = 0;
   if (Q_l == -1) b_lep = 1;
   if (b_lep == jmin) m_nQuarksMatched++;
