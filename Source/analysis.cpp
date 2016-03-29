@@ -245,9 +245,9 @@ void AnalysisZprime::EachEvent(){
       h_cosThetalm_atop->Fill(cosThetalm_atop, weight/h_cosThetalm_atop->GetXaxis()->GetBinWidth(1));
       h_coslpcoslm_top->Fill(coslpcoslm_top, weight/h_coslpcoslm_top->GetXaxis()->GetBinWidth(1));
       h2_mtt_deltaPhi->Fill(mtt, deltaPhi, weight/h_deltaPhi->GetXaxis()->GetBinWidth(1));
-      h2_mtt_cosThetalp_top->Fill(mtt, cosThetalp_top, weight/h_cosThetalp_top->GetXaxis()->GetBinWidth(1));
-      h2_mtt_cosThetalm_atop->Fill(mtt, cosThetalm_atop, weight/h_cosThetalm_atop->GetXaxis()->GetBinWidth(1));
-      h2_mtt_coslpcoslm_top->Fill(mtt, coslpcoslm_top, weight/h_coslpcoslm_top->GetXaxis()->GetBinWidth(1));
+      h2_mtt_cosThetalp->Fill(mtt, cosThetalp_top, weight/h_cosThetalp_top->GetXaxis()->GetBinWidth(1));
+      h2_mtt_cosThetalm->Fill(mtt, cosThetalm_atop, weight/h_cosThetalm_atop->GetXaxis()->GetBinWidth(1));
+      h2_mtt_coslpcoslm->Fill(mtt, coslpcoslm_top, weight/h_coslpcoslm_top->GetXaxis()->GetBinWidth(1));
 
 
 
