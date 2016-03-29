@@ -86,32 +86,28 @@ void AnalysisZprime::EachEvent(){
 
   P.SetPxPyPzE(0,0,0,0);
   pcm = vector<TLorentzVector>(p.size());
+  ptop = vector<TLorentzVector>(p.size());
+  patop = vector<TLorentzVector>(p.size());
   for (unsigned int i = 0; i < p.size(); i++){
     P += p[i];
     pcm[i] = p[i];
+    ptop[i] = p[i];
+    patop[i] = p[i];
   }
 
   TVector3 V = -1*P.BoostVector();
-
-  Pcm.SetPxPyPzE(0,0,0,0);
-  for (unsigned int i = 0; i < p.size(); i++){
-    pcm[i].Boost(V);
-    Pcm += pcm[i];
-  }
-
   TVector3 Vtop = -1*(p[0]+p[2]+p[3]).BoostVector();
-
-  Ptop.SetPxPyPzE(0,0,0,0);
-  for (unsigned int i = 0; i < p.size(); i++){
-    ptop[i].Boost(Vtop);
-    Ptop += ptop[i];
-  }
-
   TVector3 Vatop = -1*(p[1]+p[4]+p[5]).BoostVector();
 
+  Pcm.SetPxPyPzE(0,0,0,0);
+  Ptop.SetPxPyPzE(0,0,0,0);
   Patop.SetPxPyPzE(0,0,0,0);
   for (unsigned int i = 0; i < p.size(); i++){
+    pcm[i].Boost(V);
+    ptop[i].Boost(Vtop);
     patop[i].Boost(Vatop);
+    Pcm += pcm[i];
+    Ptop += ptop[i];
     Patop += patop[i];
   }
 
