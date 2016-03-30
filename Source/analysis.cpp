@@ -76,7 +76,7 @@ TString AnalysisZprime::GetOutputFilename(){
 }
 
 void AnalysisZprime::EachEvent(){
-  // printf("Processing an event...\n");
+  printf("Processing an event...\n");
   m_discardEvent = false;
   UpdateCutflow(c_entries, true);
   p = vector<TLorentzVector>(6);
@@ -216,7 +216,7 @@ void AnalysisZprime::EachEvent(){
 
   if (this->PassCuts("truth")){
     // fill histograms (assumes fixed bin width!)
-    // printf("Event passed all truth cuts.\n");
+    printf("Event passed all truth cuts.\n");
     h_mt->Fill(mt, weight/h_mt->GetXaxis()->GetBinWidth(1));
     h_mtbar->Fill(mtb, weight/h_mtbar->GetXaxis()->GetBinWidth(1));
     h_mtt->Fill(mtt, weight/h_mtt->GetXaxis()->GetBinWidth(1));
@@ -244,10 +244,11 @@ void AnalysisZprime::EachEvent(){
       h_cosThetalp_top->Fill(cosThetalp_top, weight/h_cosThetalp_top->GetXaxis()->GetBinWidth(1));
       h_cosThetalm_atop->Fill(cosThetalm_atop, weight/h_cosThetalm_atop->GetXaxis()->GetBinWidth(1));
       h_coslpcoslm_top->Fill(coslpcoslm_top, weight/h_coslpcoslm_top->GetXaxis()->GetBinWidth(1));
-      h2_mtt_deltaPhi->Fill(mtt, deltaPhi, weight/h_deltaPhi->GetXaxis()->GetBinWidth(1));
-      h2_mtt_cosThetalp->Fill(mtt, cosThetalp_top, weight/h_cosThetalp_top->GetXaxis()->GetBinWidth(1));
-      h2_mtt_cosThetalm->Fill(mtt, cosThetalm_atop, weight/h_cosThetalm_atop->GetXaxis()->GetBinWidth(1));
-      h2_mtt_coslpcoslm->Fill(mtt, coslpcoslm_top, weight/h_coslpcoslm_top->GetXaxis()->GetBinWidth(1));
+
+      h2_mtt_deltaPhi->Fill(mtt, deltaPhi, weight/h2_mtt_deltaPhi->GetXaxis()->GetBinWidth(1)/h2_mtt_deltaPhi->GetYaxis()->GetBinWidth(1));
+      h2_mtt_cosThetalp->Fill(mtt, cosThetalp_top, weight/h2_mtt_cosThetalp->GetXaxis()->GetBinWidth(1)/h2_mtt_cosThetalp->GetYaxis()->GetBinWidth(1));
+      h2_mtt_cosThetalm->Fill(mtt, cosThetalm_atop, weight/h2_mtt_cosThetalm->GetXaxis()->GetBinWidth(1)/h2_mtt_cosThetalm->GetYaxis()->GetBinWidth(1));
+      h2_mtt_coslpcoslm->Fill(mtt, coslpcoslm_top, weight/h2_mtt_coslpcoslm->GetXaxis()->GetBinWidth(1)/h2_mtt_coslpcoslm->GetYaxis()->GetBinWidth(1));
 
 
 
