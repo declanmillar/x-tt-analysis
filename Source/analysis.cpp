@@ -652,8 +652,10 @@ void AnalysisZprime::WriteHistograms(){
   }
 
   if (m_channel == "tt-bbllvv"){
-    h_deltaPhi->Write();
-
+    h2_mtt_deltaPhi->Write();
+    h2_mtt_cosThetalp->Write();
+    h2_mtt_cosThetalm->Write();
+    h2_mtt_coslpcoslm->Write();
     h_mtt_FRn->Write();
     h_mtt_BRn->Write();
     h_AFB_R->Write();
