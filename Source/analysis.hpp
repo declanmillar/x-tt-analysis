@@ -97,6 +97,7 @@ private:
   const int nBtags;
   const bool m_discardComplex;
   const TString m_analysisLabel;
+  const bool m_reco;
 
   // Parameters
   float m_pi;

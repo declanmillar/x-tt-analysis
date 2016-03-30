@@ -28,6 +28,7 @@ AnalysisZprime::AnalysisZprime(const TString channel, const TString model, const
   nBtags(btags),
   m_discardComplex(discardComplex),
   m_analysisLabel(analysisLabel),
+  m_reco(false),
   m_pi(3.14159265),
   m_GeV(1000.0),
   m_Wmass(80.23),
@@ -61,7 +62,7 @@ void AnalysisZprime::CreateFilenames(){
   else QCDadded = "";
 
   m_outputFileName = base + ".a" + QCDadded;
-  if (m_channel == "tt-bbllvv") m_outputFileName += ".btags" + to_string(nBtags) + ".C" + BoolToString(m_discardComplex);
+  if (m_channel == "tt-bbllvv" and m_reco) m_outputFileName += ".btags" + to_string(nBtags) + ".C" + BoolToString(m_discardComplex);
   if (m_ytt > 0) m_outputFileName += ".ytt";
   if (m_efficiency < 1.0) m_outputFileName += ".eff";
   if (m_luminosity > 0) m_outputFileName += "." + to_string(m_luminosity) + "fb";
@@ -111,7 +112,7 @@ void AnalysisZprime::EachEvent(){
     Patop += patop[i];
   }
 
-  if (m_channel == "tt-bbllvv"){
+  if (m_channel == "tt-bbllvv" and m_reco){
     p_R1 = this->ReconstructSemiLeptonic(p,1); // top decays leptonically
     p_R2 = this->ReconstructSemiLeptonic(p,-1); // top decays hadronically
 
@@ -145,10 +146,12 @@ void AnalysisZprime::EachEvent(){
   else if (m_channel == "tt-bbllvv"){
     p_t = pcm[0] + pcm[2] + pcm[3];
     p_tb = pcm[1] + pcm[4] + pcm[5];
-    p_t_R1 = pcm_R1[0] + pcm_R1[2] + pcm_R1[3];
-    p_tb_R1 = pcm_R1[1] + pcm_R1[4] + pcm_R1[5];
-    p_t_R2 = pcm_R2[0] + pcm_R2[2] + pcm_R2[3];
-    p_tb_R2 = pcm_R2[1] + pcm_R2[4] + pcm_R2[5];
+    if(m_reco){
+      p_t_R1 = pcm_R1[0] + pcm_R1[2] + pcm_R1[3];
+      p_tb_R1 = pcm_R1[1] + pcm_R1[4] + pcm_R1[5];
+      p_t_R2 = pcm_R2[0] + pcm_R2[2] + pcm_R2[3];
+      p_tb_R2 = pcm_R2[1] + pcm_R2[4] + pcm_R2[5];
+    }
   }
 
   double mtt = P.M()/1000;
@@ -178,13 +181,7 @@ void AnalysisZprime::EachEvent(){
   double coslpcoslm_top = -999;
 
   if (m_channel == "tt-bbllvv"){
-    ytt_R1 = P_R1.Rapidity();
-    ytt_R2 = P_R2.Rapidity();
-    mt_R1 = p_t_R1.M();
-    mtb_R1 = p_tb_R1.M();
-    mt_R2 = p_t_R2.M();
-    mtb_R2 = p_tb_R2.M();
-    deltaPhi = p[2].Phi() - p[4].Phi();
+
     cosThetalp_top = ptop[2].CosTheta();
     cosThetalm_atop = patop[4].CosTheta();
     coslpcoslm_top = cosThetalp_top*cosThetalm_atop;
@@ -197,11 +194,19 @@ void AnalysisZprime::EachEvent(){
     // printf("m_top (reco)[had] = %f TeV\n", mt_R2);
     // printf("m_antitop (reco)[lep] = %f TeV\n", mtb_R2);
     // printf("---\n");
-
-    cosTheta_R1 = p_t_R1.CosTheta();
-    cosTheta_R2 = p_t_R2.CosTheta();
-    cosThetaStar_R1 = int(ytt_R1/abs(ytt_R1))*cosTheta_R1;
-    cosThetaStar_R2 = int(ytt_R2/abs(ytt_R2))*cosTheta_R2;
+    if(m_reco){
+      ytt_R1 = P_R1.Rapidity();
+      ytt_R2 = P_R2.Rapidity();
+      mt_R1 = p_t_R1.M();
+      mtb_R1 = p_tb_R1.M();
+      mt_R2 = p_t_R2.M();
+      mtb_R2 = p_tb_R2.M();
+      deltaPhi = p[2].Phi() - p[4].Phi();
+      cosTheta_R1 = p_t_R1.CosTheta();
+      cosTheta_R2 = p_t_R2.CosTheta();
+      cosThetaStar_R1 = int(ytt_R1/abs(ytt_R1))*cosTheta_R1;
+      cosThetaStar_R2 = int(ytt_R2/abs(ytt_R2))*cosTheta_R2;
+    }
   }
 
   // printf("Event passed all cuts.\n");
@@ -250,30 +255,32 @@ void AnalysisZprime::EachEvent(){
       h2_mtt_cosThetalm->Fill(mtt, cosThetalm_atop, weight/h2_mtt_cosThetalm->GetXaxis()->GetBinWidth(1)/h2_mtt_cosThetalm->GetYaxis()->GetBinWidth(1));
       h2_mtt_coslpcoslm->Fill(mtt, coslpcoslm_top, weight/h2_mtt_coslpcoslm->GetXaxis()->GetBinWidth(1)/h2_mtt_coslpcoslm->GetYaxis()->GetBinWidth(1));
 
-      if(this->PassCuts("R1")){
-        h_mtt_R->Fill(mtt_R1, weight_R/h_mtt_R->GetXaxis()->GetBinWidth(1));
-        if (cosThetaStar_R1 > 0) h_mtt_FR->Fill(mtt_R1, weight_R/h_mtt_FR->GetXaxis()->GetBinWidth(1));
-        if (cosThetaStar_R1 < 0) h_mtt_BR->Fill(mtt_R1, weight_R/h_mtt_BR->GetXaxis()->GetBinWidth(1));
-        h_ytt_R->Fill(ytt_R1, weight_R/h_ytt_R->GetXaxis()->GetBinWidth(1));
-        h_mt_R->Fill(mt_R1, weight_R/h_mt_R->GetXaxis()->GetBinWidth(1));
-        h_mtbar_R->Fill(mtb_R1, weight_R/h_mtbar_R->GetXaxis()->GetBinWidth(1));
-        h_cosTheta_R->Fill(cosTheta_R1, weight_R/h_cosTheta_R->GetXaxis()->GetBinWidth(1));
-        h_cosThetaStar_R->Fill(cosThetaStar_R1, weight_R/h_cosThetaStar_R->GetXaxis()->GetBinWidth(1));
-        h_pzNu_R->Fill(p_R1[3].Pz(), weight_R/h_pzNu_R->GetXaxis()->GetBinWidth(1));
-      }
+      if(m_reco){
+        if(this->PassCuts("R1")){
+          h_mtt_R->Fill(mtt_R1, weight_R/h_mtt_R->GetXaxis()->GetBinWidth(1));
+          if (cosThetaStar_R1 > 0) h_mtt_FR->Fill(mtt_R1, weight_R/h_mtt_FR->GetXaxis()->GetBinWidth(1));
+          if (cosThetaStar_R1 < 0) h_mtt_BR->Fill(mtt_R1, weight_R/h_mtt_BR->GetXaxis()->GetBinWidth(1));
+          h_ytt_R->Fill(ytt_R1, weight_R/h_ytt_R->GetXaxis()->GetBinWidth(1));
+          h_mt_R->Fill(mt_R1, weight_R/h_mt_R->GetXaxis()->GetBinWidth(1));
+          h_mtbar_R->Fill(mtb_R1, weight_R/h_mtbar_R->GetXaxis()->GetBinWidth(1));
+          h_cosTheta_R->Fill(cosTheta_R1, weight_R/h_cosTheta_R->GetXaxis()->GetBinWidth(1));
+          h_cosThetaStar_R->Fill(cosThetaStar_R1, weight_R/h_cosThetaStar_R->GetXaxis()->GetBinWidth(1));
+          h_pzNu_R->Fill(p_R1[3].Pz(), weight_R/h_pzNu_R->GetXaxis()->GetBinWidth(1));
+        }
 
 
-      if(this->PassCuts("R2")){
-        h_mtt_R->Fill(mtt_R2, weight_R/h_mtt_R->GetXaxis()->GetBinWidth(1));
-        if (cosThetaStar_R2 > 0) h_mtt_FR->Fill(mtt_R2, weight_R/h_mtt_FR->GetXaxis()->GetBinWidth(1));
-        if (cosThetaStar_R2 < 0) h_mtt_BR->Fill(mtt_R2, weight_R/h_mtt_BR->GetXaxis()->GetBinWidth(1));
-        h_ytt_R->Fill(ytt_R2, weight_R/h_ytt_R->GetXaxis()->GetBinWidth(1));
-        h_mt_R->Fill(mt_R2, weight_R/h_mt_R->GetXaxis()->GetBinWidth(1));
-        h_mtbar_R->Fill(mtb_R2, weight_R/h_mtbar_R->GetXaxis()->GetBinWidth(1));
-        h_cosTheta_R->Fill(cosTheta_R2, weight_R/h_cosTheta_R->GetXaxis()->GetBinWidth(1));
-        h_cosThetaStar_R->Fill(cosThetaStar_R2, weight_R/h_cosThetaStar_R->GetXaxis()->GetBinWidth(1));
-        h_pzNu->Fill(p[3].Pz(), weight_R/h_pzNu->GetXaxis()->GetBinWidth(1));
-        h_pzNu_R->Fill(p_R2[5].Pz(), weight_R/h_pzNu_R->GetXaxis()->GetBinWidth(1));
+        if(this->PassCuts("R2")){
+          h_mtt_R->Fill(mtt_R2, weight_R/h_mtt_R->GetXaxis()->GetBinWidth(1));
+          if (cosThetaStar_R2 > 0) h_mtt_FR->Fill(mtt_R2, weight_R/h_mtt_FR->GetXaxis()->GetBinWidth(1));
+          if (cosThetaStar_R2 < 0) h_mtt_BR->Fill(mtt_R2, weight_R/h_mtt_BR->GetXaxis()->GetBinWidth(1));
+          h_ytt_R->Fill(ytt_R2, weight_R/h_ytt_R->GetXaxis()->GetBinWidth(1));
+          h_mt_R->Fill(mt_R2, weight_R/h_mt_R->GetXaxis()->GetBinWidth(1));
+          h_mtbar_R->Fill(mtb_R2, weight_R/h_mtbar_R->GetXaxis()->GetBinWidth(1));
+          h_cosTheta_R->Fill(cosTheta_R2, weight_R/h_cosTheta_R->GetXaxis()->GetBinWidth(1));
+          h_cosThetaStar_R->Fill(cosThetaStar_R2, weight_R/h_cosThetaStar_R->GetXaxis()->GetBinWidth(1));
+          h_pzNu->Fill(p[3].Pz(), weight_R/h_pzNu->GetXaxis()->GetBinWidth(1));
+          h_pzNu_R->Fill(p_R2[5].Pz(), weight_R/h_pzNu_R->GetXaxis()->GetBinWidth(1));
+        }
       }
     }
   }
@@ -282,7 +289,7 @@ void AnalysisZprime::EachEvent(){
 void AnalysisZprime::PostLoop (){
   this->CheckResults();
   if (m_channel == "tt") this->TotalSpinAsymmetries();
-  if (m_channel == "tt-bbllvv") this->CheckPerformance();
+  if (m_channel == "tt-bbllvv" and m_reco) this->CheckPerformance();
   this->MakeGraphs();
   this->PrintCutflow();
   this->WriteHistograms();
@@ -484,43 +491,22 @@ void AnalysisZprime::CreateHistograms(){
   }
 
   if (m_channel == "tt-bbllvv"){
-    h_mtt_R = new TH1D("mtt_R", "m_{tt}^{reco}", nbins, Emin, Emax);
-    h_mtt_R->Sumw2();
-    h_mt_R = new TH1D("mt_R", "m_{t}^{reco}", nbins, 0, 350);
-    h_mt_R->Sumw2();
-    h_mtbar_R = new TH1D("mtbar_R", "m^{reco}_{#bar{t}}", nbins, 0, 350);
-    h_mtbar_R->Sumw2();
 
-    h_mtt_FR = new TH1D("mtt_FR", "m_{tt}^{forward} (reco)", nbins, Emin, Emax);
-    h_mtt_FR->Sumw2();
-    h_mtt_BR = new TH1D("mtt_BR", "m_{tt}^{backward} (reco)", nbins, Emin, Emax);
-    h_mtt_BR->Sumw2();
-    h_mtt_FD = new TH1D("mtt_FD", "m_{tt}^{forward} (reco)", nbins, Emin, Emax);
-    h_mtt_FD->Sumw2();
-    h_mtt_BD = new TH1D("mtt_BD", "m_{tt}^{backward} (reco)", nbins, Emin, Emax);
-    h_mtt_BD->Sumw2();
+    h_deltaPhi = new TH1D("deltaPhi", "#delta#phi", nbins, -2*m_pi, 2*m_pi);
+    h_deltaPhi->Sumw2();
+    h_pzNu = new TH1D("pzNu", "p_{z}^{#nu}", nbins, -500.0, 500.0);
+    h_pzNu->Sumw2();
+    h_cosThetalp_top = new TH1D("cosThetalp_top", "cos#theta_{l+}", nbins, -1.0, 1.0);
+    h_cosThetalp_top->Sumw2();
+    h_cosThetalm_atop = new TH1D("cosThetalm_atop", "cos#theta_{l-}", nbins, -1.0, 1.0);
+    h_cosThetalm_atop->Sumw2();
+    h_coslpcoslm_top = new TH1D("coslpcoslm_top", "cos#theta_{l+}cos#theta_{l-}", nbins, -1.0, 1.0);
+    h_coslpcoslm_top->Sumw2();
 
     h_mtt_Fl = new TH1D("mtt_Fl", "m_{tt}^{F,l}", nbins, Emin, Emax);
     h_mtt_Fl->Sumw2();
     h_mtt_Bl = new TH1D("mtt_Bl", "m_{tt}^{B,l}", nbins, Emin, Emax);
     h_mtt_Bl->Sumw2();
-
-    h_ytt_R = new TH1D("ytt_R", "y_{tt}^{reco}", nbins, -2.5, 2.5);
-    h_ytt_R->Sumw2();
-
-    h_deltaPhi = new TH1D("deltaPhi", "#delta#phi", nbins, -2*m_pi, 2*m_pi);
-    h_deltaPhi->Sumw2();
-    h_cosTheta_R = new TH1D("cosTheta_R", "cos#theta_{reco}", nbins, -1.0, 1.0);
-    h_cosTheta_R->Sumw2();
-    h_cosThetaStar_R = new TH1D("cosThetaStar_R", "cos#theta_{reco}^{*}", nbins, -1.0, 1.0);
-    h_cosThetaStar_R->Sumw2();
-    h_pzNu = new TH1D("pzNu", "p_{z}^{#nu}", nbins, -500.0, 500.0);
-    h_pzNu->Sumw2();
-    h_pzNu_R = new TH1D("pzNu_R", "p_{z}^{#nu} (reco)", nbins, -500.0, 500.0);
-    h_pzNu_R->Sumw2();
-    h_cosThetalp_top = new TH1D("cosThetalp_top", "cos#theta_{l+}", nbins, -1.0, 1.0);
-    h_cosThetalm_atop = new TH1D("cosThetalm_atop", "cos#theta_{l-}", nbins, -1.0, 1.0);
-    h_coslpcoslm_top = new TH1D("coslpcoslm_top", "cos#theta_{l+}cos#theta_{l-}", nbins, -1.0, 1.0);
 
     h2_mtt_deltaPhi = new TH2D("mtt_delta_phi", "m_{tt} #Delta#phi_{l}", nbins, Emin, Emax, nbins, -2*m_pi, 2*m_pi);
     h2_mtt_deltaPhi->GetXaxis()->SetTitle("m_{tt}");
@@ -534,15 +520,38 @@ void AnalysisZprime::CreateHistograms(){
     h2_mtt_coslpcoslm = new TH2D("mtt_coslpcoslm", "m_{tt} cos#theta_{l+}cos#theta_{l-}", nbins, Emin, Emax, nbins, -1.0, 1.0);
     h2_mtt_coslpcoslm->GetXaxis()->SetTitle("m_{tt}");
     h2_mtt_coslpcoslm->GetYaxis()->SetTitle("cos#theta_{l+}cos#theta_{l-}");
+
+    if(m_reco){
+      h_mtt_R = new TH1D("mtt_R", "m_{tt}^{reco}", nbins, Emin, Emax);
+      h_mtt_R->Sumw2();
+      h_mt_R = new TH1D("mt_R", "m_{t}^{reco}", nbins, 0, 350);
+      h_mt_R->Sumw2();
+      h_mtbar_R = new TH1D("mtbar_R", "m^{reco}_{#bar{t}}", nbins, 0, 350);
+      h_mtbar_R->Sumw2();
+      h_mtt_FR = new TH1D("mtt_FR", "m_{tt}^{forward} (reco)", nbins, Emin, Emax);
+      h_mtt_FR->Sumw2();
+      h_mtt_BR = new TH1D("mtt_BR", "m_{tt}^{backward} (reco)", nbins, Emin, Emax);
+      h_mtt_BR->Sumw2();
+      h_mtt_FD = new TH1D("mtt_FD", "m_{tt}^{forward} (reco)", nbins, Emin, Emax);
+      h_mtt_FD->Sumw2();
+      h_mtt_BD  = new TH1D("mtt_BD", "m_{tt}^{backward} (reco)", nbins, Emin, Emax);
+      h_mtt_BD->Sumw2();
+      h_ytt_R = new TH1D("ytt_R", "y_{tt}^{reco}", nbins, -2.5, 2.5);
+      h_ytt_R->Sumw2();
+      h_cosTheta_R = new TH1D("cosTheta_R", "cos#theta_{reco}", nbins, -1.0, 1.0);
+      h_cosTheta_R->Sumw2();
+      h_cosThetaStar_R = new TH1D("cosThetaStar_R", "cos#theta_{reco}^{*}", nbins, -1.0, 1.0);
+      h_cosThetaStar_R->Sumw2();
+      h_pzNu_R = new TH1D("pzNu_R", "p_{z}^{#nu} (reco)", nbins, -500.0, 500.0);
+      h_pzNu_R->Sumw2();
+    }
   }
 }
 
 
 void AnalysisZprime::MakeGraphs(){
   printf("Making Graphs...\n");
-
   this->MakeDistribution(h_mtt, "TeV");
-
   this->MakeDistribution(h_mtt_F, "TeV");
   this->MakeDistribution(h_mtt_B, "TeV");
   this->MakeDistribution(h_mt, "TeV");
@@ -584,29 +593,32 @@ void AnalysisZprime::MakeGraphs(){
 
   if (m_channel == "tt-bbllvv"){
     this->MakeDistribution(h_deltaPhi, "");
-    this->MakeDistribution(h_mtt_R, "TeV");
-    this->MakeDistribution(h_mtt_FR, "TeV");
-    this->MakeDistribution(h_mtt_BR, "TeV");
-    this->MakeDistribution(h_mt_R, "TeV");
-    this->MakeDistribution(h_mtbar_R, "TeV");
-    this->MakeDistribution(h_ytt_R, "TeV");
-    this->MakeDistribution(h_cosTheta_R, "");
-    this->MakeDistribution(h_cosThetaStar_R, "");
     this->MakeDistribution(h_pzNu, "GeV");
-    this->MakeDistribution(h_pzNu_R, "GeV");
     this->MakeDistribution(h_cosThetalp_top, "");
     this->MakeDistribution(h_cosThetalm_atop, "");
     this->MakeDistribution(h_coslpcoslm_top, "");
 
-    h_mtt_FRn = (TH1D*) h_mtt_FR->Clone("h_mtt_FRn");
-    h_mtt_FRn->Divide(h_mtt_R);
+    if(m_reco){
+      this->MakeDistribution(h_mtt_R, "TeV");
+      this->MakeDistribution(h_mtt_FR, "TeV");
+      this->MakeDistribution(h_mtt_BR, "TeV");
+      this->MakeDistribution(h_mt_R, "TeV");
+      this->MakeDistribution(h_mtbar_R, "TeV");
+      this->MakeDistribution(h_ytt_R, "TeV");
+      this->MakeDistribution(h_cosTheta_R, "");
+      this->MakeDistribution(h_cosThetaStar_R, "");
+      this->MakeDistribution(h_pzNu_R, "GeV");
 
-    h_mtt_BRn = (TH1D*) h_mtt_BR->Clone("h_mtt_BRn");
-    h_mtt_BRn->Divide(h_mtt_R);
+      h_mtt_FRn = (TH1D*) h_mtt_FR->Clone("h_mtt_FRn");
+      h_mtt_FRn->Divide(h_mtt_R);
 
-    h_AFB_R = this->Asymmetry("AFB_R", "A_{FB}^{reco}", h_mtt_FR, h_mtt_BR);
-    h_AFB_R->GetYaxis()->SetTitle(h_AFB_R->GetTitle());
-    h_AFB_R->GetXaxis()->SetTitle("m_{tt}^{reco} [TeV]");
+      h_mtt_BRn = (TH1D*) h_mtt_BR->Clone("h_mtt_BRn");
+      h_mtt_BRn->Divide(h_mtt_R);
+
+      h_AFB_R = this->Asymmetry("AFB_R", "A_{FB}^{reco}", h_mtt_FR, h_mtt_BR);
+      h_AFB_R->GetYaxis()->SetTitle(h_AFB_R->GetTitle());
+      h_AFB_R->GetXaxis()->SetTitle("m_{tt}^{reco} [TeV]");
+    }
   }
 }
 
@@ -656,9 +668,11 @@ void AnalysisZprime::WriteHistograms(){
     h2_mtt_cosThetalp->Write();
     h2_mtt_cosThetalm->Write();
     h2_mtt_coslpcoslm->Write();
-    h_mtt_FRn->Write();
-    h_mtt_BRn->Write();
-    h_AFB_R->Write();
+    if(m_reco){
+      h_mtt_FRn->Write();
+      h_mtt_BRn->Write();
+      h_AFB_R->Write();
+    }
   }
   m_outputFile->Close();
   // delete h_cutflow;
