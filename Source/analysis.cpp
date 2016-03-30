@@ -522,7 +522,7 @@ void AnalysisZprime::CreateHistograms(){
     h_cosThetalm_atop = new TH1D("cosThetalm_atop", "cos#theta_{l-}", nbins, -1.0, 1.0);
     h_coslpcoslm_top = new TH1D("coslpcoslm_top", "cos#theta_{l+}cos#theta_{l-}", nbins, -1.0, 1.0);
 
-    h2_mtt_deltaPhi = new TH2D("mtt_delta_phi", "m_{tt} #Delta#phi_{l}", nbins, Emin, Emax, nbins, -2*m+pi, 2*m_pi);
+    h2_mtt_deltaPhi = new TH2D("mtt_delta_phi", "m_{tt} #Delta#phi_{l}", nbins, Emin, Emax, nbins, -2*m_pi, 2*m_pi);
     h2_mtt_deltaPhi->GetXaxis()->SetTitle("m_{tt}");
     h2_mtt_deltaPhi->GetYaxis()->SetTitle("#Delta#phi_{l}");
     h2_mtt_cosThetalp = new TH2D("mtt_cosThetalp", "m_{tt} cos#theta_{l+}", nbins, Emin, Emax, nbins, -1.0, 1.0);
