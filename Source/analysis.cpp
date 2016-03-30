@@ -76,7 +76,7 @@ TString AnalysisZprime::GetOutputFilename(){
 }
 
 void AnalysisZprime::EachEvent(){
-  printf("Processing an event...\n");
+  // printf("Processing an event...\n");
   m_discardEvent = false;
   UpdateCutflow(c_entries, true);
   p = vector<TLorentzVector>(6);
@@ -216,7 +216,7 @@ void AnalysisZprime::EachEvent(){
 
   if (this->PassCuts("truth")){
     // fill histograms (assumes fixed bin width!)
-    printf("Event passed all truth cuts.\n");
+    // printf("Event passed all truth cuts.\n");
     h_mt->Fill(mt, weight/h_mt->GetXaxis()->GetBinWidth(1));
     h_mtbar->Fill(mtb, weight/h_mtbar->GetXaxis()->GetBinWidth(1));
     h_mtt->Fill(mtt, weight/h_mtt->GetXaxis()->GetBinWidth(1));
@@ -249,8 +249,6 @@ void AnalysisZprime::EachEvent(){
       h2_mtt_cosThetalp->Fill(mtt, cosThetalp_top, weight/h2_mtt_cosThetalp->GetXaxis()->GetBinWidth(1)/h2_mtt_cosThetalp->GetYaxis()->GetBinWidth(1));
       h2_mtt_cosThetalm->Fill(mtt, cosThetalm_atop, weight/h2_mtt_cosThetalm->GetXaxis()->GetBinWidth(1)/h2_mtt_cosThetalm->GetYaxis()->GetBinWidth(1));
       h2_mtt_coslpcoslm->Fill(mtt, coslpcoslm_top, weight/h2_mtt_coslpcoslm->GetXaxis()->GetBinWidth(1)/h2_mtt_coslpcoslm->GetYaxis()->GetBinWidth(1));
-
-
 
       if(this->PassCuts("R1")){
         h_mtt_R->Fill(mtt_R1, weight_R/h_mtt_R->GetXaxis()->GetBinWidth(1));
@@ -524,9 +522,18 @@ void AnalysisZprime::CreateHistograms(){
     h_cosThetalm_atop = new TH1D("cosThetalm_atop", "cos#theta_{l-}", nbins, -1.0, 1.0);
     h_coslpcoslm_top = new TH1D("coslpcoslm_top", "cos#theta_{l+}cos#theta_{l-}", nbins, -1.0, 1.0);
 
-    h2_mtt_cosThetalp= new TH2D("mtt_cosThetalp_top", "m_{tt} cos#theta_{l+}", nbins, Emin, Emax, nbins, -1.0, 1.0);
-    h2_mtt_cosThetalm = new TH2D("mtt_cosThetalm_atop", "m_{tt} cos#theta_{l-}", nbins, Emin, Emax, nbins, -1.0, 1.0);
-    h2_mtt_coslpcoslm= new TH2D("mtt_coslpcoslm_top", "m_{tt} cos#theta_{l+}cos#theta_{l-}", nbins, Emin, Emax, nbins, -1.0, 1.0);
+    h2_mtt_deltaPhi = new TH2D("mtt_delta_phi", "m_{tt} #Delta#phi_{l}", nbins, Emin, Emax, nbins, -2*m+pi, 2*m_pi);
+    h2_mtt_deltaPhi->GetXaxis()->SetTitle("m_{tt}");
+    h2_mtt_deltaPhi->GetYaxis()->SetTitle("#Delta#phi_{l}");
+    h2_mtt_cosThetalp = new TH2D("mtt_cosThetalp", "m_{tt} cos#theta_{l+}", nbins, Emin, Emax, nbins, -1.0, 1.0);
+    h2_mtt_cosThetalp->GetXaxis()->SetTitle("m_{tt}");
+    h2_mtt_cosThetalp->GetYaxis()->SetTitle("cos#theta_{l+}");
+    h2_mtt_cosThetalm = new TH2D("mtt_cosThetalm", "m_{tt} cos#theta_{l-}", nbins, Emin, Emax, nbins, -1.0, 1.0);
+    h2_mtt_cosThetalm->GetXaxis()->SetTitle("m_{tt}");
+    h2_mtt_cosThetalm->GetYaxis()->SetTitle("cos#theta_{l-}");
+    h2_mtt_coslpcoslm = new TH2D("mtt_coslpcoslm", "m_{tt} cos#theta_{l+}cos#theta_{l-}", nbins, Emin, Emax, nbins, -1.0, 1.0);
+    h2_mtt_coslpcoslm->GetXaxis()->SetTitle("m_{tt}");
+    h2_mtt_coslpcoslm->GetYaxis()->SetTitle("cos#theta_{l+}cos#theta_{l-}");
   }
 }
 
