@@ -26,6 +26,10 @@ parser.add_option("--c1", default = "", action = "store" , help = "set first col
 parser.add_option("--c2", default = "", action = "store" , help = "set second color")
 parser.add_option("--c3", default = "", action = "store" , help = "set third color")
 parser.add_option("--c4", default = "", action = "store" , help = "set fourth color")
+parser.add_option("--z1", default = "", action = "store" , help = "set first errors to zero")
+parser.add_option("--z2", default = "", action = "store" , help = "set second errors to zero")
+parser.add_option("--z3", default = "", action = "store" , help = "set third errors to zero")
+parser.add_option("--z4", default = "", action = "store" , help = "set fourth errors to zero")
 parser.add_option("--legend_bottom", default = False, action = "store_true" , help = "put legend at bottom")
 parser.add_option("--legend_left", default = False, action = "store_true" , help = "put legend on left")
 parser.add_option("--legend_bottom_left", default = False, action = "store_true" , help = "put legend on bottom left")
@@ -55,6 +59,11 @@ def BinsMatch(hist, hist2):
     if hist.GetMaximum() != hist2.GetMaximum():
         return False
     return True
+
+def ZeroErrors(hist):
+    for i in range(sighist.GetNbinsX()):
+        hist.SetBinError(i, 0)
+    return
 
 def PlotSignificance(hist, hist2):
     if not BinsMatch(hist, hist2):
@@ -168,6 +177,8 @@ if option.h4 == "":
     histname4 = histname
 else:
     histname4 = option.h4
+
+
 
 color3 = ROOT.kSpring-7
 color1 = ROOT.kRed-7
