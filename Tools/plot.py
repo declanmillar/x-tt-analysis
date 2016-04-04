@@ -47,6 +47,7 @@ parser.add_option("-l", "--logy", default = False, action = "store_true" , help 
 parser.add_option("-E", "--eps", default = False, action = "store_true" , help = "save plot as eps")
 parser.add_option("-D", "--pdf", default = False, action = "store_true" , help = "save plot as pdf")
 parser.add_option("-o", "--overlap", default = False, action = "store_true" , help = "find overlapping area")
+parser.add_option("-t", "--tag", default = "", action = "store" , help = "add tag to output")
 parser.add_option("-P", "--plot_dir", default = "/Users/declan/Code/declans-research-logbook/plots", action = "store_true" , help = "plot directory")
 
 (option, args) = parser.parse_args()
@@ -496,7 +497,7 @@ if option.distribution is False and option.significance is True:
     siglabel += "_sig"
 
 if option.eps:
-    canvas.SaveAs("%s/%s%s_%s.eps" % (option.plot_dir,histname, siglabel,filename))
+    canvas.SaveAs("%s/%s%s_%s%s.eps" % (option.plot_dir,histname, siglabel,filename,options.tag))
 
 if option.pdf:
-    canvas.SaveAs("%s/%s%s_%s.pdf" % (option.plot_dir,histname,siglabel, filename))
+    canvas.SaveAs("%s/%s%s_%s%s.pdf" % (option.plot_dir,histname,siglabel, filename,options.tag))
