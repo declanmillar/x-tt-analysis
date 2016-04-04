@@ -26,10 +26,10 @@ parser.add_option("--c1", default = "", action = "store" , help = "set first col
 parser.add_option("--c2", default = "", action = "store" , help = "set second color")
 parser.add_option("--c3", default = "", action = "store" , help = "set third color")
 parser.add_option("--c4", default = "", action = "store" , help = "set fourth color")
-parser.add_option("--z1", default = "", action = "store" , help = "set first errors to zero")
-parser.add_option("--z2", default = "", action = "store" , help = "set second errors to zero")
-parser.add_option("--z3", default = "", action = "store" , help = "set third errors to zero")
-parser.add_option("--z4", default = "", action = "store" , help = "set fourth errors to zero")
+parser.add_option("--z1", default = False, action = "store_true" , help = "set first errors to zero")
+parser.add_option("--z2", default = False, action = "store_true" , help = "set second errors to zero")
+parser.add_option("--z3", default = False, action = "store_true" , help = "set third errors to zero")
+parser.add_option("--z4", default = False, action = "store_true" , help = "set fourth errors to zero")
 parser.add_option("--legend_bottom", default = False, action = "store_true" , help = "put legend at bottom")
 parser.add_option("--legend_left", default = False, action = "store_true" , help = "put legend on left")
 parser.add_option("--legend_bottom_left", default = False, action = "store_true" , help = "put legend on bottom left")
@@ -61,7 +61,7 @@ def BinsMatch(hist, hist2):
     return True
 
 def ZeroErrors(hist):
-    for i in range(sighist.GetNbinsX()):
+    for i in range(1,sighist.GetNbinsX()):
         hist.SetBinError(i, 0)
     return
 
@@ -70,7 +70,7 @@ def PlotSignificance(hist, hist2):
       print "Warning: bins do not match."
     name = hist.GetName() + "_sig"
     sighist = hist.Clone(name)
-    for i in range(sighist.GetNbinsX()):
+    for i in range(1,sighist.GetNbinsX()):
         if i == 0:
             continue
         n = hist.GetBinContent(i)
@@ -213,7 +213,9 @@ try:
             labelname1 = hist.GetTitle()
         else:
             labelname1 = filename
-
+    if option.z1:
+        for i in range(1,hist.GetNbinsX()):
+            hist.SetBinError(i,0)
     if option.normalise:
         ytitle = hist.GetYaxis().GetTitle()
         # print hist.Integral()
@@ -253,6 +255,9 @@ if option.f2 != "" or option.h2 != "":
             else:
                 labelname2 = filename2
             # print hist2.Integral()
+        if option.z2:
+            for i in range(1,hist2.GetNbinsX()):
+                hist2.SetBinError(i,0)
         if option.normalise:
             ytitle2 = hist2.GetYaxis().GetTitle()
             if ytitle2 == "Events" or "AFB" in histname2:
@@ -290,6 +295,9 @@ if option.f3 != "" or option.h3 != "":
             else:
                 labelname3 = filename3
             # print hist3.Integral()
+        if option.z3:
+            for i in range(1,hist3.GetNbinsX()):
+                hist3.SetBinError(i,0)
         if option.normalise:
             ytitle3 = hist3.GetYaxis().GetTitle()
             if ytitle3 == "Events" or "AFB" in histname3:
@@ -327,6 +335,9 @@ if option.f4 != "" or option.h4 != "":
             else:
                 labelname4 = filename4
             # print hist4.Integral()
+        if option.z4:
+            for i in range(1,hist4.GetNbinsX()):
+                hist4.SetBinError(i,0)
         if option.normalise:
             ytitle4 = hist4.GetYaxis().GetTitle()
             if ytitle4 == "Events" or "AFB" in histname4:
@@ -411,7 +422,7 @@ sigPerOverlap = 0
 if option.overlap:
     overlapPerBin = 0
     overlap = 0
-    for i in range(hist.GetNbinsX()):
+    for i in range(1,hist.GetNbinsX()):
         bin1 = hist.GetBin(i)
         bin2 = hist2.GetBin(i)
         one = hist.GetBinContent(bin1)
