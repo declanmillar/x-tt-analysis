@@ -4,8 +4,8 @@ import atlas_style
 
 ROOT.gROOT.Reset()
 ROOT.gROOT.SetBatch(False)
-ROOT.gStyle.SetHatchesSpacing(0.3);
-ROOT.gStyle.SetHatchesLineWidth(1);
+ROOT.gStyle.SetHatchesSpacing(0.3)
+ROOT.gStyle.SetHatchesLineWidth(1)
 ROOT.TGaxis.SetMaxDigits(4)
 
 usage = "usage: overlay.py hist file [options]"
@@ -94,6 +94,54 @@ def PlotSignificance(hist, hist2):
     # hist.GetYaxis().SetNdivisions(3)
     return sighist
 
+# def PlotDistribution(hist, file, color, normalise, label, xmin, xmax):
+#     try:
+#         hist = file.Get(histname)
+#         if option.significance:
+#             hist.GetXaxis().SetLabelSize(0)
+#             # hist.GetXaxis().SetTickLength(0)
+#             hist.GetXaxis().SetLabelOffset(999)
+#             hist.GetXaxis().SetTitleOffset(999)
+#         xmin = option.xmin
+#         xmax = option.xmax
+#         if xmin != -99.9 and xmax != -99.9:
+#             hist.GetXaxis().SetRangeUser(xmin, xmax)
+#         ymin = option.ymin
+#         ymax = option.ymax
+#         if ymin != -99.9 and ymax != -99.9:
+#             hist.GetYaxis().SetRangeUser(ymin, ymax)
+#
+#         if option.l1 != "":
+#             labelname1 = option.l1
+#         else:
+#             if option.f2 == "" and option.h2 != "":
+#                 labelname1 = hist.GetTitle()
+#             else:
+#                 labelname1 = filename
+#         if option.z1:
+#             for i in range(1,hist.GetNbinsX()):
+#                 hist.SetBinError(i,0)
+#         if option.normalise:
+#             ytitle = hist.GetYaxis().GetTitle()
+#             # print hist.Integral()
+#             if ytitle == "Events" or "AFB" in histname:
+#                 ytitle = "Normalised " + ytitle
+#             else:
+#                 ytitle = "1/#sigma #times " + ytitle
+#             hist.GetYaxis().SetTitle(ytitle)
+#             hist.Scale(1.0/abs(hist.Integral()))
+#         hist.SetLineColor(color1)
+#         hist.SetMarkerColor(color1)
+#         hist.SetMarkerStyle(0)
+#         hist.DrawCopy("h hist")
+#         hist.SetFillColor(color1)
+#         hist.SetFillStyle(3354)
+#         hist.DrawCopy("e2 same")
+#         # legend.AddEntry(hist, labelname1)
+#
+#     except:
+#         sys.exit("Error: check %s contains histogram '%s'" % (filename, histname))
+
 if len(args) < 2:
     sys.exit("%s" % usage)
 
@@ -105,7 +153,7 @@ elif option.legend_left:
 elif option.legend_bottom_left:
     legend = ROOT.TLegend(0.15, 0.2, 0.4, 0.4, "")
 else:
-    legend = ROOT.TLegend(0.6, 0.6, 0.9, 0.9, "")
+    legend = ROOT.TLegend(0.7, 0.7, 0.9, 0.9, "")
 
 # canvas
 canvas = ROOT.TCanvas("canvas","canvas", 1920, 1080)
@@ -497,7 +545,7 @@ if option.distribution is False and option.significance is True:
     siglabel += "_sig"
 
 if option.eps:
-    canvas.SaveAs("%s/%s%s_%s%s.eps" % (option.plot_dir,histname, siglabel,filename,options.tag))
+    canvas.SaveAs("%s/%s%s_%s%s.eps" % (option.plot_dir,histname, siglabel,filename,option.tag))
 
 if option.pdf:
-    canvas.SaveAs("%s/%s%s_%s%s.pdf" % (option.plot_dir,histname,siglabel, filename,options.tag))
+    canvas.SaveAs("%s/%s%s_%s%s.pdf" % (option.plot_dir,histname,siglabel, filename,option.tag))
