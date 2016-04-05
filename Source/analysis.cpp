@@ -413,15 +413,16 @@ TH1D* AnalysisZprime::Asymmetry(TString name, TString title, TH1D* h_A, TH1D* h_
 
 
 void AnalysisZprime::AsymmetryUncertainty(TH1D* h_Asymmetry, TH1D* h_A, TH1D* h_B){
-  double A, deltaA, N, N_A, N_B;
+  double A, deltaA, N, N_A, N_B. A2;
   for (int i = 1; i < h_Asymmetry->GetNbinsX()+1; i++){
     A = h_Asymmetry->GetBinContent(i);
     N_A = h_A->GetBinContent(i);
     N_B = h_B->GetBinContent(i);
     N = N_A + N_B;
+    A2 = (N_A - N_B)/N;
     if (N > 0) deltaA = sqrt((1.0 - A*A)/N);
     else deltaA = 0;
-    printf("A = %f, dA= %f, N= %f, N_A= %f, N_B= %f \n",  A, deltaA, N, N_A, N_B);
+    printf("A = %f, A2 = %f dA= %f, N= %f, N_A= %f, N_B= %f \n",  A, A2, deltaA, N, N_A, N_B);
     h_Asymmetry->SetBinError(i, deltaA);
   }
 }
