@@ -629,7 +629,7 @@ void AnalysisZprime::MakeDistribution(TH1D* h, TString units){
   if (m_channel == "tt") ytitle = "d#sigma(pp->t#bar{t}) / d";
   else ytitle = "d#sigma / d"; //pp->t#bar{t}->b#bar{b}l^{+}l^{-}#nu#bar{#nu}
   if (units != ""){
-    yunits = " [pb/" + units + "]";
+    yunits = " [fb/" + units + "]";
     xunits = " [" + units + "]";
   }
   else{
