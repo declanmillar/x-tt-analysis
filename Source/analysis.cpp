@@ -763,7 +763,7 @@ bool AnalysisZprime::PassCutsEta(type){
       else continue;
     }
   else return false;
-  UpdateCutflow(c_eta, tru#etaturn true;
+  UpdateCutflow(c_eta, true;
 }
 
 // bool AnalysisZprime::PassLeptonET (){
