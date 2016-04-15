@@ -762,6 +762,7 @@ bool AnalysisZprime::PassCutsEta(type){
       }
       else continue;
     }
+  }
   else return false;
   UpdateCutflow(c_eta, true;
 }
