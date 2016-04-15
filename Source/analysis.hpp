@@ -67,7 +67,7 @@ protected:
   bool PassCuts(string type);
   bool PassCutsMET();
   bool PassCutsMtt();
-  bool PassCutsFiducial();
+  bool PassCutsEta(string type);
   bool PassCutsYtt(string type);
 
   void ResetCounters();
