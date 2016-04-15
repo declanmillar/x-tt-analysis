@@ -736,6 +736,7 @@ bool AnalysisZprime::PassCutsEta(string type){
       bool passesEtaCuts = outsideCrack && central;
       if (passesEtaCuts == false){
         UpdateCutflow(c_eta, false);
+        return false;
       }
       else continue;
     }
@@ -747,6 +748,7 @@ bool AnalysisZprime::PassCutsEta(string type){
       bool passesEtaCuts = outsideCrack && central;
       if (passesEtaCuts == false){
         UpdateCutflow(c_eta, false);
+        return false;
       }
       else continue;
     }
@@ -758,12 +760,14 @@ bool AnalysisZprime::PassCutsEta(string type){
       bool passesEtaCuts = outsideCrack && central;
       if (passesEtaCuts == false){
         UpdateCutflow(c_eta, false);
+        return false;
       }
       else continue;
     }
   }
   else return false;
   UpdateCutflow(c_eta, true);
+  return true;
 }
 
 // bool AnalysisZprime::PassLeptonET (){
