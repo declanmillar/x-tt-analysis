@@ -728,7 +728,7 @@ bool AnalysisZprime::PassCutsMtt (){
   // return false;
 }
 
-bool AnalysisZprime::PassCutsEta(type){
+bool AnalysisZprime::PassCutsEta(string type){
   if (type == "truth"){
     for (unsigned int i = 0; i < p.size(); i++){
       bool outsideCrack = p[i].PseudoRapidity() <= 1.37 || p[i].PseudoRapidity() >= 1.52;
