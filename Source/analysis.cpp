@@ -736,7 +736,7 @@ bool AnalysisZprime::PassCutsEta(type){
       bool central      = p[i].PseudoRapidity() <= 2.47;
       bool passesEtaCuts = outsideCrack && central;
       if (passesEtaCuts == false){
-        UpdateCutflow(c_eta, fal#eta   return false;
+        UpdateCutflow(c_eta, false;
       }
       else continue;
     }
@@ -747,7 +747,7 @@ bool AnalysisZprime::PassCutsEta(type){
       bool central      = p_R1[i].PseudoRapidity() <= 2.47;
       bool passesEtaCuts = outsideCrack && central;
       if (passesEtaCuts == false){
-        UpdateCutflow(c_eta, fal#eta   return false;
+        UpdateCutflow(c_eta, false;
       }
       else continue;
     }
@@ -758,7 +758,7 @@ bool AnalysisZprime::PassCutsEta(type){
       bool central      = p_R2[i].PseudoRapidity() <= 2.47;
       bool passesEtaCuts = outsideCrack && central;
       if (passesEtaCuts == false){
-        UpdateCutflow(c_eta, fal#eta   return false;
+        UpdateCutflow(c_eta, false;
       }
       else continue;
     }
