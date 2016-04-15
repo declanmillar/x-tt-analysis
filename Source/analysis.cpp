@@ -690,15 +690,14 @@ bool AnalysisZprime::PassCuts(string type){
   {
   //   if (this->PassCuts_MET())
   //    {
-        if (this->PassCutsEta(type)
+        if(this->PassCutsEta(type))
         {
   //         if (this->PassCutsLeptonET())
   //        {
           return true;
           // }
-        // }
         }
-  }
+        // }
   }
   return false;
 }
