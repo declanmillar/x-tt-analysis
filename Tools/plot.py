@@ -229,8 +229,8 @@ else:
 
 
 
-color3 = ROOT.kSpring-7
-color1 = ROOT.kRed-7
+color1 = ROOT.kSpring-7
+color3 = ROOT.kRed-7
 color4 = ROOT.kAzure-7
 color2 = ROOT.kGray+2 # ROOT.kViolet-7
 
@@ -281,7 +281,7 @@ try:
     hist.SetFillColor(color1)
     hist.SetFillStyle(3354)
     hist.DrawCopy("e2 same")
-    # legend.AddEntry(hist, labelname1)
+    legend.AddEntry(hist, labelname1)
 
 except:
     sys.exit("Error: check %s contains histogram '%s'" % (filename, histname))
@@ -319,10 +319,10 @@ if option.f2 != "" or option.h2 != "":
         hist2.SetLineColor(color2)
         hist2.SetMarkerStyle(0)
         hist2.DrawCopy("h hist same")
-        hist2.SetFillColor(color2)
+        # hist2.SetFillColor(color2)
         hist2.SetFillStyle(3354)
         hist2.DrawCopy("e2 same")
-        # legend.AddEntry(hist2, labelname2)
+        legend.AddEntry(hist2, labelname2)
     except ReferenceError:
         sys.exit("ReferenceError: check %s contains histogram '%s'" % (filename2, histname))
 
@@ -362,7 +362,7 @@ if option.f3 != "" or option.h3 != "":
         hist3.SetFillColor(color3)
         hist3.SetFillStyle(3354)
         hist3.DrawCopy("e2 same")
-        # legend.AddEntry(hist3, labelname3)
+        legend.AddEntry(hist3, labelname3)
     except ReferenceError:
         sys.exit("ReferenceError: check %s contains histogram '%s'" % (filename3, histname))
 
@@ -402,7 +402,7 @@ if option.f4 != "" or option.h4 != "":
         hist4.SetFillColor(color4)
         hist4.SetFillStyle(3354)
         hist4.DrawCopy("e2 same")
-        # legend.AddEntry(hist4, labelname4)
+        legend.AddEntry(hist4, labelname4)
     except ReferenceError:
         sys.exit("ReferenceError: check %s contains histogram '%s'" % (filename4, histname))
 

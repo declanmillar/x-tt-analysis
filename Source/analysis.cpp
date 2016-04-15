@@ -690,15 +690,15 @@ bool AnalysisZprime::PassCuts(string type){
   {
   //   if (this->PassCuts_MET())
   //    {
-  //       if (this->PassCutsFiducial())
-  //      {
+        if (this->PassCutsEta(type)
+        {
   //         if (this->PassCutsLeptonET())
   //        {
           return true;
-  //         }
-  //       }
-  //     }
-  // }
+          // }
+        // }
+        }
+  }
   }
   return false;
 }
@@ -729,19 +729,41 @@ bool AnalysisZprime::PassCutsMtt (){
   // return false;
 }
 
-bool AnalysisZprime::PassCutsFiducial (){
-  for (unsigned int i = 0; i < p.size(); i++){
-    bool outsideCrack = p[i].PseudoRapidity() <= 1.37 || p[i].PseudoRapidity() >= 1.52;
-    bool central      = p[i].PseudoRapidity() <= 2.47;
-    bool passesFiducialCuts = outsideCrack && central;
-    if (passesFiducialCuts == false){
-      UpdateCutflow(c_fiducial, false);
-      return false;
+bool AnalysisZprime::PassCutsEta(type){
+  if (type == "truth"){
+    for (unsigned int i = 0; i < p.size(); i++){
+      bool outsideCrack = p[i].PseudoRapidity() <= 1.37 || p[i].PseudoRapidity() >= 1.52;
+      bool central      = p[i].PseudoRapidity() <= 2.47;
+      bool passesEtaCuts = outsideCrack && central;
+      if (passesEtaCuts == false){
+        UpdateCutflow(c_eta, fal#eta   return false;
+      }
+      else continue;
     }
-    else continue;
   }
-  UpdateCutflow(c_fiducial, true);
-  return true;
+  else if (type == "R1"){
+    for (unsigned int i = 0; i < p_R1.size(); i++){
+      bool outsideCrack = p_R1[i].PseudoRapidity() <= 1.37 || p_R1[i].PseudoRapidity() >= 1.52;
+      bool central      = p_R1[i].PseudoRapidity() <= 2.47;
+      bool passesEtaCuts = outsideCrack && central;
+      if (passesEtaCuts == false){
+        UpdateCutflow(c_eta, fal#eta   return false;
+      }
+      else continue;
+    }
+  }
+  else if (type == "R2"){
+    for (unsigned int i = 0; i < p_R2.size(); i++){
+      bool outsideCrack = p_R2[i].PseudoRapidity() <= 1.37 || p_R2[i].PseudoRapidity() >= 1.52;
+      bool central      = p_R2[i].PseudoRapidity() <= 2.47;
+      bool passesEtaCuts = outsideCrack && central;
+      if (passesEtaCuts == false){
+        UpdateCutflow(c_eta, fal#eta   return false;
+      }
+      else continue;
+    }
+  else return false;
+  UpdateCutflow(c_eta, tru#etaturn true;
 }
 
 // bool AnalysisZprime::PassLeptonET (){
@@ -1205,7 +1227,7 @@ void AnalysisZprime::InitialiseCutflow(){
   m_cutNames[c_MET] = "MET";
   m_cutNames[c_mtt] = "mtt";
   m_cutNames[c_ytt] = "ytt";
-  m_cutNames[c_fiducial] = "Fiducial";
+  m_cutNames[c_eta] = "#eta";
 
   h_cutflow = new TH1D("Cutflow", "Cutflow", m_cuts, 0, m_cuts);
 }

@@ -116,7 +116,7 @@ private:
     c_mtt,
     c_MET,
     c_ytt,
-    c_fiducial,
+    c_eta,
     m_cuts // Keep as last entry
   };
 
