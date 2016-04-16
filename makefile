@@ -9,7 +9,7 @@ OUT = .
 
 ROOTCFLAGS      = $(shell root-config --cflags)
 ROOTLIBS        = $(shell root-config --libs)
-BOOSTFLAGS      = -isystem /usr/local/Cellar/boost/1.60.0_1/include
+BOOSTFLAGS      = -isystem /usr/local/Cellar/root6/6.06.02_1/include
 BOOSTLIBS       = -L /usr/local/Cellar/boost/1.60.0_1/lib -lboost_system -lboost_program_options
 
 C               = g++
