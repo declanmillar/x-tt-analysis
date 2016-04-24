@@ -229,10 +229,10 @@ else:
 
 
 
-color1 = ROOT.kSpring-7
-color3 = ROOT.kRed-7
-color4 = ROOT.kAzure-7
-color2 = ROOT.kGray+2 # ROOT.kViolet-7
+color2 = ROOT.kSpring-7
+color1 = ROOT.kRed-7
+color3 = ROOT.kAzure-7
+color4 = ROOT.kGray+2 # ROOT.kViolet-7
 
 if os.path.isfile("%s" % filename) is False:
   sys.exit("%s does not exist" % filename)
@@ -278,8 +278,9 @@ try:
     hist.SetMarkerColor(color1)
     hist.SetMarkerStyle(0)
     hist.DrawCopy("h hist")
-    hist.SetFillColor(color1)
-    hist.SetFillStyle(3354)
+    if not option.z1:
+         hist.SetFillColor(color1)
+         hist.SetFillStyle(3354)
     hist.DrawCopy("e2 same")
     legend.AddEntry(hist, labelname1)
 
@@ -319,8 +320,9 @@ if option.f2 != "" or option.h2 != "":
         hist2.SetLineColor(color2)
         hist2.SetMarkerStyle(0)
         hist2.DrawCopy("h hist same")
-        # hist2.SetFillColor(color2)
-        hist2.SetFillStyle(3354)
+        if not option.z1:
+            hist2.SetFillColor(color2)
+            hist2.SetFillStyle(3354)
         hist2.DrawCopy("e2 same")
         legend.AddEntry(hist2, labelname2)
     except ReferenceError:
@@ -359,8 +361,9 @@ if option.f3 != "" or option.h3 != "":
         hist3.SetLineColor(color3)
         hist3.SetMarkerStyle(0)
         hist3.DrawCopy("h hist same")
-        hist3.SetFillColor(color3)
-        hist3.SetFillStyle(3354)
+        if not option.z3:
+            hist3.SetFillColor(color3)
+            hist3.SetFillStyle(3354)
         hist3.DrawCopy("e2 same")
         legend.AddEntry(hist3, labelname3)
     except ReferenceError:
@@ -399,8 +402,9 @@ if option.f4 != "" or option.h4 != "":
         hist4.SetLineColor(color4)
         hist4.SetMarkerStyle(0)
         hist4.DrawCopy("h hist same")
-        hist4.SetFillColor(color4)
-        hist4.SetFillStyle(3354)
+        if not option.z4:
+            hist4.SetFillColor(color4)
+            hist4.SetFillStyle(3354)
         hist4.DrawCopy("e2 same")
         legend.AddEntry(hist4, labelname4)
     except ReferenceError:
@@ -447,7 +451,7 @@ if option.significance:
     if filename3 != "":
         sighist3 = PlotSignificance(hist3, hist4)
     # if filename4 != "":
-    #     sighist4 = PlotSignificance(hist4, hist2)
+    #     sighist4 = PlotSignificance(hist4, hist)
     if option.distribution:
         sighist2.GetXaxis().SetLabelSize(0.15)
         sighist2.GetXaxis().SetTickLength(0.1)
@@ -514,8 +518,8 @@ if xmin != -99.9 and xmax != -99.9:
         hist2.GetXaxis().SetRangeUser(xmin, xmax)
     if option.f3 != "":
         hist3.GetXaxis().SetRangeUser(xmin, xmax)
-    if option.f4 != "":
-        hist4.GetXaxis().SetRangeUser(xmin, xmax)
+    # if option.f4 != "":
+    #     hist4.GetXaxis().SetRangeUser(xmin, xmax)
 
 if option.significance:
     if option.distribution:

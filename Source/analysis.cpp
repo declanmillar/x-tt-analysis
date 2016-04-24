@@ -3,8 +3,7 @@
 using namespace std;
 using namespace boost;
 
-string trim(string const& str)
-{
+string trim(string const& str){
     if(str.empty())
     return str;
 
@@ -14,33 +13,31 @@ string trim(string const& str)
     return str.substr(first, last-first+1);
 }
 
-
 AnalysisZprime::AnalysisZprime(const TString channel, const TString model, const int energy, const TString options, const int vegasIterations, const int vegasPoints, const bool addQCD, const int luminosity, const int btags, const bool discardComplex, const TString analysisLabel):
-m_channel(channel),
-m_model(model),
-m_energy(energy),
-m_options(options),
-m_vegasIterations(vegasIterations),
-m_vegasPoints(vegasPoints),
-m_addQCD(addQCD),
-m_luminosity(luminosity),
-m_efficiency(1.0),
-nBtags(btags),
-m_discardComplex(discardComplex),
-m_analysisLabel(analysisLabel),
-m_reco(true),
-m_pi(3.14159265),
-m_GeV(1000.0),
-m_Wmass(80.23),
-m_tmass(173.0),
-m_ytt(0.5),
-m_discardEvent(false),
-m_inputFiles(NULL),
-m_weightFiles(NULL),
-m_ntup(NULL),
-m_chainNtup(NULL),
-m_outputFile(NULL)
-{
+    m_channel(channel),
+    m_model(model),
+    m_energy(energy),
+    m_options(options),
+    m_vegasIterations(vegasIterations),
+    m_vegasPoints(vegasPoints),
+    m_addQCD(addQCD),
+    m_luminosity(luminosity),
+    m_efficiency(1.0),
+    nBtags(btags),
+    m_discardComplex(discardComplex),
+    m_analysisLabel(analysisLabel),
+    m_reco(true),
+    m_pi(3.14159265),
+    m_GeV(1000.0),
+    m_Wmass(80.23),
+    m_tmass(173.0),
+    m_ytt(0.5),
+    m_discardEvent(false),
+    m_inputFiles(NULL),
+    m_weightFiles(NULL),
+    m_ntup(NULL),
+    m_chainNtup(NULL),
+    m_outputFile(NULL){
     this->PreLoop();
     this->Loop();
     this->PostLoop();
@@ -81,7 +78,10 @@ void AnalysisZprime::EachEvent(){
     // printf("Processing an event...\n");
     m_discardEvent = false;
     UpdateCutflow(c_entries, true);
-    p = vector<TLorentzVector>(6);
+    int nfinal;
+    if (m_channel == "ll" or m_channel == "tt") nfinal = 2;
+    else nfinal = 6;
+    p = vector<TLorentzVector>(nfinal);
     for (unsigned int i = 0; i < m_ntup->E()->size(); i++){
         p[i].SetPxPyPzE(m_ntup->Px()->at(i), m_ntup->Py()->at(i), m_ntup->Pz()->at(i), m_ntup->E()->at(i));
     }
@@ -297,7 +297,6 @@ void AnalysisZprime::PostLoop (){
     printf("--- Done ---\n");
 }
 
-
 void AnalysisZprime::CheckResults(){
     // printf("--- Results ---\n");
     double sigma = h_mtt->Integral("width");
@@ -308,7 +307,6 @@ void AnalysisZprime::CheckResults(){
     }
     else printf("Analysis Cross Section = %.15le [pb]\n", sigma);
 }
-
 
 void AnalysisZprime::CheckPerformance (){
     // printf("m_nQuarksMatched = %i\n", m_nQuarksMatched);
@@ -321,7 +319,6 @@ void AnalysisZprime::CheckPerformance (){
     printf("Quark assignment: %.1f%% correct\n", quarkRecoRatio*100);
     printf("pzNu assignment: %.1f%% correct\n", neutrinoRecoRatio*100);
 }
-
 
 TH1D* AnalysisZprime::MakeALL (){
     TH1D* h_A = (TH1D*) h_mtt_LL->Clone();
@@ -339,7 +336,6 @@ TH1D* AnalysisZprime::MakeALL (){
     return h_ALL;
 }
 
-
 TH1D* AnalysisZprime::MakeAL (){
     TH1D* h_A = (TH1D*) h_mtt_LL->Clone();
     TH1D* h_B = (TH1D*) h_mtt_RR->Clone();
@@ -352,7 +348,6 @@ TH1D* AnalysisZprime::MakeAL (){
     delete h_B;
     return h_AL;
 }
-
 
 void AnalysisZprime::TotalSpinAsymmetries (){
     double sigmaLL = h_mtt_LL->Integral("width");
@@ -370,14 +365,12 @@ void AnalysisZprime::TotalSpinAsymmetries (){
     printf("AL = %f\n", AL);
 }
 
-
 double AnalysisZprime::TotalAsymmetry(TH1D* h_A, TH1D* h_B){
     double A = h_A->Integral("width");
     double B = h_B->Integral("width");
     double Atot = (A - B)/(A + B);
     return Atot;
 }
-
 
 void AnalysisZprime::ApplyLuminosity(TH1D* h){
     if (!m_useLumi) return;
@@ -397,7 +390,6 @@ void AnalysisZprime::ApplyLuminosity(TH1D* h){
     h->GetYaxis()->SetTitle(events);
 }
 
-
 TH1D* AnalysisZprime::Asymmetry(TString name, TString title, TH1D* h_A, TH1D* h_B){
     TH1D* h_numerator = (TH1D*) h_A->Clone(name);
     TH1D* h_denominator = (TH1D*) h_A->Clone();
@@ -409,8 +401,6 @@ TH1D* AnalysisZprime::Asymmetry(TString name, TString title, TH1D* h_A, TH1D* h_
     if (m_luminosity > -1) this->AsymmetryUncertainty(h_numerator, h_A, h_B);
     return h_numerator;
 }
-
-
 
 void AnalysisZprime::AsymmetryUncertainty(TH1D* h_Asymmetry, TH1D* h_A, TH1D* h_B){
     double A, deltaA, N, N_A, N_B, A2;
@@ -427,12 +417,11 @@ void AnalysisZprime::AsymmetryUncertainty(TH1D* h_Asymmetry, TH1D* h_A, TH1D* h_
     }
 }
 
-
 void AnalysisZprime::CreateHistograms(){
 
-    double binWidth = 0.01;
-    double Emin = 1.0;
-    double Emax = 5.0;
+    double binWidth = 0.1;
+    double Emin = 0.0;
+    double Emax = 13.0;
     double nbins = (Emax-Emin)/binWidth;
 
     if (m_channel == "ll"){
@@ -550,7 +539,6 @@ void AnalysisZprime::CreateHistograms(){
     }
 }
 
-
 void AnalysisZprime::MakeGraphs(){
     printf("Making Graphs...\n");
     this->MakeDistribution(h_mtt, "TeV");
@@ -584,13 +572,13 @@ void AnalysisZprime::MakeGraphs(){
         this->MakeDistribution(h_mtt_RL, "TeV");
         this->MakeDistribution(h_mtt_RR, "TeV");
 
-        // h_ALL = this->MakeALL();
-        // h_ALL->GetYaxis()->SetTitle(h_ALL->GetTitle());
-        // h_ALL->GetXaxis()->SetTitle("m_{tt} [TeV]");
-        //
-        // h_AL = this->MakeAL();
-        // h_AL->GetYaxis()->SetTitle(h_AL->GetTitle());
-        // h_AL->GetXaxis()->SetTitle("m_{tt} [TeV]");
+        h_ALL = this->MakeALL();
+        h_ALL->GetYaxis()->SetTitle(h_ALL->GetTitle());
+        h_ALL->GetXaxis()->SetTitle("m_{tt} [TeV]");
+
+        h_AL = this->MakeAL();
+        h_AL->GetYaxis()->SetTitle(h_AL->GetTitle());
+        h_AL->GetXaxis()->SetTitle("m_{tt} [TeV]");
     }
 
     if (m_channel == "tt-bbllvv"){
@@ -644,7 +632,6 @@ void AnalysisZprime::MakeDistribution(TH1D* h, TString units){
     h->Write();
 }
 
-
 void AnalysisZprime::WriteHistograms(){
     m_outputFile->cd();
     m_outputFile->cd("/");
@@ -661,8 +648,8 @@ void AnalysisZprime::WriteHistograms(){
         h_mtt_LR->Write();
         h_mtt_RL->Write();
         h_mtt_RR->Write();
-        // h_ALL->Write();
-        // h_AL->Write();
+        h_ALL->Write();
+        h_AL->Write();
     }
 
     if (m_channel == "tt-bbllvv"){
@@ -682,28 +669,23 @@ void AnalysisZprime::WriteHistograms(){
 
 }
 
-
 bool AnalysisZprime::PassCuts(string type){
-    if(!(type == "truth" or type == "R1" or type == "R2" )) return false;
-    // if (this->PassCuts_mtt())
-    if (this->PassCutsYtt(type))
-    {
-        //   if (this->PassCuts_MET())
-        //    {
-        if(this->PassCutsEta(type))
-        {
-            //         if (this->PassCutsLeptonET())
-            //        {
-            return true;
-            // }
+    if(!(type == "truth" or type == "R1" or type == "R2")) return false;
+    if(this->PassCutsMtt(type)){
+        if(this->PassCutsYtt(type)){
+            if(this->PassCutsMET(type)){
+                if(this->PassCutsEta(type)){
+                    if(this->PassCutsET(type)){
+                        return true;
+                    }
+                }
+            }
         }
-        // }
     }
     return false;
 }
 
-
-bool AnalysisZprime::PassCutsMET (){
+bool AnalysisZprime::PassCutsMET(string type){
     bool pass;
     if (m_channel == "ll") pass = true;
     else if (m_channel == "tt") pass = true;
@@ -714,18 +696,22 @@ bool AnalysisZprime::PassCutsMET (){
     return pass;
 }
 
+bool AnalysisZprime::PassCutsMtt(string type){
+    double mtt;
+    // printf("Fetching ytt to cut on.\n");
+    if (type == "truth") mtt = abs(P.M());
+    else if (type == "R1") mtt = abs(P_R1.M());
+    else if (type == "R2") mtt = abs(P_R2.M());
+    else return false;
 
-bool AnalysisZprime::PassCutsMtt (){
-    // if (mtt > 1200.0)
-    //  {
-    //     if (mtt < 2200.0)
-    //      {
-    UpdateCutflow(c_mtt, true);
-    return true;
-    //       }
-    //   }
-    // UpdateCutflow(c_mtt, false);
-    // return false;
+    if (mtt > 0){
+        if (mtt < 13000){
+            UpdateCutflow(c_mtt, true);
+            return true;
+        }
+    }
+    UpdateCutflow(c_mtt, false);
+    return false;
 }
 
 bool AnalysisZprime::PassCutsEta(string type){
@@ -770,19 +756,38 @@ bool AnalysisZprime::PassCutsEta(string type){
     return true;
 }
 
-// bool AnalysisZprime::PassLeptonET (){
-//     if (mtt > 1200.0)
-//      {
-//         if (mtt < 2200.0)
-//          {
-//             UpdateCutflow(c_mtt, true);
-//             return true;
-//           }
-//       }
-//     UpdateCutflow(c_mtt, false);
-//     return false;
-// }
-
+bool AnalysisZprime::PassCutsET(string type){
+    if (type == "truth"){
+        for(unsigned int i = 0; i < p.size(); i++){
+            if(p[i].Et() <= 25){
+                UpdateCutflow(c_Et, false);
+                return false;
+            }
+            else continue;
+        }
+    }
+    else if (type == "R1"){
+        for(unsigned int i = 0; i < p_R1.size(); i++){
+            if(p_R1[i].Et() <= 25){
+                UpdateCutflow(c_Et, false);
+                return false;
+            }
+            else continue;
+        }
+    }
+    else if (type == "R2"){
+        for(unsigned int i = 0; i < p_R2.size(); i++){
+            if(p_R2[i].Et() <= 25){
+                UpdateCutflow(c_Et, false);
+                return false;
+            }
+            else continue;
+        }
+    }
+    else return false;
+    UpdateCutflow(c_Et, true);
+    return true;
+}
 
 bool AnalysisZprime::PassCutsYtt(string type){
     double ytt;
@@ -801,8 +806,7 @@ bool AnalysisZprime::PassCutsYtt(string type){
     return false;
 }
 
-
-void AnalysisZprime::PreLoop (){
+void AnalysisZprime::PreLoop(){
     printf("--- Setup ---\n");
     this->GetDataDirectory();
     this->CreateFilenames();
@@ -820,7 +824,6 @@ void AnalysisZprime::GetDataDirectory(){
     m_dataDirectory = "/Users/declan/Data/Zprime";
     #endif
 }
-
 
 void AnalysisZprime::ResetCounters(){
     if (m_luminosity >= 0) m_useLumi = true;
@@ -888,8 +891,7 @@ void AnalysisZprime::GetIterationWeights(TString log){
     }
 }
 
-
-void AnalysisZprime::Loop (){
+void AnalysisZprime::Loop(){
     // Loop over all files
     for (Itr_s i = m_inputFiles->begin(); i != m_inputFiles->end(); ++i){
         cout << "Processing:  '" << (*i) << "'." << endl;
@@ -912,16 +914,13 @@ void AnalysisZprime::Loop (){
     }
 }
 
-
-AnalysisZprime::~AnalysisZprime(){ delete m_inputFiles; }
-
+AnalysisZprime::~AnalysisZprime(){delete m_inputFiles;}
 
 void AnalysisZprime::SetupOutputFiles(){
     m_outputFile = new TFile(m_outputFileName,"RECREATE");
 }
 
-
-void AnalysisZprime::SetupInputFiles (){
+void AnalysisZprime::SetupInputFiles(){
     m_inputFiles = new vector<TString>;
     m_weightFiles = new vector<TString>;
     if (m_addQCD){
@@ -932,19 +931,16 @@ void AnalysisZprime::SetupInputFiles (){
     m_weightFiles->push_back(m_weightsFileName);
 }
 
-
-Long64_t AnalysisZprime::TotalEvents (){
+Long64_t AnalysisZprime::TotalEvents(){
     if (m_ntup != 0){return m_ntup->totalEvents();}
     return -999;
 }
-
 
 Long64_t AnalysisZprime::IncrementEvent(Long64_t i){
     Long64_t ev(-1);
     if (m_ntup != 0){ev = m_ntup->LoadTree(i);}
     return ev;
 }
-
 
 void AnalysisZprime::SetupTreesForNewFile(const TString& s){
     TString treeToUse = "RootTuple";
@@ -955,12 +951,10 @@ void AnalysisZprime::SetupTreesForNewFile(const TString& s){
     m_ntup = new RootTuple(m_chainNtup);
 }
 
-
-void AnalysisZprime::CleanUp (){
+void AnalysisZprime::CleanUp(){
     delete m_chainNtup;
     delete m_ntup;
 }
-
 
 vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVector> p, int Q_l){
     // Returns a vector of 4-momenta for all 6 particles in the final state with matching of b-quarks to each top
@@ -1164,7 +1158,6 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVe
     // else printf("b-assignment: incorrect. \n");
     // printf("---\n");
     return p_R;
-
 }
 
 vector<complex<double> > AnalysisZprime::SolveQuadratic(double a, double b, double c){
@@ -1213,12 +1206,10 @@ void AnalysisZprime::GetChannelFactors(){
     }
 }
 
-
 const void AnalysisZprime::UpdateCutflow(int cut, bool passed){
     if (m_cutflow[cut] == -999) m_cutflow[cut] = 0;
     if (passed) m_cutflow[cut] +=1;
 }
-
 
 void AnalysisZprime::InitialiseCutflow(){
     m_cutflow = vector<int>(m_cuts, -999);
@@ -1232,10 +1223,10 @@ void AnalysisZprime::InitialiseCutflow(){
     m_cutNames[c_mtt] = "mtt";
     m_cutNames[c_ytt] = "ytt";
     m_cutNames[c_eta] = "#eta";
+    m_cutNames[c_Et] = "E_{T}";
 
     h_cutflow = new TH1D("Cutflow", "Cutflow", m_cuts, 0, m_cuts);
 }
-
 
 void AnalysisZprime::PrintCutflow(){
     h_cutflow->Write();
@@ -1249,7 +1240,6 @@ void AnalysisZprime::PrintCutflow(){
         printf("%s cut: %i pass\n", m_cutNames[cut].Data(), m_cutflow[cut]);
     }
 }
-
 
 inline void AnalysisZprime::ProgressBar(unsigned int x, unsigned int n, unsigned int w){
     if ( (x != n) && (x % (n/100+1) != 0) ) return;

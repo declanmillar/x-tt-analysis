@@ -65,10 +65,11 @@ protected:
   std::vector<TLorentzVector> ReconstructSemiLeptonic(std::vector<TLorentzVector> p, int l_Q);
 
   bool PassCuts(string type);
-  bool PassCutsMET();
-  bool PassCutsMtt();
+  bool PassCutsMET(string type);
+  bool PassCutsMtt(string type);
   bool PassCutsEta(string type);
   bool PassCutsYtt(string type);
+  bool PassCutsET(string type);
 
   void ResetCounters();
   void InitialiseCutflow();
@@ -115,6 +116,7 @@ private:
     c_realSolutions,
     c_mtt,
     c_MET,
+    c_Et,
     c_ytt,
     c_eta,
     m_cuts // Keep as last entry
