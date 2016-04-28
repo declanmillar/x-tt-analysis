@@ -741,9 +741,9 @@ bool AnalysisZprime::PassCutsMET(string type){
 bool AnalysisZprime::PassCutsMtt(string type){
     double mtt;
     // printf("Fetching ytt to cut on.\n");
-    if (type == "truth") mtt = abs(P.M());
-    else if (type == "R1") mtt = abs(P_R1.M());
-    else if (type == "R2") mtt = abs(P_R2.M());
+    if (type == "truth") mtt = P.M()/1000;
+    else if (type == "R1") mtt = P_R1.M()/1000;
+    else if (type == "R2") mtt = P_R2.M()/1000;
     else return false;
 
     if (mtt > m_Emin){
