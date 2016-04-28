@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
       ("btags,b", po::value<int>()->default_value(2), "btags")
       ("luminosity,L", po::value<double>()->default_value(-1), "luminosity")
       ("discard,d", po::value<bool>()->default_value(false), "discard complex")
-      ("qcd,q", po::value<bool>()->default_value(true), "add QCD")
+      ("qcd,q", po::value<bool>()->default_value(true), "add QCD diagrams")
       ("verbose,v", po::value<bool>()->default_value(false), "run in verbose mode")
   ;
   po::variables_map opts;

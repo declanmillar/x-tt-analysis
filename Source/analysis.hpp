@@ -108,6 +108,8 @@ private:
 
   // Cuts
   double m_ytt;
+  double m_Emin;
+  double m_Emax;
   enum m_cutlist{
     c_entries,
     c_topDecays,
@@ -273,7 +275,7 @@ private:
   TH2D* h2_mtt_cosThetalm;
   TH2D* h2_mtt_coslpcoslm;
 
-  // 
+  //
   vector<TH1D*> h_deltaRs;
 };
 #endif

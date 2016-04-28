@@ -32,6 +32,8 @@ AnalysisZprime::AnalysisZprime(const TString channel, const TString model, const
     m_Wmass(80.23),
     m_tmass(173.0),
     m_ytt(0.5),
+    m_Emin(-1),
+    m_Emax(-1),
     m_discardEvent(false),
     m_inputFiles(NULL),
     m_weightFiles(NULL),
@@ -60,10 +62,11 @@ void AnalysisZprime::CreateFilenames(){
     else QCDadded = "";
 
     m_outputFileName = base + ".a" + QCDadded;
-    if (m_channel == "tt-bbllvv" and m_reco) m_outputFileName += ".btags" + to_string(nBtags) + ".C" + BoolToString(m_discardComplex);
-    if (m_ytt > 0) m_outputFileName += ".ytt";
-    if (m_efficiency < 1.0) m_outputFileName += ".eff";
-    if (m_luminosity > 0) m_outputFileName += "." + to_string(m_luminosity) + "fb";
+    if (m_channel == "tt-bbllvv" and m_reco) m_outputFileName += ".b" + to_string(nBtags) + ".c" + BoolToString(m_discardComplex);
+    if (m_ytt > 0) m_outputFileName += ".y" + to_string(m_ytt);
+    if (m_Emin >= 0 || m_Emax >= 0) m_outputFileName += ".E" + to_string(m_Emin) + "-" + to_string(m_Emax);
+    if (m_efficiency < 1.0) m_outputFileName += ".e" + to_string(m_efficiency);
+    if (m_luminosity > 0) m_outputFileName += ".L" + to_string(m_luminosity);
     m_outputFileName += m_analysisLabel;
     m_outputFileName += ".root";
     // printf("Input: '%s'.\n", m_inputFileName.Data());
@@ -743,8 +746,8 @@ bool AnalysisZprime::PassCutsMtt(string type){
     else if (type == "R2") mtt = abs(P_R2.M());
     else return false;
 
-    if (mtt > 0){
-        if (mtt < 13000){
+    if (mtt > m_Emin){
+        if (mtt < m_Emax){
             UpdateCutflow(c_mtt, true);
             return true;
         }
