@@ -272,5 +272,8 @@ private:
   TH2D* h2_mtt_cosThetalp;
   TH2D* h2_mtt_cosThetalm;
   TH2D* h2_mtt_coslpcoslm;
+
+  // 
+  vector<TH1D*> h_deltaRs;
 };
 #endif

@@ -181,7 +181,14 @@ void AnalysisZprime::EachEvent(){
     double cosThetalm_atop = -999;
     double coslpcoslm_top = -999;
 
+    vector<double> deltaRs;
     if (m_channel == "tt-bbllvv"){
+        for (int i = 0; i < 6; i++)
+            for (int j = i + 1; j < 6; j++) {
+                // printf("deltaR = %f\n", p[i].DeltaR(p[j]));
+                deltaRs.push_back(p[i].DeltaR(p[j]));
+
+            }
 
         cosThetalp_top = ptop[2].CosTheta();
         cosThetalm_atop = patop[4].CosTheta();
@@ -255,6 +262,10 @@ void AnalysisZprime::EachEvent(){
             h2_mtt_cosThetalp->Fill(mtt, cosThetalp_top, weight/h2_mtt_cosThetalp->GetXaxis()->GetBinWidth(1)/h2_mtt_cosThetalp->GetYaxis()->GetBinWidth(1));
             h2_mtt_cosThetalm->Fill(mtt, cosThetalm_atop, weight/h2_mtt_cosThetalm->GetXaxis()->GetBinWidth(1)/h2_mtt_cosThetalm->GetYaxis()->GetBinWidth(1));
             h2_mtt_coslpcoslm->Fill(mtt, coslpcoslm_top, weight/h2_mtt_coslpcoslm->GetXaxis()->GetBinWidth(1)/h2_mtt_coslpcoslm->GetYaxis()->GetBinWidth(1));
+
+            for (int i = 0; i < h_deltaRs.size(); i++) {
+                h_deltaRs[i]->Fill(deltaRs[i], weight/h_deltaRs[i]->GetXaxis()->GetBinWidth(1));
+            }
 
             if(m_reco){
                 if(this->PassCuts("R1")){
@@ -483,7 +494,7 @@ void AnalysisZprime::CreateHistograms(){
 
     if (m_channel == "tt-bbllvv"){
 
-        h_deltaPhi = new TH1D("deltaPhi", "#delta#phi", nbins, -2*m_pi, 2*m_pi);
+        h_deltaPhi = new TH1D("deltaPhi", "#Delta#phi", nbins, -2*m_pi, 2*m_pi);
         h_deltaPhi->Sumw2();
         h_pzNu = new TH1D("pzNu", "p_{z}^{#nu}", nbins, -500.0, 500.0);
         h_pzNu->Sumw2();
@@ -511,6 +522,21 @@ void AnalysisZprime::CreateHistograms(){
         h2_mtt_coslpcoslm = new TH2D("mtt_coslpcoslm", "m_{tt} cos#theta_{l+}cos#theta_{l-}", nbins, Emin, Emax, nbins, -1.0, 1.0);
         h2_mtt_coslpcoslm->GetXaxis()->SetTitle("m_{tt}");
         h2_mtt_coslpcoslm->GetYaxis()->SetTitle("cos#theta_{l+}cos#theta_{l-}");
+
+        vector<string> deltaRnames, deltaRtitles;
+        vector<string> particles1 = {"b1", "b2", "l", "v", "q1", "q2"};
+        vector<string> particles2 = {"b+", "b-", "l", "#nu", "q", "q'"};
+        for (int i = 0; i < 6; i++ ) {
+            for (int j = i + 1; j < 6; j++) {
+                deltaRnames.push_back(particles1[i] + "-" + particles1[j]);
+                deltaRtitles.push_back(particles2[i] + ", " + particles2[j]);
+            }
+        }
+
+        for (int i = 0; i < deltaRnames.size(); i++) {
+            h_deltaRs.push_back(new TH1D(deltaRnames[i].c_str(), deltaRtitles[i].c_str(), 500, 0, 5));
+        }
+        // for (auto title : deltaRtitles) printf("title = %s\n", title.c_str());
 
         if(m_reco){
             h_mtt_R = new TH1D("mtt_R", "m_{tt}^{reco}", nbins, Emin, Emax);
@@ -572,13 +598,13 @@ void AnalysisZprime::MakeGraphs(){
         this->MakeDistribution(h_mtt_RL, "TeV");
         this->MakeDistribution(h_mtt_RR, "TeV");
 
-        h_ALL = this->MakeALL();
-        h_ALL->GetYaxis()->SetTitle(h_ALL->GetTitle());
-        h_ALL->GetXaxis()->SetTitle("m_{tt} [TeV]");
-
-        h_AL = this->MakeAL();
-        h_AL->GetYaxis()->SetTitle(h_AL->GetTitle());
-        h_AL->GetXaxis()->SetTitle("m_{tt} [TeV]");
+        // h_ALL = this->MakeALL();
+        // h_ALL->GetYaxis()->SetTitle(h_ALL->GetTitle());
+        // h_ALL->GetXaxis()->SetTitle("m_{tt} [TeV]");
+        //
+        // h_AL = this->MakeAL();
+        // h_AL->GetYaxis()->SetTitle(h_AL->GetTitle());
+        // h_AL->GetXaxis()->SetTitle("m_{tt} [TeV]");
     }
 
     if (m_channel == "tt-bbllvv"){
@@ -598,6 +624,16 @@ void AnalysisZprime::MakeGraphs(){
             this->MakeDistribution(h_cosTheta_R, "");
             this->MakeDistribution(h_cosThetaStar_R, "");
             this->MakeDistribution(h_pzNu_R, "GeV");
+
+            for (auto h_deltaR : h_deltaRs) {
+                h_deltaR->GetYaxis()->SetTitle("Events");
+                h_deltaR->GetXaxis()->SetTitle("#Delta R");
+            }
+
+            // for (auto h_deltaR : h_deltaRs) {
+            //     h_deltaR->GetYaxis()->SetTitle("d#sigma / d #Delta R");
+            //     h_deltaR->GetXaxis()->SetTitle("#Delta R");
+            // }
 
             h_mtt_FRn = (TH1D*) h_mtt_FR->Clone("h_mtt_FRn");
             h_mtt_FRn->Divide(h_mtt_R);
@@ -661,6 +697,9 @@ void AnalysisZprime::WriteHistograms(){
             h_mtt_FRn->Write();
             h_mtt_BRn->Write();
             h_AFB_R->Write();
+        }
+        for (int i = 0; i < h_deltaRs.size(); i++) {
+            h_deltaRs[i]->Write();
         }
     }
     m_outputFile->Close();

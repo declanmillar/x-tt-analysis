@@ -202,15 +202,15 @@ if option.f2 == "":
 else:
     filename2 = option.f2
 
-# if option.f3 == "":
-#     filename3 = filename
-# else:
-#     filename3 = option.f3
-#
-# if option.f4 == "":
-#     filename4 = filename
-# else:
-#     filename4 = option.f4
+if option.f3 == "":
+    filename3 = filename
+else:
+    filename3 = option.f3
+
+if option.f4 == "":
+    filename4 = filename
+else:
+    filename4 = option.f4
 
 if option.h2 == "":
     histname2 = histname
