@@ -246,7 +246,7 @@ void AnalysisZprime::EachEvent() {
         h2_mtt_cosThetalm->Fill(mtt, cosThetalm_atop, weight/h2_mtt_cosThetalm->GetXaxis()->GetBinWidth(1)/h2_mtt_cosThetalm->GetYaxis()->GetBinWidth(1));
         h2_mtt_coslpcoslm->Fill(mtt, coslpcoslm_top, weight/h2_mtt_coslpcoslm->GetXaxis()->GetBinWidth(1)/h2_mtt_coslpcoslm->GetYaxis()->GetBinWidth(1));
 
-        for (int i = 0; i < h_deltaRs.size(); i++)
+        for (int i = 0; i < (int) h_deltaRs.size(); i++)
             h_deltaRs[i]->Fill(deltaRs[i], weight/h_deltaRs[i]->GetXaxis()->GetBinWidth(1));
 
         if(m_reco) {
@@ -422,7 +422,7 @@ void AnalysisZprime::CreateHistograms() {
         }
     }
 
-    for (int i = 0; i < deltaRnames.size(); i++) {
+    for (int i = 0; i < (int) deltaRnames.size(); i++) {
         h_deltaRs.push_back(new TH1D(deltaRnames[i].c_str(), deltaRtitles[i].c_str(), 500, 0, 5));
     }
     // for (auto title : deltaRtitles) printf("title = %s\n", title.c_str());
@@ -538,7 +538,7 @@ void AnalysisZprime::WriteHistograms() {
     h2_mtt_cosThetalm->Write();
     h2_mtt_coslpcoslm->Write();
 
-    for (int i = 0; i < h_deltaRs.size(); i++)
+    for (int i = 0; i < (int) h_deltaRs.size(); i++)
         h_deltaRs[i]->Write();
 
     if(m_reco) {
