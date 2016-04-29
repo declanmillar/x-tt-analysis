@@ -7,7 +7,7 @@ AtlasROOTStyle::AtlasROOTStyle()
 
 void AtlasROOTStyle::SetStyle()
 {
-  printf("Applying ATLAS style settings...\n");
+  // printf("Applying ATLAS style settings...\n");
   // TStyle* atlasStyle = this->AtlasStyle();
   this->AtlasStyle();
   gROOT->SetStyle("ATLAS");
@@ -18,7 +18,7 @@ void AtlasROOTStyle::SetStyle()
 
 TStyle* AtlasROOTStyle::AtlasStyle()
 {
-  TStyle *atlasStyle = new TStyle("ATLAS","Atlas style");
+  TStyle *atlasStyle = new TStyle("ATLAS", "Atlas style");
 
   // use plain black on white colors
   Int_t icol=0; // WHITE

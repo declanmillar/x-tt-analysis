@@ -116,11 +116,11 @@ private:
     c_antitopDecays,
     c_events,
     c_realSolutions,
-    c_mtt,
-    c_MET,
     c_Et,
-    c_ytt,
     c_eta,
+    c_MET,
+    c_mtt,
+    c_ytt,
     m_cuts // Keep as last entry
   };
 
