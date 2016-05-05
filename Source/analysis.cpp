@@ -257,7 +257,7 @@ void AnalysisZprime::EachEvent() {
         h_cos1cos2->Fill(cos1cos2, weight/h_cos1cos2->GetXaxis()->GetBinWidth(1));
 
         if (cosTheta1 > 0) h_mtt_Fl->Fill(mtt, weight/h_mtt_Fl->GetXaxis()->GetBinWidth(1));
-        if (cosTheta2 < 0) h_mtt_Bl->Fill(mtt, weight/h_mtt_Bl->GetXaxis()->GetBinWidth(1));
+        if (cosTheta2 > 0) h_mtt_Bl->Fill(mtt, weight/h_mtt_Bl->GetXaxis()->GetBinWidth(1));
 
         h2_mtt_deltaPhi->Fill(mtt, deltaPhi, weight/h2_mtt_deltaPhi->GetXaxis()->GetBinWidth(1)/h2_mtt_deltaPhi->GetYaxis()->GetBinWidth(1));
         h2_mtt_cosTheta1->Fill(mtt, cosTheta1, weight/h2_mtt_cosTheta1->GetXaxis()->GetBinWidth(1)/h2_mtt_cosTheta1->GetYaxis()->GetBinWidth(1));
