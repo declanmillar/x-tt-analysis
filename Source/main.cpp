@@ -11,9 +11,9 @@ int main(int argc, char* argv[])
       ("model,m", po::value<string>()->default_value("SM"), "model")
       ("options,o", po::value<string>()->default_value("_"), "options")
       ("label,l", po::value<string>()->default_value(""), "labeTS")
-      ("energy,e", po::value<int>()->default_value(13), "energy")
+      ("energy,E", po::value<int>()->default_value(13), "energy")
       ("itmx,N", po::value<int>()->default_value(5), "vegas iterations")
-      ("points,n", po::value<int>()->default_value(5000000), "vegas points")
+      ("points,n", po::value<string>()->default_value("5M"), "vegas points")
       ("btags,b", po::value<int>()->default_value(2), "btags")
       ("luminosity,L", po::value<double>()->default_value(-1), "luminosity")
       ("discard,d", po::value<bool>()->default_value(false), "discard complex")
@@ -32,13 +32,11 @@ int main(int argc, char* argv[])
   const TString analysisLabel = opts["label"].as<string>();
   const int energy = opts["energy"].as<int>();
   const int it = opts["itmx"].as<int>();
-  const int points = opts["points"].as<int>();
+  const string points = opts["points"].as<string>();
   const int btags = opts["btags"].as<int>();
   const int luminosity = opts["luminosity"].as<double>();
   const bool discardComplex = opts["discard"].as<bool>();
   bool addQCD = opts["qcd"].as<bool>();
-
-  if(channel == "ll") addQCD = false;
 
   AnalysisZprime analysis(channel, model, energy, options, it, points, addQCD, luminosity, btags, discardComplex, analysisLabel);
 }

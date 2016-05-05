@@ -23,7 +23,7 @@
 
 class AnalysisZprime{
 public:
-  AnalysisZprime(const TString channel, const TString model, const int energy, const TString options, const int vegasIterations, const int vegasPoints, const bool addQCD, const int luminosity, const int btags, const bool discardComplex, const TString analysis_label);
+  AnalysisZprime(const TString channel, const TString model, const int energy, const TString options, const int vegasIterations, const string vegasPoints, const bool addQCD, const int luminosity, const int btags, const bool discardComplex, const TString analysis_label);
   virtual ~AnalysisZprime();
   TString GetOutputFilename();
 
@@ -91,7 +91,7 @@ private:
   int m_energy;
   TString m_options;
   int m_vegasIterations;
-  int m_vegasPoints;
+  string m_vegasPoints;
   int m_addQCD;
   int m_luminosity;
   double m_efficiency;
@@ -249,9 +249,9 @@ private:
   // Angles
   TH1D* h_deltaPhi;
   TH1D* h_cosTheta;
-  TH1D* h_cosThetalp_top;
-  TH1D* h_cosThetalm_atop;
-  TH1D* h_coslpcoslm_top;
+  TH1D* h_cosTheta1;
+  TH1D* h_cosTheta2;
+  TH1D* h_cos1cos2;
   TH1D* h_cosThetaStar;
   TH1D* h_cosTheta_R;
   TH1D* h_cosThetaStar_R;
@@ -262,18 +262,22 @@ private:
   // Forward Backward Asymmetries
   TH1D* h_AFB;
   TH1D* h_AFB_R;
-  TH1D* h_AC;
-  TH1D* h_AllC;
 
   // Spin asymmetries
-  TH1D* h_ALL;
-  TH1D* h_AL;
+  TH1D* h_Ap;
+
+  // transverse
+  TH1D* h_HT;
+  TH1D* h_KT;
 
   // 2D histograms
   TH2D* h2_mtt_deltaPhi;
-  TH2D* h2_mtt_cosThetalp;
-  TH2D* h2_mtt_cosThetalm;
-  TH2D* h2_mtt_coslpcoslm;
+  TH2D* h2_mtt_cosTheta1;
+  TH2D* h2_mtt_cosTheta2;
+  TH2D* h2_mtt_cos1cos2;
+
+  TH2D* h2_HT_deltaPhi;
+  TH2D* h2_KT_deltaPhi;
 
   //
   vector<TH1D*> h_deltaRs;

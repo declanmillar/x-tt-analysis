@@ -149,7 +149,7 @@ draw_option = "e2 hist same" if option.errors else "hist same"
 if option.legend_bottom:
     legend = ROOT.TLegend(0.7, 0.20, 0.9, 0.4, "")
 elif option.legend_left:
-    legend = ROOT.TLegend(0.15, 0.7, 0.4, 0.9, "")
+    legend = ROOT.TLegend(0.15, 0.6, 0.45, 0.9, "")
 elif option.legend_bottom_left:
     legend = ROOT.TLegend(0.15, 0.2, 0.4, 0.4, "")
 else:
@@ -229,9 +229,9 @@ else:
 
 
 
-color2 = ROOT.kSpring-7
+color3 = ROOT.kSpring-7
 color1 = ROOT.kRed-7
-color3 = ROOT.kAzure-7
+color2 = ROOT.kAzure-7
 color4 = ROOT.kGray+2 # ROOT.kViolet-7
 
 if os.path.isfile("%s" % filename) is False:
