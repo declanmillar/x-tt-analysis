@@ -113,6 +113,9 @@ void AnalysisZprime::EachEvent() {
         Patop += patop[i];
     }
 
+    // printf("Total momentum of top decay products in top rest frame: %f\n", (ptop[0] + ptop[2] + ptop[3]).Pz());
+    // printf("Total momentum of top decay products in top rest frame: %f\n", patop[1] + patop[4] +patop[5]);
+
     if (m_reco) {
         p_R1 = this->ReconstructSemiLeptonic(p, 1); // top decays leptonically
         p_R2 = this->ReconstructSemiLeptonic(p, -1); // top decays hadronically
@@ -183,13 +186,13 @@ void AnalysisZprime::EachEvent() {
     double cosTheta2 = -999;
     double cos1cos2 = -999;
 
-    TVector3 u_t = -1*p_t.Vect().Unit();
-    TLorentzVector pl1 = ptop[2];
-    pl1.RotateUz(u_t);
-
-    TVector3 u_tb = -1*p_tb.Vect().Unit();
-    TLorentzVector pl2 = patop[4];
-    pl2.RotateUz(u_tb);
+    // TVector3 u_t = -1*p_t.Vect().Unit();
+    // TLorentzVector pl1 = ptop[2];
+    // pl1.RotateUz(u_t);
+    //
+    // TVector3 u_tb = -1*p_tb.Vect().Unit();
+    // TLorentzVector pl2 = patop[4];
+    // pl2.RotateUz(u_tb);
 
     vector<double> deltaRs;
     for (int i = 0; i < 6; i++)
@@ -198,8 +201,8 @@ void AnalysisZprime::EachEvent() {
             deltaRs.push_back(p[i].DeltaR(p[j]));
         }
 
-    cosTheta1 = pl1.CosTheta();
-    cosTheta2 = pl2.CosTheta();
+    cosTheta1 = cos(ptop[2].Angle(p_t.Vect()));
+    cosTheta2 = cos(ptop[4].Angle(p_tb.Vect()));
     cos1cos2 = cosTheta1*cosTheta2;
 
     // printf("Reconstructed top mass\n---\n");
@@ -257,7 +260,7 @@ void AnalysisZprime::EachEvent() {
         h_cos1cos2->Fill(cos1cos2, weight/h_cos1cos2->GetXaxis()->GetBinWidth(1));
 
         if (cosTheta1 > 0) h_mtt_Fl->Fill(mtt, weight/h_mtt_Fl->GetXaxis()->GetBinWidth(1));
-        if (cosTheta2 > 0) h_mtt_Bl->Fill(mtt, weight/h_mtt_Bl->GetXaxis()->GetBinWidth(1));
+        if (cosTheta1 < 0) h_mtt_Bl->Fill(mtt, weight/h_mtt_Bl->GetXaxis()->GetBinWidth(1));
 
         h2_mtt_deltaPhi->Fill(mtt, deltaPhi, weight/h2_mtt_deltaPhi->GetXaxis()->GetBinWidth(1)/h2_mtt_deltaPhi->GetYaxis()->GetBinWidth(1));
         h2_mtt_cosTheta1->Fill(mtt, cosTheta1, weight/h2_mtt_cosTheta1->GetXaxis()->GetBinWidth(1)/h2_mtt_cosTheta1->GetYaxis()->GetBinWidth(1));
@@ -358,6 +361,12 @@ TH1D* AnalysisZprime::Asymmetry(TString name, TString title, TH1D* h_A, TH1D* h_
     h_numerator->Divide(h_denominator);
     delete h_denominator;
     if (m_luminosity > -1) this->AsymmetryUncertainty(h_numerator, h_A, h_B);
+    return h_numerator;
+}
+TH1D* AnalysisZprime::Asymmetry2(TString name, TString title, TH1D* h_A, TH1D* h_B) {
+    TH1D* h_numerator = (TH1D*) h_A->Clone(name);
+    h_numerator->SetTitle(title);
+    h_numerator->Add(h_B, -1);
     return h_numerator;
 }
 
