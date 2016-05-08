@@ -31,7 +31,7 @@ AnalysisZprime::AnalysisZprime(const TString channel, const TString model, const
     m_GeV(1000.0),
     m_Wmass(80.23),
     m_tmass(173.0),
-    m_ytt(0.0),
+    m_ytt(0.5),
     m_Emin(-1),
     m_Emax(-1),
     m_discardEvent(false),
@@ -186,33 +186,16 @@ void AnalysisZprime::EachEvent() {
     double cosTheta2 = -999;
     double cos1cos2 = -999;
 
-    // TVector3 u_t = -1*p_t.Vect().Unit();
-    // TLorentzVector pl1 = ptop[2];
-    // pl1.RotateUz(u_t);
-    //
-    // TVector3 u_tb = -1*p_tb.Vect().Unit();
-    // TLorentzVector pl2 = patop[4];
-    // pl2.RotateUz(u_tb);
-
     vector<double> deltaRs;
     for (int i = 0; i < 6; i++)
         for (int j = i + 1; j < 6; j++) {
-            // printf("deltaR = %f\n", p[i].DeltaR(p[j]));
             deltaRs.push_back(p[i].DeltaR(p[j]));
         }
 
     cosTheta1 = cos(ptop[2].Angle(p_t.Vect()));
-    cosTheta2 = cos(ptop[4].Angle(p_tb.Vect()));
+    cosTheta2 = cos(patop[4].Angle(p_tb.Vect()));
     cos1cos2 = cosTheta1*cosTheta2;
 
-    // printf("Reconstructed top mass\n---\n");
-    // printf("m_top = %f TeV\n", mt);
-    // printf("m_antitop = %f TeV\n", mtb);
-    // printf("m_top (reco)[lep] = %f TeV\n", mt_R1);
-    // printf("m_antitop (reco)[had] = %f TeV\n", mtb_R1);
-    // printf("m_top (reco)[had] = %f TeV\n", mt_R2);
-    // printf("m_antitop (reco)[lep] = %f TeV\n", mtb_R2);
-    // printf("---\n");
     if(m_reco) {
         ytt_R1 = P_R1.Rapidity();
         ytt_R2 = P_R2.Rapidity();
@@ -260,7 +243,7 @@ void AnalysisZprime::EachEvent() {
         h_cos1cos2->Fill(cos1cos2, weight/h_cos1cos2->GetXaxis()->GetBinWidth(1));
 
         if (cosTheta1 > 0) h_mtt_Fl->Fill(mtt, weight/h_mtt_Fl->GetXaxis()->GetBinWidth(1));
-        if (cosTheta1 < 0) h_mtt_Bl->Fill(mtt, weight/h_mtt_Bl->GetXaxis()->GetBinWidth(1));
+        if (cosTheta2 > 0) h_mtt_Bl->Fill(mtt, weight/h_mtt_Bl->GetXaxis()->GetBinWidth(1));
 
         h2_mtt_deltaPhi->Fill(mtt, deltaPhi, weight/h2_mtt_deltaPhi->GetXaxis()->GetBinWidth(1)/h2_mtt_deltaPhi->GetYaxis()->GetBinWidth(1));
         h2_mtt_cosTheta1->Fill(mtt, cosTheta1, weight/h2_mtt_cosTheta1->GetXaxis()->GetBinWidth(1)/h2_mtt_cosTheta1->GetYaxis()->GetBinWidth(1));
@@ -522,7 +505,7 @@ void AnalysisZprime::MakeGraphs() {
     h_AFB->GetYaxis()->SetTitle(h_AFB->GetTitle());
     h_AFB->GetXaxis()->SetTitle("m_{tt} [TeV]");
 
-    h_Ap = this->Asymmetry("Ap", "A_{p}", h_mtt_Fl, h_mtt_Bl);
+    h_Ap = this->Asymmetry("Ap", "A_{P}", h_mtt_Fl, h_mtt_Bl);
     h_Ap->GetYaxis()->SetTitle(h_Ap->GetTitle());
     h_Ap->GetXaxis()->SetTitle("m_{tt} [TeV]");
 
