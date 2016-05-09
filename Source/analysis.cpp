@@ -236,66 +236,66 @@ void AnalysisZprime::EachEvent() {
     if (this->PassCuts("truth")) {
         // fill histograms (assumes fixed bin width!)
         // printf("Event passed all truth cuts.\n");
-        h_mt->Fill(mt, weight/h_mt->GetXaxis()->GetBinWidth(1));
-        h_mtbar->Fill(mtb, weight/h_mtbar->GetXaxis()->GetBinWidth(1));
-        h_mtt->Fill(mtt, weight/h_mtt->GetXaxis()->GetBinWidth(1));
-        h_ytt->Fill(ytt, weight/h_ytt->GetXaxis()->GetBinWidth(1));
-        h_cosTheta->Fill(cosTheta, weight/h_cosTheta->GetXaxis()->GetBinWidth(1));
-        h_cosThetaStar->Fill(cosThetaStar, weight/h_cosThetaStar->GetXaxis()->GetBinWidth(1));
-        h_HT->Fill(HT, weight/h_HT->GetXaxis()->GetBinWidth(1));
-        h_KT->Fill(KT, weight/h_KT->GetXaxis()->GetBinWidth(1));
+        h_mt->Fill(mt, weight);
+        h_mtbar->Fill(mtb, weight);
+        h_mtt->Fill(mtt, weight);
+        h_ytt->Fill(ytt, weight);
+        h_cosTheta->Fill(cosTheta, weight);
+        h_cosThetaStar->Fill(cosThetaStar, weight);
+        h_HT->Fill(HT, weight);
+        h_KT->Fill(KT, weight);
 
         // asymmetries
-        if (cosThetaStar > 0) h_mtt_F->Fill(mtt, weight/h_mtt_F->GetXaxis()->GetBinWidth(1));
-        if (cosThetaStar < 0) h_mtt_B->Fill(mtt, weight/h_mtt_B->GetXaxis()->GetBinWidth(1));
+        if (cosThetaStar > 0) h_mtt_F->Fill(mtt, weight);
+        if (cosThetaStar < 0) h_mtt_B->Fill(mtt, weight);
 
-        h_deltaPhi->Fill(deltaPhi, weight/h_deltaPhi->GetXaxis()->GetBinWidth(1));
-        h_cosTheta1->Fill(cosTheta1, weight/h_cosTheta1->GetXaxis()->GetBinWidth(1));
-        h_cosTheta2->Fill(cosTheta2, weight/h_cosTheta2->GetXaxis()->GetBinWidth(1));
-        h_cos1cos2->Fill(cos1cos2, weight/h_cos1cos2->GetXaxis()->GetBinWidth(1));
+        h_deltaPhi->Fill(deltaPhi, weight);
+        h_cosTheta1->Fill(cosTheta1, weight);
+        h_cosTheta2->Fill(cosTheta2, weight);
+        h_cos1cos2->Fill(cos1cos2, weight);
 
-        if (cosTheta1 > 0) h_mtt_Fl->Fill(mtt, weight/h_mtt_Fl->GetXaxis()->GetBinWidth(1));
-        if (cosTheta2 > 0) h_mtt_Bl->Fill(mtt, weight/h_mtt_Bl->GetXaxis()->GetBinWidth(1));
+        if (cosTheta1 > 0) h_mtt_Fl->Fill(mtt, weight);
+        if (cosTheta2 > 0) h_mtt_Bl->Fill(mtt, weight);
 
-        h2_mtt_deltaPhi->Fill(mtt, deltaPhi, weight/h2_mtt_deltaPhi->GetXaxis()->GetBinWidth(1)/h2_mtt_deltaPhi->GetYaxis()->GetBinWidth(1));
-        h2_mtt_cosTheta1->Fill(mtt, cosTheta1, weight/h2_mtt_cosTheta1->GetXaxis()->GetBinWidth(1)/h2_mtt_cosTheta1->GetYaxis()->GetBinWidth(1));
-        h2_mtt_cosTheta2->Fill(mtt, cosTheta2, weight/h2_mtt_cosTheta2->GetXaxis()->GetBinWidth(1)/h2_mtt_cosTheta2->GetYaxis()->GetBinWidth(1));
-        h2_mtt_cos1cos2->Fill(mtt, cos1cos2, weight/h2_mtt_cos1cos2->GetXaxis()->GetBinWidth(1)/h2_mtt_cos1cos2->GetYaxis()->GetBinWidth(1));
+        h2_mtt_deltaPhi->Fill(mtt, deltaPhi, weight);
+        h2_mtt_cosTheta1->Fill(mtt, cosTheta1, weight);
+        h2_mtt_cosTheta2->Fill(mtt, cosTheta2, weight);
+        h2_mtt_cos1cos2->Fill(mtt, cos1cos2, weight);
 
-        h2_HT_deltaPhi->Fill(HT, deltaPhi, weight/h2_HT_deltaPhi->GetXaxis()->GetBinWidth(1)/h2_HT_deltaPhi->GetYaxis()->GetBinWidth(1));
-        h2_KT_deltaPhi->Fill(KT, deltaPhi, weight/h2_KT_deltaPhi->GetXaxis()->GetBinWidth(1)/h2_KT_deltaPhi->GetYaxis()->GetBinWidth(1));
+        h2_HT_deltaPhi->Fill(HT, deltaPhi, weight);
+        h2_KT_deltaPhi->Fill(KT, deltaPhi, weight);
 
         for (int i = 0; i < (int) deltaRs.size(); i++)
-            h_deltaRs[i]->Fill(deltaRs[i], weight/h_deltaRs[i]->GetXaxis()->GetBinWidth(1));
+            h_deltaRs[i]->Fill(deltaRs[i], weight);
 
-        h_deltaRbW->Fill(deltaRbW, weight/h_deltaRbW->GetXaxis()->GetBinWidth(1));
-        h_deltaRmax->Fill(*deltaRmax, weight/h_deltaRbW->GetXaxis()->GetBinWidth(1));
+        h_deltaRbW->Fill(deltaRbW, weight);
+        h_deltaRmax->Fill(*deltaRmax, weight);
 
         if(m_reco) {
             if(this->PassCuts("R1")) {
-                h_mtt_R->Fill(mtt_R1, weight_R/h_mtt_R->GetXaxis()->GetBinWidth(1));
-                if (cosThetaStar_R1 > 0) h_mtt_FR->Fill(mtt_R1, weight_R/h_mtt_FR->GetXaxis()->GetBinWidth(1));
-                if (cosThetaStar_R1 < 0) h_mtt_BR->Fill(mtt_R1, weight_R/h_mtt_BR->GetXaxis()->GetBinWidth(1));
-                h_ytt_R->Fill(ytt_R1, weight_R/h_ytt_R->GetXaxis()->GetBinWidth(1));
-                h_mt_R->Fill(mt_R1, weight_R/h_mt_R->GetXaxis()->GetBinWidth(1));
-                h_mtbar_R->Fill(mtb_R1, weight_R/h_mtbar_R->GetXaxis()->GetBinWidth(1));
-                h_cosTheta_R->Fill(cosTheta_R1, weight_R/h_cosTheta_R->GetXaxis()->GetBinWidth(1));
-                h_cosThetaStar_R->Fill(cosThetaStar_R1, weight_R/h_cosThetaStar_R->GetXaxis()->GetBinWidth(1));
-                h_pzNu_R->Fill(p_R1[3].Pz(), weight_R/h_pzNu_R->GetXaxis()->GetBinWidth(1));
+                h_mtt_R->Fill(mtt_R1, weight_R);
+                if (cosThetaStar_R1 > 0) h_mtt_FR->Fill(mtt_R1, weight_R);
+                if (cosThetaStar_R1 < 0) h_mtt_BR->Fill(mtt_R1, weight_R);
+                h_ytt_R->Fill(ytt_R1, weight_R);
+                h_mt_R->Fill(mt_R1, weight_R);
+                h_mtbar_R->Fill(mtb_R1, weight_R);
+                h_cosTheta_R->Fill(cosTheta_R1, weight_R);
+                h_cosThetaStar_R->Fill(cosThetaStar_R1, weight_R);
+                h_pzNu_R->Fill(p_R1[3].Pz(), weight_R);
             }
 
 
             if(this->PassCuts("R2")) {
-                h_mtt_R->Fill(mtt_R2, weight_R/h_mtt_R->GetXaxis()->GetBinWidth(1));
-                if (cosThetaStar_R2 > 0) h_mtt_FR->Fill(mtt_R2, weight_R/h_mtt_FR->GetXaxis()->GetBinWidth(1));
-                if (cosThetaStar_R2 < 0) h_mtt_BR->Fill(mtt_R2, weight_R/h_mtt_BR->GetXaxis()->GetBinWidth(1));
-                h_ytt_R->Fill(ytt_R2, weight_R/h_ytt_R->GetXaxis()->GetBinWidth(1));
-                h_mt_R->Fill(mt_R2, weight_R/h_mt_R->GetXaxis()->GetBinWidth(1));
-                h_mtbar_R->Fill(mtb_R2, weight_R/h_mtbar_R->GetXaxis()->GetBinWidth(1));
-                h_cosTheta_R->Fill(cosTheta_R2, weight_R/h_cosTheta_R->GetXaxis()->GetBinWidth(1));
-                h_cosThetaStar_R->Fill(cosThetaStar_R2, weight_R/h_cosThetaStar_R->GetXaxis()->GetBinWidth(1));
-                h_pzNu->Fill(p[3].Pz(), weight_R/h_pzNu->GetXaxis()->GetBinWidth(1));
-                h_pzNu_R->Fill(p_R2[5].Pz(), weight_R/h_pzNu_R->GetXaxis()->GetBinWidth(1));
+                h_mtt_R->Fill(mtt_R2, weight_R);
+                if (cosThetaStar_R2 > 0) h_mtt_FR->Fill(mtt_R2, weight_R);
+                if (cosThetaStar_R2 < 0) h_mtt_BR->Fill(mtt_R2, weight_R);
+                h_ytt_R->Fill(ytt_R2, weight_R);
+                h_mt_R->Fill(mt_R2, weight_R);
+                h_mtbar_R->Fill(mtb_R2, weight_R);
+                h_cosTheta_R->Fill(cosTheta_R2, weight_R);
+                h_cosThetaStar_R->Fill(cosThetaStar_R2, weight_R);
+                h_pzNu->Fill(p[3].Pz(), weight_R);
+                h_pzNu_R->Fill(p_R2[5].Pz(), weight_R);
             }
         }
     }
@@ -333,13 +333,12 @@ double AnalysisZprime::TotalAsymmetry(TH1D* h_A, TH1D* h_B) {
 }
 
 void AnalysisZprime::ApplyLuminosity(TH1D* h) {
-    if (!m_useLumi) return;
     // printf("Name: %s\n", h->GetTitle());
     // printf("Luminosity: %f\n", m_luminosity);
     double sigma = -999, N = -999, dN = -999;
     double fb = 1;
     for (int i = 1; i < h->GetNbinsX()+1; i++) {
-        sigma = h->GetBinContent(i)*h->GetBinWidth(i);
+        sigma = h->GetBinContent(i);
         N = m_luminosity*fb*m_efficiency*sigma;
         h->SetBinContent(i, N);
         dN = sqrt(N);
@@ -459,8 +458,7 @@ void AnalysisZprime::CreateHistograms() {
             deltaRtitles.push_back(particles2[i] + ", " + particles2[j]);
         }
     }
-    h_deltaRbW = new TH1D("deltaRbW", "#Delta#R(bW)", 100, 0, 5);
-    h_deltaRbW->Sumw2();
+
     h_deltaRbW = new TH1D("deltaRbW", "#Delta#R(bW)", 100, 0, 5);
     h_deltaRbW->Sumw2();
     h_deltaRmax = new TH1D("deltaRmax", "#Delta#R(max)", 100, 0, 5);
@@ -576,7 +574,8 @@ void AnalysisZprime::MakeDistribution(TH1D* h, TString units) {
     }
     h->GetYaxis()->SetTitle(ytitle + h->GetTitle() + yunits);
     h->GetXaxis()->SetTitle(h->GetTitle() + xunits);
-    this->ApplyLuminosity(h);
+    if (m_useLumi) this->ApplyLuminosity(h);
+    else h->Scale(1,"width");
     m_outputFile->cd();
     m_outputFile->cd("/");
     h->Write();
