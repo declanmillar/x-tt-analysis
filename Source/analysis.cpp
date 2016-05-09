@@ -31,7 +31,7 @@ AnalysisZprime::AnalysisZprime(const TString channel, const TString model, const
     m_GeV(1000.0),
     m_Wmass(80.23),
     m_tmass(173.0),
-    m_ytt(0.5),
+    m_ytt(0.0),
     m_Emin(-1),
     m_Emax(-1),
     m_discardEvent(false),
