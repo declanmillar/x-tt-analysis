@@ -143,8 +143,12 @@ void AnalysisZprime::EachEvent() {
     }
 
     // top and antitop
-    p_t = pcm[0] + pcm[2] + pcm[3];
-    p_tb = pcm[1] + pcm[4] + pcm[5];
+    TLorentzVector p_t = p[0] + p[2] + p[3];
+    TLorentzVector p_tb = p[1] + p[4] + p[5];
+    TLorentzVector p_W = p[2] + p[3];
+    pcm_t = pcm[0] + pcm[2] + pcm[3];
+    pcm_tb = pcm[1] + pcm[4] + pcm[5];
+
     if (m_reco) {
         p_t_R1 = pcm_R1[0] + pcm_R1[2] + pcm_R1[3];
         p_tb_R1 = pcm_R1[1] + pcm_R1[4] + pcm_R1[5];
@@ -166,10 +170,10 @@ void AnalysisZprime::EachEvent() {
     double mTvis = sqrt(mvis*mvis + pTvis*pTvis);
     double KT = mTvis + (p[3] + p[5]).Pt();
     KT = KT/1000;
-    double mt = p_t.M();
-    double mtb = p_tb.M();
+    double mt = pcm_t.M();
+    double mtb = pcm_tb.M();
     double ytt = P.Rapidity();
-    double cosTheta = p_t.CosTheta();
+    double cosTheta = pcm_t.CosTheta();
     double cosThetaStar = int(ytt/abs(ytt))*cosTheta;
     double ytt_R1 = -999;
     double ytt_R2 = -999;
@@ -192,8 +196,16 @@ void AnalysisZprime::EachEvent() {
             deltaRs.push_back(p[i].DeltaR(p[j]));
         }
 
-    cosTheta1 = cos(ptop[2].Angle(p_t.Vect()));
-    cosTheta2 = cos(patop[4].Angle(p_tb.Vect()));
+
+    double deltaRbW = p_W.DeltaR(p[0]);
+    vector<double> deltaRt;
+    deltaRt.push_back(p_t.DeltaR(p[0]));
+    deltaRt.push_back(p_t.DeltaR(p[2]));
+    deltaRt.push_back(p_t.DeltaR(p[3]));
+    auto deltaRmax = max_element(std::begin(deltaRt), std::end(deltaRt));
+
+    cosTheta1 = cos(ptop[2].Angle(pcm_t.Vect()));
+    cosTheta2 = cos(patop[4].Angle(pcm_tb.Vect()));
     cos1cos2 = cosTheta1*cosTheta2;
 
     if(m_reco) {
@@ -253,8 +265,11 @@ void AnalysisZprime::EachEvent() {
         h2_HT_deltaPhi->Fill(HT, deltaPhi, weight/h2_HT_deltaPhi->GetXaxis()->GetBinWidth(1)/h2_HT_deltaPhi->GetYaxis()->GetBinWidth(1));
         h2_KT_deltaPhi->Fill(KT, deltaPhi, weight/h2_KT_deltaPhi->GetXaxis()->GetBinWidth(1)/h2_KT_deltaPhi->GetYaxis()->GetBinWidth(1));
 
-        for (int i = 0; i < (int) h_deltaRs.size(); i++)
+        for (int i = 0; i < (int) deltaRs.size(); i++)
             h_deltaRs[i]->Fill(deltaRs[i], weight/h_deltaRs[i]->GetXaxis()->GetBinWidth(1));
+
+        h_deltaRbW->Fill(deltaRbW, weight/h_deltaRbW->GetXaxis()->GetBinWidth(1));
+        h_deltaRmax->Fill(*deltaRmax, weight/h_deltaRbW->GetXaxis()->GetBinWidth(1));
 
         if(m_reco) {
             if(this->PassCuts("R1")) {
@@ -363,7 +378,7 @@ void AnalysisZprime::AsymmetryUncertainty(TH1D* h_Asymmetry, TH1D* h_A, TH1D* h_
         A2 = (N_A - N_B)/N;
         if (N > 0) deltaA = sqrt((1.0 - A*A)/N);
         else deltaA = 0;
-        printf("A = %f, A2 = %f dA= %f, N= %f, N_A= %f, N_B= %f \n",  A, A2, deltaA, N, N_A, N_B);
+        // printf("A = %f, A2 = %f dA= %f, N= %f, N_A= %f, N_B= %f \n",  A, A2, deltaA, N, N_A, N_B);
         h_Asymmetry->SetBinError(i, deltaA);
     }
 }
@@ -444,9 +459,15 @@ void AnalysisZprime::CreateHistograms() {
             deltaRtitles.push_back(particles2[i] + ", " + particles2[j]);
         }
     }
+    h_deltaRbW = new TH1D("deltaRbW", "#Delta#R(bW)", 100, 0, 5);
+    h_deltaRbW->Sumw2();
+    h_deltaRbW = new TH1D("deltaRbW", "#Delta#R(bW)", 100, 0, 5);
+    h_deltaRbW->Sumw2();
+    h_deltaRmax = new TH1D("deltaRmax", "#Delta#R(max)", 100, 0, 5);
+    h_deltaRmax->Sumw2();
 
     for (int i = 0; i < (int) deltaRnames.size(); i++) {
-        h_deltaRs.push_back(new TH1D(deltaRnames[i].c_str(), deltaRtitles[i].c_str(), 500, 0, 5));
+        h_deltaRs.push_back(new TH1D(deltaRnames[i].c_str(), deltaRtitles[i].c_str(), 100, 0, 5));
     }
     // for (auto title : deltaRtitles) printf("title = %s\n", title.c_str());
 
@@ -494,6 +515,9 @@ void AnalysisZprime::MakeGraphs() {
     this->MakeDistribution(h_cos1cos2, "");
     this->MakeDistribution(h_HT, "TeV");
     this->MakeDistribution(h_KT, "TeV");
+    this->MakeDistribution(h_deltaRbW, "");
+    this->MakeDistribution(h_deltaRmax, "");
+    this->MakeDistribution(h_KT, "TeV");
 
     h_mtt_Fn = (TH1D*) h_mtt_F->Clone("h_mtt_Fn");
     h_mtt_Fn->Divide(h_mtt);
@@ -513,6 +537,8 @@ void AnalysisZprime::MakeGraphs() {
         h_deltaR->GetYaxis()->SetTitle("d#sigma / d #Delta R");
         h_deltaR->GetXaxis()->SetTitle("#Delta R");
     }
+
+
 
     if(m_reco) {
         this->MakeDistribution(h_mtt_R, "TeV");

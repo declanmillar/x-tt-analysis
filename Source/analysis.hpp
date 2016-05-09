@@ -183,8 +183,8 @@ private:
   TLorentzVector P_R2;
 
   // Top 4-vectors
-  TLorentzVector p_t;
-  TLorentzVector p_tb;
+  TLorentzVector pcm_t;
+  TLorentzVector pcm_tb;
   TLorentzVector p_t_R1;
   TLorentzVector p_tb_R1;
   TLorentzVector p_t_R2;
@@ -282,5 +282,7 @@ private:
 
   //
   vector<TH1D*> h_deltaRs;
+  TH1D* h_deltaRmax;
+  TH1D* h_deltaRbW;
 };
 #endif
