@@ -19,6 +19,8 @@ int main(int argc, char* argv[])
       ("discard,d", po::value<bool>()->default_value(false), "discard complex")
       ("qcd,q", po::value<bool>()->default_value(true), "add QCD diagrams")
       ("verbose,v", po::value<bool>()->default_value(false), "run in verbose mode")
+      ("ytt,y", po::value<double>()->default_value(0), "set ytt cut")
+      ("xsec,x", po::value<bool>()->default_value(true), "calculate differential cross section")
   ;
   po::variables_map opts;
   po::store(po::parse_command_line(argc, argv, desc), opts);
@@ -37,6 +39,11 @@ int main(int argc, char* argv[])
   const int luminosity = opts["luminosity"].as<double>();
   const bool discardComplex = opts["discard"].as<bool>();
   bool addQCD = opts["qcd"].as<bool>();
+  double ytt = opts["ytt"].as<double>();
+  bool xsec = opts["xsec"].as<bool>();
 
-  AnalysisZprime analysis(channel, model, energy, options, it, points, addQCD, luminosity, btags, discardComplex, analysisLabel);
+  AnalysisZprime* analysis = new AnalysisZprime(channel, model, energy, options, it, points, addQCD, luminosity, btags, discardComplex, analysisLabel);
+  analysis->SetYttCut(ytt);
+  analysis->SetXsec(xsec);
+  analysis->Run();
 }

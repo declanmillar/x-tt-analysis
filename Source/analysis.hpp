@@ -26,6 +26,9 @@ public:
   AnalysisZprime(const TString channel, const TString model, const int energy, const TString options, const int vegasIterations, const string vegasPoints, const bool addQCD, const int luminosity, const int btags, const bool discardComplex, const TString analysis_label);
   virtual ~AnalysisZprime();
   TString GetOutputFilename();
+  void SetYttCut(const double);
+  void SetXsec(const bool);
+  void Run();
 
 protected:
   Long64_t TotalEvents();
@@ -99,6 +102,7 @@ private:
   const int nBtags;
   const bool m_discardComplex;
   const TString m_analysisLabel;
+  bool m_xsec;
   const bool m_reco;
 
   // Parameters
@@ -129,7 +133,7 @@ private:
   bool m_useLumi;
   bool m_discardEvent;
 
-  // Counters
+  // Counter
   unsigned int m_nReco;
   unsigned int m_nQuarksMatched;
   unsigned int m_nNeutrinoMatched;

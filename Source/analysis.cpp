@@ -26,12 +26,13 @@ AnalysisZprime::AnalysisZprime(const TString channel, const TString model, const
     nBtags(btags),
     m_discardComplex(discardComplex),
     m_analysisLabel(analysisLabel),
+    m_xsec(true),
     m_reco(true),
     m_pi(3.14159265),
     m_GeV(1000.0),
     m_Wmass(80.23),
     m_tmass(173.0),
-    m_ytt(0.0),
+    m_ytt(0),
     m_Emin(-1),
     m_Emax(-1),
     m_discardEvent(false),
@@ -40,6 +41,9 @@ AnalysisZprime::AnalysisZprime(const TString channel, const TString model, const
     m_ntup(NULL),
     m_chainNtup(NULL),
     m_outputFile(NULL) {
+}
+
+void AnalysisZprime::Run(){
     this->PreLoop();
     this->Loop();
     this->PostLoop();
@@ -225,13 +229,21 @@ void AnalysisZprime::EachEvent() {
 
     // printf("Event passed all cuts.\n");
     // re-weight for different iterations
-    double it = m_ntup->iteration();
-    double weight = m_ntup->weight();
-    double fb = 1000;
-    weight = fb*weight*m_sigma/iteration_weights[it-1];
-    // printf("Sigma = %.15le\n", m_sigma);
-    // printf("Iteration weight = %.15le\n", iteration_weights[it-1]);
-    double weight_R = weight/2;
+    double weight;
+    double weight_R;
+    if (m_xsec) {
+        double it = m_ntup->iteration();
+        weight = m_ntup->weight();
+        double fb = 1000;
+        weight = fb*weight*m_sigma/iteration_weights[it-1];
+        // printf("Sigma = %.15le\n", m_sigma);
+        // printf("Iteration weight = %.15le\n", iteration_weights[it-1]);
+        weight_R = weight/2;
+    }
+    else {
+        weight = 1;
+        weight_R = 1;
+    }
 
     if (this->PassCuts("truth")) {
         // fill histograms (assumes fixed bin width!)
@@ -1164,4 +1176,12 @@ inline void AnalysisZprime::ProgressBar(unsigned int x, unsigned int n, unsigned
     for (unsigned int i = c; i < w; i++) cout << " ";
     if (x == n) cout << "\n" << flush;
     else cout << "]\r" << flush;
+}
+
+void AnalysisZprime::SetYttCut(const double ytt){
+    m_ytt = ytt;
+}
+
+void AnalysisZprime::SetXsec(const bool xsec){
+    m_xsec = xsec;
 }
