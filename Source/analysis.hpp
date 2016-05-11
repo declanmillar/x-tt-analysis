@@ -23,7 +23,7 @@
 
 class AnalysisZprime{
 public:
-  AnalysisZprime(const TString channel, const TString model, const int energy, const TString options, const int vegasIterations, const string vegasPoints, const bool addQCD, const int luminosity, const int btags, const bool discardComplex, const TString analysis_label);
+  AnalysisZprime(const TString, const TString, const TString, const TString,  const int energy, const TString options, const int vegasIterations, const string vegasPoints, const bool add_ggG, const bool add_qqG, const int luminosity, const int btags, const bool discardComplex, const TString analysis_label);
   virtual ~AnalysisZprime();
   TString GetOutputFilename();
   void SetYttCut(const double);
@@ -90,13 +90,16 @@ private:
   typedef vector<TString>::const_iterator Itr_s;
 
   // arguments
-  TString m_channel;
   TString m_model;
+  TString m_initial_state;
+  TString m_intermediates;
+  TString m_channel;
   int m_energy;
   TString m_options;
   int m_vegasIterations;
   string m_vegasPoints;
-  int m_addQCD;
+  int m_add_ggG;
+  int m_add_qqG;
   int m_luminosity;
   double m_efficiency;
   const int nBtags;
@@ -151,8 +154,8 @@ private:
   TString m_inputFileName;
   TString m_QCDfilename;
   TString m_QCDweightFile;
-  TString m_weightsFileName;
-  TString m_outputFileName;
+  TString m_weightsFilename;
+  TString m_outputFilename;
   TString m_dataDirectory;
 
   // Input data

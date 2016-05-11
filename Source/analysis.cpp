@@ -13,14 +13,17 @@ string trim(string const& str) {
     return str.substr(first, last-first+1);
 }
 
-AnalysisZprime::AnalysisZprime(const TString channel, const TString model, const int energy, const TString options, const int vegasIterations, const string vegasPoints, const bool addQCD, const int luminosity, const int btags, const bool discardComplex, const TString analysisLabel):
-    m_channel(channel),
+AnalysisZprime::AnalysisZprime(const TString model, const TString initial_state, const TString intermediates, const TString final_state,  const int energy, const TString options, const int vegasIterations, const string vegasPoints, const bool add_ggG, const bool add_qqG, const int luminosity, const int btags, const bool discardComplex, const TString analysisLabel):
     m_model(model),
+    m_initial_state(initial_state),
+    m_intermediates(intermediates),
+    m_channel(final_state),
     m_energy(energy),
     m_options(options),
     m_vegasIterations(vegasIterations),
     m_vegasPoints(vegasPoints),
-    m_addQCD(addQCD),
+    m_add_ggG(add_ggG),
+    m_add_qqG(add_qqG),
     m_luminosity(luminosity),
     m_efficiency(1.0),
     nBtags(btags),
@@ -51,36 +54,8 @@ void AnalysisZprime::Run(){
 
 inline string BoolToString(bool b) {return b ? "1" : "0";}
 
-void AnalysisZprime::CreateFilenames() {
-    string E = "";
-    if (m_energy != 13) to_string(m_energy) + "_";
-    TString base = m_dataDirectory + "/" + E + m_model + "_" + m_channel + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
-    m_inputFileName = base + ".root";
-    m_QCDfilename = m_dataDirectory + "/" + E + "QCD_" + m_channel + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
-    // m_inputFilenames.push_back(m_QCDfilename)
-    // m_inputFilenames.push_back(base)
-    m_QCDweightFile = m_QCDfilename + ".log";
-    m_QCDfilename = m_QCDfilename + ".root";
-    m_weightsFileName = base + ".log";
-
-    TString QCDadded;
-    if (m_addQCD) QCDadded = ".G";
-    else QCDadded = "";
-
-    m_outputFileName = base + ".a" + QCDadded;
-    if (m_reco) m_outputFileName += ".b" + to_string(nBtags) + ".c" + BoolToString(m_discardComplex);
-    if (m_ytt > 0) m_outputFileName += ".y" + to_string(m_ytt);
-    if (m_Emin >= 0 || m_Emax >= 0) m_outputFileName += ".E" + to_string(m_Emin) + "-" + to_string(m_Emax);
-    if (m_efficiency < 1.0) m_outputFileName += ".e" + to_string(m_efficiency);
-    if (m_luminosity > 0) m_outputFileName += ".L" + to_string(m_luminosity);
-    m_outputFileName += m_analysisLabel;
-    m_outputFileName += ".root";
-    printf("--- Output ---\n");
-    printf("%s\n", m_outputFileName.Data());
-}
-
 TString AnalysisZprime::GetOutputFilename() {
-    return m_outputFileName;
+    return m_outputFilename;
 }
 
 void AnalysisZprime::EachEvent() {
@@ -246,8 +221,6 @@ void AnalysisZprime::EachEvent() {
     }
 
     if (this->PassCuts("truth")) {
-        // fill histograms (assumes fixed bin width!)
-        // printf("Event passed all truth cuts.\n");
         h_mt->Fill(mt, weight);
         h_mtbar->Fill(mtb, weight);
         h_mtt->Fill(mtt, weight);
@@ -256,15 +229,18 @@ void AnalysisZprime::EachEvent() {
         h_cosThetaStar->Fill(cosThetaStar, weight);
         h_HT->Fill(HT, weight);
         h_KT->Fill(KT, weight);
-
-        // asymmetries
-        if (cosThetaStar > 0) h_mtt_F->Fill(mtt, weight);
-        if (cosThetaStar < 0) h_mtt_B->Fill(mtt, weight);
-
+        h_pzNu->Fill(p[3].Pz(), weight_R);
         h_deltaPhi->Fill(deltaPhi, weight);
         h_cosTheta1->Fill(cosTheta1, weight);
         h_cosTheta2->Fill(cosTheta2, weight);
         h_cos1cos2->Fill(cos1cos2, weight);
+        h_deltaRbW->Fill(deltaRbW, weight);
+        h_deltaRmax->Fill(*deltaRmax, weight);
+        for (int i = 0; i < (int) deltaRs.size(); i++)
+            h_deltaRs[i]->Fill(deltaRs[i], weight);
+
+        if (cosThetaStar > 0) h_mtt_F->Fill(mtt, weight);
+        if (cosThetaStar < 0) h_mtt_B->Fill(mtt, weight);
 
         if (cosTheta1 > 0) h_mtt_Fl->Fill(mtt, weight);
         if (cosTheta2 > 0) h_mtt_Bl->Fill(mtt, weight);
@@ -273,41 +249,32 @@ void AnalysisZprime::EachEvent() {
         h2_mtt_cosTheta1->Fill(mtt, cosTheta1, weight);
         h2_mtt_cosTheta2->Fill(mtt, cosTheta2, weight);
         h2_mtt_cos1cos2->Fill(mtt, cos1cos2, weight);
-
         h2_HT_deltaPhi->Fill(HT, deltaPhi, weight);
         h2_KT_deltaPhi->Fill(KT, deltaPhi, weight);
-
-        for (int i = 0; i < (int) deltaRs.size(); i++)
-            h_deltaRs[i]->Fill(deltaRs[i], weight);
-
-        h_deltaRbW->Fill(deltaRbW, weight);
-        h_deltaRmax->Fill(*deltaRmax, weight);
 
         if(m_reco) {
             if(this->PassCuts("R1")) {
                 h_mtt_R->Fill(mtt_R1, weight_R);
-                if (cosThetaStar_R1 > 0) h_mtt_FR->Fill(mtt_R1, weight_R);
-                if (cosThetaStar_R1 < 0) h_mtt_BR->Fill(mtt_R1, weight_R);
                 h_ytt_R->Fill(ytt_R1, weight_R);
                 h_mt_R->Fill(mt_R1, weight_R);
                 h_mtbar_R->Fill(mtb_R1, weight_R);
                 h_cosTheta_R->Fill(cosTheta_R1, weight_R);
                 h_cosThetaStar_R->Fill(cosThetaStar_R1, weight_R);
                 h_pzNu_R->Fill(p_R1[3].Pz(), weight_R);
+                if (cosThetaStar_R1 > 0) h_mtt_FR->Fill(mtt_R1, weight_R);
+                if (cosThetaStar_R1 < 0) h_mtt_BR->Fill(mtt_R1, weight_R);
             }
-
-
             if(this->PassCuts("R2")) {
                 h_mtt_R->Fill(mtt_R2, weight_R);
-                if (cosThetaStar_R2 > 0) h_mtt_FR->Fill(mtt_R2, weight_R);
-                if (cosThetaStar_R2 < 0) h_mtt_BR->Fill(mtt_R2, weight_R);
                 h_ytt_R->Fill(ytt_R2, weight_R);
                 h_mt_R->Fill(mt_R2, weight_R);
                 h_mtbar_R->Fill(mtb_R2, weight_R);
                 h_cosTheta_R->Fill(cosTheta_R2, weight_R);
                 h_cosThetaStar_R->Fill(cosThetaStar_R2, weight_R);
-                h_pzNu->Fill(p[3].Pz(), weight_R);
                 h_pzNu_R->Fill(p_R2[5].Pz(), weight_R);
+                if (cosThetaStar_R2 > 0) h_mtt_FR->Fill(mtt_R2, weight_R);
+                if (cosThetaStar_R2 < 0) h_mtt_BR->Fill(mtt_R2, weight_R);
+
             }
         }
     }
@@ -337,60 +304,53 @@ void AnalysisZprime::CheckPerformance () {
     printf("\n");
 }
 
-double AnalysisZprime::TotalAsymmetry(TH1D* h_A, TH1D* h_B) {
-    double A = h_A->Integral("width");
-    double B = h_B->Integral("width");
-    double Atot = (A - B)/(A + B);
-    return Atot;
+double AnalysisZprime::TotalAsymmetry(TH1D* h1, TH1D* h2) {
+    double N1 = h1->Integral("width");
+    double N2 = h2->Integral("width");
+    return (N1 - N2)/(N1 + N2);
 }
 
 void AnalysisZprime::ApplyLuminosity(TH1D* h) {
-    // printf("Name: %s\n", h->GetTitle());
-    // printf("Luminosity: %f\n", m_luminosity);
-    double sigma = -999, N = -999, dN = -999;
-    double fb = 1;
-    for (int i = 1; i < h->GetNbinsX()+1; i++) {
+    double sigma, N, dN;
+    for (int i = 1; i < h->GetNbinsX() + 1; i++) {
         sigma = h->GetBinContent(i);
-        N = m_luminosity*fb*m_efficiency*sigma;
+        N = m_luminosity*m_efficiency*sigma;
         h->SetBinContent(i, N);
         dN = sqrt(N);
         h->SetBinError(i, dN);
-        // printf("sigma = %f, N = %f, dN = %f\n", sigma, N, dN);
     }
-    TString events = "Events";
-    h->GetYaxis()->SetTitle(events);
+    h->GetYaxis()->SetTitle("Expected events");
 }
 
-TH1D* AnalysisZprime::Asymmetry(TString name, TString title, TH1D* h_A, TH1D* h_B) {
-    TH1D* h_numerator = (TH1D*) h_A->Clone(name);
-    TH1D* h_denominator = (TH1D*) h_A->Clone();
+TH1D* AnalysisZprime::Asymmetry(TString name, TString title, TH1D* h1, TH1D* h2) {
+    TH1D* h_numerator = (TH1D*) h1->Clone(name);
+    TH1D* h_denominator = (TH1D*) h1->Clone();
     h_numerator->SetTitle(title);
-    h_numerator->Add(h_B, -1);
-    h_denominator->Add(h_B, 1);
+    h_numerator->Add(h2, -1);
+    h_denominator->Add(h2, 1);
     h_numerator->Divide(h_denominator);
     delete h_denominator;
-    if (m_luminosity > -1) this->AsymmetryUncertainty(h_numerator, h_A, h_B);
-    return h_numerator;
-}
-TH1D* AnalysisZprime::Asymmetry2(TString name, TString title, TH1D* h_A, TH1D* h_B) {
-    TH1D* h_numerator = (TH1D*) h_A->Clone(name);
-    h_numerator->SetTitle(title);
-    h_numerator->Add(h_B, -1);
+    if (m_luminosity > -1) this->AsymmetryUncertainty(h_numerator, h1, h2);
     return h_numerator;
 }
 
-void AnalysisZprime::AsymmetryUncertainty(TH1D* h_Asymmetry, TH1D* h_A, TH1D* h_B) {
-    double A, deltaA, N, N_A, N_B, A2;
-    for (int i = 1; i < h_Asymmetry->GetNbinsX()+1; i++) {
-        A = h_Asymmetry->GetBinContent(i);
-        N_A = h_A->GetBinContent(i);
-        N_B = h_B->GetBinContent(i);
-        N = N_A + N_B;
-        A2 = (N_A - N_B)/N;
-        if (N > 0) deltaA = sqrt((1.0 - A*A)/N);
-        else deltaA = 0;
-        // printf("A = %f, A2 = %f dA= %f, N= %f, N_A= %f, N_B= %f \n",  A, A2, deltaA, N, N_A, N_B);
-        h_Asymmetry->SetBinError(i, deltaA);
+TH1D* AnalysisZprime::Asymmetry2(TString name, TString title, TH1D* h1, TH1D* h2) {
+    TH1D* h = (TH1D*) h1->Clone(name);
+    h->SetTitle(title);
+    h->Add(h2, -1);
+    return h;
+}
+
+void AnalysisZprime::AsymmetryUncertainty(TH1D* hA, TH1D* h1, TH1D* h2) {
+    double A, dA, N, N1, N2;
+    for (int i = 1; i < hA->GetNbinsX() + 1; i++) {
+        A = hA->GetBinContent(i);
+        N1 = h1->GetBinContent(i);
+        N2 = h2->GetBinContent(i);
+        N = N1 + N2;
+        if (N > 0) dA = sqrt((1.0 - A*A)/N);
+        else dA = 0;
+        hA->SetBinError(i, dA);
     }
 }
 
@@ -463,11 +423,11 @@ void AnalysisZprime::CreateHistograms() {
 
     vector<string> deltaRnames, deltaRtitles;
     vector<string> particles1 = {"b1", "b2", "l", "v", "q1", "q2"};
-    vector<string> particles2 = {"b+", "b-", "l", "#nu", "q", "q'"};
+    vector<string> particles2 = {"b", "#bar{b}", "l+", "#nu", "q", "#bar{q}'"};
     for (int i = 0; i < 6; i++ ) {
         for (int j = i + 1; j < 6; j++) {
-            deltaRnames.push_back(particles1[i] + "-" + particles1[j]);
-            deltaRtitles.push_back(particles2[i] + ", " + particles2[j]);
+            deltaRnames.push_back("deltaR" + particles1[i] + particles1[j]);
+            deltaRtitles.push_back("#Delta R (" + particles2[i] + ", " + particles2[j] + ")");
         }
     }
 
@@ -479,7 +439,6 @@ void AnalysisZprime::CreateHistograms() {
     for (int i = 0; i < (int) deltaRnames.size(); i++) {
         h_deltaRs.push_back(new TH1D(deltaRnames[i].c_str(), deltaRtitles[i].c_str(), 100, 0, 5));
     }
-    // for (auto title : deltaRtitles) printf("title = %s\n", title.c_str());
 
     if(m_reco) {
         h_mtt_R = new TH1D("mtt_R", "m_{tt}^{reco}", nbins, Emin, Emax);
@@ -575,18 +534,26 @@ void AnalysisZprime::MakeGraphs() {
 
 void AnalysisZprime::MakeDistribution(TH1D* h, TString units) {
     TString ytitle, yunits, xunits;
-    ytitle = "d#sigma / d"; //pp->t#bar{t}->b#bar{b}l^{+}l^{-}#nu#bar{#nu}
-    if (units != "") {
-        yunits = " [fb/" + units + "]";
-        xunits = " [" + units + "]";
+    if (m_xsec) {
+        ytitle = "d#sigma / d"; //pp->t#bar{t}->b#bar{b}l^{+}l^{-}#nu#bar{#nu}
+        if (units != "") {
+            yunits = " [fb/" + units + "]";
+            xunits = " [" + units + "]";
+        }
+        else{
+            yunits = "";
+            xunits = "";
+        }
     }
-    else{
-        yunits = "";
-        xunits = "";
+    else {
+        ytitle = "Generated events";
+        xunits = " [" + units + "]";
+        if (units != "") xunits = " [" + units + "]";
+        else xunits = "";
     }
     h->GetYaxis()->SetTitle(ytitle + h->GetTitle() + yunits);
     h->GetXaxis()->SetTitle(h->GetTitle() + xunits);
-    if (m_useLumi) this->ApplyLuminosity(h);
+    if (m_xsec && m_useLumi) this->ApplyLuminosity(h);
     else h->Scale(1,"width");
     m_outputFile->cd();
     m_outputFile->cd("/");
@@ -755,7 +722,6 @@ bool AnalysisZprime::PassCutsYtt(string type) {
 
 void AnalysisZprime::PreLoop() {
     this->GetDataDirectory();
-    this->CreateFilenames();
     this->SetupInputFiles();
     this->SetupOutputFiles();
     this->ResetCounters();
@@ -832,7 +798,7 @@ void AnalysisZprime::GetIterationWeights(TString log) {
     }
     logstream.close();
     if (!found) {
-        printf("Error: Failed to read vegas iteration weights. Check target log file: %s", m_weightsFileName.Data());
+        printf("Error: Failed to read vegas iteration weights. Check target log file: %s", m_weightsFilename.Data());
         exit(1);
     }
 }
@@ -863,18 +829,53 @@ void AnalysisZprime::Loop() {
 AnalysisZprime::~AnalysisZprime() {delete m_inputFiles;}
 
 void AnalysisZprime::SetupOutputFiles() {
-    m_outputFile = new TFile(m_outputFileName,"RECREATE");
+    m_outputFile = new TFile(m_outputFilename,"RECREATE");
 }
 
 void AnalysisZprime::SetupInputFiles() {
     m_inputFiles = new vector<TString>;
     m_weightFiles = new vector<TString>;
-    if (m_addQCD) {
-        m_inputFiles->push_back(m_QCDfilename);
-        m_weightFiles->push_back(m_QCDweightFile);
+    TString filename;
+
+    string E = "";
+    if (m_energy != 13) "_" + to_string(m_energy);
+
+    if (m_add_ggG) {
+      filename = m_dataDirectory + "/SM_" + "gg-G-" + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
+      m_inputFiles->push_back(filename + ".root");
+      m_weightFiles->push_back(filename + ".log");
     }
-    m_inputFiles->push_back(m_inputFileName);
-    m_weightFiles->push_back(m_weightsFileName);
+
+    if (m_add_qqG) {
+      filename = m_dataDirectory + "/SM_" + "qq-G-" + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
+      m_inputFiles->push_back(filename + ".root");
+      m_weightFiles->push_back(filename + ".log");
+    }
+
+    filename = m_dataDirectory + "/" + m_model + "_" + m_initial_state + "-" + m_intermediates + "-" + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
+    m_inputFiles->push_back(filename + ".root");
+    m_weightFiles->push_back(filename + ".log");
+
+    TString outfilename;
+    TString initial_state = m_initial_state;
+    TString intermediates = m_intermediates;
+    if (m_add_ggG || m_add_qqG) intermediates = "G" + intermediates;
+    if (m_add_ggG) initial_state = "gg" + initial_state;
+    outfilename = m_dataDirectory + "/" + m_model + "_" + initial_state + "-" + intermediates + "-" + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
+    m_outputFilename = outfilename + ".a";
+
+    if (m_reco && nBtags != 2) m_outputFilename += ".b" + to_string(nBtags) + ".c" + BoolToString(m_discardComplex);
+    string ytt = to_string(m_ytt);
+    if (m_ytt > 0) m_outputFilename += ".y" + ytt.erase(ytt.find_last_not_of('0') + 1, string::npos);
+    if (m_Emin >= 0 || m_Emax >= 0) m_outputFilename += ".E" + to_string(m_Emin) + "-" + to_string(m_Emax);
+    string eff = to_string(m_efficiency);
+    if (m_efficiency < 1.0) m_outputFilename += ".e" + eff.erase(eff.find_last_not_of('0') + 1, string::npos);
+    if (m_luminosity > 0) m_outputFilename += ".L" + to_string(m_luminosity);
+    m_outputFilename += m_analysisLabel;
+    m_outputFilename += ".root";
+
+    printf("--- Output ---\n");
+    printf("%s\n", m_outputFilename.Data());
 }
 
 Long64_t AnalysisZprime::TotalEvents() {
