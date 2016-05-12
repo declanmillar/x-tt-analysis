@@ -20,6 +20,8 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/asio.hpp>
 #include <boost/program_options.hpp>
+#include <unistd.h>
+#include <limits.h>
 
 class AnalysisZprime{
 public:

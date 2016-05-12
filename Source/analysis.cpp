@@ -730,11 +730,31 @@ void AnalysisZprime::PreLoop() {
 }
 
 void AnalysisZprime::GetDataDirectory() {
-    #if __linux || __linux__
-    m_dataDirectory = "/afs/cern.ch/work/d/demillar/zprime";
-    #elif __APPLE__ || __MACH__
-    m_dataDirectory = "/Users/declan/Data/Zprime";
-    #endif
+    // char hostname[HOST_NAME_MAX];
+    // gethostname(hostname, HOST_NAME_MAX);
+    // char *hostname = getenv("HOSTNAME");
+    // printf("%s\n", hostname);
+    char hostname[1024];
+    hostname[1023] = '\0';
+    gethostname(hostname, 1023);
+    string Hostname(hostname);
+    // printf("Hostname: %s\n", Hostname.c_str());
+
+    if (Hostname == "Sunder") {
+        m_dataDirectory = "/Users/declan/Data/Zprime";
+    }
+    else if (Hostname.find("lxplus") != std::string::npos) {
+        m_dataDirectory = "/afs/cern.ch/work/d/demillar/zprime";
+    }
+    else if (Hostname.find("cyan") != std::string::npos) {
+        m_dataDirectory = "/scratch/dam1g09/zprime";
+    }
+    else {
+        printf("Hostname %s not recognised.\n", Hostname.c_str());
+    }
+    // #elif __APPLE__ || __MACH__
+    // m_dataDirectory = "/Users/declan/Data/Zprime";
+    // #endif
 }
 
 void AnalysisZprime::ResetCounters() {
