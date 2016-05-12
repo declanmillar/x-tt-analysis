@@ -9,7 +9,9 @@ OUT = .
 
 ROOTCFLAGS      = $(shell root-config --cflags)
 ROOTLIBS        = $(shell root-config --libs)
-ifeq ($(UNAME_S),Linux)
+
+HOSTNAME := $(shell hostname)
+ifeq ($(HOSTNAME),Sunder)
 	BOOSTFLAGS      = -isystem /usr/local/Cellar/boost/1.60.0_1/include
 	BOOSTLIBS       = -L /usr/local/Cellar/boost/1.60.0_1/lib -lboost_system -lboost_program_options
 endif
