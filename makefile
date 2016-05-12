@@ -16,7 +16,7 @@ ifeq ($(HOSTNAME),Sunder)
 	BOOSTLIBS       = -L /usr/local/Cellar/boost/1.60.0_1/lib -lboost_system -lboost_program_options
 endif
 ifeq ($(HOSTNAME),cyan03)
-	BOOSTFLAGS      = -isystem /local/software/boost/1.60.0/include
+	BOOSTFLAGS      = -isystem /local/software/boost/1.60.0/include/boost
 	BOOSTLIBS       = -L /local/software/boost/1.60.0/lib -lboost_system -lboost_program_options
 endif
 
