@@ -741,7 +741,7 @@ void AnalysisZprime::GetDataDirectory() {
     // printf("Hostname: %s\n", Hostname.c_str());
 
     if (Hostname == "Sunder") {
-        m_dataDirectory = "/Users/declan/Data/Zprime";
+        m_dataDirectory = "/Users/declan/Data/zprime";
     }
     else if (Hostname.find("lxplus") != std::string::npos) {
         m_dataDirectory = "/afs/cern.ch/work/d/demillar/zprime";
