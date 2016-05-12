@@ -9,8 +9,14 @@ OUT = .
 
 ROOTCFLAGS      = $(shell root-config --cflags)
 ROOTLIBS        = $(shell root-config --libs)
-BOOSTFLAGS      = -isystem /usr/local/Cellar/boost/1.60.0_1/include
-BOOSTLIBS       = -L /usr/local/Cellar/boost/1.60.0_1/lib -lboost_system -lboost_program_options
+ifeq ($(UNAME_S),Linux)
+	BOOSTFLAGS      = -isystem /usr/local/Cellar/boost/1.60.0_1/include
+	BOOSTLIBS       = -L /usr/local/Cellar/boost/1.60.0_1/lib -lboost_system -lboost_program_options
+endif
+ifeq ($(HOSTNAME),cyan03)
+	BOOSTFLAGS      = -isystem /local/software/boost/1.60.0/include
+	BOOSTLIBS       = -L /local/software/boost/1.60.0/lib -lboost_system -lboost_program_options
+endif
 
 C               = g++
 CFLAGS          = -O -Wall -fPIC -ggdb -std=c++11
