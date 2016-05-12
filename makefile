@@ -17,7 +17,7 @@ ifeq ($(HOSTNAME),Sunder)
 endif
 ifeq ($(HOSTNAME),cyan03)
 	BOOSTFLAGS      = -I /local/software/boost/1.60.0/include
-	BOOSTLIBS       = -L /local/software/boost/1.60.0 -lboost_system -lboost_program_options
+	BOOSTLIBS       = -L /local/software/boost/1.60.0/lib -lboost_system -lboost_program_options
 endif
 
 C               = g++
