@@ -29,7 +29,7 @@ AnalysisZprime::AnalysisZprime(const TString model, const TString initial_state,
     nBtags(btags),
     m_discardComplex(discardComplex),
     m_analysisLabel(analysisLabel),
-    m_xsec(true),
+    m_xsec(false),
     m_reco(true),
     m_pi(3.14159265),
     m_GeV(1000.0),
@@ -474,7 +474,7 @@ void AnalysisZprime::MakeGraphs() {
     this->MakeDistribution(h_mtt_Bl, "TeV");
     this->MakeDistribution(h_mt, "TeV");
     this->MakeDistribution(h_mtbar, "TeV");
-    this->MakeDistribution(h_ytt, "TeV");
+    this->MakeDistribution(h_ytt, "");
     this->MakeDistribution(h_cosTheta, "");
     this->MakeDistribution(h_cosThetaStar, "");
     this->MakeDistribution(h_deltaPhi, "rad / #pi");
@@ -634,8 +634,8 @@ bool AnalysisZprime::PassCutsMtt(string type) {
 bool AnalysisZprime::PassCutsEta(string type) {
     if (type == "truth") {
         for (unsigned int i = 0; i < p.size(); i++) {
-            bool outsideCrack = p[i].PseudoRapidity() <= 1.37 || p[i].PseudoRapidity() >= 1.52;
-            bool central      = p[i].PseudoRapidity() <= 2.47;
+            bool outsideCrack = abs(p[i].PseudoRapidity()) <= 1.37 || abs(p[i].PseudoRapidity()) >= 1.52;
+            bool central      = abs(p[i].PseudoRapidity()) <= 2.47;
             bool passesEtaCuts = outsideCrack && central;
             if (passesEtaCuts == false) {
                 UpdateCutflow(c_eta, false);

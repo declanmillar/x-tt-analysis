@@ -25,7 +25,7 @@
 
 class AnalysisZprime{
 public:
-  AnalysisZprime(const TString, const TString, const TString, const TString,  const int energy, const TString options, const int vegasIterations, const string vegasPoints, const bool add_ggG, const bool add_qqG, const int luminosity, const int btags, const bool discardComplex, const TString analysis_label);
+  AnalysisZprime(const TString, const TString, const TString, const TString, const int energy, const TString options, const int vegasIterations, const string vegasPoints, const bool add_ggG, const bool add_qqG, const int luminosity, const int btags, const bool discardComplex, const TString analysis_label);
   virtual ~AnalysisZprime();
   TString GetOutputFilename();
   void SetYttCut(const double);
