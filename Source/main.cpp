@@ -24,6 +24,7 @@ int main(int argc, char* argv[])
       ("verbose,v", po::value<bool>()->default_value(false), "run in verbose mode")
       ("ytt,y", po::value<double>()->default_value(0), "set ytt cut")
       ("xsec,x", po::value<bool>()->default_value(true), "calculate differential cross section")
+      ("fid,F", po::value<bool>()->default_value(true), "calculate fiducial differential cross section")
   ;
   po::variables_map opts;
   po::store(po::parse_command_line(argc, argv, desc), opts);
@@ -47,11 +48,13 @@ int main(int argc, char* argv[])
   bool add_qqG = opts["qqG"].as<bool>();
   double ytt = opts["ytt"].as<double>();
   bool xsec = opts["xsec"].as<bool>();
+  bool fid = opts["fid"].as<bool>();
 
   if (model == "SM" && intermediates == "AZX") intermediates = "AZ";
 
   AnalysisZprime* analysis = new AnalysisZprime(model, initial_state, intermediates, final_state, energy, options, it, points, add_ggG, add_qqG, luminosity, btags, discardComplex, analysisLabel);
   analysis->SetYttCut(ytt);
   analysis->SetXsec(xsec);
+  analysis->SetFiducial(fid);
   analysis->Run();
 }

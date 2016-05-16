@@ -30,6 +30,7 @@ public:
   TString GetOutputFilename();
   void SetYttCut(const double);
   void SetXsec(const bool);
+  void SetFiducial(const bool);
   void Run();
 
 protected:

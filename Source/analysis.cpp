@@ -29,9 +29,7 @@ AnalysisZprime::AnalysisZprime(const TString model, const TString initial_state,
     nBtags(btags),
     m_discardComplex(discardComplex),
     m_analysisLabel(analysisLabel),
-    m_xsec(false),
     m_reco(true),
-    m_fid(true),
     m_pi(3.14159265),
     m_GeV(1000.0),
     m_Wmass(80.23),
@@ -900,7 +898,7 @@ void AnalysisZprime::SetupInputFiles() {
     string eff = to_string(m_efficiency);
     if (m_efficiency < 1.0) m_outputFilename += ".e" + eff.erase(eff.find_last_not_of('0') + 1, string::npos);
     if (m_luminosity > 0) m_outputFilename += ".L" + to_string(m_luminosity);
-    if (m_fid == true) {m_outputFilename += ".fid";} 
+    if (m_fid == true) m_outputFilename += ".fid";
     m_outputFilename += m_analysisLabel;
     m_outputFilename += ".root";
 
@@ -1215,4 +1213,8 @@ void AnalysisZprime::SetYttCut(const double ytt){
 
 void AnalysisZprime::SetXsec(const bool xsec){
     m_xsec = xsec;
+}
+
+void AnalysisZprime::SetFiducial(const bool fid){
+    m_fid = fid;
 }

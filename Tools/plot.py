@@ -201,16 +201,16 @@ if option.f2 == "":
     filename2 = filename
 else:
     filename2 = option.f2
-
-if option.f3 == "":
-    filename3 = filename
-else:
-    filename3 = option.f3
-
-if option.f4 == "":
-    filename4 = filename
-else:
-    filename4 = option.f4
+# 
+# if option.f3 == "":
+#     filename3 = filename
+# else:
+#     filename3 = option.f3
+#
+# if option.f4 == "":
+#     filename4 = filename
+# else:
+#     filename4 = option.f4
 
 if option.h2 == "":
     histname2 = histname
@@ -448,8 +448,8 @@ if option.adjusty:
 if option.significance:
     if filename2 != "":
         sighist2 = PlotSignificance(hist, hist2)
-    if filename3 != "":
-        sighist3 = PlotSignificance(hist3, hist4)
+    # if filename3 != "":
+    #     sighist3 = PlotSignificance(hist3, hist4)
     # if filename4 != "":
     #     sighist4 = PlotSignificance(hist4, hist)
     if option.distribution:
