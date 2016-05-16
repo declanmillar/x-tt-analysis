@@ -109,6 +109,7 @@ private:
   const TString m_analysisLabel;
   bool m_xsec;
   const bool m_reco;
+  bool m_fid;
 
   // Parameters
   float m_pi;

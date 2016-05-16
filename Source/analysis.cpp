@@ -31,6 +31,7 @@ AnalysisZprime::AnalysisZprime(const TString model, const TString initial_state,
     m_analysisLabel(analysisLabel),
     m_xsec(false),
     m_reco(true),
+    m_fid(true),
     m_pi(3.14159265),
     m_GeV(1000.0),
     m_Wmass(80.23),
@@ -632,12 +633,16 @@ bool AnalysisZprime::PassCutsMtt(string type) {
 }
 
 bool AnalysisZprime::PassCutsEta(string type) {
+    if (m_fid == false) {
+        UpdateCutflow(c_eta, true);
+        return true;
+    }
     if (type == "truth") {
         for (unsigned int i = 0; i < p.size(); i++) {
-            bool outsideCrack = abs(p[i].PseudoRapidity()) <= 1.37 || abs(p[i].PseudoRapidity()) >= 1.52;
-            bool central      = abs(p[i].PseudoRapidity()) <= 2.47;
-            bool passesEtaCuts = outsideCrack && central;
-            if (passesEtaCuts == false) {
+            // bool outsideCrack = abs(p[i].PseudoRapidity()) <= 1.37 || abs(p[i].PseudoRapidity()) >= 1.52;
+            bool central = abs(p[i].PseudoRapidity()) <= 2.5;
+            // bool passesEtaCuts = outsideCrack && central;
+            if (central == false) {
                 UpdateCutflow(c_eta, false);
                 return false;
             }
@@ -646,10 +651,10 @@ bool AnalysisZprime::PassCutsEta(string type) {
     }
     else if (type == "R1") {
         for (unsigned int i = 0; i < p_R1.size(); i++) {
-            bool outsideCrack = p_R1[i].PseudoRapidity() <= 1.37 || p_R1[i].PseudoRapidity() >= 1.52;
-            bool central      = p_R1[i].PseudoRapidity() <= 2.47;
-            bool passesEtaCuts = outsideCrack && central;
-            if (passesEtaCuts == false) {
+            // bool outsideCrack = p_R1[i].PseudoRapidity() <= 1.37 || p_R1[i].PseudoRapidity() >= 1.52;
+            bool central = p_R1[i].PseudoRapidity() <= 2.5;
+            // bool passesEtaCuts = outsideCrack && central;
+            if (central == false) {
                 UpdateCutflow(c_eta, false);
                 return false;
             }
@@ -658,10 +663,10 @@ bool AnalysisZprime::PassCutsEta(string type) {
     }
     else if (type == "R2") {
         for (unsigned int i = 0; i < p_R2.size(); i++) {
-            bool outsideCrack = p_R2[i].PseudoRapidity() <= 1.37 || p_R2[i].PseudoRapidity() >= 1.52;
-            bool central      = p_R2[i].PseudoRapidity() <= 2.47;
-            bool passesEtaCuts = outsideCrack && central;
-            if (passesEtaCuts == false) {
+            // bool outsideCrack = p_R2[i].PseudoRapidity() <= 1.37 || p_R2[i].PseudoRapidity() >= 1.52;
+            bool central = p_R2[i].PseudoRapidity() <= 2.5;
+            // bool passesEtaCuts = outsideCrack && central;
+            if (central == false) {
                 UpdateCutflow(c_eta, false);
                 return false;
             }
@@ -674,6 +679,10 @@ bool AnalysisZprime::PassCutsEta(string type) {
 }
 
 bool AnalysisZprime::PassCutsET(string type) {
+    if (m_fid == false) {
+        UpdateCutflow(c_Et, true);
+        return true;
+    }
     if (type == "truth") {
         for(unsigned int i = 0; i < p.size(); i++) {
             if(p[i].Et() <= 25) {
@@ -891,6 +900,7 @@ void AnalysisZprime::SetupInputFiles() {
     string eff = to_string(m_efficiency);
     if (m_efficiency < 1.0) m_outputFilename += ".e" + eff.erase(eff.find_last_not_of('0') + 1, string::npos);
     if (m_luminosity > 0) m_outputFilename += ".L" + to_string(m_luminosity);
+    if (m_fid == true) {m_outputFilename += ".fid";} 
     m_outputFilename += m_analysisLabel;
     m_outputFilename += ".root";
 
