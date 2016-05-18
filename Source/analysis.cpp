@@ -356,13 +356,13 @@ void AnalysisZprime::AsymmetryUncertainty(TH1D* hA, TH1D* h1, TH1D* h2) {
 void AnalysisZprime::CreateHistograms() {
 
     double binWidth = 0.05;
-    double Emin = 2.0;
-    double Emax = 4.0;
+    double Emin = 2.025;
+    double Emax = 3.975;
     double nbins = (Emax - Emin)/binWidth;
 
     h_mtt = new TH1D("mtt", "m_{tt}", nbins, Emin, Emax);
     h_mtt->Sumw2();
-    h_ytt = new TH1D("ytt", "y_{tt}", nbins, -2.5, 2.5);
+    h_ytt = new TH1D("ytt", "y_{tt}", 50, -2.5, 2.5);
     h_ytt->Sumw2();
     h_mt = new TH1D("mt", "m_{t}", nbins, 0, 350);
     h_mt->Sumw2();
@@ -454,7 +454,7 @@ void AnalysisZprime::CreateHistograms() {
         h_mtt_FD->Sumw2();
         h_mtt_BD  = new TH1D("mtt_BD", "m_{tt}^{backward} (reco)", nbins, Emin, Emax);
         h_mtt_BD->Sumw2();
-        h_ytt_R = new TH1D("ytt_R", "y_{tt}^{reco}", nbins, -2.5, 2.5);
+        h_ytt_R = new TH1D("ytt_R", "y_{tt}^{reco}", 50, -2.5, 2.5);
         h_ytt_R->Sumw2();
         h_cosTheta_R = new TH1D("cosTheta_R", "cos#theta_{reco}", nbins, -1.0, 1.0);
         h_cosTheta_R->Sumw2();
