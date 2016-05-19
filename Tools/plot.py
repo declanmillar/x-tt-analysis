@@ -43,12 +43,13 @@ parser.add_option("--ymax", type="float", default = -99.9, action = "store" , he
 parser.add_option("--ytitle", default = "", action = "store" , help = "ytitle")
 parser.add_option("-d", "--distribution", default = True, action = "store_false" , help = "plot distribution")
 parser.add_option("-s", "--significance", default = False, action = "store_true" , help = "plot significance")
+parser.add_option("-S", "--significance2", default = False, action = "store_true" , help = "plot significance for h1/h2 & h3/h4")
 parser.add_option("-l", "--logy", default = False, action = "store_true" , help = "log y axis")
 parser.add_option("-E", "--eps", default = False, action = "store_true" , help = "save plot as eps")
 parser.add_option("-D", "--pdf", default = False, action = "store_true" , help = "save plot as pdf")
 parser.add_option("-o", "--overlap", default = False, action = "store_true" , help = "find overlapping area")
 parser.add_option("-t", "--tag", default = "", action = "store" , help = "add tag to output")
-parser.add_option("-P", "--plot_dir", default = "/Users/declan/Code/declans-research-logbook/plots", action = "store_true" , help = "plot directory")
+parser.add_option("-P", "--plot_dir", default = "/Users/declan/Code/declans-research-logbook/plots", action = "store" , help = "plot directory")
 
 (option, args) = parser.parse_args()
 
@@ -144,6 +145,12 @@ def PlotSignificance(hist, hist2):
 
 if len(args) < 2:
     sys.exit("%s" % usage)
+
+if (option.significance2):
+    option.significance = True
+    option.distribution = False
+    option.z2 = True
+    option.z4 = True
 
 draw_option = "e2 hist same" if option.errors else "hist same"
 if option.legend_bottom:
@@ -282,7 +289,8 @@ try:
          hist.SetFillColor(color1)
          hist.SetFillStyle(3354)
     hist.DrawCopy("e2 same")
-    legend.AddEntry(hist, labelname1)
+    if not (option.significance2):
+        legend.AddEntry(hist, labelname1)
 
 except:
     sys.exit("Error: check %s contains histogram '%s'" % (filename, histname))
@@ -324,7 +332,8 @@ if option.f2 != "" or option.h2 != "":
             hist2.SetFillColor(color2)
             hist2.SetFillStyle(3354)
         hist2.DrawCopy("e2 same")
-        legend.AddEntry(hist2, labelname2)
+        if not (option.significance2):
+            legend.AddEntry(hist2, labelname2)
     except ReferenceError:
         sys.exit("ReferenceError: check %s contains histogram '%s'" % (filename2, histname))
 
@@ -365,7 +374,8 @@ if option.f3 != "" or option.h3 != "":
             hist3.SetFillColor(color3)
             hist3.SetFillStyle(3354)
         hist3.DrawCopy("e2 same")
-        legend.AddEntry(hist3, labelname3)
+        if not (option.significance2):
+            legend.AddEntry(hist3, labelname3)
     except ReferenceError:
         sys.exit("ReferenceError: check %s contains histogram '%s'" % (filename3, histname))
 
@@ -406,7 +416,8 @@ if option.f4 != "" or option.h4 != "":
             hist4.SetFillColor(color4)
             hist4.SetFillStyle(3354)
         hist4.DrawCopy("e2 same")
-        legend.AddEntry(hist4, labelname4)
+        if not (option.significance2):
+            legend.AddEntry(hist4, labelname4)
     except ReferenceError:
         sys.exit("ReferenceError: check %s contains histogram '%s'" % (filename4, histname))
 
