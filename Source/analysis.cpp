@@ -855,10 +855,6 @@ void AnalysisZprime::Loop() {
 
 AnalysisZprime::~AnalysisZprime() {delete m_inputFiles;}
 
-void AnalysisZprime::SetupOutputFiles() {
-    m_outputFile = new TFile(m_outputFilename,"RECREATE");
-}
-
 void AnalysisZprime::SetupInputFiles() {
     m_inputFiles = new vector<TString>;
     m_weightFiles = new vector<TString>;
@@ -892,10 +888,15 @@ void AnalysisZprime::SetupInputFiles() {
             exit(exists);
         }
     }
+}
 
+void AnalysisZprime::SetupOutputFiles() {
     TString outfilename;
     TString initial_state = m_initial_state;
     TString intermediates = m_intermediates;
+    string E = "";
+    if (m_energy != 13) "_" + to_string(m_energy);
+    
     if (m_add_ggG || m_add_qqG) intermediates = "G" + intermediates;
     if (m_add_ggG) initial_state = "gg" + initial_state;
     outfilename = m_dataDirectory + "/" + m_model + "_" + initial_state + "-" + intermediates + "-" + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
@@ -914,6 +915,7 @@ void AnalysisZprime::SetupInputFiles() {
 
     printf("--- Output ---\n");
     printf("%s\n", m_outputFilename.Data());
+    m_outputFile = new TFile(m_outputFilename,"RECREATE");
 }
 
 Long64_t AnalysisZprime::TotalEvents() {
