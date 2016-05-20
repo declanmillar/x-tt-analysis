@@ -284,6 +284,13 @@ try:
     hist.SetLineColor(color1)
     hist.SetMarkerColor(color1)
     hist.SetMarkerStyle(0)
+
+    # temporary!
+    if option.ytitle != "":
+        hist.GetYaxis().SetTitle(option.ytitle)
+        # hist.GetYaxis().SetTitle("Expected events with L = 300fb^{-1}")
+
+
     hist.DrawCopy("h hist")
     if not option.z1:
          hist.SetFillColor(color1)
@@ -545,6 +552,8 @@ if option.significance:
     if filename2 != "":
         sighist2.Draw("HIST")
         legend.AddEntry(sighist2, labelname1)
+        if option.ytitle != "":
+            sighist2.GetYaxis().SetTitle(option.ytitle)
     if filename3 != "":
         sighist3.Draw("HIST SAME")
         legend.AddEntry(sighist3, labelname2)
@@ -559,8 +568,12 @@ siglabel = ""
 if option.distribution is False and option.significance is True:
     siglabel += "_sig"
 
+outfilename = filename
+outfilename = option.plot_dir + "/" + histname + siglabel + "_" + os.path.splitext(filename)[0] + option.tag
+print outfilename
+
 if option.eps:
-    canvas.SaveAs("%s/%s%s_%s%s.eps" % (option.plot_dir,histname, siglabel,filename,option.tag))
+    canvas.SaveAs("%s.eps" % outfilename)
 
 if option.pdf:
-    canvas.SaveAs("%s/%s%s_%s%s.pdf" % (option.plot_dir,histname,siglabel, filename,option.tag))
+    canvas.SaveAs("%s.pdf" % outfilename)
