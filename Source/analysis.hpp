@@ -22,6 +22,7 @@
 #include <boost/program_options.hpp>
 #include <unistd.h>
 #include <limits.h>
+#include <sys/stat.h>
 
 class AnalysisZprime{
 public:

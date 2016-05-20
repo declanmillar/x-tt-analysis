@@ -883,6 +883,16 @@ void AnalysisZprime::SetupInputFiles() {
     m_inputFiles->push_back(filename + ".root");
     m_weightFiles->push_back(filename + ".log");
 
+    for (Itr_s i = m_inputFiles->begin(); i != m_inputFiles->end(); ++i) {
+        bool exists;
+        struct stat buffer;
+        exists = stat ((*i).Data(), &buffer) == 0;
+        if (exists == false) {
+            printf("Error: %s does not exist.\n", (*i).Data());
+            exit(exists);
+        }
+    }
+
     TString outfilename;
     TString initial_state = m_initial_state;
     TString intermediates = m_intermediates;
