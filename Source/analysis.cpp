@@ -242,7 +242,7 @@ void AnalysisZprime::EachEvent() {
         if (cosThetaStar < 0) h_mtt_B->Fill(mtt, weight);
 
         if (cosTheta1 > 0) h_mtt_Fl->Fill(mtt, weight);
-        if (cosTheta2 > 0) h_mtt_Bl->Fill(mtt, weight);
+        if (cosTheta1 < 0) h_mtt_Bl->Fill(mtt, weight);
 
         h2_mtt_deltaPhi->Fill(mtt, deltaPhi, weight);
         h2_mtt_cosTheta1->Fill(mtt, cosTheta1, weight);
@@ -383,15 +383,15 @@ void AnalysisZprime::CreateHistograms() {
     h_KT = new TH1D("KT", "K_{T}", nbins, 0, 4);
     h_KT->Sumw2();
 
-    h_deltaPhi = new TH1D("deltaPhi", "#Delta#phi", nbins, 0, 1);
+    h_deltaPhi = new TH1D("deltaPhi", "#Delta#phi", 10, 0, 1);
     h_deltaPhi->Sumw2();
     h_pzNu = new TH1D("pzNu", "p_{z}^{#nu}", nbins, -500.0, 500.0);
     h_pzNu->Sumw2();
-    h_cosTheta1 = new TH1D("cosTheta1", "cos#theta_{l+}", nbins, -1.0, 1.0);
+    h_cosTheta1 = new TH1D("cosTheta1", "cos#theta_{l+}", 20, -1.0, 1.0);
     h_cosTheta1->Sumw2();
-    h_cosTheta2 = new TH1D("cosTheta2", "cos#theta_{l-}", nbins, -1.0, 1.0);
+    h_cosTheta2 = new TH1D("cosTheta2", "cos#theta_{l-}", 20, -1.0, 1.0);
     h_cosTheta2->Sumw2();
-    h_cos1cos2 = new TH1D("cos1cos2", "cos#theta_{l+}cos#theta_{l-}", nbins, -1.0, 1.0);
+    h_cos1cos2 = new TH1D("cos1cos2", "cos#theta_{l+}cos#theta_{l-}", 20, -1.0, 1.0);
     h_cos1cos2->Sumw2();
 
     h_mtt_Fl = new TH1D("mtt_Fl", "m_{tt}^{F,l}", nbins, Emin, Emax);
@@ -399,24 +399,24 @@ void AnalysisZprime::CreateHistograms() {
     h_mtt_Bl = new TH1D("mtt_Bl", "m_{tt}^{B,l}", nbins, Emin, Emax);
     h_mtt_Bl->Sumw2();
 
-    h2_mtt_deltaPhi = new TH2D("mtt_delta_phi", "m_{tt} #Delta#phi_{l}", nbins, Emin, Emax, nbins, 0, 1);
+    h2_mtt_deltaPhi = new TH2D("mtt_delta_phi", "m_{tt} #Delta#phi_{l}", nbins, Emin, Emax, 10, 0, 1);
     h2_mtt_deltaPhi->GetXaxis()->SetTitle("m_{tt}");
     h2_mtt_deltaPhi->GetYaxis()->SetTitle("#Delta#phi_{l}");
-    h2_mtt_cosTheta1 = new TH2D("mtt_cosThetalp", "m_{tt} cos#theta_{l+}", nbins, Emin, Emax, nbins, -1.0, 1.0);
+    h2_mtt_cosTheta1 = new TH2D("mtt_cosThetalp", "m_{tt} cos#theta_{l+}", nbins, Emin, Emax, 20, -1.0, 1.0);
     h2_mtt_cosTheta1->GetXaxis()->SetTitle("m_{tt}");
     h2_mtt_cosTheta1->GetYaxis()->SetTitle("cos#theta_{l+}");
-    h2_mtt_cosTheta2 = new TH2D("mtt_cosThetalm", "m_{tt} cos#theta_{l-}", nbins, Emin, Emax, nbins, -1.0, 1.0);
+    h2_mtt_cosTheta2 = new TH2D("mtt_cosThetalm", "m_{tt} cos#theta_{l-}", nbins, Emin, Emax, 20, -1.0, 1.0);
     h2_mtt_cosTheta2->GetXaxis()->SetTitle("m_{tt}");
     h2_mtt_cosTheta2->GetYaxis()->SetTitle("cos#theta_{l-}");
-    h2_mtt_cos1cos2 = new TH2D("mtt_coslpcoslm", "m_{tt} cos#theta_{l+}cos#theta_{l-}", nbins, Emin, Emax, nbins, -1.0, 1.0);
+    h2_mtt_cos1cos2 = new TH2D("mtt_coslpcoslm", "m_{tt} cos#theta_{l+}cos#theta_{l-}", nbins, Emin, Emax, 20, -1.0, 1.0);
     h2_mtt_cos1cos2->GetXaxis()->SetTitle("m_{tt}");
     h2_mtt_cos1cos2->GetYaxis()->SetTitle("cos#theta_{l+}cos#theta_{l-}");
 
-    h2_HT_deltaPhi = new TH2D("HT_delta_phi", "H_{T} #Delta#phi_{l}", nbins, 0, 4, nbins, 0, 1);
+    h2_HT_deltaPhi = new TH2D("HT_delta_phi", "H_{T} #Delta#phi_{l}", nbins, 0, 4, 10, 0, 1);
     h2_HT_deltaPhi->GetXaxis()->SetTitle("H_{T} [TeV]");
     h2_HT_deltaPhi->GetYaxis()->SetTitle("#Delta#phi_{l} [rad] / #pi");
 
-    h2_KT_deltaPhi = new TH2D("KT_delta_phi", "K_{T} #Delta#phi_{l}", nbins, 0, 4, nbins, 0, 1);
+    h2_KT_deltaPhi = new TH2D("KT_delta_phi", "K_{T} #Delta#phi_{l}", nbins, 0, 4, 10, 0, 1);
     h2_KT_deltaPhi->GetXaxis()->SetTitle("K_{T} [TeV]");
     h2_KT_deltaPhi->GetYaxis()->SetTitle("#Delta#phi_{l} [rad] / #pi");
 
@@ -896,7 +896,7 @@ void AnalysisZprime::SetupOutputFiles() {
     TString intermediates = m_intermediates;
     string E = "";
     if (m_energy != 13) "_" + to_string(m_energy);
-    
+
     if (m_add_ggG || m_add_qqG) intermediates = "G" + intermediates;
     if (m_add_ggG) initial_state = "gg" + initial_state;
     outfilename = m_dataDirectory + "/" + m_model + "_" + initial_state + "-" + intermediates + "-" + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
