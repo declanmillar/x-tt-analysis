@@ -394,9 +394,9 @@ void AnalysisZprime::CreateHistograms() {
     h_cos1cos2 = new TH1D("cos1cos2", "cos#theta_{l+}cos#theta_{l-}", 20, -1.0, 1.0);
     h_cos1cos2->Sumw2();
 
-    h_mtt_Fl = new TH1D("mtt_Fl", "m_{tt}^{F,l}", nbins, Emin, Emax);
+    h_mtt_Fl = new TH1D("mtt_Fl", "m_{tt}^{F,l}", 19, 2.05, 3.95);
     h_mtt_Fl->Sumw2();
-    h_mtt_Bl = new TH1D("mtt_Bl", "m_{tt}^{B,l}", nbins, Emin, Emax);
+    h_mtt_Bl = new TH1D("mtt_Bl", "m_{tt}^{B,l}", 19, 2.05, 3.95);
     h_mtt_Bl->Sumw2();
 
     h2_mtt_deltaPhi = new TH2D("mtt_delta_phi", "m_{tt} #Delta#phi_{l}", nbins, Emin, Emax, 10, 0, 1);
@@ -493,7 +493,7 @@ void AnalysisZprime::MakeGraphs() {
     h_mtt_Bn = (TH1D*) h_mtt_B->Clone("h_mtt_Bn");
     h_mtt_Bn->Divide(h_mtt);
 
-    h_AFB = this->Asymmetry("AFB", "A^{*}_{FB}", h_mtt_F, h_mtt_B);
+    h_AFB = this->Asymmetry("AFB", "A_{FB}*", h_mtt_F, h_mtt_B);
     h_AFB->GetYaxis()->SetTitle(h_AFB->GetTitle());
     h_AFB->GetXaxis()->SetTitle("m_{tt} [TeV]");
 

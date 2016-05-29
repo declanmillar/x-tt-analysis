@@ -30,6 +30,7 @@ parser.add_option("--z1", default = False, action = "store_true" , help = "set f
 parser.add_option("--z2", default = False, action = "store_true" , help = "set second errors to zero")
 parser.add_option("--z3", default = False, action = "store_true" , help = "set third errors to zero")
 parser.add_option("--z4", default = False, action = "store_true" , help = "set fourth errors to zero")
+parser.add_option("--legend_centre", default = False, action = "store_true" , help = "put legend at centre")
 parser.add_option("--legend_bottom", default = False, action = "store_true" , help = "put legend at bottom")
 parser.add_option("--legend_left", default = False, action = "store_true" , help = "put legend on left")
 parser.add_option("--legend_bottom_left", default = False, action = "store_true" , help = "put legend on bottom left")
@@ -41,8 +42,10 @@ parser.add_option("--xmax", type="float", default = -99.9, action = "store" , he
 parser.add_option("--ymin", type="float", default = -99.9, action = "store" , help = "ymin")
 parser.add_option("--ymax", type="float", default = -99.9, action = "store" , help = "ymax")
 parser.add_option("--ytitle", default = "", action = "store" , help = "ytitle")
+parser.add_option("--xtitle", default = "", action = "store" , help = "xtitle")
 parser.add_option("-d", "--distribution", default = True, action = "store_false" , help = "plot distribution")
 parser.add_option("-s", "--significance", default = False, action = "store_true" , help = "plot significance")
+parser.add_option("-C", "--combined", default = False, action = "store_true" , help = "plot combined significance")
 parser.add_option("-S", "--significance2", default = False, action = "store_true" , help = "plot significance for h1/h2 & h3/h4")
 parser.add_option("-l", "--logy", default = False, action = "store_true" , help = "log y axis")
 parser.add_option("-E", "--eps", default = False, action = "store_true" , help = "save plot as eps")
@@ -50,6 +53,7 @@ parser.add_option("-D", "--pdf", default = False, action = "store_true" , help =
 parser.add_option("-o", "--overlap", default = False, action = "store_true" , help = "find overlapping area")
 parser.add_option("-t", "--tag", default = "", action = "store" , help = "add tag to output")
 parser.add_option("-P", "--plot_dir", default = "/Users/declan/Code/declans-research-logbook/plots", action = "store" , help = "plot directory")
+parser.add_option("-T", "--texbox", default = "", action = "store" , help = "add tag texbox")
 
 (option, args) = parser.parse_args()
 
@@ -156,11 +160,13 @@ draw_option = "e2 hist same" if option.errors else "hist same"
 if option.legend_bottom:
     legend = ROOT.TLegend(0.7, 0.20, 0.9, 0.4, "")
 elif option.legend_left:
-    legend = ROOT.TLegend(0.15, 0.6, 0.45, 0.9, "")
+    legend = ROOT.TLegend(0.15, 0.65, 0.45, 0.85, "")
 elif option.legend_bottom_left:
-    legend = ROOT.TLegend(0.15, 0.2, 0.4, 0.4, "")
+    legend = ROOT.TLegend(0.15, 0.2, 0.35, 0.4, "")
+elif option.legend_centre:
+    legend = ROOT.TLegend(0.45, 0.7, 0.65, 0.9, "")
 else:
-    legend = ROOT.TLegend(0.7, 0.7, 0.9, 0.9, "")
+    legend = ROOT.TLegend(0.6, 0.6, 0.9, 0.8, "")
 
 # canvas
 canvas = ROOT.TCanvas("canvas","canvas", 1920, 1080)
@@ -185,6 +191,11 @@ bottom_margin = 0.12
 upper_pad.SetMargin(left_margin, right_margin, bottom_margin, top_margin)
 upper_pad.Draw()
 upper_pad.cd()
+
+# texbox2 = ROOT.TLatex()
+# texbox2.SetTextColor(ROOT.kBlack)
+# texbox2.SetTextFont(72)
+# texbox2.DrawLatex(0.5,0.5,"FUCKING BORK")
 
 histname = str(args[0])
 filename = str(args[1])
@@ -236,10 +247,13 @@ else:
 
 
 
-color3 = ROOT.kSpring-7
-color1 = ROOT.kRed-7
-color2 = ROOT.kAzure-7
-color4 = ROOT.kGray+2 # ROOT.kViolet-7
+# color2 = ROOT.kSpring-7
+# color1 = ROOT.kRed-7
+color1 = ROOT.kOrange+7
+color4 = ROOT.kAzure-7
+color3 = ROOT.kCyan+3
+color2 = ROOT.kGray+1 # ROOT.kViolet-7
+# color3 = ROOT.kPink-3
 
 if os.path.isfile("%s" % filename) is False:
   sys.exit("%s does not exist" % filename)
@@ -288,6 +302,10 @@ try:
     # temporary!
     if option.ytitle != "":
         hist.GetYaxis().SetTitle(option.ytitle)
+        # hist.GetYaxis().SetTitle("Expected events with L = 300fb^{-1}")
+
+    if option.xtitle != "":
+        hist.GetXaxis().SetTitle(option.xtitle)
         # hist.GetYaxis().SetTitle("Expected events with L = 300fb^{-1}")
 
 
@@ -461,7 +479,7 @@ if option.adjusty:
         min_value = min_value - min_value*0.2
     else:
         min_value = 0
-    hist.GetYaxis().SetRangeUser(min_value, max_value);
+    hist.GetYaxis().SetRangeUser(min_value, max_value)
 
 if option.significance:
     if filename2 != "":
@@ -528,6 +546,11 @@ if option.overlap:
     texBox = ROOT.TLatex(0.5,0.5, SigOverlap)
     texBox.Draw()
 
+
+
+canvas.Draw()
+
+
 xmin = option.xmin
 xmax = option.xmax
 if xmin != -99.9 and xmax != -99.9:
@@ -549,17 +572,64 @@ if option.significance:
         lower_pad.SetRightMargin(right_margin)
         lower_pad.SetLeftMargin(left_margin)
         lower_pad.cd()
+    combhist = hist.Clone()
+    for i in range(1,sighist2.GetNbinsX()):
+        if i == 0:
+            continue
+        s2 = sighist2.GetBinContent(i)
+        s3 = sighist3.GetBinContent(i)
+        comb = math.sqrt(s3*s3 + s2*s2)
+        combhist.SetBinContent(i, comb)
+    FuckYouTLatexYouCunt = hist.Clone()
+    FuckYouTLatexYouCunt.SetLineColor(ROOT.kWhite)
+    FuckYouTLatexYouCunt.SetFillStyle(0)
+    FuckYouTLatexYouCunt.SetFillColor(0)
+    FuckYouTLatexYouCunt.SetLineStyle(0)
+    FuckYouTLatexYouCunt.SetMarkerColor(0)
+    FuckYouTLatexYouCunt.SetMarkerStyle(0)
+    legend.AddEntry(FuckYouTLatexYouCunt,"Model: GLR-R")
+    legend.AddEntry(FuckYouTLatexYouCunt," ")
+    if option.combined:
+        combhist.SetLineColor(ROOT.kOrange+7)
+        combhist.SetLineStyle(2)
+        combhist.SetMarkerColor(0)
+        combhist.SetMarkerStyle(0)
+        # combhist.SetFillColor(color1)
+        combhist.SetFillStyle(0)
+        combhist.SetFillColor(0)
+        combhist.GetXaxis().SetLabelSize(0.05)
+        combhist.GetXaxis().SetTickLength(0.1)
+        combhist.GetXaxis().SetLabelOffset(0.01)
+        combhist.GetXaxis().SetTitleOffset(1.0)
+        combhist.GetXaxis().SetTitleSize(0.05)
+        combhist.GetYaxis().SetLabelSize(0.05)
+        combhist.GetYaxis().SetLabelOffset(0.01)
+        combhist.GetYaxis().SetTitleOffset(0.8)
+        combhist.GetYaxis().SetTitleSize(0.05)
+        combhist.SetTitle("Combined")
+        # legend.AddEntry(combhist, "Combined")
+        combhist.Draw("HIST")
     if filename2 != "":
+        sighist2.SetFillStyle(3354)
         sighist2.Draw("HIST")
         legend.AddEntry(sighist2, labelname1)
         if option.ytitle != "":
             sighist2.GetYaxis().SetTitle(option.ytitle)
     if filename3 != "":
+        # sighist3.SetFillStyle(3354)
         sighist3.Draw("HIST SAME")
         legend.AddEntry(sighist3, labelname2)
-    # if filename4 != "":
-    #     sighist4.Draw("HIST SAME")
-    legend.Draw()
+
+    if option.combined:
+        legend.AddEntry(combhist, "Combined")
+
+# texbox2 = ROOT.TLatex()
+# texbox2.SetTextColor(ROOT.kBlack)
+# texbox2.SetTextFont(72)
+# texbox2.DrawLatex(0.5,0.5,"FUCKING BORK")
+
+legend.Draw()
+
 
 if option.pause:
     raw_input()
