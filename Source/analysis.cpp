@@ -860,24 +860,35 @@ void AnalysisZprime::SetupInputFiles() {
     m_weightFiles = new vector<TString>;
     TString filename;
 
-    string E = "";
-    if (m_energy != 13) "_" + to_string(m_energy);
+    // string E = "";
+    // if (m_energy != 13) "_" + to_string(m_energy);
+    //
+    // if (m_add_ggG) {
+    //   filename = m_dataDirectory + "/SM_" + "gg-G-" + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
+    //   m_inputFiles->push_back(filename + ".root");
+    //   m_weightFiles->push_back(filename + ".log");
+    // }
+    //
+    // if (m_add_qqG) {
+    //   filename = m_dataDirectory + "/SM_" + "qq-G-" + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
+    //   m_inputFiles->push_back(filename + ".root");
+    //   m_weightFiles->push_back(filename + ".log");
+    // }
+    //
+    // filename = m_dataDirectory + "/" + m_model + "_" + m_initial_state + "-" + m_intermediates + "-" + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
+    // m_inputFiles->push_back(filename + ".root");
+    // m_weightFiles->push_back(filename + ".log");
 
-    if (m_add_ggG) {
-      filename = m_dataDirectory + "/SM_" + "gg-G-" + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
-      m_inputFiles->push_back(filename + ".root");
-      m_weightFiles->push_back(filename + ".log");
-    }
-
-    if (m_add_qqG) {
-      filename = m_dataDirectory + "/SM_" + "qq-G-" + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
-      m_inputFiles->push_back(filename + ".root");
-      m_weightFiles->push_back(filename + ".log");
-    }
-
-    filename = m_dataDirectory + "/" + m_model + "_" + m_initial_state + "-" + m_intermediates + "-" + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
+    filename = "SM_qq-G-tt-bbllvv_0-2_5x10M";
     m_inputFiles->push_back(filename + ".root");
     m_weightFiles->push_back(filename + ".log");
+    // filename = "SM_qq-G-tt-bbllvv_2-4_5x10M"
+    // m_inputFiles->push_back(filename + ".root");
+    // m_weightFiles->push_back(filename + ".log");
+    // filename = "SM_qq-G-tt-bbllvv_4-13_5x10M"
+    // m_inputFiles->push_back(filename + ".root");
+    // m_weightFiles->push_back(filename + ".log");
+
 
     for (Itr_s i = m_inputFiles->begin(); i != m_inputFiles->end(); ++i) {
         bool exists;
@@ -892,25 +903,28 @@ void AnalysisZprime::SetupInputFiles() {
 
 void AnalysisZprime::SetupOutputFiles() {
     TString outfilename;
-    TString initial_state = m_initial_state;
-    TString intermediates = m_intermediates;
-    string E = "";
-    if (m_energy != 13) "_" + to_string(m_energy);
+    // TString initial_state = m_initial_state;
+    // TString intermediates = m_intermediates;
+    // string E = "";
+    // if (m_energy != 13) "_" + to_string(m_energy);
 
-    if (m_add_ggG || m_add_qqG) intermediates = "G" + intermediates;
-    if (m_add_ggG) initial_state = "gg" + initial_state;
-    outfilename = m_dataDirectory + "/" + m_model + "_" + initial_state + "-" + intermediates + "-" + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
+
+    outfilename = "SM_qq-G-tt-bbllvv_0-13_5x10M";
+
+    // if (m_add_ggG || m_add_qqG) intermediates = "G" + intermediates;
+    // if (m_add_ggG) initial_state = "gg" + initial_state;
+    // outfilename = m_dataDirectory + "/" + m_model + "_" + initial_state + "-" + intermediates + "-" + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
     m_outputFilename = outfilename + ".a";
 
-    if (m_reco && nBtags != 2) m_outputFilename += ".b" + to_string(nBtags) + ".c" + BoolToString(m_discardComplex);
-    string ytt = to_string(m_ytt);
-    if (m_ytt > 0) m_outputFilename += ".y" + ytt.erase(ytt.find_last_not_of('0') + 1, string::npos);
-    if (m_Emin >= 0 || m_Emax >= 0) m_outputFilename += ".E" + to_string(m_Emin) + "-" + to_string(m_Emax);
-    string eff = to_string(m_efficiency);
-    if (m_efficiency < 1.0) m_outputFilename += ".e" + eff.erase(eff.find_last_not_of('0') + 1, string::npos);
-    if (m_luminosity > 0) m_outputFilename += ".L" + to_string(m_luminosity);
-    if (m_fid == true) m_outputFilename += ".fid";
-    m_outputFilename += m_analysisLabel;
+    // if (m_reco && nBtags != 2) m_outputFilename += ".b" + to_string(nBtags) + ".c" + BoolToString(m_discardComplex);
+    // string ytt = to_string(m_ytt);
+    // if (m_ytt > 0) m_outputFilename += ".y" + ytt.erase(ytt.find_last_not_of('0') + 1, string::npos);
+    // if (m_Emin >= 0 || m_Emax >= 0) m_outputFilename += ".E" + to_string(m_Emin) + "-" + to_string(m_Emax);
+    // string eff = to_string(m_efficiency);
+    // if (m_efficiency < 1.0) m_outputFilename += ".e" + eff.erase(eff.find_last_not_of('0') + 1, string::npos);
+    // if (m_luminosity > 0) m_outputFilename += ".L" + to_string(m_luminosity);
+    // if (m_fid == true) m_outputFilename += ".fid";
+    // m_outputFilename += m_analysisLabel;
     m_outputFilename += ".root";
 
     printf("--- Output ---\n");
