@@ -356,8 +356,8 @@ void AnalysisZprime::AsymmetryUncertainty(TH1D* hA, TH1D* h1, TH1D* h2) {
 void AnalysisZprime::CreateHistograms() {
 
     double binWidth = 0.05;
-    double Emin = 2.025;
-    double Emax = 3.975;
+    double Emin = 0;
+    double Emax = 13;
     double nbins = (Emax - Emin)/binWidth;
 
     h_mtt = new TH1D("mtt", "m_{tt}", nbins, Emin, Emax);
