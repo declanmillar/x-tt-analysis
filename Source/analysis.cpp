@@ -879,7 +879,7 @@ void AnalysisZprime::SetupInputFiles() {
     // m_inputFiles->push_back(filename + ".root");
     // m_weightFiles->push_back(filename + ".log");
 
-    filename = "SM_qq-G-tt-bbllvv_0-2_5x10M";
+    filename = m_dataDirectory + "/" + "SM_qq-G-tt-bbllvv_0-2_5x10M";
     m_inputFiles->push_back(filename + ".root");
     m_weightFiles->push_back(filename + ".log");
     // filename = "SM_qq-G-tt-bbllvv_2-4_5x10M"
@@ -909,7 +909,7 @@ void AnalysisZprime::SetupOutputFiles() {
     // if (m_energy != 13) "_" + to_string(m_energy);
 
 
-    outfilename = "SM_qq-G-tt-bbllvv_0-13_5x10M";
+    outfilename = m_dataDirectory + "/" + "SM_qq-G-tt-bbllvv_0-13_5x10M";
 
     // if (m_add_ggG || m_add_qqG) intermediates = "G" + intermediates;
     // if (m_add_ggG) initial_state = "gg" + initial_state;
