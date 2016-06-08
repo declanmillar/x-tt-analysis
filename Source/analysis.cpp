@@ -244,12 +244,13 @@ void AnalysisZprime::EachEvent() {
         if (cosTheta1 > 0) h_mtt_Fl->Fill(mtt, weight);
         if (cosTheta1 < 0) h_mtt_Bl->Fill(mtt, weight);
 
-        h2_mtt_deltaPhi->Fill(mtt, deltaPhi, weight);
-        h2_mtt_cosTheta1->Fill(mtt, cosTheta1, weight);
-        h2_mtt_cosTheta2->Fill(mtt, cosTheta2, weight);
-        h2_mtt_cos1cos2->Fill(mtt, cos1cos2, weight);
-        h2_HT_deltaPhi->Fill(HT, deltaPhi, weight);
-        h2_KT_deltaPhi->Fill(KT, deltaPhi, weight);
+        h2_mtt_cosThetaStar->Fill(mtt, cosThetaStar, weight);
+        // h2_mtt_deltaPhi->Fill(mtt, deltaPhi, weight);
+        // h2_mtt_cosTheta1->Fill(mtt, cosTheta1, weight);
+        // h2_mtt_cosTheta2->Fill(mtt, cosTheta2, weight);
+        // h2_mtt_cos1cos2->Fill(mtt, cos1cos2, weight);
+        // h2_HT_deltaPhi->Fill(HT, deltaPhi, weight);
+        // h2_KT_deltaPhi->Fill(KT, deltaPhi, weight);
 
         if(m_reco) {
             if(this->PassCuts("R1")) {
@@ -262,6 +263,7 @@ void AnalysisZprime::EachEvent() {
                 h_pzNu_R->Fill(p_R1[3].Pz(), weight_R);
                 if (cosThetaStar_R1 > 0) h_mtt_FR->Fill(mtt_R1, weight_R);
                 if (cosThetaStar_R1 < 0) h_mtt_BR->Fill(mtt_R1, weight_R);
+                h2_mtt_cosThetaStar_R->Fill(mtt_R1, cosThetaStar_R1, weight_R);
             }
             if(this->PassCuts("R2")) {
                 h_mtt_R->Fill(mtt_R2, weight_R);
@@ -273,7 +275,7 @@ void AnalysisZprime::EachEvent() {
                 h_pzNu_R->Fill(p_R2[5].Pz(), weight_R);
                 if (cosThetaStar_R2 > 0) h_mtt_FR->Fill(mtt_R2, weight_R);
                 if (cosThetaStar_R2 < 0) h_mtt_BR->Fill(mtt_R2, weight_R);
-
+                h2_mtt_cosThetaStar_R->Fill(mtt_R2, cosThetaStar_R2, weight_R);
             }
         }
     }
@@ -356,8 +358,8 @@ void AnalysisZprime::AsymmetryUncertainty(TH1D* hA, TH1D* h1, TH1D* h2) {
 void AnalysisZprime::CreateHistograms() {
 
     double binWidth = 0.05;
-    double Emin = 0;
-    double Emax = 13;
+    double Emin = 2.025;
+    double Emax = 3.975;
     double nbins = (Emax - Emin)/binWidth;
 
     h_mtt = new TH1D("mtt", "m_{tt}", nbins, Emin, Emax);
@@ -398,6 +400,14 @@ void AnalysisZprime::CreateHistograms() {
     h_mtt_Fl->Sumw2();
     h_mtt_Bl = new TH1D("mtt_Bl", "m_{tt}^{B,l}", 19, 2.05, 3.95);
     h_mtt_Bl->Sumw2();
+
+    h2_mtt_cosThetaStar = new TH2D("mtt_costhetastar", "m_{tt} cos#theta^*", nbins, Emin, Emax, 20, -1.0, 1.0);
+    h2_mtt_cosThetaStar->GetXaxis()->SetTitle("m_{tt}");
+    h2_mtt_cosThetaStar->GetYaxis()->SetTitle("cos#theta^*");
+
+    h2_mtt_cosThetaStar_R = new TH2D("mtt_costhetastar_r", "m_{tt} cos#theta^* (reco)", nbins, Emin, Emax, 20, -1.0, 1.0);
+    h2_mtt_cosThetaStar_R->GetXaxis()->SetTitle("m_{tt} (reco)");
+    h2_mtt_cosThetaStar_R->GetYaxis()->SetTitle("cos#theta^* (reco)");
 
     h2_mtt_deltaPhi = new TH2D("mtt_delta_phi", "m_{tt} #Delta#phi_{l}", nbins, Emin, Emax, 10, 0, 1);
     h2_mtt_deltaPhi->GetXaxis()->SetTitle("m_{tt}");
@@ -559,6 +569,29 @@ void AnalysisZprime::MakeDistribution(TH1D* h, TString units) {
     h->Write();
 }
 
+void AnalysisZprime::Make2dDistribution(TH2D* h) {
+    double sigma, N, dN;
+    int k;
+    if (m_xsec && m_useLumi) {
+        for (int i = 1; i < h->GetNbinsX() + 1; i++) {
+            for (int j = 1; j < h->GetNbinsY() + 1; j++) {
+                k = h->GetBin(i,j);
+                sigma = h->GetBinContent(k);
+                N = m_luminosity*m_efficiency*sigma;
+                h->SetBinContent(i, N);
+                dN = sqrt(N);
+                h->SetBinError(i, dN);
+                printf("%i, %i\n", i,j);
+            }
+        }
+        h->GetZaxis()->SetTitle("Expected events");
+    }
+    else h->Scale(1,"width");
+    m_outputFile->cd();
+    m_outputFile->cd("/");
+    h->Write();
+}
+
 void AnalysisZprime::WriteHistograms() {
     m_outputFile->cd();
     m_outputFile->cd("/");
@@ -568,12 +601,23 @@ void AnalysisZprime::WriteHistograms() {
     h_AFB->Write();
     h_Ap->Write();
 
-    h2_mtt_deltaPhi->Write();
-    h2_mtt_cosTheta1->Write();
-    h2_mtt_cosTheta2->Write();
-    h2_mtt_cos1cos2->Write();
-    h2_HT_deltaPhi->Write();
-    h2_KT_deltaPhi->Write();
+    // h2_mtt_deltaPhi->Write();
+    // h2_mtt_cosTheta1->Write();
+    // h2_mtt_cosTheta2->Write();
+    // h2_mtt_cos1cos2->Write();
+    // h2_HT_deltaPhi->Write();
+    // h2_KT_deltaPhi->Write();
+    // h2_mtt_cosThetaStar->Write();
+    // h2_mtt_cosThetaStar_R->Write();
+
+    // this->Make2dDistribution(h2_mtt_deltaPhi);
+    // this->Make2dDistribution(h2_mtt_cosTheta1);
+    // this->Make2dDistribution(h2_mtt_cosTheta2);
+    // this->Make2dDistribution(h2_mtt_cos1cos2);
+    // this->Make2dDistribution(h2_HT_deltaPhi);
+    // this->Make2dDistribution(h2_KT_deltaPhi);
+    this->Make2dDistribution(h2_mtt_cosThetaStar);
+    this->Make2dDistribution(h2_mtt_cosThetaStar_R);
 
     for (int i = 0; i < (int) h_deltaRs.size(); i++)
         h_deltaRs[i]->Write();
@@ -860,8 +904,8 @@ void AnalysisZprime::SetupInputFiles() {
     m_weightFiles = new vector<TString>;
     TString filename;
 
-    // string E = "";
-    // if (m_energy != 13) "_" + to_string(m_energy);
+    string E = "";
+    if (m_energy != 13) "_" + to_string(m_energy);
     //
     // if (m_add_ggG) {
     //   filename = m_dataDirectory + "/SM_" + "gg-G-" + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
@@ -881,7 +925,7 @@ void AnalysisZprime::SetupInputFiles() {
 
     filename = m_dataDirectory + "/" + "SM_qq-G-tt-bbllvv_0-2_5x10M";
     m_inputFiles->push_back(filename + ".root");
-    m_weightFiles->push_back(filename + ".log");
+    // m_weightFiles->push_back(filename + ".log");
     // filename = "SM_qq-G-tt-bbllvv_2-4_5x10M"
     // m_inputFiles->push_back(filename + ".root");
     // m_weightFiles->push_back(filename + ".log");
@@ -903,28 +947,28 @@ void AnalysisZprime::SetupInputFiles() {
 
 void AnalysisZprime::SetupOutputFiles() {
     TString outfilename;
-    // TString initial_state = m_initial_state;
-    // TString intermediates = m_intermediates;
-    // string E = "";
-    // if (m_energy != 13) "_" + to_string(m_energy);
+    TString initial_state = m_initial_state;
+    TString intermediates = m_intermediates;
+    string E = "";
+    if (m_energy != 13) "_" + to_string(m_energy);
 
 
-    outfilename = m_dataDirectory + "/" + "SM_qq-G-tt-bbllvv_0-13_5x10M";
+    // outfilename = m_dataDirectory + "/" + "SM_qq-G-tt-bbllvv_0-13_5x10M";
 
-    // if (m_add_ggG || m_add_qqG) intermediates = "G" + intermediates;
-    // if (m_add_ggG) initial_state = "gg" + initial_state;
-    // outfilename = m_dataDirectory + "/" + m_model + "_" + initial_state + "-" + intermediates + "-" + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
+    if (m_add_ggG || m_add_qqG) intermediates = "G" + intermediates;
+    if (m_add_ggG) initial_state = "gg" + initial_state;
+    outfilename = m_dataDirectory + "/" + m_model + "_" + initial_state + "-" + intermediates + "-" + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
     m_outputFilename = outfilename + ".a";
 
-    // if (m_reco && nBtags != 2) m_outputFilename += ".b" + to_string(nBtags) + ".c" + BoolToString(m_discardComplex);
-    // string ytt = to_string(m_ytt);
-    // if (m_ytt > 0) m_outputFilename += ".y" + ytt.erase(ytt.find_last_not_of('0') + 1, string::npos);
-    // if (m_Emin >= 0 || m_Emax >= 0) m_outputFilename += ".E" + to_string(m_Emin) + "-" + to_string(m_Emax);
-    // string eff = to_string(m_efficiency);
-    // if (m_efficiency < 1.0) m_outputFilename += ".e" + eff.erase(eff.find_last_not_of('0') + 1, string::npos);
-    // if (m_luminosity > 0) m_outputFilename += ".L" + to_string(m_luminosity);
-    // if (m_fid == true) m_outputFilename += ".fid";
-    // m_outputFilename += m_analysisLabel;
+    if (m_reco && nBtags != 2) m_outputFilename += ".b" + to_string(nBtags) + ".c" + BoolToString(m_discardComplex);
+    string ytt = to_string(m_ytt);
+    if (m_ytt > 0) m_outputFilename += ".y" + ytt.erase(ytt.find_last_not_of('0') + 1, string::npos);
+    if (m_Emin >= 0 || m_Emax >= 0) m_outputFilename += ".E" + to_string(m_Emin) + "-" + to_string(m_Emax);
+    string eff = to_string(m_efficiency);
+    if (m_efficiency < 1.0) m_outputFilename += ".e" + eff.erase(eff.find_last_not_of('0') + 1, string::npos);
+    if (m_luminosity > 0) m_outputFilename += ".L" + to_string(m_luminosity);
+    if (m_fid == true) m_outputFilename += ".fid";
+    m_outputFilename += m_analysisLabel;
     m_outputFilename += ".root";
 
     printf("--- Output ---\n");

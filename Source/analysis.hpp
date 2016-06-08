@@ -50,6 +50,7 @@ protected:
   void CreateHistograms();
   void MakeGraphs();
   void MakeDistribution(TH1D* h, TString units);
+  void Make2dDistribution(TH2D* h2);
   void WriteHistograms();
   void CheckResults();
   void CheckPerformance();
@@ -284,6 +285,9 @@ private:
   TH1D* h_KT;
 
   // 2D histograms
+  TH2D* h2_mtt_cosThetaStar;
+  TH2D* h2_mtt_cosThetaStar_R;
+
   TH2D* h2_mtt_deltaPhi;
   TH2D* h2_mtt_cosTheta1;
   TH2D* h2_mtt_cosTheta2;
