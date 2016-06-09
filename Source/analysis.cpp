@@ -401,11 +401,11 @@ void AnalysisZprime::CreateHistograms() {
     h_mtt_Bl = new TH1D("mtt_Bl", "m_{tt}^{B,l}", 19, 2.05, 3.95);
     h_mtt_Bl->Sumw2();
 
-    h2_mtt_cosThetaStar = new TH2D("mtt_costhetastar", "m_{tt} cos#theta^*", nbins, Emin, Emax, 20, -1.0, 1.0);
+    h2_mtt_cosThetaStar = new TH2D("mtt_costhetastar", "m_{tt} cos#theta^{*}", nbins, Emin, Emax, 2, -1.0, 1.0);
     h2_mtt_cosThetaStar->GetXaxis()->SetTitle("m_{tt}");
     h2_mtt_cosThetaStar->GetYaxis()->SetTitle("cos#theta^*");
 
-    h2_mtt_cosThetaStar_R = new TH2D("mtt_costhetastar_r", "m_{tt} cos#theta^* (reco)", nbins, Emin, Emax, 20, -1.0, 1.0);
+    h2_mtt_cosThetaStar_R = new TH2D("mtt_costhetastar_r", "m_{tt} cos#theta^{*} (reco)", nbins, Emin, Emax, 2, -1.0, 1.0);
     h2_mtt_cosThetaStar_R->GetXaxis()->SetTitle("m_{tt} (reco)");
     h2_mtt_cosThetaStar_R->GetYaxis()->SetTitle("cos#theta^* (reco)");
 
@@ -581,7 +581,6 @@ void AnalysisZprime::Make2dDistribution(TH2D* h) {
                 h->SetBinContent(i, N);
                 dN = sqrt(N);
                 h->SetBinError(i, dN);
-                printf("%i, %i\n", i,j);
             }
         }
         h->GetZaxis()->SetTitle("Expected events");
@@ -906,25 +905,25 @@ void AnalysisZprime::SetupInputFiles() {
 
     string E = "";
     if (m_energy != 13) "_" + to_string(m_energy);
-    //
-    // if (m_add_ggG) {
-    //   filename = m_dataDirectory + "/SM_" + "gg-G-" + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
-    //   m_inputFiles->push_back(filename + ".root");
-    //   m_weightFiles->push_back(filename + ".log");
-    // }
-    //
-    // if (m_add_qqG) {
-    //   filename = m_dataDirectory + "/SM_" + "qq-G-" + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
-    //   m_inputFiles->push_back(filename + ".root");
-    //   m_weightFiles->push_back(filename + ".log");
-    // }
-    //
-    // filename = m_dataDirectory + "/" + m_model + "_" + m_initial_state + "-" + m_intermediates + "-" + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
-    // m_inputFiles->push_back(filename + ".root");
-    // m_weightFiles->push_back(filename + ".log");
 
-    filename = m_dataDirectory + "/" + "SM_qq-G-tt-bbllvv_0-2_5x10M";
+    if (m_add_ggG) {
+      filename = m_dataDirectory + "/SM_" + "gg-G-" + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
+      m_inputFiles->push_back(filename + ".root");
+      m_weightFiles->push_back(filename + ".log");
+    }
+
+    if (m_add_qqG) {
+      filename = m_dataDirectory + "/SM_" + "qq-G-" + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
+      m_inputFiles->push_back(filename + ".root");
+      m_weightFiles->push_back(filename + ".log");
+    }
+
+    filename = m_dataDirectory + "/" + m_model + "_" + m_initial_state + "-" + m_intermediates + "-" + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
     m_inputFiles->push_back(filename + ".root");
+    m_weightFiles->push_back(filename + ".log");
+
+    // filename = m_dataDirectory + "/" + "SM_qq-G-tt-bbllvv_0-2_5x10M";
+    // m_inputFiles->push_back(filename + ".root");
     // m_weightFiles->push_back(filename + ".log");
     // filename = "SM_qq-G-tt-bbllvv_2-4_5x10M"
     // m_inputFiles->push_back(filename + ".root");
