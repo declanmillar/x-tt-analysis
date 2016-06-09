@@ -578,9 +578,9 @@ void AnalysisZprime::Make2dDistribution(TH2D* h) {
                 k = h->GetBin(i,j);
                 sigma = h->GetBinContent(k);
                 N = m_luminosity*m_efficiency*sigma;
-                h->SetBinContent(i, N);
+                h->SetBinContent(k, N);
                 dN = sqrt(N);
-                h->SetBinError(i, dN);
+                h->SetBinError(k, dN);
             }
         }
         h->GetZaxis()->SetTitle("Expected events");
