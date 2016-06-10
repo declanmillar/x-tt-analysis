@@ -6,25 +6,24 @@ int main(int argc, char* argv[])
 {
   po::options_description desc("Allowed options");
   desc.add_options()
-      ("help", "produce help message")
-      ("final_state,f", po::value<string>()->default_value("tt-bbllvv"), "final state")
-      ("initial_state,i", po::value<string>()->default_value("qq"), "initial state")
-      ("intermediates,I", po::value<string>()->default_value("AZX"), "intermediate particles")
-      ("model,m", po::value<string>()->default_value("SM"), "model")
-      ("options,o", po::value<string>()->default_value("_"), "options")
-      ("label,l", po::value<string>()->default_value(""), "labeTS")
-      ("energy,E", po::value<int>()->default_value(13), "energy")
-      ("itmx,N", po::value<int>()->default_value(5), "vegas iterations")
-      ("points,n", po::value<string>()->default_value("10M"), "vegas points")
-      ("btags,b", po::value<int>()->default_value(2), "btags")
-      ("luminosity,L", po::value<double>()->default_value(-1), "luminosity")
-      ("discard,d", po::value<bool>()->default_value(false)->implicit_value(true), "discard complex")
-      ("ggG,g", po::value<bool>()->default_value(true)->implicit_value(false), "add qqG")
-      ("qqG,q", po::value<bool>()->default_value(true)->implicit_value(false), "add qqG")
-      ("verbose,v", po::value<bool>()->default_value(false)->implicit_value(true), "run in verbose mode")
-      ("ytt,y", po::value<double>()->default_value(0), "set ytt cut")
-      ("xsec,x", po::value<bool>()->default_value(true)->implicit_value(false), "calculate differential cross section")
-      ("fid,F", po::value<bool>()->default_value(false)->implicit_value(true), "calculate fiducial differential cross section")
+    ("btags,b", po::value<int>()->default_value(2))
+    ("discard,d", po::value<bool>()->default_value(false)->implicit_value(true))
+    ("energy,E", po::value<int>()->default_value(13))
+    ("fid,F", po::value<bool>()->default_value(false)->implicit_value(true))
+    ("final_state,f", po::value<string>()->default_value("tt-bbllvv"))
+    ("ggG,g", po::value<bool>()->default_value(true)->implicit_value(false))
+    ("intermediates,I", po::value<string>()->default_value("AZX"))
+    ("initial_state,i", po::value<string>()->default_value("qq"))
+    ("luminosity,L", po::value<double>()->default_value(-1))
+    ("model,m", po::value<string>()->default_value("SM"))
+    ("itmx,N", po::value<int>()->default_value(5))
+    ("points,n", po::value<string>()->default_value("10M"))
+    ("options,o", po::value<string>()->default_value("_"))
+    ("qqG,q", po::value<bool>()->default_value(true)->implicit_value(false))
+    ("tag,t", po::value<string>()->default_value(""))
+    ("verbose,v", po::value<bool>()->default_value(false)->implicit_value(true))
+    ("xsec,x", po::value<bool>()->default_value(true)->implicit_value(false))
+    ("ytt,y", po::value<double>()->default_value(0))
   ;
   po::variables_map opts;
   po::store(po::parse_command_line(argc, argv, desc), opts);
@@ -37,7 +36,7 @@ int main(int argc, char* argv[])
   TString intermediates = opts["intermediates"].as<string>();
   TString model = opts["model"].as<string>();
   TString options = opts["options"].as<string>();
-  TString analysisLabel = opts["label"].as<string>();
+  TString analysisLabel = opts["tag"].as<string>();
   int energy = opts["energy"].as<int>();
   int it = opts["itmx"].as<int>();
   string points = opts["points"].as<string>();

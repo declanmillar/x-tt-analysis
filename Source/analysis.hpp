@@ -8,6 +8,7 @@
 #include <cmath>
 #include <TString.h>
 #include <TH2.h>
+#include <TF1.h>
 #include "TLorentzVector.h"
 #include "TVector2.h"
 #include "TBrowser.h"
@@ -50,7 +51,7 @@ protected:
   void CreateHistograms();
   void MakeGraphs();
   void MakeDistribution(TH1D* h, TString units);
-  void Make2dDistribution(TH2D* h2);
+  void Make2dDistribution(TH2D* h2, bool);
   void WriteHistograms();
   void CheckResults();
   void CheckPerformance();

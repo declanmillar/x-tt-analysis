@@ -91,9 +91,6 @@ void AnalysisZprime::EachEvent() {
         Patop += patop[i];
     }
 
-    // printf("Total momentum of top decay products in top rest frame: %f\n", (ptop[0] + ptop[2] + ptop[3]).Pz());
-    // printf("Total momentum of top decay products in top rest frame: %f\n", patop[1] + patop[4] +patop[5]);
-
     if (m_reco) {
         p_R1 = this->ReconstructSemiLeptonic(p, 1); // top decays leptonically
         p_R2 = this->ReconstructSemiLeptonic(p, -1); // top decays hadronically
@@ -246,7 +243,7 @@ void AnalysisZprime::EachEvent() {
 
         h2_mtt_cosThetaStar->Fill(mtt, cosThetaStar, weight);
         // h2_mtt_deltaPhi->Fill(mtt, deltaPhi, weight);
-        // h2_mtt_cosTheta1->Fill(mtt, cosTheta1, weight);
+        h2_mtt_cosTheta1->Fill(mtt, cosTheta1, weight);
         // h2_mtt_cosTheta2->Fill(mtt, cosTheta2, weight);
         // h2_mtt_cos1cos2->Fill(mtt, cos1cos2, weight);
         // h2_HT_deltaPhi->Fill(HT, deltaPhi, weight);
@@ -358,8 +355,8 @@ void AnalysisZprime::AsymmetryUncertainty(TH1D* hA, TH1D* h1, TH1D* h2) {
 void AnalysisZprime::CreateHistograms() {
 
     double binWidth = 0.05;
-    double Emin = 0;
-    double Emax = 13;
+    double Emin = 2.025;
+    double Emax = 3.975;
     double nbins = (Emax - Emin)/binWidth;
 
     h_mtt = new TH1D("mtt", "m_{tt}", nbins, Emin, Emax);
@@ -389,11 +386,11 @@ void AnalysisZprime::CreateHistograms() {
     h_deltaPhi->Sumw2();
     h_pzNu = new TH1D("pzNu", "p_{z}^{#nu}", nbins, -500.0, 500.0);
     h_pzNu->Sumw2();
-    h_cosTheta1 = new TH1D("cosTheta1", "cos#theta_{l+}", 20, -1.0, 1.0);
+    h_cosTheta1 = new TH1D("cosTheta1", "cos#theta_{l+}", 10, -1.0, 1.0);
     h_cosTheta1->Sumw2();
-    h_cosTheta2 = new TH1D("cosTheta2", "cos#theta_{l-}", 20, -1.0, 1.0);
+    h_cosTheta2 = new TH1D("cosTheta2", "cos#theta_{l-}", 10, -1.0, 1.0);
     h_cosTheta2->Sumw2();
-    h_cos1cos2 = new TH1D("cos1cos2", "cos#theta_{l+}cos#theta_{l-}", 20, -1.0, 1.0);
+    h_cos1cos2 = new TH1D("cos1cos2", "cos#theta_{l+}cos#theta_{l-}", 10, -1.0, 1.0);
     h_cos1cos2->Sumw2();
 
     h_mtt_Fl = new TH1D("mtt_Fl", "m_{tt}^{F,l}", 19, 2.05, 3.95);
@@ -404,31 +401,42 @@ void AnalysisZprime::CreateHistograms() {
     h2_mtt_cosThetaStar = new TH2D("mtt_costhetastar", "m_{tt} cos#theta^{*}", nbins, Emin, Emax, 2, -1.0, 1.0);
     h2_mtt_cosThetaStar->GetXaxis()->SetTitle("m_{tt}");
     h2_mtt_cosThetaStar->GetYaxis()->SetTitle("cos#theta^*");
+    h2_mtt_cosThetaStar->Sumw2();
 
     h2_mtt_cosThetaStar_R = new TH2D("mtt_costhetastar_r", "m_{tt} cos#theta^{*} (reco)", nbins, Emin, Emax, 2, -1.0, 1.0);
     h2_mtt_cosThetaStar_R->GetXaxis()->SetTitle("m_{tt} (reco)");
     h2_mtt_cosThetaStar_R->GetYaxis()->SetTitle("cos#theta^* (reco)");
+    h2_mtt_cosThetaStar_R->Sumw2();
 
     h2_mtt_deltaPhi = new TH2D("mtt_delta_phi", "m_{tt} #Delta#phi_{l}", nbins, Emin, Emax, 10, 0, 1);
     h2_mtt_deltaPhi->GetXaxis()->SetTitle("m_{tt}");
     h2_mtt_deltaPhi->GetYaxis()->SetTitle("#Delta#phi_{l}");
-    h2_mtt_cosTheta1 = new TH2D("mtt_cosThetalp", "m_{tt} cos#theta_{l+}", nbins, Emin, Emax, 20, -1.0, 1.0);
+    h2_mtt_deltaPhi->Sumw2();
+
+    h2_mtt_cosTheta1 = new TH2D("mtt_cosThetalp", "m_{tt} cos#theta_{l+}", nbins, Emin, Emax, 10, -1.0, 1.0);
     h2_mtt_cosTheta1->GetXaxis()->SetTitle("m_{tt}");
     h2_mtt_cosTheta1->GetYaxis()->SetTitle("cos#theta_{l+}");
-    h2_mtt_cosTheta2 = new TH2D("mtt_cosThetalm", "m_{tt} cos#theta_{l-}", nbins, Emin, Emax, 20, -1.0, 1.0);
+    h2_mtt_cosTheta1->Sumw2();
+
+    h2_mtt_cosTheta2 = new TH2D("mtt_cosThetalm", "m_{tt} cos#theta_{l-}", nbins, Emin, Emax, 10, -1.0, 1.0);
     h2_mtt_cosTheta2->GetXaxis()->SetTitle("m_{tt}");
     h2_mtt_cosTheta2->GetYaxis()->SetTitle("cos#theta_{l-}");
-    h2_mtt_cos1cos2 = new TH2D("mtt_coslpcoslm", "m_{tt} cos#theta_{l+}cos#theta_{l-}", nbins, Emin, Emax, 20, -1.0, 1.0);
+    h2_mtt_cosTheta2->Sumw2();
+
+    h2_mtt_cos1cos2 = new TH2D("mtt_coslpcoslm", "m_{tt} cos#theta_{l+}cos#theta_{l-}", nbins, Emin, Emax, 10, -1.0, 1.0);
     h2_mtt_cos1cos2->GetXaxis()->SetTitle("m_{tt}");
     h2_mtt_cos1cos2->GetYaxis()->SetTitle("cos#theta_{l+}cos#theta_{l-}");
+    h2_mtt_cos1cos2->Sumw2();
 
     h2_HT_deltaPhi = new TH2D("HT_delta_phi", "H_{T} #Delta#phi_{l}", nbins, 0, 4, 10, 0, 1);
     h2_HT_deltaPhi->GetXaxis()->SetTitle("H_{T} [TeV]");
     h2_HT_deltaPhi->GetYaxis()->SetTitle("#Delta#phi_{l} [rad] / #pi");
+    h2_HT_deltaPhi->Sumw2();
 
     h2_KT_deltaPhi = new TH2D("KT_delta_phi", "K_{T} #Delta#phi_{l}", nbins, 0, 4, 10, 0, 1);
     h2_KT_deltaPhi->GetXaxis()->SetTitle("K_{T} [TeV]");
     h2_KT_deltaPhi->GetYaxis()->SetTitle("#Delta#phi_{l} [rad] / #pi");
+    h2_KT_deltaPhi->Sumw2();
 
     vector<string> deltaRnames, deltaRtitles;
     vector<string> particles1 = {"b1", "b2", "l", "v", "q1", "q2"};
@@ -569,15 +577,16 @@ void AnalysisZprime::MakeDistribution(TH1D* h, TString units) {
     h->Write();
 }
 
-void AnalysisZprime::Make2dDistribution(TH2D* h) {
-    double sigma, N, dN;
+void AnalysisZprime::Make2dDistribution(TH2D* h, bool normaliseY = false) {
+    double sigma, N, dN, integral = 1;
     int k;
     if (m_xsec && m_useLumi) {
         for (int i = 1; i < h->GetNbinsX() + 1; i++) {
+            if (normaliseY) integral = h->Integral(i, i, 1, h->GetNbinsY());
             for (int j = 1; j < h->GetNbinsY() + 1; j++) {
                 k = h->GetBin(i,j);
                 sigma = h->GetBinContent(k);
-                N = m_luminosity*m_efficiency*sigma;
+                N = m_luminosity*m_efficiency*sigma/integral;
                 h->SetBinContent(k, N);
                 dN = sqrt(N);
                 h->SetBinError(k, dN);
@@ -600,17 +609,17 @@ void AnalysisZprime::WriteHistograms() {
     h_AFB->Write();
     h_Ap->Write();
 
-    // h2_mtt_deltaPhi->Write();
-    // h2_mtt_cosTheta1->Write();
-    // h2_mtt_cosTheta2->Write();
-    // h2_mtt_cos1cos2->Write();
-    // h2_HT_deltaPhi->Write();
-    // h2_KT_deltaPhi->Write();
-    // h2_mtt_cosThetaStar->Write();
-    // h2_mtt_cosThetaStar_R->Write();
-
     // this->Make2dDistribution(h2_mtt_deltaPhi);
-    // this->Make2dDistribution(h2_mtt_cosTheta1);
+    this->Make2dDistribution(h2_mtt_cosTheta1, true);
+    // printf("min = %f\n", h2_mtt_cosTheta1->GetXaxis()->GetBinLowEdge(1));
+    // printf("max = %f\n", h2_mtt_cosTheta1->GetXaxis()->GetBinUpEdge(h2_mtt_cosTheta1->GetXaxis()->GetLast()));
+    TF1 *func = new TF1("func", "[0]*x + [1]", -1, 1);
+    TObjArray slices;
+    h2_mtt_cosTheta1->FitSlicesY(func, 0, -1, 0, "QRN", &slices);
+    for (auto slice : slices) {
+        slice->Write();
+    }
+    slices.Clear();
     // this->Make2dDistribution(h2_mtt_cosTheta2);
     // this->Make2dDistribution(h2_mtt_cos1cos2);
     // this->Make2dDistribution(h2_HT_deltaPhi);
