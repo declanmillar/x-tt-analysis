@@ -147,6 +147,8 @@ def PlotSignificance(hist, hist2):
 #     except:
 #         sys.exit("Error: check %s contains histogram '%s'" % (filename, histname))
 
+# print "INFO! Scaling all histograms by 0.2"
+
 if len(args) < 2:
     sys.exit("%s" % usage)
 
@@ -158,15 +160,15 @@ if (option.significance2):
 
 draw_option = "e2 hist same" if option.errors else "hist same"
 if option.legend_bottom:
-    legend = ROOT.TLegend(0.7, 0.20, 0.9, 0.4, "")
+    legend = ROOT.TLegend(0.7, 0.2, 0.9, 0.4, "")
 elif option.legend_left:
-    legend = ROOT.TLegend(0.15, 0.65, 0.45, 0.85, "")
+    legend = ROOT.TLegend(0.15, 0.65, 0.35, 0.85, "")
 elif option.legend_bottom_left:
     legend = ROOT.TLegend(0.15, 0.2, 0.35, 0.4, "")
 elif option.legend_centre:
     legend = ROOT.TLegend(0.45, 0.7, 0.65, 0.9, "")
 else:
-    legend = ROOT.TLegend(0.6, 0.6, 0.9, 0.8, "")
+    legend = ROOT.TLegend(0.7, 0.7, 0.9, 0.9, "")
 
 # canvas
 canvas = ROOT.TCanvas("canvas","canvas", 1920, 1080)
@@ -251,8 +253,8 @@ else:
 # color1 = ROOT.kRed-7
 color1 = ROOT.kOrange+7
 color4 = ROOT.kAzure-7
-color3 = ROOT.kCyan+3
-color2 = ROOT.kGray+1 # ROOT.kViolet-7
+color2 = ROOT.kCyan+3
+color3 = ROOT.kGray+1 # ROOT.kViolet-7
 # color3 = ROOT.kPink-3
 
 if os.path.isfile("%s" % filename) is False:
@@ -262,6 +264,7 @@ if not file1.IsOpen():
     print "failed to open %s\n" % filename
 try:
     hist = file1.Get(histname)
+    # hist.Scale(0.2)
     if option.significance:
         hist.GetXaxis().SetLabelSize(0)
         # hist.GetXaxis().SetTickLength(0)
@@ -328,6 +331,7 @@ if option.f2 != "" or option.h2 != "":
         print "failed to open %s\n" % filename2
     try:
         hist2 = file2.Get(histname2)
+        # hist2.Scale(0.2)
         if xmin != -99.9 and xmax != -99.9:
             hist2.GetXaxis().SetRangeUser(xmin, xmax)
         if option.l2 != "":
@@ -370,6 +374,7 @@ if option.f3 != "" or option.h3 != "":
         print "failed to open %s\n" % filename3
     try:
         hist3 = file3.Get(histname3)
+        # hist3.Scale(0.2)
         if xmin != -99.9 and xmax != -99.9:
             hist3.GetXaxis().SetRangeUser(xmin, xmax)
         if option.l3 != "":
@@ -398,6 +403,8 @@ if option.f3 != "" or option.h3 != "":
         if not option.z3:
             hist3.SetFillColor(color3)
             hist3.SetFillStyle(3354)
+        else:
+            hist3.SetFillStyle(1)
         hist3.DrawCopy("e2 same")
         if not (option.significance2):
             legend.AddEntry(hist3, labelname3)

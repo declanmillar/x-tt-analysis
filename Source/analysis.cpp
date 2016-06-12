@@ -386,11 +386,11 @@ void AnalysisZprime::CreateHistograms() {
     h_deltaPhi->Sumw2();
     h_pzNu = new TH1D("pzNu", "p_{z}^{#nu}", nbins, -500.0, 500.0);
     h_pzNu->Sumw2();
-    h_cosTheta1 = new TH1D("cosTheta1", "cos#theta_{l+}", 10, -1.0, 1.0);
+    h_cosTheta1 = new TH1D("cosTheta1", "cos#theta_{l+}", 20, -1.0, 1.0);
     h_cosTheta1->Sumw2();
-    h_cosTheta2 = new TH1D("cosTheta2", "cos#theta_{l-}", 10, -1.0, 1.0);
+    h_cosTheta2 = new TH1D("cosTheta2", "cos#theta_{l-}", 20, -1.0, 1.0);
     h_cosTheta2->Sumw2();
-    h_cos1cos2 = new TH1D("cos1cos2", "cos#theta_{l+}cos#theta_{l-}", 10, -1.0, 1.0);
+    h_cos1cos2 = new TH1D("cos1cos2", "cos#theta_{l+}cos#theta_{l-}", 20, -1.0, 1.0);
     h_cos1cos2->Sumw2();
 
     h_mtt_Fl = new TH1D("mtt_Fl", "m_{tt}^{F,l}", 19, 2.05, 3.95);
@@ -413,17 +413,17 @@ void AnalysisZprime::CreateHistograms() {
     h2_mtt_deltaPhi->GetYaxis()->SetTitle("#Delta#phi_{l}");
     h2_mtt_deltaPhi->Sumw2();
 
-    h2_mtt_cosTheta1 = new TH2D("mtt_cosThetalp", "m_{tt} cos#theta_{l+}", nbins, Emin, Emax, 10, -1.0, 1.0);
+    h2_mtt_cosTheta1 = new TH2D("mtt_cosThetalp", "m_{tt} cos#theta_{l+}", nbins, Emin, Emax, 20, -1.0, 1.0);
     h2_mtt_cosTheta1->GetXaxis()->SetTitle("m_{tt}");
     h2_mtt_cosTheta1->GetYaxis()->SetTitle("cos#theta_{l+}");
     h2_mtt_cosTheta1->Sumw2();
 
-    h2_mtt_cosTheta2 = new TH2D("mtt_cosThetalm", "m_{tt} cos#theta_{l-}", nbins, Emin, Emax, 10, -1.0, 1.0);
+    h2_mtt_cosTheta2 = new TH2D("mtt_cosThetalm", "m_{tt} cos#theta_{l-}", nbins, Emin, Emax, 20, -1.0, 1.0);
     h2_mtt_cosTheta2->GetXaxis()->SetTitle("m_{tt}");
     h2_mtt_cosTheta2->GetYaxis()->SetTitle("cos#theta_{l-}");
     h2_mtt_cosTheta2->Sumw2();
 
-    h2_mtt_cos1cos2 = new TH2D("mtt_coslpcoslm", "m_{tt} cos#theta_{l+}cos#theta_{l-}", nbins, Emin, Emax, 10, -1.0, 1.0);
+    h2_mtt_cos1cos2 = new TH2D("mtt_coslpcoslm", "m_{tt} cos#theta_{l+}cos#theta_{l-}", nbins, Emin, Emax, 20, -1.0, 1.0);
     h2_mtt_cos1cos2->GetXaxis()->SetTitle("m_{tt}");
     h2_mtt_cos1cos2->GetYaxis()->SetTitle("cos#theta_{l+}cos#theta_{l-}");
     h2_mtt_cos1cos2->Sumw2();
@@ -523,8 +523,6 @@ void AnalysisZprime::MakeGraphs() {
         h_deltaR->GetYaxis()->SetTitle("d#sigma / d #Delta R");
         h_deltaR->GetXaxis()->SetTitle("#Delta R");
     }
-
-
 
     if(m_reco) {
         this->MakeDistribution(h_mtt_R, "TeV");
