@@ -51,7 +51,8 @@ protected:
   void CreateHistograms();
   void MakeGraphs();
   void MakeDistribution(TH1D* h, TString units);
-  void Make2dDistribution(TH2D* h2, bool);
+  void Make2dDistribution(TH2D*);
+  void NormalizeSliceY(TH2D*);
   void WriteHistograms();
   void CheckResults();
   void CheckPerformance();
@@ -187,6 +188,8 @@ private:
   vector<TLorentzVector> p_R2;
   vector<TLorentzVector> pcm_R1;
   vector<TLorentzVector> pcm_R2;
+  vector<TLorentzVector> ptop_R1;
+  vector<TLorentzVector> patop_R2;
 
   // Event 4-vectors
   TLorentzVector P;
@@ -284,6 +287,9 @@ private:
   // transverse
   TH1D* h_HT;
   TH1D* h_KT;
+  TH1D* h_AL1;
+  TH1D* h_AL2;
+  TH1D* h_AL_R;
 
   // 2D histograms
   TH2D* h2_mtt_cosThetaStar;
@@ -292,6 +298,7 @@ private:
   TH2D* h2_mtt_deltaPhi;
   TH2D* h2_mtt_cosTheta1;
   TH2D* h2_mtt_cosTheta2;
+  TH2D* h2_mtt_cosThetal_R;
   TH2D* h2_mtt_cos1cos2;
 
   TH2D* h2_HT_deltaPhi;
