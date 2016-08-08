@@ -44,6 +44,7 @@ parser.add_option("--ymax", type="float", default = -99.9, action = "store" , he
 parser.add_option("--ytitle", default = "", action = "store" , help = "ytitle")
 parser.add_option("--xtitle", default = "", action = "store" , help = "xtitle")
 parser.add_option("-d", "--distribution", default = True, action = "store_false" , help = "plot distribution")
+parser.add_option("-O", "--draw_option", default = "h hist", action = "store" , help = "draw option")
 parser.add_option("-s", "--significance", default = False, action = "store_true" , help = "plot significance")
 parser.add_option("-C", "--combined", default = False, action = "store_true" , help = "plot combined significance")
 parser.add_option("-S", "--significance2", default = False, action = "store_true" , help = "plot significance for h1/h2 & h3/h4")
@@ -67,7 +68,7 @@ def BinsMatch(hist, hist2):
     return True
 
 def ZeroErrors(hist):
-    for i in range(1,sighist.GetNbinsX()):
+    for i in range(1,sighist.GetNbinsX()+1):
         hist.SetBinError(i, 0)
     return
 
@@ -76,7 +77,7 @@ def PlotSignificance(hist, hist2):
       print "Warning: bins do not match."
     name = hist.GetName() + "_sig"
     sighist = hist.Clone(name)
-    for i in range(1,sighist.GetNbinsX()):
+    for i in range(1,sighist.GetNbinsX()+1):
         if i == 0:
             continue
         n = hist.GetBinContent(i)
@@ -99,55 +100,7 @@ def PlotSignificance(hist, hist2):
     # hist.GetYaxis().SetNdivisions(3)
     return sighist
 
-# def PlotDistribution(hist, file, color, normalise, label, xmin, xmax):
-#     try:
-#         hist = file.Get(histname)
-#         if option.significance:
-#             hist.GetXaxis().SetLabelSize(0)
-#             # hist.GetXaxis().SetTickLength(0)
-#             hist.GetXaxis().SetLabelOffset(999)
-#             hist.GetXaxis().SetTitleOffset(999)
-#         xmin = option.xmin
-#         xmax = option.xmax
-#         if xmin != -99.9 and xmax != -99.9:
-#             hist.GetXaxis().SetRangeUser(xmin, xmax)
-#         ymin = option.ymin
-#         ymax = option.ymax
-#         if ymin != -99.9 and ymax != -99.9:
-#             hist.GetYaxis().SetRangeUser(ymin, ymax)
-#
-#         if option.l1 != "":
-#             labelname1 = option.l1
-#         else:
-#             if option.f2 == "" and option.h2 != "":
-#                 labelname1 = hist.GetTitle()
-#             else:
-#                 labelname1 = filename
-#         if option.z1:
-#             for i in range(1,hist.GetNbinsX()):
-#                 hist.SetBinError(i,0)
-#         if option.normalise:
-#             ytitle = hist.GetYaxis().GetTitle()
-#             # print hist.Integral()
-#             if ytitle == "Events" or "AFB" in histname:
-#                 ytitle = "Normalised " + ytitle
-#             else:
-#                 ytitle = "1/#sigma #times " + ytitle
-#             hist.GetYaxis().SetTitle(ytitle)
-#             hist.Scale(1.0/abs(hist.Integral()))
-#         hist.SetLineColor(color1)
-#         hist.SetMarkerColor(color1)
-#         hist.SetMarkerStyle(0)
-#         hist.DrawCopy("h hist")
-#         hist.SetFillColor(color1)
-#         hist.SetFillStyle(3354)
-#         hist.DrawCopy("e2 same")
-#         # legend.AddEntry(hist, labelname1)
-#
-#     except:
-#         sys.exit("Error: check %s contains histogram '%s'" % (filename, histname))
-
-# print "INFO! Scaling all histograms by 0.2"
+fillstyle = 1001
 
 if len(args) < 2:
     sys.exit("%s" % usage)
@@ -158,21 +111,35 @@ if (option.significance2):
     option.z2 = True
     option.z4 = True
 
-draw_option = "e2 hist same" if option.errors else "hist same"
+# colors
+color3 = ROOT.TColor.GetColor(250.0/255.0, 0.0/255.0, 0.0/255.0)
+color1 = ROOT.TColor.GetColor(0.0/255.0, 90.0/255.0, 130.0/255.0)
+color2 = ROOT.TColor.GetColor(0.0/255.0, 130.0/255.0, 90.0/255.0)
+color4 = ROOT.TColor.GetColor(64.0/255.0, 64.0/255.0, 64.0/255.0)
+
+draw_option = option.draw_option
+
+if option.errors: draw_option = "e2 " + draw_option
+# Create Legend
 if option.legend_bottom:
     legend = ROOT.TLegend(0.7, 0.2, 0.9, 0.4, "")
 elif option.legend_left:
-    legend = ROOT.TLegend(0.15, 0.65, 0.35, 0.85, "")
+    legend = ROOT.TLegend(0.15, 0.6, 0.35, 0.8, "")
 elif option.legend_bottom_left:
     legend = ROOT.TLegend(0.15, 0.2, 0.35, 0.4, "")
 elif option.legend_centre:
     legend = ROOT.TLegend(0.45, 0.7, 0.65, 0.9, "")
 else:
-    legend = ROOT.TLegend(0.7, 0.7, 0.9, 0.9, "")
+    legend = ROOT.TLegend(0.6, 0.65, 0.9, 0.9, "")
 
 # canvas
-canvas = ROOT.TCanvas("canvas","canvas", 1920, 1080)
+canvasx = 1920
+canvasy = 1080
+canvas = ROOT.TCanvas("canvas","canvas", canvasx, canvasy)
 canvas.cd()
+
+ROOT.gStyle.SetPalette(57)
+ROOT.gStyle.SetNumberContours(999)
 
 # pad
 if option.significance and option.distribution:
@@ -181,10 +148,11 @@ if option.significance and option.distribution:
     lower_pad = ROOT.TPad("lower_pad", "lower_pad", 0, 0, 1, 0.25)
     lower_pad.Draw()
 else:
-    upper_pad = ROOT.TPad("upper_pad","upper_pad", 0, 0, 1, 1)
+    upper_pad = ROOT.TPad("upper_pad","upper_pad", 0, 0, 0.8, 1)
 upper_pad.SetFillColor(-1)
 if (option.logy):
     upper_pad.SetLogy()
+if draw_option == "COLZ": upper_pad.SetLogz()
 
 top_margin = 0.07
 right_margin = 0.05
@@ -194,11 +162,6 @@ upper_pad.SetMargin(left_margin, right_margin, bottom_margin, top_margin)
 upper_pad.Draw()
 upper_pad.cd()
 
-# texbox2 = ROOT.TLatex()
-# texbox2.SetTextColor(ROOT.kBlack)
-# texbox2.SetTextFont(72)
-# texbox2.DrawLatex(0.5,0.5,"FUCKING BORK")
-
 histname = str(args[0])
 filename = str(args[1])
 
@@ -207,30 +170,15 @@ if option.f2 == "":
 else:
     filename2 = option.f2
 
-# if option.f3 == "":
-#     filename3 = filename
-# else:
+if option.f3 == "":
+    filename3 = filename
+else:
     filename3 = option.f3
 
-# if option.f4 == "":
-#     filename4 = filename
-# else:
-    filename4 = option.f4
-
-if option.f2 == "":
-    filename2 = filename
+if option.f4 == "":
+    filename4 = filename
 else:
-    filename2 = option.f2
-#
-# if option.f3 == "":
-#     filename3 = filename
-# else:
-#     filename3 = option.f3
-#
-# if option.f4 == "":
-#     filename4 = filename
-# else:
-#     filename4 = option.f4
+    filename4 = option.f4
 
 if option.h2 == "":
     histname2 = histname
@@ -246,16 +194,6 @@ if option.h4 == "":
     histname4 = histname
 else:
     histname4 = option.h4
-
-
-
-# color2 = ROOT.kSpring-7
-# color1 = ROOT.kRed-7
-color1 = ROOT.kOrange+7
-color4 = ROOT.kAzure-7
-color2 = ROOT.kCyan+3
-color3 = ROOT.kGray+1 # ROOT.kViolet-7
-# color3 = ROOT.kPink-3
 
 if os.path.isfile("%s" % filename) is False:
   sys.exit("%s does not exist" % filename)
@@ -287,7 +225,7 @@ try:
         else:
             labelname1 = filename
     if option.z1:
-        for i in range(1,hist.GetNbinsX()):
+        for i in range(1,hist.GetNbinsX()+1):
             hist.SetBinError(i,0)
     if option.normalise:
         ytitle = hist.GetYaxis().GetTitle()
@@ -312,11 +250,13 @@ try:
         # hist.GetYaxis().SetTitle("Expected events with L = 300fb^{-1}")
 
 
-    hist.DrawCopy("h hist")
+    hist.DrawCopy(draw_option)
     if not option.z1:
-         hist.SetFillColor(color1)
-         hist.SetFillStyle(3354)
-    hist.DrawCopy("e2 same")
+        #  hist.SetFillColor(color1)
+         hist.SetFillColorAlpha(color1, 0.2)
+         hist.SetFillStyle(fillstyle)
+    if not draw_option == "COLZ":
+        hist.DrawCopy("e2 same")
     if not (option.significance2):
         legend.AddEntry(hist, labelname1)
 
@@ -343,7 +283,7 @@ if option.f2 != "" or option.h2 != "":
                 labelname2 = filename2
             # print hist2.Integral()
         if option.z2:
-            for i in range(1,hist2.GetNbinsX()):
+            for i in range(1,hist2.GetNbinsX()+1):
                 hist2.SetBinError(i,0)
         if option.normalise:
             ytitle2 = hist2.GetYaxis().GetTitle()
@@ -356,10 +296,12 @@ if option.f2 != "" or option.h2 != "":
         hist2.SetMarkerColor(color2)
         hist2.SetLineColor(color2)
         hist2.SetMarkerStyle(0)
-        hist2.DrawCopy("h hist same")
+        hist2.DrawCopy(draw_option + " same")
         if not option.z1:
-            hist2.SetFillColor(color2)
-            hist2.SetFillStyle(3354)
+            hist2.SetFillColorAlpha(color2, 0.2)
+            # hist2.SetFillColor(color2)
+            # hist2.SetFillStyle(3354)
+            hist2.SetFillStyle(fillstyle)
         hist2.DrawCopy("e2 same")
         if not (option.significance2):
             legend.AddEntry(hist2, labelname2)
@@ -386,7 +328,7 @@ if option.f3 != "" or option.h3 != "":
                 labelname3 = filename3
             # print hist3.Integral()
         if option.z3:
-            for i in range(1,hist3.GetNbinsX()):
+            for i in range(1,hist3.GetNbinsX()+1):
                 hist3.SetBinError(i,0)
         if option.normalise:
             ytitle3 = hist3.GetYaxis().GetTitle()
@@ -399,10 +341,11 @@ if option.f3 != "" or option.h3 != "":
         hist3.SetMarkerColor(color3)
         hist3.SetLineColor(color3)
         hist3.SetMarkerStyle(0)
-        hist3.DrawCopy("h hist same")
+        hist3.DrawCopy(draw_option + " same")
         if not option.z3:
-            hist3.SetFillColor(color3)
-            hist3.SetFillStyle(3354)
+            # hist3.SetFillColor(color3)
+            hist3.SetFillColorAlpha(color3, 0.2)
+            hist3.SetFillStyle(fillstyle)
         else:
             hist3.SetFillStyle(1)
         hist3.DrawCopy("e2 same")
@@ -430,7 +373,7 @@ if option.f4 != "" or option.h4 != "":
                 labelname4 = filename4
             # print hist4.Integral()
         if option.z4:
-            for i in range(1,hist4.GetNbinsX()):
+            for i in range(1,hist4.GetNbinsX()+1):
                 hist4.SetBinError(i,0)
         if option.normalise:
             ytitle4 = hist4.GetYaxis().GetTitle()
@@ -443,10 +386,13 @@ if option.f4 != "" or option.h4 != "":
         hist4.SetMarkerColor(color4)
         hist4.SetLineColor(color4)
         hist4.SetMarkerStyle(0)
-        hist4.DrawCopy("h hist same")
+        hist4.DrawCopy(draw_option + " same")
         if not option.z4:
-            hist4.SetFillColor(color4)
-            hist4.SetFillStyle(3354)
+            hist4.SetFillColorAlpha(color4, 0.2)
+            # hist4.SetFillColor(color4)
+            hist4.SetFillStyle(fillstyle)
+        else:
+            hist4.SetFillStyle(1)
         hist4.DrawCopy("e2 same")
         if not (option.significance2):
             legend.AddEntry(hist4, labelname4)
@@ -457,7 +403,7 @@ if option.ytitle != "":
     hist.GetYaxis().SetTitle(option.ytitle)
 
 legend.SetBorderSize(0)
-legend.Draw()
+if not draw_option == "COLZ": legend.Draw()
 
 # adjust y-axis range
 if option.adjusty:
@@ -518,7 +464,7 @@ sigPerOverlap = 0
 if option.overlap:
     overlapPerBin = 0
     overlap = 0
-    for i in range(1,hist.GetNbinsX()):
+    for i in range(1,hist.GetNbinsX()+1):
         bin1 = hist.GetBin(i)
         bin2 = hist2.GetBin(i)
         one = hist.GetBinContent(bin1)
@@ -580,7 +526,7 @@ if option.significance:
         lower_pad.SetLeftMargin(left_margin)
         lower_pad.cd()
     combhist = hist.Clone()
-    for i in range(1,sighist2.GetNbinsX()):
+    for i in range(1,sighist2.GetNbinsX()+1):
         if i == 0:
             continue
         s2 = sighist2.GetBinContent(i)
@@ -617,7 +563,7 @@ if option.significance:
         # legend.AddEntry(combhist, "Combined")
         combhist.Draw("HIST")
     if filename2 != "":
-        sighist2.SetFillStyle(3354)
+        sighist2.SetFillStyle(1001)
         sighist2.Draw("HIST")
         legend.AddEntry(sighist2, labelname1)
         if option.ytitle != "":
@@ -630,16 +576,9 @@ if option.significance:
     if option.combined:
         legend.AddEntry(combhist, "Combined")
 
-# texbox2 = ROOT.TLatex()
-# texbox2.SetTextColor(ROOT.kBlack)
-# texbox2.SetTextFont(72)
-# texbox2.DrawLatex(0.5,0.5,"FUCKING BORK")
+if not draw_option == "COLZ": legend.Draw()
 
-legend.Draw()
-
-
-if option.pause:
-    raw_input()
+if option.pause: raw_input()
 
 siglabel = ""
 if option.distribution is False and option.significance is True:
