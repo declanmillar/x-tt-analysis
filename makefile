@@ -18,6 +18,9 @@ endif
 ifeq ($(HOSTNAME),cyan03)
 	BOOSTFLAGS      = -I /local/software/boost/1.60.0/include
 	BOOSTLIBS       = -L /local/software/boost/1.60.0/lib -lboost_system -lboost_program_options
+# else
+	# BOOSTFLAGS      = -I /afs/cern.ch/sw/lcg/external/Boost/1.60.0/include
+	# BOOSTLIBS       = -L /afs/cern.ch/sw/lcg/external/Boost/1.60.0/lib -lboost_system -lboost_program_options
 endif
 
 C               = g++
