@@ -111,11 +111,13 @@ if (option.significance2):
     option.z2 = True
     option.z4 = True
 
+ROOT.gStyle.SetGridStyle(1)
+
 # colors
-color3 = ROOT.TColor.GetColor(250.0/255.0, 0.0/255.0, 0.0/255.0)
-color1 = ROOT.TColor.GetColor(0.0/255.0, 90.0/255.0, 130.0/255.0)
-color2 = ROOT.TColor.GetColor(0.0/255.0, 130.0/255.0, 90.0/255.0)
-color4 = ROOT.TColor.GetColor(64.0/255.0, 64.0/255.0, 64.0/255.0)
+color4 = ROOT.TColor.GetColor(250.0/255.0, 0.0/255.0, 0.0/255.0)
+color2 = 46 #ROOT.TColor.GetColor(0.0/255.0, 90.0/255.0, 130.0/255.0)
+color3 = ROOT.TColor.GetColor(0.0/255.0, 130.0/255.0, 90.0/255.0)
+color1 = ROOT.TColor.GetColor(64.0/255.0, 64.0/255.0, 64.0/255.0)
 
 draw_option = option.draw_option
 
@@ -124,7 +126,7 @@ if option.errors: draw_option = "e2 " + draw_option
 if option.legend_bottom:
     legend = ROOT.TLegend(0.7, 0.2, 0.9, 0.4, "")
 elif option.legend_left:
-    legend = ROOT.TLegend(0.15, 0.6, 0.35, 0.8, "")
+    legend = ROOT.TLegend(0.15, 0.5, 0.35, 0.65, "")
 elif option.legend_bottom_left:
     legend = ROOT.TLegend(0.15, 0.2, 0.35, 0.4, "")
 elif option.legend_centre:
@@ -148,19 +150,24 @@ if option.significance and option.distribution:
     lower_pad = ROOT.TPad("lower_pad", "lower_pad", 0, 0, 1, 0.25)
     lower_pad.Draw()
 else:
-    upper_pad = ROOT.TPad("upper_pad","upper_pad", 0, 0, 0.8, 1)
+    upper_pad = ROOT.TPad("upper_pad","upper_pad", 0, 0, 1, 1)
 upper_pad.SetFillColor(-1)
 if (option.logy):
-    upper_pad.SetLogy()
+    upper_pad.SetLogz()
 if draw_option == "COLZ": upper_pad.SetLogz()
 
-top_margin = 0.07
-right_margin = 0.05
+top_margin = 0.025
+right_margin = 0.01
 left_margin = 0.1
-bottom_margin = 0.12
+bottom_margin = 0.13
 upper_pad.SetMargin(left_margin, right_margin, bottom_margin, top_margin)
 upper_pad.Draw()
 upper_pad.cd()
+
+upper_pad.SetTheta(20) # default: 30
+upper_pad.SetPhi(-30) # default: 30
+upper_pad.Update()
+
 
 histname = str(args[0])
 filename = str(args[1])
@@ -236,9 +243,36 @@ try:
             ytitle = "1/#sigma #times " + ytitle
         hist.GetYaxis().SetTitle(ytitle)
         hist.Scale(1.0/abs(hist.Integral()))
+    # hist.SetError(0)
+    # hist.SetFillColor(color1)
     hist.SetLineColor(color1)
     hist.SetMarkerColor(color1)
     hist.SetMarkerStyle(0)
+    hist.GetXaxis().SetLabelColor(color1)
+    hist.GetYaxis().SetLabelColor(color1)
+    hist.GetXaxis().SetLabelSize(0.05)
+    hist.GetYaxis().SetLabelSize(0.05)
+    hist.GetXaxis().SetTitleSize(0.06)
+    hist.GetYaxis().SetTitleSize(0.06)
+    # hist.GetXaxis().SetNdivisions(8)
+    # hist.GetYaxis().SetNdivisions(2)
+    # hist.GetYaxis().SetTitle('cos#theta* (reco)')
+    # hist.GetXaxis().CenterTitle()
+    # hist.GetYaxis().CenterTitle()
+    # hist.GetXaxis().SetTitleOffset(1.4)
+    hist.GetYaxis().SetTitleOffset(0.8)
+    # hist.GetZaxis().SetTitleOffset(1.3)
+
+    dummy = hist.Clone()
+    dummy.SetLineColor(0)
+    dummy.SetFillStyle(0)
+    dummy.SetFillColor(0)
+    dummy.SetLineStyle(0)
+    dummy.SetMarkerColor(0)
+    dummy.SetMarkerStyle(0)
+    dummy.SetTitle("")
+    # legend.AddEntry(dummy,"")
+
 
     # temporary!
     if option.ytitle != "":
@@ -255,10 +289,12 @@ try:
         #  hist.SetFillColor(color1)
          hist.SetFillColorAlpha(color1, 0.2)
          hist.SetFillStyle(fillstyle)
-    if not draw_option == "COLZ":
-        hist.DrawCopy("e2 same")
+    if not "COLZ" in  draw_option:
+        if not "LEGO" in draw_option:
+            hist.DrawCopy("e2 same")
     if not (option.significance2):
-        legend.AddEntry(hist, labelname1)
+        legend.AddEntry(hist, labelname1,"lf")
+
 
 except:
     sys.exit("Error: check %s contains histogram '%s'" % (filename, histname))
@@ -304,7 +340,7 @@ if option.f2 != "" or option.h2 != "":
             hist2.SetFillStyle(fillstyle)
         hist2.DrawCopy("e2 same")
         if not (option.significance2):
-            legend.AddEntry(hist2, labelname2)
+            legend.AddEntry(hist2, labelname2,"lf")
     except ReferenceError:
         sys.exit("ReferenceError: check %s contains histogram '%s'" % (filename2, histname))
 
@@ -403,7 +439,21 @@ if option.ytitle != "":
     hist.GetYaxis().SetTitle(option.ytitle)
 
 legend.SetBorderSize(0)
-if not draw_option == "COLZ": legend.Draw()
+if not "COLZ" in  draw_option:
+    if not "LEGO" in draw_option:
+        # legend.AddEntry(dummy, "#bf{Model: GLR-R}")
+        # legend.AddEntry(dummy, "#bf{#sqrt{s} = 13 TeV}")
+        # legend.AddEntry(dummy, "#bf{#int L dt = 100 fb^{-1}}")
+        t1 = ROOT.TLatex(0.15, 0.9, "#bf{Model: GLR-R}")
+        t1.SetNDC(True)
+        t1.Draw()
+        t2 = ROOT.TLatex(0.15, 0.8, "#bf{#sqrt{s} = 13 TeV}")
+        t2.SetNDC(True)
+        t2.Draw()
+        t3 = ROOT.TLatex(0.15, 0.7, "#bf{#int L dt = 100 fb^{-1}}")
+        t3.SetNDC(True)
+        t3.Draw()
+        legend.Draw()
 
 # adjust y-axis range
 if option.adjusty:
@@ -576,7 +626,9 @@ if option.significance:
     if option.combined:
         legend.AddEntry(combhist, "Combined")
 
-if not draw_option == "COLZ": legend.Draw()
+if not "COLZ" in draw_option:
+    if not "LEGO" in draw_option:
+        legend.Draw()
 
 if option.pause: raw_input()
 
