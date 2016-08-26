@@ -11,50 +11,48 @@ ROOT.TGaxis.SetMaxDigits(4)
 usage = "usage: overlay.py hist file [options]"
 parser = optparse.OptionParser(usage)
 
-parser.add_option("-n", "--normalise", default = False, action = "store_true" , help = "normalise plots")
-parser.add_option("-2","--f2", default = "", action = "store" , help = "specify second filename")
-parser.add_option("-3","--f3", default = "", action = "store" , help = "specify third filename")
-parser.add_option("-4","--f4", default = "", action = "store" , help = "specify fourth filename")
-parser.add_option("--h2", default = "", action = "store" , help = "specify second histogram")
-parser.add_option("--h3", default = "", action = "store" , help = "specify third histogram")
-parser.add_option("--h4", default = "", action = "store" , help = "specify fourth histogram")#
-parser.add_option("--l1", default = "", action = "store" , help = "set first label")
-parser.add_option("--l2", default = "", action = "store" , help = "set second label")
-parser.add_option("--l3", default = "", action = "store" , help = "set third label")
-parser.add_option("--l4", default = "", action = "store" , help = "set fourth label")
-parser.add_option("--c1", default = "", action = "store" , help = "set first color")
-parser.add_option("--c2", default = "", action = "store" , help = "set second color")
-parser.add_option("--c3", default = "", action = "store" , help = "set third color")
-parser.add_option("--c4", default = "", action = "store" , help = "set fourth color")
-parser.add_option("--z1", default = False, action = "store_true" , help = "set first errors to zero")
-parser.add_option("--z2", default = False, action = "store_true" , help = "set second errors to zero")
-parser.add_option("--z3", default = False, action = "store_true" , help = "set third errors to zero")
-parser.add_option("--z4", default = False, action = "store_true" , help = "set fourth errors to zero")
+# output options
+parser.add_option("-o", "--out", default = "/Users/declan/Dropbox/zprime-paper/figures", action = "store" , help = "plot directory")
+parser.add_option("-t", "--tag", default = "", action = "store" , help = "add tag to output")
+parser.add_option("-d", "--pdf", default = False, action = "store_true" , help = "save plot as pdf")
+parser.add_option("-s", "--show", default = True,  action = "store_false" , help = "pause to show graphs")
+
+# input options
+parser.add_option("-i", "--in", default = "/Users/declan/Code/declans-research-logbook/plots", action = "store" , help = "plot directory")
+parser.add_option("--f2", default = "", action = "store", help = "specify second filename")
+parser.add_option("--f3", default = "", action = "store", help = "specify third filename")
+parser.add_option("--f4", default = "", action = "store", help = "specify fourth filename")
+parser.add_option("--h2", default = "", action = "store", help = "specify second histogram")
+parser.add_option("--h3", default = "", action = "store", help = "specify third histogram")
+parser.add_option("--h4", default = "", action = "store", help = "specify fourth histogram")
+
+# Axis options
+parser.add_option("--ytitle", default = "", action = "store" , help = "ytitle")
+parser.add_option("--xtitle", default = "", action = "store" , help = "xtitle")
+parser.add_option("--xmin", type = "float", default = -99.9, action = "store", help = "xmin")
+parser.add_option("--xmax", type = "float", default = -99.9, action = "store", help = "xmax")
+parser.add_option("--ymin", type = "float", default = -99.9, action = "store", help = "ymin")
+parser.add_option("--ymax", type = "float", default = -99.9, action = "store", help = "ymax")
+
+# Legend options
 parser.add_option("--legend_centre", default = False, action = "store_true" , help = "put legend at centre")
 parser.add_option("--legend_bottom", default = False, action = "store_true" , help = "put legend at bottom")
 parser.add_option("--legend_left", default = False, action = "store_true" , help = "put legend on left")
 parser.add_option("--legend_bottom_left", default = False, action = "store_true" , help = "put legend on bottom left")
-parser.add_option("-e", "--errors", default = False, action = "store_true" , help = "display errors")
-parser.add_option("-p", "--pause", default = True, action = "store_false" , help = "pause to show graphs")
-parser.add_option("-y", "--adjusty", default = False, action = "store_true" , help = "auto adjust range (some issues)")
-parser.add_option("--xmin", type="float", default = -99.9, action = "store" , help = "xmin")
-parser.add_option("--xmax", type="float", default = -99.9, action = "store" , help = "xmax")
-parser.add_option("--ymin", type="float", default = -99.9, action = "store" , help = "ymin")
-parser.add_option("--ymax", type="float", default = -99.9, action = "store" , help = "ymax")
-parser.add_option("--ytitle", default = "", action = "store" , help = "ytitle")
-parser.add_option("--xtitle", default = "", action = "store" , help = "xtitle")
-parser.add_option("-d", "--distribution", default = True, action = "store_false" , help = "plot distribution")
-parser.add_option("-O", "--draw_option", default = "h hist", action = "store" , help = "draw option")
-parser.add_option("-s", "--significance", default = False, action = "store_true" , help = "plot significance")
-parser.add_option("-C", "--combined", default = False, action = "store_true" , help = "plot combined significance")
-parser.add_option("-S", "--significance2", default = False, action = "store_true" , help = "plot significance for h1/h2 & h3/h4")
-parser.add_option("-l", "--logy", default = False, action = "store_true" , help = "log y axis")
-parser.add_option("-E", "--eps", default = False, action = "store_true" , help = "save plot as eps")
-parser.add_option("-D", "--pdf", default = False, action = "store_true" , help = "save plot as pdf")
-parser.add_option("-o", "--overlap", default = False, action = "store_true" , help = "find overlapping area")
-parser.add_option("-t", "--tag", default = "", action = "store" , help = "add tag to output")
-parser.add_option("-P", "--plot_dir", default = "/Users/declan/Code/declans-research-logbook/plots", action = "store" , help = "plot directory")
-parser.add_option("-T", "--texbox", default = "", action = "store" , help = "add tag texbox")
+parser.add_option("--l1", default = "", action = "store", help = "specify first label")
+parser.add_option("--l2", default = "", action = "store", help = "specify second label")
+parser.add_option("--l3", default = "", action = "store", help = "specify third label")
+parser.add_option("--l4", default = "", action = "store", help = "specify fourth label")
+parser.add_option("--tex", default = True, action = "store" , help = "add texbox")
+
+# Plot options
+parser.add_option("-n", "--normalise", default = False, action = "store_true" , help = "normalise plots")
+parser.add_option("-e", "--errors",   default = False, action = "store_true" , help = "display errors")
+parser.add_option("-y", "--logy",     default = False, action = "store_true" , help = "log y axis")
+parser.add_option("--z1", default = False, action = "store_true" , help = "set first errors to zero")
+parser.add_option("--z2", default = False, action = "store_true" , help = "set second errors to zero")
+parser.add_option("--z3", default = False, action = "store_true" , help = "set third errors to zero")
+parser.add_option("--z4", default = False, action = "store_true" , help = "set fourth errors to zero")
 
 (option, args) = parser.parse_args()
 
@@ -115,7 +113,7 @@ ROOT.gStyle.SetGridStyle(1)
 
 # colors
 color4 = ROOT.TColor.GetColor(250.0/255.0, 0.0/255.0, 0.0/255.0)
-color2 = 46 #ROOT.TColor.GetColor(0.0/255.0, 90.0/255.0, 130.0/255.0)
+color2 = ROOT.TColor.GetColor(0.0/255.0, 90.0/255.0, 130.0/255.0)
 color3 = ROOT.TColor.GetColor(0.0/255.0, 130.0/255.0, 90.0/255.0)
 color1 = ROOT.TColor.GetColor(64.0/255.0, 64.0/255.0, 64.0/255.0)
 
@@ -548,6 +546,20 @@ if option.overlap:
     sigOverlap = "Signal in overlapping area = " + str(sigPerOverlap) + "%%"
     texBox = ROOT.TLatex(0.5,0.5, SigOverlap)
     texBox.Draw()
+
+     legend.AddEntry(dummy, "#bf{Model: GLR-R}")
+            # legend.AddEntry(dummy, "#bf{#sqrt{s} = 13 TeV}")
+            # legend.AddEntry(dummy, "#bf{#int L dt = 100 fb^{-1}}")
+            t1 = ROOT.TLatex(0.15, 0.9, "#bf{Model: GLR-R}")
+            t1.SetNDC(True)
+            t1.Draw()
+            t2 = ROOT.TLatex(0.15, 0.8, "#bf{#sqrt{s} = 13 TeV}")
+            t2.SetNDC(True)
+            t2.Draw()
+            t3 = ROOT.TLatex(0.15, 0.7, "#bf{#int L dt = 100 fb^{-1}}")
+            t3.SetNDC(True)
+            t3.Draw()
+            legend.Draw()
 
 
 

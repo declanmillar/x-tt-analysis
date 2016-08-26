@@ -1,9 +1,9 @@
 import ROOT
 
-atlasStyle= ROOT.TStyle("ATLAS","Atlas style")
+atlasStyle = ROOT.TStyle("ATLAS","Atlas style")
 
 # use plain black on white colors
-icol=0
+icol = 0
 atlasStyle.SetFrameBorderMode(icol)
 atlasStyle.SetCanvasBorderMode(icol)
 atlasStyle.SetPadBorderMode(icol)
@@ -13,7 +13,7 @@ atlasStyle.SetStatColor(icol)
 #atlasStyle.SetFillColor(icol)
 
 # set the paper & margin sizes
-atlasStyle.SetPaperSize(20,26)
+atlasStyle.SetPaperSize(20, 26)
 atlasStyle.SetPadTopMargin(0.05)
 atlasStyle.SetPadRightMargin(0.05)
 atlasStyle.SetPadBottomMargin(0.16)
@@ -44,7 +44,7 @@ atlasStyle.SetPadLeftMargin(0.12)
 #use bold lines and markers
 # atlasStyle.SetMarkerStyle(20)
 # atlasStyle.SetMarkerSize(1.2)
-# atlasStyle.SetHistLineWidth(2)
+atlasStyle.SetHistLineWidth(1)
 # atlasStyle.SetLineStyleString(2,"[12 12]") # postscript dashes
 
 #get rid of X error bars and y error bar caps
@@ -70,6 +70,9 @@ ROOT.gROOT.ForceStyle()
 ROOT.gStyle.SetOptTitle(0)
 ROOT.gStyle.SetOptStat(0)
 ROOT.gStyle.SetOptFit(0)
+
+
+
 # overwrite atlas styles
 
 atlasStyle.SetMarkerSize(1.0)
@@ -78,6 +81,12 @@ atlasStyle.SetPadRightMargin(0.03)
 atlasStyle.SetPadBottomMargin(0.12)
 atlasStyle.SetPadTopMargin(0.02)
 atlasStyle.SetFrameFillColor(0)
+
+ROOT.gROOT.Reset()
+ROOT.gROOT.SetBatch(False)
+ROOT.gStyle.SetHatchesSpacing(0.3)
+ROOT.gStyle.SetHatchesLineWidth(1)
+ROOT.TGaxis.SetMaxDigits(4)
 
 # def ATLASLabel(x,y,shift,Preliminary=False,color=1):
 #   l=ROOT.ROOT.TLatex()

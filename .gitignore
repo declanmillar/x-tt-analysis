@@ -3,3 +3,4 @@ analysis
 gmon.out
 *.root
 .__afs*
+.DS_Store
