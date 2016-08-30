@@ -305,6 +305,8 @@ private:
   TH2D* h2_KT_deltaPhi;
 
   //
+  vector<TH1D*> h_eta;
+  vector<TH1D*> h_pt;
   vector<TH1D*> h_deltaRs;
   TH1D* h_deltaRmax;
   TH1D* h_deltaRbW;

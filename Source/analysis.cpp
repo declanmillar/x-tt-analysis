@@ -178,10 +178,14 @@ void AnalysisZprime::EachEvent() {
 
     vector<double> deltaRs;
     for (int i = 0; i < 6; i++)
-        for (int j = i + 1; j < 6; j++) {
+        for (int j = i + 1; j < 6; j++)
             deltaRs.push_back(p[i].DeltaR(p[j]));
-        }
 
+    vector<double> eta, pt;
+    for (int i = 0; i < 6; i++) {
+        pt.push_back(p[i].Pt());
+        eta.push_back(p[i].Eta());
+    }
 
     double deltaRbW = p_W.DeltaR(p[0]);
     vector<double> deltaRt;
@@ -193,6 +197,7 @@ void AnalysisZprime::EachEvent() {
     cosTheta1 = cos(ptop[2].Angle(pcm_t.Vect()));
     cosTheta2 = cos(patop[4].Angle(pcm_tb.Vect()));
     cos1cos2 = cosTheta1*cosTheta2;
+    deltaPhi = p[2].DeltaPhi(p[4])/m_pi;
 
     if(m_reco) {
         ytt_R1 = P_R1.Rapidity();
@@ -201,8 +206,6 @@ void AnalysisZprime::EachEvent() {
         mtb_R1 = p_tb_R1.M();
         mt_R2 = p_t_R2.M();
         mtb_R2 = p_tb_R2.M();
-        // deltaPhi = p[2].DeltaPhi(p[4])/m_pi;
-        // deltaPhi = p[2].DeltaPhi(p[4])/m_pi;
         cosTheta_R1 = p_t_R1.CosTheta();
         cosTheta_R2 = p_t_R2.CosTheta();
         cosThetaStar_R1 = int(ytt_R1/abs(ytt_R1))*cosTheta_R1;
@@ -245,8 +248,14 @@ void AnalysisZprime::EachEvent() {
         h_cos1cos2->Fill(cos1cos2, weight);
         h_deltaRbW->Fill(deltaRbW, weight);
         h_deltaRmax->Fill(*deltaRmax, weight);
+
         for (int i = 0; i < (int) deltaRs.size(); i++)
             h_deltaRs[i]->Fill(deltaRs[i], weight);
+
+        for (int i = 0; i < (int) eta.size(); i++) {
+            h_eta[i]->Fill(eta[i], weight);
+            h_pt[i]->Fill(pt[i], weight);
+        }
 
         if (cosThetaStar > 0) h_mtt_F->Fill(mtt, weight);
         if (cosThetaStar < 0) h_mtt_B->Fill(mtt, weight);
@@ -261,34 +270,34 @@ void AnalysisZprime::EachEvent() {
         // h2_mtt_cos1cos2->Fill(mtt, cos1cos2, weight);
         // h2_HT_deltaPhi->Fill(HT, deltaPhi, weight);
         // h2_KT_deltaPhi->Fill(KT, deltaPhi, weight);
+    }
 
-        if(m_reco) {
-            if(this->PassCuts("R1")) {
-                h_mtt_R->Fill(mtt_R1, weight_R);
-                h_ytt_R->Fill(ytt_R1, weight_R);
-                h_mt_R->Fill(mt_R1, weight_R);
-                h_mtbar_R->Fill(mtb_R1, weight_R);
-                h_cosTheta_R->Fill(cosTheta_R1, weight_R);
-                h_cosThetaStar_R->Fill(cosThetaStar_R1, weight_R);
-                h_pzNu_R->Fill(p_R1[3].Pz(), weight_R);
-                if (cosThetaStar_R1 > 0) h_mtt_FR->Fill(mtt_R1, weight_R);
-                if (cosThetaStar_R1 < 0) h_mtt_BR->Fill(mtt_R1, weight_R);
-                h2_mtt_cosThetaStar_R->Fill(mtt_R1, cosThetaStar_R1, weight_R);
-                h2_mtt_cosThetal_R->Fill(mtt_R1, cosTheta1_R1, weight_R);
-            }
-            if(this->PassCuts("R2")) {
-                h_mtt_R->Fill(mtt_R2, weight_R);
-                h_ytt_R->Fill(ytt_R2, weight_R);
-                h_mt_R->Fill(mt_R2, weight_R);
-                h_mtbar_R->Fill(mtb_R2, weight_R);
-                h_cosTheta_R->Fill(cosTheta_R2, weight_R);
-                h_cosThetaStar_R->Fill(cosThetaStar_R2, weight_R);
-                h_pzNu_R->Fill(p_R2[5].Pz(), weight_R);
-                if (cosThetaStar_R2 > 0) h_mtt_FR->Fill(mtt_R2, weight_R);
-                if (cosThetaStar_R2 < 0) h_mtt_BR->Fill(mtt_R2, weight_R);
-                h2_mtt_cosThetaStar_R->Fill(mtt_R2, cosThetaStar_R2, weight_R);
-                h2_mtt_cosThetal_R->Fill(mtt_R2, cosTheta2_R2, weight_R);
-            }
+    if (m_reco) {
+        if (this->PassCuts("R1")) {
+            h_mtt_R->Fill(mtt_R1, weight_R);
+            h_ytt_R->Fill(ytt_R1, weight_R);
+            h_mt_R->Fill(mt_R1, weight_R);
+            h_mtbar_R->Fill(mtb_R1, weight_R);
+            h_cosTheta_R->Fill(cosTheta_R1, weight_R);
+            h_cosThetaStar_R->Fill(cosThetaStar_R1, weight_R);
+            h_pzNu_R->Fill(p_R1[3].Pz(), weight_R);
+            if (cosThetaStar_R1 > 0) h_mtt_FR->Fill(mtt_R1, weight_R);
+            if (cosThetaStar_R1 < 0) h_mtt_BR->Fill(mtt_R1, weight_R);
+            h2_mtt_cosThetaStar_R->Fill(mtt_R1, cosThetaStar_R1, weight_R);
+            h2_mtt_cosThetal_R->Fill(mtt_R1, cosTheta1_R1, weight_R);
+        }
+        if (this->PassCuts("R2")) {
+            h_mtt_R->Fill(mtt_R2, weight_R);
+            h_ytt_R->Fill(ytt_R2, weight_R);
+            h_mt_R->Fill(mt_R2, weight_R);
+            h_mtbar_R->Fill(mtb_R2, weight_R);
+            h_cosTheta_R->Fill(cosTheta_R2, weight_R);
+            h_cosThetaStar_R->Fill(cosThetaStar_R2, weight_R);
+            h_pzNu_R->Fill(p_R2[5].Pz(), weight_R);
+            if (cosThetaStar_R2 > 0) h_mtt_FR->Fill(mtt_R2, weight_R);
+            if (cosThetaStar_R2 < 0) h_mtt_BR->Fill(mtt_R2, weight_R);
+            h2_mtt_cosThetaStar_R->Fill(mtt_R2, cosThetaStar_R2, weight_R);
+            h2_mtt_cosThetal_R->Fill(mtt_R2, cosTheta2_R2, weight_R);
         }
     }
 }
@@ -459,8 +468,21 @@ void AnalysisZprime::CreateHistograms() {
     h2_KT_deltaPhi->Sumw2();
 
     vector<string> deltaRnames, deltaRtitles;
+    vector<string> n_eta, t_eta, n_pt, t_pt;
+
     vector<string> particles1 = {"b1", "b2", "l", "v", "q1", "q2"};
     vector<string> particles2 = {"b", "#bar{b}", "l+", "#nu", "q", "#bar{q}'"};
+
+    for (int i = 0; i < 6; i++ ) {
+        n_eta.push_back("eta" + particles1[i]);
+        t_eta.push_back("#eta_{" + particles2[i] + "}");
+    }
+
+    for (int i = 0; i < 6; i++ ) {
+        n_pt.push_back("pt" + particles1[i]);
+        t_pt.push_back("#p_{T}^{" + particles2[i] + "}");
+    }
+
     for (int i = 0; i < 6; i++ ) {
         for (int j = i + 1; j < 6; j++) {
             deltaRnames.push_back("deltaR" + particles1[i] + particles1[j]);
@@ -473,11 +495,15 @@ void AnalysisZprime::CreateHistograms() {
     h_deltaRmax = new TH1D("deltaRmax", "#Delta#R(max)", 100, 0, 5);
     h_deltaRmax->Sumw2();
 
-    for (int i = 0; i < (int) deltaRnames.size(); i++) {
+    for (int i = 0; i < (int) deltaRnames.size(); i++)
         h_deltaRs.push_back(new TH1D(deltaRnames[i].c_str(), deltaRtitles[i].c_str(), 100, 0, 5));
+
+    for (int i = 0; i < (int) n_eta.size(); i++) {
+        h_eta.push_back(new TH1D(n_eta[i].c_str(), t_eta[i].c_str(), 100, 0, 5));
+        h_pt.push_back(new TH1D(n_pt[i].c_str(), t_pt[i].c_str(), 400, 0, 100));
     }
 
-    if(m_reco) {
+    if (m_reco) {
         h_mtt_R = new TH1D("mtt_R", "m_{tt}^{reco}", nbins, Emin, Emax);
         h_mtt_R->Sumw2();
         h_mt_R = new TH1D("mt_R", "m_{t}^{reco}", nbins, 0, 350);
@@ -542,6 +568,16 @@ void AnalysisZprime::MakeGraphs() {
     for (auto h_deltaR : h_deltaRs) {
         h_deltaR->GetYaxis()->SetTitle("d#sigma / d #Delta R");
         h_deltaR->GetXaxis()->SetTitle("#Delta R");
+    }
+
+    for (auto h : h_eta) {
+        h->GetYaxis()->SetTitle("d#sigma / d #eta");
+        h->GetXaxis()->SetTitle("#eta");
+    }
+
+    for (auto h : h_pt) {
+        h->GetYaxis()->SetTitle("d#sigma / d p_{T}");
+        h->GetXaxis()->SetTitle("p_{T}");
     }
 
     if(m_reco) {
@@ -641,6 +677,12 @@ void AnalysisZprime::WriteHistograms() {
 
     for (int i = 0; i < (int) h_deltaRs.size(); i++)
         h_deltaRs[i]->Write();
+
+    for (int i = 0; i < (int) h_eta.size(); i++)
+        h_eta[i]->Write();
+
+    for (int i = 0; i < (int) h_pt.size(); i++)
+        h_pt[i]->Write();
 
     if (m_reco) {
         h_mtt_FRn->Write();
