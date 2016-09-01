@@ -28,14 +28,12 @@ if os.path.isdir(data_directory) is False:
 # print handler
 handler = StringIO.StringIO()
 if "lxplus" in hostname:
-    print >> handler, "export LD_LIBRARY_PATH=/afs/cern.ch/user/d/demillar/.RootTuple:$LD_LIBRARY_PATH"
     print >> handler, "source /afs/cern.ch/sw/lcg/external/gcc/4.8/x86_64-slc6/setup.sh"
     print >> handler, "cd %s" % run_directory
     print >> handler, '%s/%s' % (run_directory, executable)
 elif "cyan" in hostname:
     print >> handler, "#!/bin/bash"
-    print >> handler, "module load gcc/4.8.1; source /local/software/cern/root_v5.34.14/bin/thisroot.sh"
-    print >> handler, "export LD_LIBRARY_PATH=/home/dam1g09/.RootTuple:$LD_LIBRARY_PATH"
+    print >> handler, "module load gcc/4.9.1; source /local/software/cern/root_v6.06.06/bin/thisroot.sh"
     print >> handler, "cd %s" % run_directory
     print >> handler, '%s/%s' % (run_directory, executable)
 else:
