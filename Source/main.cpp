@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
   bool xsec = opts["xsec"].as<bool>();
   bool fid = opts["fid"].as<bool>();
 
-  if (model == "SM" && intermediates == "AZX") intermediates = "AZ";
+  if (model == "SM" && intermediates == "AZX-") intermediates = "AZ-";
 
   AnalysisZprime* analysis = new AnalysisZprime(model, initial_state, intermediates, final_state, energy, options, it, points, add_ggG, add_qqG, luminosity, btags, discardComplex, analysisLabel);
   analysis->SetYttCut(ytt);
