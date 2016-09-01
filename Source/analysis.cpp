@@ -905,9 +905,7 @@ void AnalysisZprime::GetDataDirectory() {
 
     if (Hostname == "Sunder")
         m_dataDirectory = "/Users/declan/Data/zprime";
-    else if (Hostname.find("lxplus") != std::string::npos)
-        m_dataDirectory = "/afs/cern.ch/work/d/demillar/zprime";
-    else if (Hostname.find("cern") != std::string::npos)
+    else if ((Hostname.find("lxplus") != std::string::npos) || (Hostname.find("cern") != std::string::npos))
         m_dataDirectory = "/afs/cern.ch/work/d/demillar/zprime";
     else if ((Hostname.find("cyan") != std::string::npos) || (Hostname.find("blue") != std::string::npos))
         m_dataDirectory = "/scratch/dam1g09/zprime";
