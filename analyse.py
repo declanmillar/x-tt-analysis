@@ -35,13 +35,13 @@ if "cyan" in hostname:
 print >> handler, "cd %s" % run_directory
 print >> handler, '%s/%s' % (run_directory, executable)
 
-arglist
+argstring = ""
 iterarg = iter(sys.argv)
 next(iterarg)
 for arg in iterarg:
-    arglist = arglist + " " + arg
+    argstring = argstring + " " + arg
 
-print arglist
+print argstring
 
 sys.exit("yup")
 
