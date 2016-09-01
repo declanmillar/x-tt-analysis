@@ -27,17 +27,14 @@ if os.path.isdir(data_directory) is False:
 
 # print handler
 handler = StringIO.StringIO()
+print >> handler, "#!/bin/bash"
 if "lxplus" in hostname:
     print >> handler, "source /afs/cern.ch/sw/lcg/external/gcc/4.8/x86_64-slc6/setup.sh"
-    print >> handler, "cd %s" % run_directory
-    print >> handler, '%s/%s' % (run_directory, executable)
 elif "cyan" in hostname:
-    print >> handler, "#!/bin/bash"
-    print >> handler, "module load gcc/4.9.1; source /local/software/cern/root_v6.06.06/bin/thisroot.sh"
-    print >> handler, "cd %s" % run_directory
-    print >> handler, '%s/%s' % (run_directory, executable)
-else:
-    sys.exit("Unrecognised hostname. No handler file created.")
+    print >> handler, "module load gcc/4.9.1; source /local/software/cern/root_v6.06.06/bin/thisroot.sh"    
+print >> handler, "cd %s" % run_directory
+print >> handler, '%s/%s' % (run_directory, executable)
+
 
 # write handler
 try:
