@@ -25,6 +25,12 @@ else:
 if os.path.isdir(data_directory) is False:
     sys.exit("The target data directory '%s' does not exist" % data_directory)
 
+argstring = ""
+iterarg = iter(sys.argv)
+next(iterarg)
+for arg in iterarg:
+    argstring = argstring + " " + arg
+
 # print handler
 handler = StringIO.StringIO()
 print >> handler, "#!/bin/bash"
@@ -33,17 +39,7 @@ print >> handler, "#!/bin/bash"
 if "cyan" in hostname:
     print >> handler, "module load gcc/4.9.1; source /local/software/cern/root_v6.06.06/bin/thisroot.sh"    
 print >> handler, "cd %s" % run_directory
-print >> handler, '%s/%s' % (run_directory, executable)
-
-argstring = ""
-iterarg = iter(sys.argv)
-next(iterarg)
-for arg in iterarg:
-    argstring = argstring + " " + arg
-
-print argstring
-
-sys.exit("yup")
+print >> handler, "%s/%s %s" % (run_directory, executable. argstring)
 
 # write handler
 try:
