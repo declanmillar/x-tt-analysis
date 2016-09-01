@@ -2,7 +2,7 @@
 
 import os, StringIO, re, optparse, subprocess, sys, glob, socket, string
 
-handler_name = "analyse.sh"
+handler_name = "GSM-Q.sh"
 executable = "analysis"
 queue = "1nh"
 walltime = "01:00:00"
