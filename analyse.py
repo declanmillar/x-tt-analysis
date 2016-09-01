@@ -35,6 +35,15 @@ if "cyan" in hostname:
 print >> handler, "cd %s" % run_directory
 print >> handler, '%s/%s' % (run_directory, executable)
 
+arglist
+iterarg = iter(sys.argv)
+next(iterarg)
+for arg in iterarg:
+    arglist = arglist + " " + arg
+
+print arglist
+
+sys.exit("yup")
 
 # write handler
 try:
