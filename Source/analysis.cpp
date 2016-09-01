@@ -903,18 +903,16 @@ void AnalysisZprime::GetDataDirectory() {
     string Hostname(hostname);
     // printf("Hostname: %s\n", Hostname.c_str());
 
-    if (Hostname == "Sunder") {
+    if (Hostname == "Sunder")
         m_dataDirectory = "/Users/declan/Data/zprime";
-    }
-    else if (Hostname.find("lxplus") != std::string::npos) {
+    else if (Hostname.find("lxplus") != std::string::npos)
         m_dataDirectory = "/afs/cern.ch/work/d/demillar/zprime";
-    }
-    else if ((Hostname.find("cyan") != std::string::npos) || (Hostname.find("blue") != std::string::npos)) {
+    else if (Hostname.find("cern") != std::string::npos)
+        m_dataDirectory = "/afs/cern.ch/work/d/demillar/zprime";
+    else if ((Hostname.find("cyan") != std::string::npos) || (Hostname.find("blue") != std::string::npos))
         m_dataDirectory = "/scratch/dam1g09/zprime";
-    }
-    else {
+    else
         printf("Hostname %s not recognised.\n", Hostname.c_str());
-    }
     // #elif __APPLE__ || __MACH__
     // m_dataDirectory = "/Users/declan/Data/Zprime";
     // #endif
