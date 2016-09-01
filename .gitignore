@@ -4,3 +4,5 @@ gmon.out
 *.root
 .__afs*
 .DS_Store
+LSFJOB_*
+*.sh
