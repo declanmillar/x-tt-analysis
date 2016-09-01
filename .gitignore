@@ -5,4 +5,5 @@ gmon.out
 .__afs*
 .DS_Store
 LSFJOB_*
-*.sh
+*.sh*
+*.run*
