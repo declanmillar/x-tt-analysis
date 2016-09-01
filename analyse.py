@@ -39,7 +39,7 @@ print >> handler, "#!/bin/bash"
 if "cyan" in hostname:
     print >> handler, "module load gcc/4.9.1; source /local/software/cern/root_v6.06.06/bin/thisroot.sh"    
 print >> handler, "cd %s" % run_directory
-print >> handler, "%s/%s %s" % (run_directory, executable. argstring)
+print >> handler, "%s/%s %s" % (run_directory, executable, argstring)
 
 # write handler
 try:
