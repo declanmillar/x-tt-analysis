@@ -23,7 +23,7 @@ else
 endif
 
 C               = g++
-CFLAGS          = -O -Wall -fPIC -ggdb -std=c++11
+CFLAGS          = -O -Wall -fPIC -ggdb -std=c++11 -pg
 
 L               = g++
 LIBS            =
