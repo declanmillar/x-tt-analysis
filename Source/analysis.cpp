@@ -1034,10 +1034,10 @@ void AnalysisZprime::SetupInputFiles() {
     // filename = m_dataDirectory + "/" + "SM_qq-tt-bbllvv_2-3_5x10M";
     // m_inputFiles->push_back(filename + ".root");
     // m_weightFiles->push_back(filename + ".log");
-    // filename = m_dataDirectory + "/" + "SM_qq-G-tt-bbllvv_3-4_5x10M";
+    // filename = m_dataDirectory + "/" + "SM_qq-tt-bbllvv_3-4_5x10M";
     // m_inputFiles->push_back(filename + ".root");
     // m_weightFiles->push_back(filename + ".log");
-    filename = m_dataDirectory + "/" + "SM_qq-G-tt-bbllvv_2-4_5x10M";
+    filename = m_dataDirectory + "/" + "SM_qq-tt-bbllvv_2-4_5x10M";
     m_inputFiles->push_back(filename + ".root");
     m_weightFiles->push_back(filename + ".log");
 
