@@ -1015,28 +1015,28 @@ void AnalysisZprime::SetupInputFiles() {
     string E = "";
     if (m_energy != 13) "_" + to_string(m_energy);
 
-    if (m_add_ggG) {
-      filename = m_dataDirectory + "/SM_" + "gg-G-" + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
-      m_inputFiles->push_back(filename + ".root");
-      m_weightFiles->push_back(filename + ".log");
-    }
+    // if (m_add_ggG) {
+    //   filename = m_dataDirectory + "/SM_" + "gg-G-" + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
+    //   m_inputFiles->push_back(filename + ".root");
+    //   m_weightFiles->push_back(filename + ".log");
+    // }
 
-    if (m_add_qqG) {
-      filename = m_dataDirectory + "/SM_" + "qq-G-" + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
-      m_inputFiles->push_back(filename + ".root");
-      m_weightFiles->push_back(filename + ".log");
-    }
+    // if (m_add_qqG) {
+    //   filename = m_dataDirectory + "/SM_" + "qq-G-" + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
+    //   m_inputFiles->push_back(filename + ".root");
+    //   m_weightFiles->push_back(filename + ".log");
+    // }
 
-    filename = m_dataDirectory + "/" + m_model + "_" + m_initial_state + "-" + m_intermediates + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
+    // filename = m_dataDirectory + "/" + m_model + "_" + m_initial_state + "-" + m_intermediates + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
+    // m_inputFiles->push_back(filename + ".root");
+    // m_weightFiles->push_back(filename + ".log");
+
+    filename = m_dataDirectory + "/" + "SM_qq-tt-bbllvv_2-3_5x10M";
     m_inputFiles->push_back(filename + ".root");
     m_weightFiles->push_back(filename + ".log");
-
-    // filename = m_dataDirectory + "/" + "SM_qq-G-tt-bbllvv_0-2_5x10M";
-    // m_inputFiles->push_back(filename + ".root");
-    // m_weightFiles->push_back(filename + ".log");
-    // filename = "SM_qq-G-tt-bbllvv_2-4_5x10M"
-    // m_inputFiles->push_back(filename + ".root");
-    // m_weightFiles->push_back(filename + ".log");
+    filename = m_dataDirectory + "/" + "SM_qq-tt-bbllvv_2-4_5x10M";
+    m_inputFiles->push_back(filename + ".root");
+    m_weightFiles->push_back(filename + ".log");
     // filename = "SM_qq-G-tt-bbllvv_4-13_5x10M"
     // m_inputFiles->push_back(filename + ".root");
     // m_weightFiles->push_back(filename + ".log");
