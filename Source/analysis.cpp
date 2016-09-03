@@ -1015,6 +1015,10 @@ void AnalysisZprime::SetupInputFiles() {
     string E = "";
     if (m_energy != 13) "_" + to_string(m_energy);
 
+    // filename = m_dataDirectory + "/" + "SM_gg-G-tt-bbllvv_2-4_5x10M";
+    // m_inputFiles->push_back(filename + ".root");
+    // m_weightFiles->push_back(filename + ".log");
+
     // if (m_add_ggG) {
     //   filename = m_dataDirectory + "/SM_" + "gg-G-" + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
     //   m_inputFiles->push_back(filename + ".root");
@@ -1031,15 +1035,15 @@ void AnalysisZprime::SetupInputFiles() {
     // m_inputFiles->push_back(filename + ".root");
     // m_weightFiles->push_back(filename + ".log");
 
-    // filename = m_dataDirectory + "/" + "SM_qq-tt-bbllvv_2-3_5x10M";
-    // m_inputFiles->push_back(filename + ".root");
-    // m_weightFiles->push_back(filename + ".log");
-    // filename = m_dataDirectory + "/" + "SM_qq-tt-bbllvv_3-4_5x10M";
-    // m_inputFiles->push_back(filename + ".root");
-    // m_weightFiles->push_back(filename + ".log");
-    filename = m_dataDirectory + "/" + "SM_qq-tt-bbllvv_2-4_5x10M";
+    filename = m_dataDirectory + "/" + "SM_qq-tt-bbllvv_2-3_5x10M";
     m_inputFiles->push_back(filename + ".root");
     m_weightFiles->push_back(filename + ".log");
+    filename = m_dataDirectory + "/" + "SM_qq-tt-bbllvv_3-4_5x10M";
+    m_inputFiles->push_back(filename + ".root");
+    m_weightFiles->push_back(filename + ".log");
+    // filename = m_dataDirectory + "/" + "SM_qq-tt-bbllvv_2-4_5x10M";
+    // m_inputFiles->push_back(filename + ".root");
+    // m_weightFiles->push_back(filename + ".log");
 
     for (Itr_s i = m_inputFiles->begin(); i != m_inputFiles->end(); ++i) {
         bool exists;
@@ -1077,6 +1081,7 @@ void AnalysisZprime::SetupOutputFiles() {
     if (m_fid == true) m_outputFilename += ".fid";
     m_outputFilename += m_analysisLabel;
     m_outputFilename += ".root";
+    m_outputFilename = m_dataDirectory + "/" + "SM_gg-G-tt-bbllvv_2-4_5x10M.a.root";
 
     printf("--- Output ---\n");
     printf("%s\n", m_outputFilename.Data());
