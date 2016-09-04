@@ -7,3 +7,4 @@ gmon.out
 LSFJOB_*
 *.sh*
 *.run*
+core.*
