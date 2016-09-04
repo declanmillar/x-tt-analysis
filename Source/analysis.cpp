@@ -1020,13 +1020,16 @@ void AnalysisZprime::SetupInputFiles() {
     // m_weightFiles->push_back(filename + ".log");
 
     if (m_add_ggG) {
-      filename = m_dataDirectory + "/SM_" + "gg-G-" + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
+      filename = m_dataDirectory + "/SM_" + "gg-G-" + m_channel + E + "_2-4_" + to_string(m_vegasIterations) + "x" + m_vegasPoints;
       m_inputFiles->push_back(filename + ".root");
       m_weightFiles->push_back(filename + ".log");
     }
 
     if (m_add_qqG) {
-      filename = m_dataDirectory + "/SM_" + "qq-G-" + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
+      filename = m_dataDirectory + "/SM_" + "qq-" + m_channel + E + "_2-3_" + to_string(m_vegasIterations) + "x" + m_vegasPoints;
+      m_inputFiles->push_back(filename + ".root");
+      m_weightFiles->push_back(filename + ".log");
+      filename = m_dataDirectory + "/SM_" + "qq-" + m_channel + E + "_3-4_" + to_string(m_vegasIterations) + "x" + m_vegasPoints;
       m_inputFiles->push_back(filename + ".root");
       m_weightFiles->push_back(filename + ".log");
     }
