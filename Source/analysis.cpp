@@ -1084,7 +1084,7 @@ void AnalysisZprime::SetupOutputFiles() {
     if (m_fid == true) m_outputFilename += ".fid";
     m_outputFilename += m_analysisLabel;
     m_outputFilename += ".root";
-    m_outputFilename = m_dataDirectory + "/" + "SM_gg-G-tt-bbllvv_2-4_5x10M.a.root";
+    // m_outputFilename = m_dataDirectory + "/" + "SM_gg-G-tt-bbllvv_2-4_5x10M.a.root";
 
     printf("--- Output ---\n");
     printf("%s\n", m_outputFilename.Data());
