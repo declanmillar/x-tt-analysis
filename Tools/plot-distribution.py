@@ -7,9 +7,9 @@ class HistPainter():
     canvas = ROOT.TCanvas("canvas", "canvas")
     grey = ROOT.TColor.GetColor(64.0/255.0, 64.0/255.0, 64.0/255.0)
 
+
     def __init__(self, xwidth, ywidth):
 
-        # add any drawn objects to this array for persistence
         self.members = []
         self.histograms = []
         self.ymin = -99.9
@@ -24,6 +24,7 @@ class HistPainter():
 
         print 'Done.'
         return None
+
 
     def AddHistogram(self, histname, filename, label, color):
 
@@ -68,53 +69,54 @@ class HistPainter():
         hist.SetMarkerColor(color)
         hist.SetMarkerStyle(0)
 
-
         # 2D
-        hist.SetLineStyle(30)
-        hist.SetLineWidth(1)
-        hist.GetXaxis().CenterTitle()
-        hist.GetYaxis().CenterTitle()
-        hist.GetYaxis().SetNdivisions(4)
-
-        hist.GetXaxis().SetTitleSize(0.06)
-        hist.GetYaxis().SetTitleSize(0.06)
-        hist.GetZaxis().SetTitleSize(0.06)
-        hist.GetXaxis().SetTitleOffset(1.2)
-        hist.GetYaxis().SetTitleOffset(1.2)
-        hist.GetZaxis().SetTitleOffset(0.8)
+        # hist.SetLineStyle(30)
+        # hist.SetLineWidth(1)
+        # hist.GetXaxis().CenterTitle()
+        # hist.GetYaxis().CenterTitle()
+        # hist.GetYaxis().SetNdivisions(4)
+        # hist.GetXaxis().SetTitleSize(0.06)
+        # hist.GetYaxis().SetTitleSize(0.06)
+        # hist.GetZaxis().SetTitleSize(0.06)
+        # hist.GetXaxis().SetTitleOffset(1.2)
+        # hist.GetYaxis().SetTitleOffset(1.2)
+        # hist.GetZaxis().SetTitleOffset(0.8)
 
         hist.SetMinimum(hist.GetBinContent(hist.GetMinimumBin()))
-        hist.Draw("lego2 fb same")
+        hist.Draw("hist same")
+        # hist.Draw("lego2 same fb")
 
         # clone to draw errors
         clone = hist.Clone("")
         self.members.append(clone)
 
         # Uncertainty style
-        # clone.SetFillColorAlpha(color, 0.2)
-        # clone.SetFillStyle(1001)
-        # clone.DrawCopy("e2 same")
+        clone.SetFillColorAlpha(color, 0.2)
+        clone.SetFillStyle(1001)
+        clone.DrawCopy("e2 same")
 
         f.Close()
 
 
     def AddInfoBox(self, model):
-        t2 = ROOT.TLatex(0.02, 0.95, "#bf{#int #it{L dt} = 100 fb^{-1}}, #bf{#it{#sqrt{s}} = 13 TeV}")
-        t2.SetNDC(True)
-        t2.SetTextSize(0.04)
-        t2.Draw("same")
-        self.members.append(t2)
-        t3 = ROOT.TLatex(0.05, 0.9, "#bf{Model: %s}" % model)
-        t3.SetNDC(True)
-        t3.SetTextSize(0.04)
-        t3.Draw("same")
-        self.members.append(t3)
-
-        t1 = ROOT.TLatex(0.05, 0.85, "#bf{#it{m_{Z'}} = 3 TeV}")
+        t1 = ROOT.TLatex(0.805, 0.75, "#bf{#it{m_{Z'}} = 3 TeV}")
+        t1.SetTextAlign(11)
         t1.SetTextSize(0.04)
         t1.SetNDC(True)
         t1.Draw("same")
         self.members.append(t1)
+
+        t2 = ROOT.TLatex(0.65, 0.9, "#bf{#int #it{L dt} = 100 fb^{-1}}, #bf{#it{#sqrt{s}} = 13 TeV}")
+        t2.SetNDC(True)
+        t2.SetTextSize(0.04)
+        t2.Draw("same")
+        self.members.append(t2)
+
+        t3 = ROOT.TLatex(0.785, 0.825, "#bf{Model: %s}" % model)
+        t3.SetNDC(True)
+        t3.SetTextSize(0.04)
+        t3.Draw("same")
+        self.members.append(t3)
 
 
     def AddLegend(self, xlow, ylow, xup, yup):
@@ -134,17 +136,19 @@ class HistPainter():
         bottom_margin = 0.13
 
         # 2D
-        right_margin = 0.03
-        bottom_margin = 0.08
+        # right_margin = 0.03
+        # bottom_margin = 0.08
+
         upper_pad.SetMargin(left_margin, right_margin, bottom_margin, top_margin)
         upper_pad.Draw()
         upper_pad.cd()
 
-        if True:#"TH2D" in type(hist).__name__:
-            upper_pad.SetTheta(20) # default: 30
-            upper_pad.SetPhi(-30) # default: 30
-            upper_pad.Update()
-            upper_pad.SetLogz()
+        # if True:#"TH2D" in type(hist).__name__:
+            # upper_pad.SetTheta(20) # default: 30
+            # # upper_pad.SetPhi(-30) # default: 30
+            # upper_pad.SetPhi(-150)
+            # upper_pad.Update()
+            # upper_pad.SetLogy()
         self.members.append(upper_pad)
 
 
@@ -152,14 +156,22 @@ class HistPainter():
         self.ymin = ymin
         self.ymax = ymax
 
+
     def SetXtitle(self, xtitle):
         self.xtitle = xtitle
+
 
     def SetYtitle(self, ytitle):
         self.ytitle = ytitle
 
+
     def SetZtitle(self, ztitle):
         self.ztitle = ztitle
+
+
+    def SetHistTitle(self, i, title):
+        self.histograms[i].SetTitle("#bf{%s}" % title)
+
 
     def SetRange(self, ymin, ymax):
         self.ymin = ymin
@@ -169,18 +181,17 @@ class HistPainter():
     def SetLogy(self):
         pass
 
+
     def SetDomain():
         pass
 
 
     def Save(self, name):
-        # print self.members
         HistPainter.canvas.SaveAs(name)
 
 
     def SetStyle(self):
         import atlas_style
-
 
 
 red = ROOT.TColor.GetColor(250.0/255.0, 0.0/255.0, 0.0/255.0)
@@ -191,31 +202,19 @@ grey = ROOT.TColor.GetColor(64.0/255.0, 64.0/255.0, 64.0/255.0)
 art = HistPainter(1920, 1080)
 art.SetStyle()
 art.AddPads()
-# art.SetRange(-0.8, 0.6)
-art.SetYtitle("#it{cos#theta_{l}}")
+art.SetRange(-0.2, 0.6)
+# art.SetYtitle("#it{cos#theta_{l}}")
 art.SetXtitle("#it{m_{tt}} [TeV]")
-art.SetZtitle("Events expected")
+art.SetYtitle("A_{FB}")
 
-art.AddHistogram("mtt_costhetal_R", "SM_ggqq-GAZ-tt-bbllvv_2-4_5x10M.a.L100.root", "#bf{SM}", grey)
+art.AddHistogram("AFB", "GLR-R-3_ggqq-GAZX-tt-6f_2-4_5x10M.a.L100.root", "#bf{SM}", grey)
+art.AddHistogram("AFB_R", "GLR-R-3_ggqq-GAZX-tt-6f_2-4_5x10M.a.L100.root", "#bf{SM}", red)
+art.SetHistTitle(1, "#it{m_{tt}} toy reconstruction")
+art.SetHistTitle(0, "#it{m_{tt}} truth")
 
-# GSM
-# art.AddHistogram("mtt_costhetal_R", "GSM-T3L-3_ggqq-GAZX-tt-bbllvv_2-4_5x10M.a.L100.root", "#bf{GSM-T^{3}_{L}}", grey)
-# art.AddHistogram("mtt_costhetastar_r", "GSM-SM-3_ggqq-GAZX-tt-bbllvv_2-4_5x10M.a.L100.root", "#bf{GSM-SM}", grey)
+art.AddInfoBox("GLR-R")
+art.AddLegend(0.13, 0.2, 0.5, 0.35)
 
-# GLR
-# art.AddHistogram("mtt_costhetal_R", "GLR-R-3_ggqq-GAZX-tt-bbllvv_2-4_5x10M.a.L100.root", "#bf{GLR-R}", grey)
-# art.AddHistogram("mtt_costhetastar_r", "GLR-LR-3_ggqq-GAZX-tt-bbllvv_2-4_5x10M.a.L100.root", "#bf{GLR-LR}", green)
-# art.AddHistogram("mtt_costhetastar_r", "GLR-Y-3_ggqq-GAZX-tt-bbllvv_2-4_5x10M.a.L100.root", "#bf{GLR-Y}", grey)
-
-
-art.AddInfoBox("SM")
-# art.AddLegend(0.13, 0.55, 0.4, 0.8)
-# art.AddLegend(0.13, 0.65, 0.4, 0.8)
-# art.AddLegend(0.13, 0.15, 0.4, 0.5)
-filename = "~/Dropbox/zprime-paper/figures/mtt-costhetal-r-sm-ggqq-gaz-tt-bbllvv-2-4-5x10M-a-l100.pdf"
-
-art.Save(filename)
-# art.Save("~/Desktop/canvas.pdf")
-
-# from subprocess import call
-# call("open %s" % filename)
+filename = "~/Dropbox/zprime-paper/figures/afb-r-afb-glr-r-ggqq-gazx-tt-bbllvv-2-4-5x10M-a-l100.pdf"
+# art.Save(filename)
+art.Save("~/Desktop/canvas.pdf")

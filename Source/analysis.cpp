@@ -302,6 +302,80 @@ void AnalysisZprime::EachEvent() {
     }
 }
 
+void AnalysisZprime::SetupInputFiles() {
+    m_inputFiles = new vector<TString>;
+    m_weightFiles = new vector<TString>;
+    TString filename;
+
+    string E = "";
+    if (m_energy != 13) "_" + to_string(m_energy);
+
+    if (m_add_ggG) {
+      filename = m_dataDirectory + "/SM_" + "gg-G-" + m_channel + E + "_2-4_" + to_string(m_vegasIterations) + "x" + m_vegasPoints;
+      m_inputFiles->push_back(filename + ".root");
+      m_weightFiles->push_back(filename + ".log");
+    }
+
+    if (m_add_qqG) {
+      filename = m_dataDirectory + "/SM_" + "qq-" + m_channel + E + "_2-3_" + to_string(m_vegasIterations) + "x" + m_vegasPoints;
+      m_inputFiles->push_back(filename + ".root");
+      m_weightFiles->push_back(filename + ".log");
+      filename = m_dataDirectory + "/SM_" + "qq-" + m_channel + E + "_3-4_" + to_string(m_vegasIterations) + "x" + m_vegasPoints;
+      m_inputFiles->push_back(filename + ".root");
+      m_weightFiles->push_back(filename + ".log");
+    }
+
+    filename = m_dataDirectory + "/" + m_model + "_" + m_initial_state + "-" + m_intermediates + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
+    m_inputFiles->push_back(filename + ".root");
+    m_weightFiles->push_back(filename + ".log");
+
+    // filename = m_dataDirectory + "/" + "SM_qq-tt-bbllvv_2-3_5x10M";
+    // m_inputFiles->push_back(filename + ".root");
+    // m_weightFiles->push_back(filename + ".log");
+    // filename = m_dataDirectory + "/" + "SM_qq-tt-bbllvv_3-4_5x10M";
+    // m_inputFiles->push_back(filename + ".root");
+    // m_weightFiles->push_back(filename + ".log");
+
+    // Check all input files exist
+    for (Itr_s i = m_inputFiles->begin(); i != m_inputFiles->end(); ++i) {
+        bool exists;
+        struct stat buffer;
+        exists = stat ((*i).Data(), &buffer) == 0;
+        if (exists == false) {
+            printf("Error: %s does not exist.\n", (*i).Data());
+            exit(exists);
+        }
+    }
+}
+
+void AnalysisZprime::SetupOutputFiles() {
+    TString outfilename;
+    TString initial_state = m_initial_state;
+    TString intermediates = m_intermediates;
+    string E = "";
+    if (m_energy != 13) "_" + to_string(m_energy);
+
+    if (m_add_ggG || m_add_qqG) intermediates = "G" + intermediates;
+    if (m_add_ggG) initial_state = "gg" + initial_state;
+    outfilename = m_dataDirectory + "/" + m_model + "_" + initial_state + "-" + intermediates + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
+    m_outputFilename = outfilename + ".a";
+
+    if (m_reco && nBtags != 2) m_outputFilename += ".b" + to_string(nBtags) + ".c" + BoolToString(m_discardComplex);
+    string ytt = to_string(m_ytt);
+    if (m_ytt > 0) m_outputFilename += ".y" + ytt.erase(ytt.find_last_not_of('0') + 1, string::npos);
+    if (m_Emin >= 0 || m_Emax >= 0) m_outputFilename += ".E" + to_string(m_Emin) + "-" + to_string(m_Emax);
+    string eff = to_string(m_efficiency);
+    if (m_efficiency < 1.0) m_outputFilename += ".e" + eff.erase(eff.find_last_not_of('0') + 1, string::npos);
+    if (m_luminosity > 0) m_outputFilename += ".L" + to_string(m_luminosity);
+    if (m_fid == true) m_outputFilename += ".fid";
+    m_outputFilename += m_analysisLabel;
+    m_outputFilename += ".root";
+
+    printf("--- Output ---\n");
+    printf("%s\n", m_outputFilename.Data());
+    m_outputFile = new TFile(m_outputFilename, "RECREATE");
+}
+
 void AnalysisZprime::PostLoop () {
     this->CheckResults();
     if (m_reco) this->CheckPerformance();
@@ -410,9 +484,9 @@ void AnalysisZprime::CreateHistograms() {
     h_deltaPhi->Sumw2();
     h_pzNu = new TH1D("pzNu", "p_{z}^{#nu}", nbins, -500.0, 500.0);
     h_pzNu->Sumw2();
-    h_cosTheta1 = new TH1D("costheta1", "cos#theta_{l+}", 20, -1.0, 1.0);
+    h_cosTheta1 = new TH1D("costheta1", "cos#theta_{l+}", 10, -1.0, 1.0);
     h_cosTheta1->Sumw2();
-    h_cosTheta2 = new TH1D("costheta2", "cos#theta_{l-}", 20, -1.0, 1.0);
+    h_cosTheta2 = new TH1D("costheta2", "cos#theta_{l-}", 10, -1.0, 1.0);
     h_cosTheta2->Sumw2();
     h_cos1cos2 = new TH1D("cos1cos2", "cos#theta_{l+}cos#theta_{l-}", 20, -1.0, 1.0);
     h_cos1cos2->Sumw2();
@@ -437,22 +511,22 @@ void AnalysisZprime::CreateHistograms() {
     h2_mtt_deltaPhi->GetYaxis()->SetTitle("#Delta#phi_{l}");
     h2_mtt_deltaPhi->Sumw2();
 
-    h2_mtt_cosTheta1 = new TH2D("mtt_costheta1", "m_{tt} cos#theta_{l+}", nbins, Emin, Emax, 20, -1.0, 1.0);
+    h2_mtt_cosTheta1 = new TH2D("mtt_costheta1", "m_{tt} cos#theta_{l+}", nbins, Emin, Emax, 10, -1.0, 1.0);
     h2_mtt_cosTheta1->GetXaxis()->SetTitle("m_{tt} [TeV]");
     h2_mtt_cosTheta1->GetYaxis()->SetTitle("cos#theta_{l+}");
     h2_mtt_cosTheta1->Sumw2();
 
-    h2_mtt_cosTheta2 = new TH2D("mtt_costheta2", "m_{tt} cos#theta_{l-}", nbins, Emin, Emax, 20, -1.0, 1.0);
+    h2_mtt_cosTheta2 = new TH2D("mtt_costheta2", "m_{tt} cos#theta_{l-}", nbins, Emin, Emax, 10, -1.0, 1.0);
     h2_mtt_cosTheta2->GetXaxis()->SetTitle("m_{tt} [TeV]");
     h2_mtt_cosTheta2->GetYaxis()->SetTitle("cos#theta_{l-}");
     h2_mtt_cosTheta2->Sumw2();
 
-    h2_mtt_cosThetal_R = new TH2D("mtt_costhetal_R", "m_{tt} cos#theta_{l} (reco)", nbins, Emin, Emax, 20, -1.0, 1.0);
+    h2_mtt_cosThetal_R = new TH2D("mtt_costhetal_R", "m_{tt} cos#theta_{l} (reco)", nbins, Emin, Emax, 10, -1.0, 1.0);
     h2_mtt_cosThetal_R->GetXaxis()->SetTitle("m_{tt} (reco) [TeV]");
     h2_mtt_cosThetal_R->GetYaxis()->SetTitle("cos#theta_{l}");
     h2_mtt_cosThetal_R->Sumw2();
 
-    h2_mtt_cos1cos2 = new TH2D("mtt_cos1cos2", "m_{tt} cos#theta_{l+}cos#theta_{l-}", nbins, Emin, Emax, 20, -1.0, 1.0);
+    h2_mtt_cos1cos2 = new TH2D("mtt_cos1cos2", "m_{tt} cos#theta_{l+}cos#theta_{l-}", nbins, Emin, Emax, 10, -1.0, 1.0);
     h2_mtt_cos1cos2->GetXaxis()->SetTitle("m_{tt}");
     h2_mtt_cos1cos2->GetYaxis()->SetTitle("cos#theta_{l+}cos#theta_{l-}");
     h2_mtt_cos1cos2->Sumw2();
@@ -1006,90 +1080,6 @@ void AnalysisZprime::Loop() {
 }
 
 AnalysisZprime::~AnalysisZprime() {delete m_inputFiles;}
-
-void AnalysisZprime::SetupInputFiles() {
-    m_inputFiles = new vector<TString>;
-    m_weightFiles = new vector<TString>;
-    TString filename;
-
-    string E = "";
-    if (m_energy != 13) "_" + to_string(m_energy);
-
-    // filename = m_dataDirectory + "/" + "SM_gg-G-tt-bbllvv_2-4_5x10M";
-    // m_inputFiles->push_back(filename + ".root");
-    // m_weightFiles->push_back(filename + ".log");
-
-    if (m_add_ggG) {
-      filename = m_dataDirectory + "/SM_" + "gg-G-" + m_channel + E + "_2-4_" + to_string(m_vegasIterations) + "x" + m_vegasPoints;
-      m_inputFiles->push_back(filename + ".root");
-      m_weightFiles->push_back(filename + ".log");
-    }
-
-    if (m_add_qqG) {
-      filename = m_dataDirectory + "/SM_" + "qq-" + m_channel + E + "_2-3_" + to_string(m_vegasIterations) + "x" + m_vegasPoints;
-      m_inputFiles->push_back(filename + ".root");
-      m_weightFiles->push_back(filename + ".log");
-      filename = m_dataDirectory + "/SM_" + "qq-" + m_channel + E + "_3-4_" + to_string(m_vegasIterations) + "x" + m_vegasPoints;
-      m_inputFiles->push_back(filename + ".root");
-      m_weightFiles->push_back(filename + ".log");
-    }
-
-    filename = m_dataDirectory + "/" + m_model + "_" + m_initial_state + "-" + m_intermediates + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
-    m_inputFiles->push_back(filename + ".root");
-    m_weightFiles->push_back(filename + ".log");
-
-    // filename = m_dataDirectory + "/" + "SM_qq-tt-bbllvv_2-3_5x10M";
-    // m_inputFiles->push_back(filename + ".root");
-    // m_weightFiles->push_back(filename + ".log");
-    // filename = m_dataDirectory + "/" + "SM_qq-tt-bbllvv_3-4_5x10M";
-    // m_inputFiles->push_back(filename + ".root");
-    // m_weightFiles->push_back(filename + ".log");
-    // filename = m_dataDirectory + "/" + "SM_qq-tt-bbllvv_2-4_5x10M";
-    // m_inputFiles->push_back(filename + ".root");
-    // m_weightFiles->push_back(filename + ".log");
-
-    for (Itr_s i = m_inputFiles->begin(); i != m_inputFiles->end(); ++i) {
-        bool exists;
-        struct stat buffer;
-        exists = stat ((*i).Data(), &buffer) == 0;
-        if (exists == false) {
-            printf("Error: %s does not exist.\n", (*i).Data());
-            exit(exists);
-        }
-    }
-}
-
-void AnalysisZprime::SetupOutputFiles() {
-    TString outfilename;
-    TString initial_state = m_initial_state;
-    TString intermediates = m_intermediates;
-    string E = "";
-    if (m_energy != 13) "_" + to_string(m_energy);
-
-
-    // outfilename = m_dataDirectory + "/" + "SM_qq-G-tt-bbllvv_0-13_5x10M";
-
-    if (m_add_ggG || m_add_qqG) intermediates = "G" + intermediates;
-    if (m_add_ggG) initial_state = "gg" + initial_state;
-    outfilename = m_dataDirectory + "/" + m_model + "_" + initial_state + "-" + intermediates + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
-    m_outputFilename = outfilename + ".a";
-
-    if (m_reco && nBtags != 2) m_outputFilename += ".b" + to_string(nBtags) + ".c" + BoolToString(m_discardComplex);
-    string ytt = to_string(m_ytt);
-    if (m_ytt > 0) m_outputFilename += ".y" + ytt.erase(ytt.find_last_not_of('0') + 1, string::npos);
-    if (m_Emin >= 0 || m_Emax >= 0) m_outputFilename += ".E" + to_string(m_Emin) + "-" + to_string(m_Emax);
-    string eff = to_string(m_efficiency);
-    if (m_efficiency < 1.0) m_outputFilename += ".e" + eff.erase(eff.find_last_not_of('0') + 1, string::npos);
-    if (m_luminosity > 0) m_outputFilename += ".L" + to_string(m_luminosity);
-    if (m_fid == true) m_outputFilename += ".fid";
-    m_outputFilename += m_analysisLabel;
-    m_outputFilename += ".root";
-    // m_outputFilename = m_dataDirectory + "/" + "SM_gg-G-tt-bbllvv_2-4_5x10M.a.root";
-
-    printf("--- Output ---\n");
-    printf("%s\n", m_outputFilename.Data());
-    m_outputFile = new TFile(m_outputFilename,"RECREATE");
-}
 
 Long64_t AnalysisZprime::TotalEvents() {
     if (m_ntup != 0) {return m_ntup->totalEvents();}
