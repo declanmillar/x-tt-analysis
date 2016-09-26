@@ -145,9 +145,7 @@ void AnalysisZprime::EachEvent() {
     double mtt_R1 = P_R1.M()/1000;
     double mtt_R2 = P_R2.M()/1000;
     double HT = 0;
-    for (int i = 0; i < 5; i++) {
-        HT = HT + p[i].Pt();
-    }
+    for (int i = 0; i < 5; i++) HT = HT + p[i].Pt();
     HT = HT/1000;
     double mvis = (p[0] + p[1] +p[2] + p[4]).M();
     double pTvis = (p[0] + p[1] +p[2] + p[4]).Pt();
@@ -264,12 +262,12 @@ void AnalysisZprime::EachEvent() {
         if (cosTheta1 < 0) h_mtt_Bl->Fill(mtt, weight);
 
         h2_mtt_cosThetaStar->Fill(mtt, cosThetaStar, weight);
-        // h2_mtt_deltaPhi->Fill(mtt, deltaPhi, weight);
+        h2_mtt_deltaPhi->Fill(mtt, deltaPhi, weight);
         h2_mtt_cosTheta1->Fill(mtt, cosTheta1, weight);
         h2_mtt_cosTheta2->Fill(mtt, cosTheta2, weight);
-        // h2_mtt_cos1cos2->Fill(mtt, cos1cos2, weight);
-        // h2_HT_deltaPhi->Fill(HT, deltaPhi, weight);
-        // h2_KT_deltaPhi->Fill(KT, deltaPhi, weight);
+        h2_mtt_cos1cos2->Fill(mtt, cos1cos2, weight);
+        h2_HT_deltaPhi->Fill(HT, deltaPhi, weight);
+        h2_KT_deltaPhi->Fill(KT, deltaPhi, weight);
     }
 
     if (m_reco) {

@@ -81,10 +81,10 @@ class HistPainter():
         # hist.GetXaxis().SetTitleOffset(1.2)
         # hist.GetYaxis().SetTitleOffset(1.2)
         # hist.GetZaxis().SetTitleOffset(0.8)
-
-        hist.SetMinimum(hist.GetBinContent(hist.GetMinimumBin()))
-        hist.Draw("hist same")
+        # hist.SetMinimum(hist.GetBinContent(hist.GetMinimumBin()))
         # hist.Draw("lego2 same fb")
+
+        hist.Draw("hist same")
 
         # clone to draw errors
         clone = hist.Clone("")
@@ -99,24 +99,27 @@ class HistPainter():
 
 
     def AddInfoBox(self, model):
-        t1 = ROOT.TLatex(0.805, 0.75, "#bf{#it{m_{Z'}} = 3 TeV}")
+        x = 0.15
+        y = 0.25
+
+        t1 = ROOT.TLatex(x + 0.02, y - 0.075, "#bf{#it{m_{Z'}} = 3 TeV}")
         t1.SetTextAlign(11)
         t1.SetTextSize(0.04)
         t1.SetNDC(True)
         t1.Draw("same")
         self.members.append(t1)
 
-        t2 = ROOT.TLatex(0.65, 0.9, "#bf{#int #it{L dt} = 100 fb^{-1}}, #bf{#it{#sqrt{s}} = 13 TeV}")
+        t2 = ROOT.TLatex(x, y, "#bf{#int #it{L dt} = 100 fb^{-1}}, #bf{#it{#sqrt{s}} = 13 TeV}")
         t2.SetNDC(True)
         t2.SetTextSize(0.04)
         t2.Draw("same")
         self.members.append(t2)
 
-        t3 = ROOT.TLatex(0.785, 0.825, "#bf{Model: %s}" % model)
-        t3.SetNDC(True)
-        t3.SetTextSize(0.04)
-        t3.Draw("same")
-        self.members.append(t3)
+        # t3 = ROOT.TLatex(x+0.02, 0.825, "#bf{Model: %s}" % model)
+        # t3.SetNDC(True)
+        # t3.SetTextSize(0.04)
+        # t3.Draw("same")
+        # self.members.append(t3)
 
 
     def AddLegend(self, xlow, ylow, xup, yup):
@@ -129,7 +132,7 @@ class HistPainter():
 
 
     def AddPads(self):
-        upper_pad = ROOT.TPad("upper_pad","upper_pad", 0, 0, 1, 1)
+        upper_pad = ROOT.TPad("upper_pad", "upper_pad", 0, 0, 1, 1)
         top_margin = 0.025
         right_margin = 0.01
         left_margin = 0.1
@@ -148,7 +151,8 @@ class HistPainter():
             # # upper_pad.SetPhi(-30) # default: 30
             # upper_pad.SetPhi(-150)
             # upper_pad.Update()
-            # upper_pad.SetLogy()
+
+        # upper_pad.SetLogy()
         self.members.append(upper_pad)
 
 
@@ -202,19 +206,18 @@ grey = ROOT.TColor.GetColor(64.0/255.0, 64.0/255.0, 64.0/255.0)
 art = HistPainter(1920, 1080)
 art.SetStyle()
 art.AddPads()
-art.SetRange(-0.2, 0.6)
-# art.SetYtitle("#it{cos#theta_{l}}")
-art.SetXtitle("#it{m_{tt}} [TeV]")
-art.SetYtitle("A_{FB}")
+# art.SetZtitle("#it{cos#theta_{l}}")
+# art.SetXtitle("#it{m_{tt}} [TeV]")
+# art.SetYtitle("A_{L}")
 
-art.AddHistogram("AFB", "GLR-R-3_ggqq-GAZX-tt-6f_2-4_5x10M.a.L100.root", "#bf{SM}", grey)
-art.AddHistogram("AFB_R", "GLR-R-3_ggqq-GAZX-tt-6f_2-4_5x10M.a.L100.root", "#bf{SM}", red)
-art.SetHistTitle(1, "#it{m_{tt}} toy reconstruction")
-art.SetHistTitle(0, "#it{m_{tt}} truth")
+art.AddHistogram("KT", "SM_ggqq-GAZ-tt-6f_2-4_5x10M.a.L100.root", "#bf{SM}", grey)
+art.AddHistogram("KT", "GLR-R-3_ggqq-GAZX-tt-6f_2-4_5x10M.a.L100.root", "#bf{SM}", blue)
 
 art.AddInfoBox("GLR-R")
-art.AddLegend(0.13, 0.2, 0.5, 0.35)
 
-filename = "~/Dropbox/zprime-paper/figures/afb-r-afb-glr-r-ggqq-gazx-tt-bbllvv-2-4-5x10M-a-l100.pdf"
+# art.SetHistTitle(0, "SM")
+# art.AddLegend(0.13, 0.65, 0.35, 0.95)
+
+filename = "~/Dropbox/zprime-paper/figures/al-r-glr-r-ggqq-gazx-tt-bbllvv-2-4-5x10M-a-y0-y0.5-l100.pdf"
 # art.Save(filename)
 art.Save("~/Desktop/canvas.pdf")
