@@ -29,9 +29,10 @@ AnalysisZprime::AnalysisZprime(const TString model, const TString initial_state,
     nBtags(btags),
     m_discardComplex(discardComplex),
     m_analysisLabel(analysisLabel),
-    m_reco(true),
+    m_reco(1),
     m_pi(3.14159265),
     m_GeV(1000.0),
+    m_bmass(4.18),
     m_Wmass(80.23),
     m_tmass(173.0),
     m_ytt(0),
@@ -91,7 +92,26 @@ void AnalysisZprime::EachEvent() {
         Patop += patop[i];
     }
 
-    if (m_reco) {
+
+    if (m_reco == 1) {
+        p_R1 = this->ReconstructDilepton(p); // both decay leptonically
+
+        P_R1.SetPxPyPzE(0, 0, 0, 0);
+        for (int i = 0; i < 6; i++) P_R1 += p_R1[i];
+
+        TVector3 V_R1 = -1*P_R1.BoostVector();
+        TVector3 Vtop_R1 = -1*(p_R1[0] + p_R1[2] + p_R1[3]).BoostVector();
+        TVector3 Vatop_R1 = -1*(p_R2[1] + p_R2[4] + p_R2[5]).BoostVector();
+        pcm_R1 = p_R1;
+        ptop_R1 = p_R1;
+        patop_R2 = p_R1;
+        for (unsigned int i = 0; i < p.size(); i++) {
+            pcm_R1[i].Boost(V_R1);
+            ptop_R1[i].Boost(Vtop_R1);
+            patop_R2[i].Boost(Vatop_R1);
+        }
+    }
+    if (m_reco == 2) {
         p_R1 = this->ReconstructSemiLeptonic(p, 1); // top decays leptonically
         p_R2 = this->ReconstructSemiLeptonic(p, -1); // top decays hadronically
 
@@ -122,7 +142,6 @@ void AnalysisZprime::EachEvent() {
             pcm_R2[i].Boost(V_R2);
             ptop_R1[i].Boost(Vtop_R1);
             patop_R2[i].Boost(Vatop_R2);
-            // patop[i].Print();
         }
     }
 
@@ -133,9 +152,11 @@ void AnalysisZprime::EachEvent() {
     pcm_t = pcm[0] + pcm[2] + pcm[3];
     pcm_tb = pcm[1] + pcm[4] + pcm[5];
 
-    if (m_reco) {
+    if (m_reco > 0) {
         p_t_R1 = pcm_R1[0] + pcm_R1[2] + pcm_R1[3];
         p_tb_R1 = pcm_R1[1] + pcm_R1[4] + pcm_R1[5];
+    }
+    if (m_reco == 2) {
         p_t_R2 = pcm_R2[0] + pcm_R2[2] + pcm_R2[3];
         p_tb_R2 = pcm_R2[1] + pcm_R2[4] + pcm_R2[5];
     }
@@ -270,7 +291,7 @@ void AnalysisZprime::EachEvent() {
         h2_KT_deltaPhi->Fill(KT, deltaPhi, weight);
     }
 
-    if (m_reco) {
+    if (m_reco > 0) {
         if (this->PassCuts("R1")) {
             h_mtt_R->Fill(mtt_R1, weight_R);
             h_ytt_R->Fill(ytt_R1, weight_R);
@@ -284,6 +305,8 @@ void AnalysisZprime::EachEvent() {
             h2_mtt_cosThetaStar_R->Fill(mtt_R1, cosThetaStar_R1, weight_R);
             h2_mtt_cosThetal_R->Fill(mtt_R1, cosTheta1_R1, weight_R);
         }
+    }
+    if (m_reco == 2) {
         if (this->PassCuts("R2")) {
             h_mtt_R->Fill(mtt_R2, weight_R);
             h_ytt_R->Fill(ytt_R2, weight_R);
@@ -358,7 +381,7 @@ void AnalysisZprime::SetupOutputFiles() {
     outfilename = m_dataDirectory + "/" + m_model + "_" + initial_state + "-" + intermediates + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
     m_outputFilename = outfilename + ".a";
 
-    if (m_reco && nBtags != 2) m_outputFilename += ".b" + to_string(nBtags) + ".c" + BoolToString(m_discardComplex);
+    if (m_reco == 2 && nBtags != 2) m_outputFilename += ".b" + to_string(nBtags) + ".c" + BoolToString(m_discardComplex);
     string ytt = to_string(m_ytt);
     if (m_ytt > 0) m_outputFilename += ".y" + ytt.erase(ytt.find_last_not_of('0') + 1, string::npos);
     if (m_Emin >= 0 || m_Emax >= 0) m_outputFilename += ".E" + to_string(m_Emin) + "-" + to_string(m_Emax);
@@ -376,7 +399,7 @@ void AnalysisZprime::SetupOutputFiles() {
 
 void AnalysisZprime::PostLoop () {
     this->CheckResults();
-    if (m_reco) this->CheckPerformance();
+    if (m_reco == 2) this->CheckPerformance();
     this->MakeGraphs();
     this->PrintCutflow();
     this->WriteHistograms();
@@ -575,7 +598,7 @@ void AnalysisZprime::CreateHistograms() {
         h_pt.push_back(new TH1D(n_pt[i].c_str(), t_pt[i].c_str(), 400, 0, 100));
     }
 
-    if (m_reco) {
+    if (m_reco > 0 > 0) {
         h_mtt_R = new TH1D("mtt_R", "m_{tt}^{reco}", nbins, Emin, Emax);
         h_mtt_R->Sumw2();
         h_mt_R = new TH1D("mt_R", "m_{t}^{reco}", nbins, 0, 350);
@@ -652,7 +675,7 @@ void AnalysisZprime::MakeGraphs() {
         h->GetXaxis()->SetTitle("p_{T}");
     }
 
-    if(m_reco) {
+    if (m_reco > 0 > 0) {
         this->MakeDistribution(h_mtt_R, "TeV");
         this->MakeDistribution(h_mtt_FR, "TeV");
         this->MakeDistribution(h_mtt_BR, "TeV");
@@ -756,7 +779,7 @@ void AnalysisZprime::WriteHistograms() {
     for (int i = 0; i < (int) h_pt.size(); i++)
         h_pt[i]->Write();
 
-    if (m_reco) {
+    if (m_reco > 0) {
         h_mtt_FRn->Write();
         h_mtt_BRn->Write();
         h_AFB_R->Write();
@@ -1324,11 +1347,244 @@ vector<complex<double> > AnalysisZprime::SolveQuadratic(double a, double b, doub
     return roots;
 }
 
+bool solveQuadratic(double a, double b, double c, double &root) {
+    if (a == 0.0 || abs(a/b) < 1.0e-4) {
+        if (abs(b) < 1.0e-4) 
+            return false;
+        else {
+            root = -c/b;
+            return true;
+        }
+    }
+
+    double discriminant = b*b - 4.0*a*c;
+    if (discriminant >= 0.0) {
+        discriminant = sqrt(discriminant);
+        root = (b - discriminant)*-0.5/a;
+        return true;
+    }
+
+    return false;
+}
+
+bool solveCubic(double a, double b, double c, double d, double &root) {
+    if (a == 0.0 || abs(a/b) < 1.0e-6) return solveQuadratic(b, c, d, root);
+
+    double B = b/a, C = c/a, D = d/a;
+    double Q = (B*B - C*3.0)/9.0, QQQ = Q*Q*Q;
+    double R = (2.0*B*B*B - 9.0*B*C + 27.0*D)/54.0, RR = R*R;
+    double pi = 3.14159265;
+
+    // 3 real roots
+    if (RR < QQQ) {
+        // This sqrt and division is safe, since RR >= 0, so QQQ > RR,    
+        // so QQQ > 0.  The acos is also safe, since RR/QQQ < 1, and     
+        // thus R/sqrt(QQQ) < 1.                                     
+        double theta = acos(R/sqrt(QQQ));
+        // This sqrt is safe, since QQQ >= 0, and thus Q >= 0
+
+        double r1, r2, r3;
+        r1 = r2 = r3 = -2.0*sqrt(Q);
+        r1 *= cos(theta/3.0);
+        r2 *= cos((theta + 2*pi)/3.0);
+        r3 *= cos((theta - 2*pi)/3.0);
+
+        r1 -= B/3.0;
+        r2 -= B/3.0;
+        r3 -= B/3.0; 
+
+        root = 1000000.0;
+
+        if (r1 >= 0.0) root = r1;
+        if (r2 >= 0.0 && r2 < root) root = r2;
+        if (r3 >= 0.0 && r3 < root) root = r3;
+
+        return true;
+    }
+    // 1 real root
+    else {
+        double A2 = -pow(fabs(R) + sqrt(RR - QQQ), 1.0/3.0);
+        if (A2 != 0.0) {
+            if (R < 0.0) A2 = -A2; 
+            root = A2 + Q/A2; 
+        }
+        root -= B/3.0;
+        return true;
+    }
+}
+
+bool solveQuartic(double a, double b, double c, double d, double e, double &root) {
+    // When a or (a and b) are magnitudes of order smaller than C, D, E just ignore them entirely. 
+    if (a == 0.0 || abs(a/b) < 1.0e-5 || abs(a/c) < 1.0e-5 || abs(a/d) < 1.0e-5) return solveCubic(b, c, d, e, root);
+
+    double B = b/a, C = c/a, D = d/a, E = e/a;
+    double BB = B*B;
+    double I = -3.0*BB*0.125 + C;
+    double J = BB*B*0.125 - B*C*0.5 + D;
+    double K = -3*BB*BB/256.0 + C*BB/16.0 - B*D*0.25 + E;
+    double z;
+    // bool foundRoot2 = false, foundRoot3 = false, foundRoot4 = false, foundRoot5 = false;
+    if (solveCubic(1.0, 2*I, I*I - 4*K, -J*J, z)) {
+        // double value = z*z*z + 2*z*z*I + z*(I*I - 4*K) - J*J;
+
+        double p = sqrt(z);
+        double r = -p;
+        double q = (I + z - J/p)*0.5;
+        double s = (I + z + J/p)*0.5;
+
+        bool foundRoot = false, foundARoot;
+        double aRoot;
+        foundRoot = solveQuadratic(1.0, p, q, root);
+        root -= B/4.0;
+
+        foundARoot = solveQuadratic(1.0, r, s, aRoot);
+        aRoot -= B/4.0;
+        if((foundRoot && foundARoot && ((aRoot < root && aRoot >= 0.0) || root < 0.0)) || (!foundRoot && foundARoot)) {
+            root = aRoot;
+            foundRoot = true;
+        }
+
+        foundARoot = solveQuadratic(1.0, p, q, aRoot);
+        aRoot -= B/4.0;
+        if((foundRoot && foundARoot && ((aRoot < root && aRoot >= 0.0) || root < 0.0)) || (!foundRoot && foundARoot)) {
+            root = aRoot;
+            foundRoot = true;
+        }
+
+        foundARoot = solveQuadratic(1.0, r, s, aRoot);
+        aRoot -= B/4.0;
+        if((foundRoot && foundARoot && ((aRoot < root && aRoot >= 0.0) || root < 0.0)) || (!foundRoot && foundARoot)) {
+            root = aRoot;
+            foundRoot = true;
+        }
+        return foundRoot;
+    }
+    return false;
+}
+
+vector<TLorentzVector> AnalysisZprime::ReconstructDilepton(vector<TLorentzVector> p) {
+
+    this->UpdateCutflow(c_events, true);
+
+    m_nReco++;
+
+    vector<TLorentzVector> p_R(p.size());
+
+    vector<complex<double> > roots;
+
+    TLorentzVector pb1 = p[0], pb2 = p[1], pl1 = p[2], pv1 = p[3], pl2 = p[4], pv2 = p[5];
+
+    double pb1x = pb1.Px(), pb1y = pb1.Py(), pb1z = pb1.Pz(), Eb1 = pb1.E();
+    double pb2x = pb2.Px(), pb2y = pb2.Py(), pb2z = pb2.Pz(), Eb2 = pb2.E();
+    double pl1x = pl1.Px(), pl1y = pl1.Py(), pl1z = pl1.Pz(), El1 = pl1.E();
+    double pl2x = pl2.Px(), pl2y = pl2.Py(), pl2z = pl2.Pz(), El2 = pl2.E();
+    double pv1x = pv1.Px(), pv1y = pv1.Py(), pv2x = pv2.Px(), pv2y = pv2.Py();
+    double Emissx = pv1x + pv2x;
+    double Emissy = pv1y + pv2y;
+
+    double ml1 = 0, ml2 = 0, mv1 = 0, mv2 = 0;
+
+    double a1 = (Eb1 + El1)*(m_Wmass*m_Wmass - ml1*ml1 - mv1*mv1)
+                - El1*(m_tmass*m_tmass - m_bmass*m_bmass - ml1*ml1 - mv1*mv1)
+                + 2*Eb1*El1*El1 - 2*El1*(pb1x*pl1x + pb1y*pl1y + pb1z*pl1z);
+    double a2 = 2*(Eb1*pl1x - El1*pb1x);
+    double a3 = 2*(Eb1*pl1y - El1*pb1y);
+    double a4 = 2*(Eb1*pl1z - El1*pb1z);
+    double b1 = (Eb2 + El2)*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)
+                - El2*(m_tmass*m_tmass - m_bmass*m_bmass - ml2*ml2 - mv2*mv2)
+                + 2*Eb2*El2*El2 - 2*El2*(pb2x*pl2x + pb2y*pl2y + pb2z*pl2z);                
+    double b2 = 2*(Eb2*pl2x - El2*pb2x);
+    double b3 = 2*(Eb2*pl2y - El2*pb2y);
+    double b4 = 2*(Eb2*pl2z - El2*pb2z);
+    double c22 = (m_Wmass*m_Wmass - ml1*ml1 - mv1*mv1)*(m_Wmass*m_Wmass - ml1*ml1 - mv1*mv1)
+                 - 4*(El1*El1 - pl1z*pl1z)*a1*a1/a4/a4
+                 - 4*(m_Wmass*m_Wmass - ml1*ml1 - mv1*mv1)*pl1z*a1/a4;
+    double c21 = 4*(m_Wmass*m_Wmass - ml1*ml1 - mv1*mv1)*(pl1x - pl1z*a2/a4)
+                 - 8*(El1*El1 - pl1z*pl1z)*a1*a2/a4/a4 
+                 - 8*pl1x*pl1z*a1/a4;
+    double c20 = -4*(El1*El1 - pl1x*pl1x)
+                 - 4*(El1*El1 - pl1z*pl1z)*a2*a2/a4/a4
+                 - 8*pl1x*pl1z*a2/a4;
+    double c11 = 4*(m_Wmass*m_Wmass - ml1*ml1 - mv1*mv1)*(pl1y - pl1z*a3/a4)
+                 - 8*(El1*El1 - pl1z*pl1z)*a1*a3/a4/a4
+                 - 8*pl1y*pl1z*a1/a4;
+    double c10 = -8*(El1*El1 - pl1z*pl1z)*a2*a3/a4/a4 + 8*pl1x*pl1y
+                 - 8*pl1x*pl1z*a3/a4 - 8*pl1y*pl1z*a2/a4;
+    double c00 = -4*(El1*El1 - pl1y*pl1y) - 4*(El1*El1 - pl1z*pl1z)*a3*a3/a4/a4
+                 - 8*pl1y*pl1z*a3/a4;
+    double dd22 = (m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2) - 4*(El2*El2 - pl1z*pl1z)*b1*b1/b4/b4
+                 - 4*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)*pl1z*b1/b4;
+    double dd21 = 4*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)*(pl1x - pl1z*b2/b4)
+                 - 8*(El2*El2 - pl1z*pl1z)*b1*b2/b4/b4 
+                 - 8*pl1x*pl1z*b1/b4;
+    double d20 = -4*(El2*El2 - pl1x*pl1x)
+                 - 4*(El2*El2 - pl1z*pl1z)*b2*b2/b4/b4
+                 - 8*pl1x*pl1z*b2/b4; 
+    double dd11 = 4*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)*(pl1y - pl1z*b3/b4)
+                 - 8*(El2*El2 - pl1z*pl1z)*b1*b3/b4/b4
+                 - 8*pl1y*pl1z*b1/b4;
+    double d10 = -8*(El2*El2 - pl1z*pl1z)*b2*b3/b4/b4 + 8*pl1x*pl1y
+                 - 8*pl1x*pl1z*b3/b4 - 8*pl1y*pl1z*b2/b4;
+    double d00 = -4*(El2*El2 - pl1y*pl1y) - 4*(El2*El2 - pl1z*pl1z)*b3*b3/b4/b4
+                 - 8*pl1y*pl1z*b3/b4;
+    double d22 = dd22 + Emissx*Emissx*d20 +Emissy*Emissy*d00
+                 + Emissx*Emissy*d10 + Emissx*dd21 + Emissy*dd11;
+    double d21 = -dd21 -2*Emissx*d20 - Emissy*d10;
+    double d11 = -dd11 -2*Emissy*d00 - Emissx*d10; 
+    double h4 = c00*c00*d22*d22 + c11*d22*(c11*d00 - c00*d11)
+                + c00*c22*(d11*d11 - 2*d00*d22) + c22*d00*(c22*d00 - c11*d11);
+    double h3 = c00*d21*(2*c00*d22 - c11*d11) + c00*d11*(2*c22*d10 + c21*d11) 
+                + c22*d00*(2*c21*d00-c11*d10)-c00*d22*(c11*d10 + c10*d11)  
+                -2*c00*d00*(c22*d21 + c21*d22)-d00*d11*(c11*c21 + c10*c22) 
+                + c11*d00*(c11*d21 + 2*c10*d22);
+    double h2 = c00*c00*(2*d22*d20 + d21*d21) - c00*d21*(c11*d10 + c10*d11)  
+                + c11*d20*(c11*d00 - c00*d11) + c00*d10*(c22*d10 - c10*d22)   
+                + c00*d11*(2*c21*d10 + c20*d11) + (2*c22*c20 + c21*c21)*d00*d00   
+                -2*c00*d00*(c22*d20 + c21*d21 + c20*d22)    
+                + c10*d00*(2*c11*d21 + c10*d22) - d00*d10*(c11*c21 + c10*c22)   
+                - d00*d11*(c11*c20 + c10*c21);
+    double h1 = c00*d21*(2*c00*d20 - c10*d10) - c00*d20*(c11*d10 + c10*d11)  
+                + c00*d10*(c21*d10 + 2*c20*d11) - 2*c00*d00*(c21*d20 + c20*d21)  
+                + c10*d00*(2*c11*d20 + c10*d21) - c20*d00*(2*c21*d00 - c10*d11)  
+                - d00*d10*(c11*c20 + c10*c21);
+    double h0 = c00*c00*d20*d20 + c10*d20*(c10*d00 - c00*d10)  
+                + c20*d10*(c00*d10 - c10*d00) + c20*d00*(c20*d00 - 2*c00*d20);
+
+    double pv1x_R;
+    solveQuartic(h4, h3, h2, h1, h0, pv1x_R);
+    double pv2x_R = Emissx - pv1x_R;
+
+    double c2 = c22 + c21*pv1x_R + c20*pv1x_R*pv1x_R;
+    double c1 = c11 + c10*pv1x_R;
+    double c0 = c00;
+    double d2 = d22 + d21*pv1x_R + d20*pv1x_R*pv1x_R;
+    double d1 = d11 + d10*pv1x_R;
+    double d0 = c00;
+
+    double pv1y_R = (c0*d2 - c2*d0)/(c1*d0 - c0*d1);
+    double pv2y_R = Emissy - pv1y_R;
+
+    double pv1z_R = -(a1 + a2*pv1x_R + a3*pv1y_R)/a4;
+    double pv2z_R = -(b1 + b2*pv2x_R + b3*pv2y_R)/b4;
+
+    TLorentzVector pv1_R(pv1x_R, pv1y_R, pv1z_R, sqrt(pv1x_R*pv1x_R + pv1y_R*pv1y_R + pv1z_R*pv1z_R));
+    TLorentzVector pv2_R(pv2x_R, pv2y_R, pv2z_R, sqrt(pv2x_R*pv2x_R + pv2y_R*pv2y_R + pv2z_R*pv2z_R));
+
+    p_R[0] = pb1;
+    p_R[1] = pb2;
+    p_R[2] = pl1;
+    p_R[3] = pv1_R;
+    p_R[4] = pl2;
+    p_R[5] = pv2_R;
+
+    return p_R;
+}
+
 void AnalysisZprime::GetChannelFactors() {
     // scale dilepton to other classifications
     // fac_ee = 1
     // fac_emu = 2
-    m_sigma = m_sigma*24; // 2 [e+ + e-] x 2 [e + mu] x 6 [3 x 2]
+    // m_sigma = m_sigma*24; // 2 [e+ + e-] x 2 [e + mu] x 6 [3 x 2]
     // fac_qq = 36
 }
 

@@ -6,6 +6,7 @@
 #include "TCanvas.h"
 #include "TApplication.h"
 #include <cmath>
+#include <math.h>
 #include <TString.h>
 #include <TH2.h>
 #include <TF1.h>
@@ -74,6 +75,7 @@ protected:
   TH1D* MakeAL();
   vector<std::complex<double> > SolveQuadratic(double a, double b, double c);
   std::vector<TLorentzVector> ReconstructSemiLeptonic(std::vector<TLorentzVector> p, int l_Q);
+  std::vector<TLorentzVector> ReconstructDilepton(std::vector<TLorentzVector> p);
 
   bool PassCuts(string type);
   bool PassCutsMET(string type);
@@ -113,12 +115,13 @@ private:
   const bool m_discardComplex;
   const TString m_analysisLabel;
   bool m_xsec;
-  const bool m_reco;
+  const int m_reco;
   bool m_fid;
 
   // Parameters
   float m_pi;
   float m_GeV;
+  double m_bmass;
   double m_Wmass;
   double m_tmass;
 
