@@ -598,7 +598,7 @@ void AnalysisZprime::CreateHistograms() {
         h_pt.push_back(new TH1D(n_pt[i].c_str(), t_pt[i].c_str(), 400, 0, 100));
     }
 
-    if (m_reco > 0 > 0) {
+    if (m_reco > 0) {
         h_mtt_R = new TH1D("mtt_R", "m_{tt}^{reco}", nbins, Emin, Emax);
         h_mtt_R->Sumw2();
         h_mt_R = new TH1D("mt_R", "m_{t}^{reco}", nbins, 0, 350);
@@ -675,7 +675,7 @@ void AnalysisZprime::MakeGraphs() {
         h->GetXaxis()->SetTitle("p_{T}");
     }
 
-    if (m_reco > 0 > 0) {
+    if (m_reco > 0) {
         this->MakeDistribution(h_mtt_R, "TeV");
         this->MakeDistribution(h_mtt_FR, "TeV");
         this->MakeDistribution(h_mtt_BR, "TeV");
