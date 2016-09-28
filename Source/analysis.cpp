@@ -102,10 +102,13 @@ void AnalysisZprime::EachEvent() {
         TVector3 V_R1 = -1*P_R1.BoostVector();
         TVector3 Vtop_R1 = -1*(p_R1[0] + p_R1[2] + p_R1[3]).BoostVector();
         TVector3 Vatop_R1 = -1*(p_R2[1] + p_R2[4] + p_R2[5]).BoostVector();
-        pcm_R1 = p_R1;
-        ptop_R1 = p_R1;
-        patop_R2 = p_R1;
+        pcm_R1 = vector<TLorentzVector>(p.size());
+        ptop_R1 = vector<TLorentzVector>(p.size());
+        patop_R2 = vector<TLorentzVector>(p.size());
         for (unsigned int i = 0; i < p.size(); i++) {
+            pcm_R1[i] = p_R1[i];
+            ptop_R1[i] = p_R1[i];
+            patop_R2[i] = p_R1[i];
             pcm_R1[i].Boost(V_R1);
             ptop_R1[i].Boost(Vtop_R1);
             patop_R2[i].Boost(Vatop_R1);
