@@ -218,20 +218,23 @@ void AnalysisZprime::EachEvent() {
     cos1cos2 = cosTheta1*cosTheta2;
     deltaPhi = p[2].DeltaPhi(p[4])/m_pi;
 
-    if(m_reco) {
+    if (m_reco > 0) {
         ytt_R1 = P_R1.Rapidity();
-        ytt_R2 = P_R2.Rapidity();
         mt_R1 = p_t_R1.M();
         mtb_R1 = p_tb_R1.M();
+        cosTheta_R1 = p_t_R1.CosTheta();
+        cosThetaStar_R1 = int(ytt_R1/abs(ytt_R1))*cosTheta_R1;
+        cosTheta1_R1 = cos(ptop_R1[2].Angle(p_t_R1.Vect()));
+    }
+    if (m_reco == 2) {
+        ytt_R2 = P_R2.Rapidity();
         mt_R2 = p_t_R2.M();
         mtb_R2 = p_tb_R2.M();
-        cosTheta_R1 = p_t_R1.CosTheta();
         cosTheta_R2 = p_t_R2.CosTheta();
-        cosThetaStar_R1 = int(ytt_R1/abs(ytt_R1))*cosTheta_R1;
         cosThetaStar_R2 = int(ytt_R2/abs(ytt_R2))*cosTheta_R2;
-        cosTheta1_R1 = cos(ptop_R1[2].Angle(p_t_R1.Vect()));
         cosTheta2_R2 = cos(patop_R2[4].Angle(p_tb_R2.Vect()));
     }
+
 
     // printf("Event passed all cuts.\n");
     // re-weight for different iterations
