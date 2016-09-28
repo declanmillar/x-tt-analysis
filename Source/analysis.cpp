@@ -1098,7 +1098,7 @@ void AnalysisZprime::Loop() {
             Long64_t ientry = this->IncrementEvent(jentry);
             if (ientry < 0) break;
             this->EachEvent();
-            // this->ProgressBar(jentry, nEntries-1, 50);
+            this->ProgressBar(jentry, nEntries-1, 50);
         }
         this->CleanUp();
     }
