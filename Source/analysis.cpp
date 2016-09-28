@@ -92,7 +92,6 @@ void AnalysisZprime::EachEvent() {
         Patop += patop[i];
     }
 
-
     if (m_reco == 1) {
         p_R1 = this->ReconstructDilepton(p); // both decay leptonically
 
@@ -101,7 +100,7 @@ void AnalysisZprime::EachEvent() {
 
         TVector3 V_R1 = -1*P_R1.BoostVector();
         TVector3 Vtop_R1 = -1*(p_R1[0] + p_R1[2] + p_R1[3]).BoostVector();
-        TVector3 Vatop_R1 = -1*(p_R2[1] + p_R2[4] + p_R2[5]).BoostVector();
+        TVector3 Vatop_R1 = -1*(p_R1[1] + p_R1[4] + p_R1[5]).BoostVector();
         pcm_R1 = vector<TLorentzVector>(p.size());
         ptop_R1 = vector<TLorentzVector>(p.size());
         patop_R2 = vector<TLorentzVector>(p.size());
@@ -147,8 +146,6 @@ void AnalysisZprime::EachEvent() {
             patop_R2[i].Boost(Vatop_R2);
         }
     }
-
-    printf("CUNT m_reco = %i", m_reco);
 
     // top and antitop
     TLorentzVector p_t = p[0] + p[2] + p[3];
@@ -482,8 +479,8 @@ void AnalysisZprime::AsymmetryUncertainty(TH1D* hA, TH1D* h1, TH1D* h2) {
 void AnalysisZprime::CreateHistograms() {
 
     double binWidth = 0.05;
-    double Emin = 2.025;
-    double Emax = 3.975;
+    double Emin = 0;
+    double Emax = 13;
     double nbins = (Emax - Emin)/binWidth;
 
     h_mtt = new TH1D("mtt", "m_{tt}", nbins, Emin, Emax);
