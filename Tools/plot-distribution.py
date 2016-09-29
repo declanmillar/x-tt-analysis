@@ -203,6 +203,9 @@ blue = ROOT.TColor.GetColor(0.0/255.0, 90.0/255.0, 130.0/255.0)
 green = ROOT.TColor.GetColor(0.0/255.0, 130.0/255.0, 90.0/255.0)
 grey = ROOT.TColor.GetColor(64.0/255.0, 64.0/255.0, 64.0/255.0)
 
+# \definecolor{TolDarkPurple}{HTML}{332288} 836 \definecolor{TolDarkBlue}{HTML}{6699CC} 837 \definecolor{TolLightBlue}{HTML}{88CCEE} 838 \definecolor{TolLightGreen}{HTML}{44AA99} 839 \definecolor{TolDarkGreen}{HTML}{117733} 840 \definecolor{TolDarkBrown}{HTML}{999933} 841 \definecolor{TolLightBrown}{HTML}{DDCC77} 842 \definecolor{TolDarkRed}{HTML}{661100}
+# 843 \definecolor{TolLightRed}{HTML}{CC6677} 844 \definecolor{TolLightPink}{HTML}{AA4466} 845 \definecolor{TolDarkPink}{HTML}{882255} 846 \definecolor{TolLightPurple}{HTML}{AA4499}
+
 art = HistPainter(1920, 1080)
 art.SetStyle()
 art.AddPads()

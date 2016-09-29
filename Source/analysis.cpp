@@ -265,7 +265,12 @@ void AnalysisZprime::EachEvent() {
         h_cosThetaStar->Fill(cosThetaStar, weight);
         h_HT->Fill(HT, weight);
         h_KT->Fill(KT, weight);
-        h_pzNu->Fill(p[3].Pz(), weight_R);
+        h_pv1x->Fill(p[3].Pz(), weight);
+        h_pv1z->Fill(p[3].Pz(), weight);
+        h_pv1z->Fill(p[3].Pz(), weight);
+        h_pv2x->Fill(p[5].Pz(), weight);
+        h_pv2z->Fill(p[5].Pz(), weight);
+        h_pv2z->Fill(p[5].Pz(), weight);
         h_deltaPhi->Fill(deltaPhi, weight);
         h_cosTheta1->Fill(cosTheta1, weight);
         h_cosTheta2->Fill(cosTheta2, weight);
@@ -304,7 +309,12 @@ void AnalysisZprime::EachEvent() {
             h_mtbar_R->Fill(mtb_R1, weight_R);
             h_cosTheta_R->Fill(cosTheta_R1, weight_R);
             h_cosThetaStar_R->Fill(cosThetaStar_R1, weight_R);
-            h_pzNu_R->Fill(p_R1[3].Pz(), weight_R);
+            h_pv1x_R->Fill(p_R1[3].Pz(), weight_R);
+            h_pv1y_R->Fill(p_R1[3].Pz(), weight_R);
+            h_pv1z_R->Fill(p_R1[3].Pz(), weight_R);
+            h_pv2x_R->Fill(p_R1[5].Pz(), weight_R);
+            h_pv2y_R->Fill(p_R1[5].Pz(), weight_R);
+            h_pv2z_R->Fill(p_R1[5].Pz(), weight_R);
             if (cosThetaStar_R1 > 0) h_mtt_FR->Fill(mtt_R1, weight_R);
             if (cosThetaStar_R1 < 0) h_mtt_BR->Fill(mtt_R1, weight_R);
             h2_mtt_cosThetaStar_R->Fill(mtt_R1, cosThetaStar_R1, weight_R);
@@ -319,7 +329,6 @@ void AnalysisZprime::EachEvent() {
             h_mtbar_R->Fill(mtb_R2, weight_R);
             h_cosTheta_R->Fill(cosTheta_R2, weight_R);
             h_cosThetaStar_R->Fill(cosThetaStar_R2, weight_R);
-            h_pzNu_R->Fill(p_R2[5].Pz(), weight_R);
             if (cosThetaStar_R2 > 0) h_mtt_FR->Fill(mtt_R2, weight_R);
             if (cosThetaStar_R2 < 0) h_mtt_BR->Fill(mtt_R2, weight_R);
             h2_mtt_cosThetaStar_R->Fill(mtt_R2, cosThetaStar_R2, weight_R);
@@ -508,8 +517,18 @@ void AnalysisZprime::CreateHistograms() {
 
     h_deltaPhi = new TH1D("deltaphi", "#Delta#phi", 10, 0, 1);
     h_deltaPhi->Sumw2();
-    h_pzNu = new TH1D("pzNu", "p_{z}^{#nu}", nbins, -500.0, 500.0);
-    h_pzNu->Sumw2();
+    h_pv1x = new TH1D("pv1x", "p_{x}^{#nu_{1}}", nbins, -500.0, 500.0);
+    h_pv1x->Sumw2();
+    h_pv1y = new TH1D("pv1y", "p_{y}^{#nu_{1}}", nbins, -500.0, 500.0);
+    h_pv1y->Sumw2();
+    h_pv1z = new TH1D("pv1z", "p_{z}^{#nu_{1}}", nbins, -500.0, 500.0);
+    h_pv1z->Sumw2();
+    h_pv2x = new TH1D("pv2x", "p_{x}^{#nu_{2}}", nbins, -500.0, 500.0);
+    h_pv2x->Sumw2();
+    h_pv2y = new TH1D("pv2y", "p_{y}^{#nu_{2}}", nbins, -500.0, 500.0);
+    h_pv2y->Sumw2();
+    h_pv2z = new TH1D("pv2z", "p_{z}^{#nu_{2}}", nbins, -500.0, 500.0);
+    h_pv2z->Sumw2();
     h_cosTheta1 = new TH1D("costheta1", "cos#theta_{l+}", 10, -1.0, 1.0);
     h_cosTheta1->Sumw2();
     h_cosTheta2 = new TH1D("costheta2", "cos#theta_{l-}", 10, -1.0, 1.0);
@@ -624,8 +643,18 @@ void AnalysisZprime::CreateHistograms() {
         h_cosTheta_R->Sumw2();
         h_cosThetaStar_R = new TH1D("cosThetaStar_R", "cos#theta_{reco}^{*}", nbins, -1.0, 1.0);
         h_cosThetaStar_R->Sumw2();
-        h_pzNu_R = new TH1D("pzNu_R", "p_{z}^{#nu} (reco)", nbins, -500.0, 500.0);
-        h_pzNu_R->Sumw2();
+        h_pv1x_R = new TH1D("pv1x_r", "p_{x}^{#nu_{1}} (reco", nbins, -500.0, 500.0);
+        h_pv1x_R->Sumw2();
+        h_pv1y_R = new TH1D("pv1y_r", "p_{y}^{#nu_{1}} (reco", nbins, -500.0, 500.0);
+        h_pv1y_R->Sumw2();
+        h_pv1z_R = new TH1D("pv1z_r", "p_{z}^{#nu_{1}} (reco", nbins, -500.0, 500.0);
+        h_pv1z_R->Sumw2();
+        h_pv2x_R = new TH1D("pv2x_r", "p_{x}^{#nu_{2}} (reco", nbins, -500.0, 500.0);
+        h_pv2x_R->Sumw2();
+        h_pv2y_R = new TH1D("pv2y_r", "p_{y}^{#nu_{2}} (reco", nbins, -500.0, 500.0);
+        h_pv2y_R->Sumw2();
+        h_pv2z_R = new TH1D("pv2z_r", "p_{z}^{#nu_{2}} (reco", nbins, -500.0, 500.0);
+        h_pv2z_R->Sumw2();
     }
 }
 
@@ -641,7 +670,12 @@ void AnalysisZprime::MakeGraphs() {
     this->MakeDistribution(h_cosTheta, "");
     this->MakeDistribution(h_cosThetaStar, "");
     this->MakeDistribution(h_deltaPhi, "rad / #pi");
-    this->MakeDistribution(h_pzNu, "GeV");
+    this->MakeDistribution(h_pv1x, "GeV");
+    this->MakeDistribution(h_pv1y, "GeV");
+    this->MakeDistribution(h_pv1z, "GeV");
+    this->MakeDistribution(h_pv2x, "GeV");
+    this->MakeDistribution(h_pv2y, "GeV");
+    this->MakeDistribution(h_pv2z, "GeV");
     this->MakeDistribution(h_cosTheta1, "");
     this->MakeDistribution(h_cosTheta2, "");
     this->MakeDistribution(h_cos1cos2, "");
@@ -689,7 +723,12 @@ void AnalysisZprime::MakeGraphs() {
         this->MakeDistribution(h_ytt_R, "TeV");
         this->MakeDistribution(h_cosTheta_R, "");
         this->MakeDistribution(h_cosThetaStar_R, "");
-        this->MakeDistribution(h_pzNu_R, "GeV");
+        this->MakeDistribution(h_pv1x_R, "GeV");
+        this->MakeDistribution(h_pv1y_R, "GeV");
+        this->MakeDistribution(h_pv1z_R, "GeV");
+        this->MakeDistribution(h_pv2x_R, "GeV");
+        this->MakeDistribution(h_pv2y_R, "GeV");
+        this->MakeDistribution(h_pv2z_R, "GeV");
 
         h_mtt_FRn = (TH1D*) h_mtt_FR->Clone("h_mtt_FRn");
         h_mtt_FRn->Divide(h_mtt_R);
@@ -1589,7 +1628,7 @@ void AnalysisZprime::GetChannelFactors() {
     // scale dilepton to other classifications
     // fac_ee = 1
     // fac_emu = 2
-    // m_sigma = m_sigma*24; // 2 [e+ + e-] x 2 [e + mu] x 6 [3 x 2]
+    if (m_reco) m_sigma = m_sigma*24; // 2 [e+ + e-] x 2 [e + mu] x 6 [3 x 2]
     // fac_qq = 36
 }
 

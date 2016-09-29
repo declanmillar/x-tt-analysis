@@ -260,8 +260,18 @@ private:
   TH1D* h_mtt_RR;
 
   // Momenta
-  TH1D* h_pzNu;
-  TH1D* h_pzNu_R;
+  TH1D* h_pv1x;
+  TH1D* h_pv1x_R;
+  TH1D* h_pv1y;
+  TH1D* h_pv1y_R;
+  TH1D* h_pv1z;
+  TH1D* h_pv1z_R;
+  TH1D* h_pv2x;
+  TH1D* h_pv2x_R;
+  TH1D* h_pv2y;
+  TH1D* h_pv2y_R;
+  TH1D* h_pv2z;
+  TH1D* h_pv2z_R;
 
   // Rapidities
   TH1D* h_ytt;
