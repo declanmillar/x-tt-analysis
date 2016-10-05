@@ -3,7 +3,8 @@
 using namespace std;
 using namespace boost;
 
-string trim(string const& str) {
+string trim(string const& str)
+{
     if(str.empty())
     return str;
 
@@ -46,7 +47,8 @@ AnalysisZprime::AnalysisZprime(const TString model, const TString initial_state,
     m_outputFile(NULL) {
 }
 
-void AnalysisZprime::Run(){
+void AnalysisZprime::Run()
+{
     this->PreLoop();
     this->Loop();
     this->PostLoop();
@@ -54,11 +56,8 @@ void AnalysisZprime::Run(){
 
 inline string BoolToString(bool b) {return b ? "1" : "0";}
 
-TString AnalysisZprime::GetOutputFilename() {
-    return m_outputFilename;
-}
-
-void AnalysisZprime::EachEvent() {
+void AnalysisZprime::EachEvent()
+{
     m_discardEvent = false;
     UpdateCutflow(c_entries, true);
     p = vector<TLorentzVector>(6);
@@ -337,7 +336,8 @@ void AnalysisZprime::EachEvent() {
     }
 }
 
-void AnalysisZprime::SetupInputFiles() {
+void AnalysisZprime::SetupInputFiles()
+{
     m_inputFiles = new vector<TString>;
     m_weightFiles = new vector<TString>;
     TString filename;
@@ -383,7 +383,8 @@ void AnalysisZprime::SetupInputFiles() {
     }
 }
 
-void AnalysisZprime::SetupOutputFiles() {
+void AnalysisZprime::SetupOutputFiles()
+{
     TString outfilename;
     TString initial_state = m_initial_state;
     TString intermediates = m_intermediates;
@@ -406,12 +407,13 @@ void AnalysisZprime::SetupOutputFiles() {
     m_outputFilename += m_analysisLabel;
     m_outputFilename += ".root";
 
-    printf("--- Output ---\n");
+    printf("-- Output --\n");
     printf("%s\n", m_outputFilename.Data());
     m_outputFile = new TFile(m_outputFilename, "RECREATE");
 }
 
-void AnalysisZprime::PostLoop () {
+void AnalysisZprime::PostLoop()
+{
     this->CheckResults();
     if (m_reco == 2) this->CheckPerformance();
     this->MakeGraphs();
@@ -419,17 +421,19 @@ void AnalysisZprime::PostLoop () {
     this->WriteHistograms();
 }
 
-void AnalysisZprime::CheckResults() {
-    printf("--- Results ---\n");
+void AnalysisZprime::CheckResults()
+{
+    printf("-- Results --\n");
     double sigma = h_mtt->Integral("width");
     printf("Analysis Cross Section = %.15le [pb]\n", sigma);
     printf("\n");
 }
 
-void AnalysisZprime::CheckPerformance () {
+void AnalysisZprime::CheckPerformance ()
+{
     double quarkRecoRatio = m_nQuarksMatched/(double)m_nReco;
     double neutrinoRecoRatio = m_nNeutrinoMatched/(double)m_nReco;
-    printf("--- Performance ---\n");
+    printf("-- Performance --\n");
     printf("Quark assignment: %.1f%% correct\n", quarkRecoRatio*100);
     printf("pzNu assignment: %.1f%% correct\n", neutrinoRecoRatio*100);
     printf("\n");
@@ -485,7 +489,8 @@ void AnalysisZprime::AsymmetryUncertainty(TH1D* hA, TH1D* h1, TH1D* h2) {
     }
 }
 
-void AnalysisZprime::CreateHistograms() {
+void AnalysisZprime::CreateHistograms()
+{
 
     double binWidth = 0.05;
     double Emin = 2.025;
@@ -658,7 +663,8 @@ void AnalysisZprime::CreateHistograms() {
     }
 }
 
-void AnalysisZprime::MakeGraphs() {
+void AnalysisZprime::MakeGraphs()
+{
     this->MakeDistribution(h_mtt, "TeV");
     this->MakeDistribution(h_mtt_F, "TeV");
     this->MakeDistribution(h_mtt_B, "TeV");
@@ -805,7 +811,8 @@ void AnalysisZprime::NormalizeSliceY(TH2D* h) {
     }
 }
 
-void AnalysisZprime::WriteHistograms() {
+void AnalysisZprime::WriteHistograms()
+{
     m_outputFile->cd();
     m_outputFile->cd("/");
 
@@ -1008,7 +1015,8 @@ bool AnalysisZprime::PassCutsET(string type) {
     return true;
 }
 
-bool AnalysisZprime::PassCutsYtt(string type) {
+bool AnalysisZprime::PassCutsYtt(string type)
+{
     double ytt;
     if (type == "truth") ytt = abs(P.Rapidity());
     else if (type == "R1") ytt = abs(P_R1.Rapidity());
@@ -1022,8 +1030,9 @@ bool AnalysisZprime::PassCutsYtt(string type) {
     return false;
 }
 
-void AnalysisZprime::PreLoop() {
-    this->GetDataDirectory();
+void AnalysisZprime::PreLoop()
+{
+    this->SetDataDirectory();
     this->SetupInputFiles();
     this->SetupOutputFiles();
     this->ResetCounters();
@@ -1031,16 +1040,13 @@ void AnalysisZprime::PreLoop() {
     this->CreateHistograms();
 }
 
-void AnalysisZprime::GetDataDirectory() {
-    // char hostname[HOST_NAME_MAX];
-    // gethostname(hostname, HOST_NAME_MAX);
-    // char *hostname = getenv("HOSTNAME");
-    // printf("%s\n", hostname);
+void AnalysisZprime::SetDataDirectory()
+{
+
     char hostname[1024];
     hostname[1023] = '\0';
     gethostname(hostname, 1023);
     string Hostname(hostname);
-    // printf("Hostname: %s\n", Hostname.c_str());
 
     if (Hostname == "Sunder")
         m_dataDirectory = "/Users/declan/Data/zprime";
@@ -1050,12 +1056,15 @@ void AnalysisZprime::GetDataDirectory() {
         m_dataDirectory = "/scratch/dam1g09/zprime";
     else
         printf("Hostname %s not recognised.\n", Hostname.c_str());
-    // #elif __APPLE__ || __MACH__
-    // m_dataDirectory = "/Users/declan/Data/Zprime";
-    // #endif
 }
 
-void AnalysisZprime::ResetCounters() {
+TString AnalysisZprime::GetOutputFilename()
+{
+    return m_outputFilename;
+}
+
+void AnalysisZprime::ResetCounters()
+{
     if (m_luminosity >= 0) m_useLumi = true;
     else m_useLumi = false;
     m_nQuarksMatched = 0;
@@ -1065,7 +1074,8 @@ void AnalysisZprime::ResetCounters() {
     m_nComplexRoots = 0;
 }
 
-void AnalysisZprime::GetCrossSection(TString log) {
+void AnalysisZprime::GetCrossSection(TString log)
+{
     log.Replace(log.Last('.'), 5, ".log");
     printf("%s\n", log.Data());
     ifstream logstream(log.Data());
@@ -1077,10 +1087,7 @@ void AnalysisZprime::GetCrossSection(TString log) {
     while(getline(logstream, line)) {
         trim(line);
         split(parts, line, is_any_of(":"));
-        for(auto part: parts) {
-            trim(part);
-            // printf("%s\n", part.c_str());
-        }
+        for (auto part : parts) trim(part);
         if (parts[0] == target) {
             m_sigma = stod(parts[1]);
             found = true;
@@ -1094,7 +1101,8 @@ void AnalysisZprime::GetCrossSection(TString log) {
     else printf("Generation Cross section = %.15le [pb]\n", m_sigma);
 }
 
-void AnalysisZprime::GetIterationWeights(TString log) {
+void AnalysisZprime::GetIterationWeights(TString log)
+{
     iteration_weights.clear();
     log.Replace(log.Last('.'), 5, ".log");
     ifstream logstream(log.Data());
@@ -1106,9 +1114,7 @@ void AnalysisZprime::GetIterationWeights(TString log) {
     while(getline(logstream, line)) {
         trim(line);
         split(parts, line, is_any_of(":"));
-        for(auto part: parts) {
-            trim(part);
-        }
+        for(auto part: parts) trim(part);
         if (parts[0] == target) {
             iteration_weights.push_back(stod(parts[2]));
             found = true;
@@ -1116,14 +1122,15 @@ void AnalysisZprime::GetIterationWeights(TString log) {
     }
     logstream.close();
     if (!found) {
-        printf("Error: Failed to read vegas iteration weights. Check target log file: %s", m_weightsFilename.Data());
+        printf("Error: Failed to read Vegas iteration weights. Check target log file: %s", m_weightsFilename.Data());
         exit(1);
     }
 }
 
-void AnalysisZprime::Loop() {
+void AnalysisZprime::Loop()
+{
     for (Itr_s i = m_inputFiles->begin(); i != m_inputFiles->end(); ++i) {
-        printf("\n--- Input %li ---\n", i - m_inputFiles->begin() + 1);
+        printf("\n-- Input %li --\n", i - m_inputFiles->begin() + 1);
         cout << (*i) << endl;
         this->SetupTreesForNewFile((*i));
         this->GetCrossSection(*i);
@@ -1132,21 +1139,22 @@ void AnalysisZprime::Loop() {
         Long64_t nEntries;
         nEntries = this->TotalEvents();
         printf("Processing %lld entries...\n", nEntries);
-        for (Long64_t jentry = 0; jentry < nEntries; ++jentry)
-        {
+        for (Long64_t jentry = 0; jentry < nEntries; ++jentry) {
             Long64_t ientry = this->IncrementEvent(jentry);
             if (ientry < 0) break;
             this->EachEvent();
-            this->ProgressBar(jentry, nEntries-1, 50);
+            // this->ProgressBar(jentry, nEntries-1, 50);
         }
         this->CleanUp();
     }
     cout << endl;
 }
 
-AnalysisZprime::~AnalysisZprime() {delete m_inputFiles;}
+AnalysisZprime::~AnalysisZprime()
+{delete m_inputFiles;}
 
-Long64_t AnalysisZprime::TotalEvents() {
+Long64_t AnalysisZprime::TotalEvents()
+{
     if (m_ntup != 0) {return m_ntup->totalEvents();}
     return -999;
 }
@@ -1166,12 +1174,14 @@ void AnalysisZprime::SetupTreesForNewFile(const TString& s) {
     m_ntup = new RootTuple(m_chainNtup);
 }
 
-void AnalysisZprime::CleanUp() {
+void AnalysisZprime::CleanUp()
+{
     delete m_chainNtup;
     delete m_ntup;
 }
 
-vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVector> p, int Q_l) {
+vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVector> p, int Q_l)
+{
     // Returns a vector of 4-momenta for all 6 particles in the final state with matching of b-quarks to each top
     // and matching of
     // Takes a vector of true final-state particle momenta as the argument and the charge of the final
@@ -1289,7 +1299,7 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVe
             p_R[5] = p_nu_R[imin];
         }
     }
-    else{
+    else {
         vector<TLorentzVector> p_q(4);
 
         p_q[0] = p[0];
@@ -1371,11 +1381,12 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVe
     // else printf("Neutrino solution: incorrect. \n");
     // if (b_lep == jmin) printf("b-assignment: correct. \n");
     // else printf("b-assignment: incorrect. \n");
-    // printf("---\n");
+    // printf("--\n");
     return p_R;
 }
 
-vector<complex<double> > AnalysisZprime::SolveQuadratic(double a, double b, double c) {
+vector<complex<double> > AnalysisZprime::SolveQuadratic(double a, double b, double c)
+{
     vector<complex<double> > roots;
     complex<double> term1;
     complex<double> term2;
@@ -1391,130 +1402,265 @@ vector<complex<double> > AnalysisZprime::SolveQuadratic(double a, double b, doub
     return roots;
 }
 
-bool solveQuadratic(double a, double b, double c, double &root) {
-    if (a == 0.0 || abs(a/b) < 1.0e-4) {
-        if (abs(b) < 1.0e-4) 
-            return false;
-        else {
-            root = -c/b;
-            return true;
-        }
-    }
+int CubicRoots( double p[5], double r[3][5] )
+{
+  double x,t,b,c,d;
+  int k;
 
-    double discriminant = b*b - 4.0*a*c;
-    if (discriminant >= 0.0) {
-        discriminant = sqrt(discriminant);
-        root = (b - discriminant)*-0.5/a;
-        return true;
-    }
+  if( p[0] != 1. )
+  {
+    for(k = 1; k < 4; k++ ) { p[k] = p[k]/p[0]; }
+    p[0] = 1.;
+  }
+  x = p[1]/3.0; 
+  t = x*p[1];
+  b = 0.5*( x*( t/1.5 - p[2] ) + p[3] ); 
+  t = ( t - p[2] )/3.0;
+  c = t*t*t; 
+  d = b*b - c;
 
-    return false;
+  if( d >= 0. )
+  {
+    d = std::pow( (std::sqrt(d) + std::fabs(b) ), 1.0/3.0 );
+    
+    if( d != 0. )
+    {
+       if( b > 0. ) { b = -d; }
+       else         { b =  d; }
+       c =  t/b;
+    }
+    d       =  std::sqrt(0.75)*(b - c); 
+    r[1][1] =  d; 
+    b       =  b + c;
+    c       = -0.5*b-x;
+    r[0][1] =  c;
+
+    if( ( b > 0. &&  x <= 0. ) || ( b < 0. && x > 0. ) )
+    {
+       r[0][0] =  c; 
+       r[1][0] = -d; 
+       r[0][2] =  b - x;
+       r[1][2] =  0;
+    }
+    else
+    {
+       r[0][0] =  b - x; 
+       r[1][0] =  0.; 
+       r[0][2] =  c;
+       r[1][2] = -d;
+    }
+  }              // end of 2 equal or complex roots 
+  else
+  {
+    if( b == 0. ) { d =  std::atan(1.0)/1.5; }
+    else          { d =  std::atan( std::sqrt(-d)/std::fabs(b) )/3.0; }
+
+    if( b < 0. )  { b =  std::sqrt(t)*2.0; }
+    else          { b = -2.0*std::sqrt(t); }
+
+    c =  std::cos(d)*b; 
+    t = -std::sqrt(0.75)*std::sin(d)*b - 0.5*c;
+    d = -t - c - x; 
+    c =  c - x; 
+    t =  t - x;
+
+    if( std::fabs(c) > std::fabs(t) ) { r[0][2] = c; }
+    else
+    {
+      r[0][2] = t; 
+      t       = c;
+    }
+    if( std::fabs(d) > std::fabs(t) ) { r[0][1] = d; }
+    else
+    {
+      r[0][1] = t; 
+      t       = d;
+    }
+    r[0][0] = t;
+
+    for(k = 1; k < 4; k++ ) { r[1][k] = 0.; }
+  }
+  return 0;
 }
 
-bool solveCubic(double a, double b, double c, double d, double &root) {
-    if (a == 0.0 || abs(a/b) < 1.0e-6) return solveQuadratic(b, c, d, root);
+int QuarticRoots( double p[5], double r[3][5])
+{
+  double a0, a1, a2, a3, y1;
+  double R2, D2, E2, D, E, R = 0.;
+  double a, b, c, d, ds;
 
-    double B = b/a, C = c/a, D = d/a;
-    double Q = (B*B - C*3.0)/9.0, QQQ = Q*Q*Q;
-    double R = (2.0*B*B*B - 9.0*B*C + 27.0*D)/54.0, RR = R*R;
-    double pi = 3.14159265;
+  double reRoot[4];
+  int k, noReRoots = 0;
+  
+  for( k = 0; k < 4; k++ ) { reRoot[k] = DBL_MAX; }
 
-    // 3 real roots
-    if (RR < QQQ) {
-        // This sqrt and division is safe, since RR >= 0, so QQQ > RR,    
-        // so QQQ > 0.  The acos is also safe, since RR/QQQ < 1, and     
-        // thus R/sqrt(QQQ) < 1.                                     
-        double theta = acos(R/sqrt(QQQ));
-        // This sqrt is safe, since QQQ >= 0, and thus Q >= 0
+  if( p[0] != 1.0 )
+  {
+    for( k = 1; k < 5; k++) { p[k] = p[k]/p[0]; }
+    p[0] = 1.;
+  }
+  a3 = p[1];
+  a2 = p[2];
+  a1 = p[3];
+  a0 = p[4];
 
-        double r1, r2, r3;
-        r1 = r2 = r3 = -2.0*sqrt(Q);
-        r1 *= cos(theta/3.0);
-        r2 *= cos((theta + 2*pi)/3.0);
-        r3 *= cos((theta - 2*pi)/3.0);
+  // resolvent cubic equation cofs:
 
-        r1 -= B/3.0;
-        r2 -= B/3.0;
-        r3 -= B/3.0; 
+  p[1] = -a2;
+  p[2] = a1*a3 - 4*a0;
+  p[3] = 4*a2*a0 - a1*a1 - a3*a3*a0;
 
-        root = 1000000.0;
+  CubicRoots(p,r);
 
-        if (r1 >= 0.0) root = r1;
-        if (r2 >= 0.0 && r2 < root) root = r2;
-        if (r3 >= 0.0 && r3 < root) root = r3;
-
-        return true;
+  for( k = 1; k < 4; k++ )
+  {
+    if( r[1][k] == 0. ) // find a real root
+    {
+      noReRoots++;
+      reRoot[k] = r[0][k];
     }
-    // 1 real root
-    else {
-        double A2 = -pow(fabs(R) + sqrt(RR - QQQ), 1.0/3.0);
-        if (A2 != 0.0) {
-            if (R < 0.0) A2 = -A2; 
-            root = A2 + Q/A2; 
-        }
-        root -= B/3.0;
-        return true;
+    else reRoot[k] = DBL_MAX; // kInfinity;
+  }
+  y1 = DBL_MAX; // kInfinity;  
+  for( k = 1; k < 4; k++ )
+  {
+    if ( reRoot[k] < y1 ) { y1 = reRoot[k]; }
+  }
+
+  R2 = 0.25*a3*a3 - a2 + y1;
+  b  = 0.25*(4*a3*a2 - 8*a1 - a3*a3*a3);
+  c  = 0.75*a3*a3 - 2*a2;
+  a  = c - R2;
+  d  = 4*y1*y1 - 16*a0;
+
+  if( R2 > 0.)
+  {
+    R = std::sqrt(R2);
+    D2 = a + b/R;
+    E2 = a - b/R;
+
+    if( D2 >= 0. )
+    {
+      D       = std::sqrt(D2);
+      r[0][0] = -0.25*a3 + 0.5*R + 0.5*D;
+      r[0][1] = -0.25*a3 + 0.5*R - 0.5*D;
+      r[1][0] = 0.;
+      r[1][1] = 0.;
     }
+    else
+    {
+      D       = std::sqrt(-D2);
+      r[0][0] = -0.25*a3 + 0.5*R;
+      r[0][1] = -0.25*a3 + 0.5*R;
+      r[1][0] =  0.5*D;
+      r[1][1] = -0.5*D;
+    }
+    if( E2 >= 0. )
+    {
+      E       = std::sqrt(E2);
+      r[0][2] = -0.25*a3 - 0.5*R + 0.5*E;
+      r[0][3] = -0.25*a3 - 0.5*R - 0.5*E;
+      r[1][2] = 0.;
+      r[1][3] = 0.;
+    }
+    else
+    {
+      E       = std::sqrt(-E2);
+      r[0][2] = -0.25*a3 - 0.5*R;
+      r[0][3] = -0.25*a3 - 0.5*R;
+      r[1][2] =  0.5*E;
+      r[1][3] = -0.5*E;
+    }
+  }
+  else if( R2 < 0.)
+  {
+    R = std::sqrt(-R2);
+    complex<double> CD2(a,-b/R);
+    complex<double> CD = std::sqrt(CD2);
+
+    r[0][0] = -0.25*a3 + 0.5*std::real(CD);
+    r[0][1] = -0.25*a3 - 0.5*std::real(CD);
+    r[1][0] =  0.5*R + 0.5*imag(CD);
+    r[1][1] =  0.5*R - 0.5*imag(CD);
+    complex<double> CE2(a,b/R);
+    complex<double> CE = std::sqrt(CE2);
+
+    r[0][2] = -0.25*a3 + 0.5*std::real(CE);
+    r[0][3] = -0.25*a3 - 0.5*std::real(CE);
+    r[1][2] =  -0.5*R + 0.5*imag(CE);
+    r[1][3] =  -0.5*R - 0.5*imag(CE);
+  }
+  else // R2=0 case
+  {
+    if(d >= 0.)
+    {
+      D2 = c + std::sqrt(d);
+      E2 = c - std::sqrt(d);
+
+      if( D2 >= 0. )
+      {
+        D       = std::sqrt(D2);
+        r[0][0] = -0.25*a3 + 0.5*R + 0.5*D;
+        r[0][1] = -0.25*a3 + 0.5*R - 0.5*D;
+        r[1][0] = 0.;
+        r[1][1] = 0.;
+      }
+      else
+      {
+        D       = std::sqrt(-D2);
+        r[0][0] = -0.25*a3 + 0.5*R;
+        r[0][1] = -0.25*a3 + 0.5*R;
+        r[1][0] =  0.5*D;
+        r[1][1] = -0.5*D;
+      }
+      if( E2 >= 0. )
+      {
+        E       = std::sqrt(E2);
+        r[0][2] = -0.25*a3 - 0.5*R + 0.5*E;
+        r[0][3] = -0.25*a3 - 0.5*R - 0.5*E;
+        r[1][2] = 0.;
+        r[1][3] = 0.;
+      }
+      else
+      {
+        E       = std::sqrt(-E2);
+        r[0][2] = -0.25*a3 - 0.5*R;
+        r[0][3] = -0.25*a3 - 0.5*R;
+        r[1][2] =  0.5*E;
+        r[1][3] = -0.5*E;
+      }
+    }
+    else
+    {
+      ds = std::sqrt(-d);
+      complex<double> CD2(c,ds);
+      complex<double> CD = std::sqrt(CD2);
+
+      r[0][0] = -0.25*a3 + 0.5*std::real(CD);
+      r[0][1] = -0.25*a3 - 0.5*std::real(CD);
+      r[1][0] =  0.5*R + 0.5*imag(CD);
+      r[1][1] =  0.5*R - 0.5*imag(CD);
+
+      complex<double> CE2(c,-ds);
+      complex<double> CE = std::sqrt(CE2);
+
+      r[0][2] = -0.25*a3 + 0.5*std::real(CE);
+      r[0][3] = -0.25*a3 - 0.5*std::real(CE);
+      r[1][2] =  -0.5*R + 0.5*imag(CE);
+      r[1][3] =  -0.5*R - 0.5*imag(CE);
+    }  
+  }
+  return 4;
 }
 
-bool solveQuartic(double a, double b, double c, double d, double e, double &root) {
-    // When a or (a and b) are magnitudes of order smaller than C, D, E just ignore them entirely. 
-    if (a == 0.0 || abs(a/b) < 1.0e-5 || abs(a/c) < 1.0e-5 || abs(a/d) < 1.0e-5) return solveCubic(b, c, d, e, root);
-
-    double B = b/a, C = c/a, D = d/a, E = e/a;
-    double BB = B*B;
-    double I = -3.0*BB*0.125 + C;
-    double J = BB*B*0.125 - B*C*0.5 + D;
-    double K = -3*BB*BB/256.0 + C*BB/16.0 - B*D*0.25 + E;
-    double z;
-    // bool foundRoot2 = false, foundRoot3 = false, foundRoot4 = false, foundRoot5 = false;
-    if (solveCubic(1.0, 2*I, I*I - 4*K, -J*J, z)) {
-        // double value = z*z*z + 2*z*z*I + z*(I*I - 4*K) - J*J;
-
-        double p = sqrt(z);
-        double r = -p;
-        double q = (I + z - J/p)*0.5;
-        double s = (I + z + J/p)*0.5;
-
-        bool foundRoot = false, foundARoot;
-        double aRoot;
-        foundRoot = solveQuadratic(1.0, p, q, root);
-        root -= B/4.0;
-
-        foundARoot = solveQuadratic(1.0, r, s, aRoot);
-        aRoot -= B/4.0;
-        if((foundRoot && foundARoot && ((aRoot < root && aRoot >= 0.0) || root < 0.0)) || (!foundRoot && foundARoot)) {
-            root = aRoot;
-            foundRoot = true;
-        }
-
-        foundARoot = solveQuadratic(1.0, p, q, aRoot);
-        aRoot -= B/4.0;
-        if((foundRoot && foundARoot && ((aRoot < root && aRoot >= 0.0) || root < 0.0)) || (!foundRoot && foundARoot)) {
-            root = aRoot;
-            foundRoot = true;
-        }
-
-        foundARoot = solveQuadratic(1.0, r, s, aRoot);
-        aRoot -= B/4.0;
-        if((foundRoot && foundARoot && ((aRoot < root && aRoot >= 0.0) || root < 0.0)) || (!foundRoot && foundARoot)) {
-            root = aRoot;
-            foundRoot = true;
-        }
-        return foundRoot;
-    }
-    return false;
-}
-
-vector<TLorentzVector> AnalysisZprime::ReconstructDilepton(vector<TLorentzVector> p) {
-
+vector<TLorentzVector> AnalysisZprime::ReconstructDilepton(vector<TLorentzVector> p)
+{
     this->UpdateCutflow(c_events, true);
 
     m_nReco++;
 
     vector<TLorentzVector> p_R(p.size());
-
-    vector<complex<double> > roots;
+    vector<vector<TLorentzVector> > p_Rs(p.size(), vector<TLorentzVector>(4));
 
     TLorentzVector pb1 = p[0], pb2 = p[1], pl1 = p[2], pv1 = p[3], pl2 = p[4], pv2 = p[5];
 
@@ -1534,18 +1680,19 @@ vector<TLorentzVector> AnalysisZprime::ReconstructDilepton(vector<TLorentzVector
     double a2 = 2*(Eb1*pl1x - El1*pb1x);
     double a3 = 2*(Eb1*pl1y - El1*pb1y);
     double a4 = 2*(Eb1*pl1z - El1*pb1z);
+
     double b1 = (Eb2 + El2)*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)
                 - El2*(m_tmass*m_tmass - m_bmass*m_bmass - ml2*ml2 - mv2*mv2)
                 + 2*Eb2*El2*El2 - 2*El2*(pb2x*pl2x + pb2y*pl2y + pb2z*pl2z);                
     double b2 = 2*(Eb2*pl2x - El2*pb2x);
     double b3 = 2*(Eb2*pl2y - El2*pb2y);
     double b4 = 2*(Eb2*pl2z - El2*pb2z);
+
     double c22 = (m_Wmass*m_Wmass - ml1*ml1 - mv1*mv1)*(m_Wmass*m_Wmass - ml1*ml1 - mv1*mv1)
                  - 4*(El1*El1 - pl1z*pl1z)*a1*a1/a4/a4
                  - 4*(m_Wmass*m_Wmass - ml1*ml1 - mv1*mv1)*pl1z*a1/a4;
     double c21 = 4*(m_Wmass*m_Wmass - ml1*ml1 - mv1*mv1)*(pl1x - pl1z*a2/a4)
-                 - 8*(El1*El1 - pl1z*pl1z)*a1*a2/a4/a4 
-                 - 8*pl1x*pl1z*a1/a4;
+                 - 8*(El1*El1 - pl1z*pl1z)*a1*a2/a4/a4 - 8*pl1x*pl1z*a1/a4;
     double c20 = -4*(El1*El1 - pl1x*pl1x)
                  - 4*(El1*El1 - pl1z*pl1z)*a2*a2/a4/a4
                  - 8*pl1x*pl1z*a2/a4;
@@ -1556,25 +1703,32 @@ vector<TLorentzVector> AnalysisZprime::ReconstructDilepton(vector<TLorentzVector
                  - 8*pl1x*pl1z*a3/a4 - 8*pl1y*pl1z*a2/a4;
     double c00 = -4*(El1*El1 - pl1y*pl1y) - 4*(El1*El1 - pl1z*pl1z)*a3*a3/a4/a4
                  - 8*pl1y*pl1z*a3/a4;
-    double dd22 = (m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2) - 4*(El2*El2 - pl1z*pl1z)*b1*b1/b4/b4
-                 - 4*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)*pl1z*b1/b4;
-    double dd21 = 4*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)*(pl1x - pl1z*b2/b4)
+
+    double dd22 = (m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)
+                 - 4*(El2*El2 - pl1z*pl1z)*b1*b1/b4/b4
+                 - 4*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)*pl2z*b1/b4;
+    double dd21 = 4*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)*(pl2x - pl2z*b2/b4)
                  - 8*(El2*El2 - pl1z*pl1z)*b1*b2/b4/b4 
-                 - 8*pl1x*pl1z*b1/b4;
-    double d20 = -4*(El2*El2 - pl1x*pl1x)
-                 - 4*(El2*El2 - pl1z*pl1z)*b2*b2/b4/b4
-                 - 8*pl1x*pl1z*b2/b4; 
-    double dd11 = 4*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)*(pl1y - pl1z*b3/b4)
-                 - 8*(El2*El2 - pl1z*pl1z)*b1*b3/b4/b4
-                 - 8*pl1y*pl1z*b1/b4;
-    double d10 = -8*(El2*El2 - pl1z*pl1z)*b2*b3/b4/b4 + 8*pl1x*pl1y
-                 - 8*pl1x*pl1z*b3/b4 - 8*pl1y*pl1z*b2/b4;
-    double d00 = -4*(El2*El2 - pl1y*pl1y) - 4*(El2*El2 - pl1z*pl1z)*b3*b3/b4/b4
-                 - 8*pl1y*pl1z*b3/b4;
-    double d22 = dd22 + Emissx*Emissx*d20 +Emissy*Emissy*d00
-                 + Emissx*Emissy*d10 + Emissx*dd21 + Emissy*dd11;
-    double d21 = -dd21 -2*Emissx*d20 - Emissy*d10;
-    double d11 = -dd11 -2*Emissy*d00 - Emissx*d10; 
+                 - 8*pl2x*pl2z*b1/b4;
+    double dd20 = -4*(El2*El2 - pl2x*pl2x) - 4*(El2*El2 - pl2z*pl2z)*b2*b2/b4/b4 
+                 - 8*pl2x*pl2z*b2/b4; 
+    double dd11 = 4*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)*(pl2y - pl2z*b3/b4)
+                 - 8*(El2*El2 - pl2z*pl2z)*b1*b3/b4/b4
+                 - 8*pl2y*pl2z*b1/b4;
+    double dd10 = -8*(El2*El2 - pl2z*pl2z)*b2*b3/b4/b4 + 8*pl2x*pl2y
+                 - 8*pl2x*pl2z*b3/b4 - 8*pl2y*pl2z*b2/b4;
+    double dd00 = -4*(El2*El2 - pl2y*pl2y) - 4*(El2*El2 - pl2z*pl2z)*b3*b3/b4/b4
+                 - 8*pl2y*pl2z*b3/b4;
+
+
+    double d22 = dd22 + Emissx*Emissx*dd20 + Emissy*Emissy*dd00 + Emissx*Emissy*dd10 
+                 + Emissx*dd21 + Emissy*dd11;
+    double d21 = -dd21 -2*Emissx*dd20 - Emissy*dd10;
+    double d20 = dd20;
+    double d11 = -dd11 -2*Emissy*dd00 - Emissx*dd10;
+    double d10 = dd10;
+    double d00 = dd00;
+
     double h4 = c00*c00*d22*d22 + c11*d22*(c11*d00 - c00*d11)
                 + c00*c22*(d11*d11 - 2*d00*d22) + c22*d00*(c22*d00 - c11*d11);
     double h3 = c00*d21*(2*c00*d22 - c11*d11) + c00*d11*(2*c22*d10 + c21*d11) 
@@ -1594,37 +1748,56 @@ vector<TLorentzVector> AnalysisZprime::ReconstructDilepton(vector<TLorentzVector
     double h0 = c00*c00*d20*d20 + c10*d20*(c10*d00 - c00*d10)  
                 + c20*d10*(c00*d10 - c10*d00) + c20*d00*(c20*d00 - 2*c00*d20);
 
-    double pv1x_R;
-    solveQuartic(h4, h3, h2, h1, h0, pv1x_R);
-    double pv2x_R = Emissx - pv1x_R;
+    double coeffs[5], roots[3][5];
+    coeffs[0] = h4; coeffs[1] = h3; coeffs[2] = h2; coeffs[3] = h1; coeffs[4] = h0;
+    // coeffs[0] = 1; coeffs[1] = 1; coeffs[2] = 1; coeffs[3] = 1; coeffs[4] = -19;
 
-    double c2 = c22 + c21*pv1x_R + c20*pv1x_R*pv1x_R;
-    double c1 = c11 + c10*pv1x_R;
-    double c0 = c00;
-    double d2 = d22 + d21*pv1x_R + d20*pv1x_R*pv1x_R;
-    double d1 = d11 + d10*pv1x_R;
-    double d0 = c00;
+    QuarticRoots(coeffs, roots);
 
-    double pv1y_R = (c0*d2 - c2*d0)/(c1*d0 - c0*d1);
-    double pv2y_R = Emissy - pv1y_R;
+    // Discard complex
+    vector<double> Rroots;
+    for(int i = 1; i < 5; i++) if (roots[2][i] == 0) Rroots.push_back(roots[1][i]);
 
-    double pv1z_R = -(a1 + a2*pv1x_R + a3*pv1y_R)/a4;
-    double pv2z_R = -(b1 + b2*pv2x_R + b3*pv2y_R)/b4;
+    printf("pv1x    = %f\n", pv1x);
+    for(int i = 0; i < 4; i++) printf("root(%i) = %f + %fi\n", i, roots[0][i], roots[1][i]);
 
-    TLorentzVector pv1_R(pv1x_R, pv1y_R, pv1z_R, sqrt(pv1x_R*pv1x_R + pv1y_R*pv1y_R + pv1z_R*pv1z_R));
-    TLorentzVector pv2_R(pv2x_R, pv2y_R, pv2z_R, sqrt(pv2x_R*pv2x_R + pv2y_R*pv2y_R + pv2z_R*pv2z_R));
+    for(int i = 0; i < Rroots.size(); i++) {
 
-    p_R[0] = pb1;
-    p_R[1] = pb2;
-    p_R[2] = pl1;
-    p_R[3] = pv1_R;
-    p_R[4] = pl2;
-    p_R[5] = pv2_R;
+        double pv1x_R = Rroots[i];
+
+        double pv2x_R = Emissx - pv1x_R;
+
+        double c2 = c22 + c21*pv1x_R + c20*pv1x_R*pv1x_R;
+        double c1 = c11 + c10*pv1x_R;
+        double c0 = c00;
+        double d2 = d22 + d21*pv1x_R + d20*pv1x_R*pv1x_R;
+        double d1 = d11 + d10*pv1x_R;
+        double d0 = c00;
+
+        double pv1y_R = (c0*d2 - c2*d0)/(c1*d0 - c0*d1);
+        double pv2y_R = Emissy - pv1y_R;
+
+        double pv1z_R = -(a1 + a2*pv1x_R + a3*pv1y_R)/a4;
+        double pv2z_R = -(b1 + b2*pv2x_R + b3*pv2y_R)/b4;
+
+        TLorentzVector pv1_R(pv1x_R, pv1y_R, pv1z_R, sqrt(pv1x_R*pv1x_R + pv1y_R*pv1y_R + pv1z_R*pv1z_R));
+        TLorentzVector pv2_R(pv2x_R, pv2y_R, pv2z_R, sqrt(pv2x_R*pv2x_R + pv2y_R*pv2y_R + pv2z_R*pv2z_R));
+
+        p_Rs[0][i] = pb1;
+        p_Rs[1][i] = pb2;
+        p_Rs[2][i] = pl1;
+        p_Rs[3][i] = pv1_R;
+        p_Rs[4][i] = pl2;
+        p_Rs[5][i] = pv2_R;
+    }
+
+    p_R = p_Rs[0];
 
     return p_R;
 }
 
-void AnalysisZprime::GetChannelFactors() {
+void AnalysisZprime::GetChannelFactors()
+{
     // scale dilepton to other classifications
     // fac_ee = 1
     // fac_emu = 2
@@ -1632,12 +1805,14 @@ void AnalysisZprime::GetChannelFactors() {
     // fac_qq = 36
 }
 
-const void AnalysisZprime::UpdateCutflow(int cut, bool passed) {
+const void AnalysisZprime::UpdateCutflow(int cut, bool passed)
+{
     if (m_cutflow[cut] == -999) m_cutflow[cut] = 0;
     if (passed) m_cutflow[cut] +=1;
 }
 
-void AnalysisZprime::InitialiseCutflow() {
+void AnalysisZprime::InitialiseCutflow()
+{
     m_cutflow = vector<int>(m_cuts, -999);
     m_cutNames = vector<TString>(m_cuts, "no name");
     m_cutNames[c_entries]       = "Entries         ";
@@ -1654,8 +1829,9 @@ void AnalysisZprime::InitialiseCutflow() {
     h_cutflow = new TH1D("Cutflow", "Cutflow", m_cuts, 0, m_cuts);
 }
 
-void AnalysisZprime::PrintCutflow() {
-    printf("--- Cutflow ---\n");
+void AnalysisZprime::PrintCutflow()
+{
+    printf("-- Cutflow --\n");
     for (int cut = 0; cut < m_cuts; cut++) {
         if (m_cutflow[cut] == -999) continue;
 
@@ -1667,7 +1843,8 @@ void AnalysisZprime::PrintCutflow() {
     h_cutflow->Write();
 }
 
-inline void AnalysisZprime::ProgressBar(unsigned int x, unsigned int n, unsigned int w) {
+inline void AnalysisZprime::ProgressBar(unsigned int x, unsigned int n, unsigned int w)
+{
     if ( (x != n) && (x % (n/100+1) != 0) ) return;
 
     float ratio = x/(float)n;
@@ -1680,14 +1857,17 @@ inline void AnalysisZprime::ProgressBar(unsigned int x, unsigned int n, unsigned
     else cout << "]\r" << flush;
 }
 
-void AnalysisZprime::SetYttCut(const double ytt){
+void AnalysisZprime::SetYttCut(const double ytt)
+{
     m_ytt = ytt;
 }
 
-void AnalysisZprime::SetXsec(const bool xsec){
+void AnalysisZprime::SetXsec(const bool xsec)
+{
     m_xsec = xsec;
 }
 
-void AnalysisZprime::SetFiducial(const bool fid){
+void AnalysisZprime::SetFiducial(const bool fid)
+{
     m_fid = fid;
 }

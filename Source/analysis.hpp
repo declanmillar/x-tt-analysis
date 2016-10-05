@@ -25,6 +25,9 @@
 #include <unistd.h>
 #include <limits.h>
 #include <sys/stat.h>
+#include <complex>
+#include <cfloat>
+
 
 class AnalysisZprime{
 public:
@@ -62,7 +65,7 @@ protected:
   void GetCrossSection(TString log);
   void GetIterationWeights(TString log);
 
-  void GetDataDirectory();
+  void SetDataDirectory();
   void GetChannelFactors();
 
   double TotalAsymmetry(TH1D* h_A, TH1D* h_B);
