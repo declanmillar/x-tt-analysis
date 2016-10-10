@@ -30,7 +30,7 @@ LIBS = $(ROOTLIBS) $(BOOSTLIBS)
 $(LIB)/%.o: $(SRC)/%.cpp
 	$(C) $(CFLAGS) -c -o  $@ $<
 
-# Link mainfile and all processes
+# Link main file and all processes
 $(OUT)/$(BIN): $(patsubst %, $(LIB)/%, $(OBJ))
 	$(C) $(LIBS) -o $@ $^
 
