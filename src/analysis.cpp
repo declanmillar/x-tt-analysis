@@ -1763,7 +1763,7 @@ vector<TLorentzVector> AnalysisZprime::ReconstructDilepton(vector<TLorentzVector
     printf("pv1x    = %f\n", pv1x);
     for(int i = 0; i < 4; i++) printf("root(%i) = %f + %fi\n", i, roots[0][i], roots[1][i]);
 
-    for(int i = 0; i < Rroots.size(); i++) {
+    for(unsigned int i = 0; i < Rroots.size(); i++) {
 
         double pv1x_R = Rroots[i];
 
