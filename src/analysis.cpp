@@ -1749,7 +1749,7 @@ vector<TLorentzVector> AnalysisZprime::ReconstructDilepton(vector<TLorentzVector
                 + c20*d10*(c00*d10 - c10*d00) + c20*d00*(c20*d00 - 2*c00*d20);
 
     double coeffs[5], roots[3][5];
-    coeffs[0] = h4; coeffs[1] = h3; coeffs[2] = h2; coeffs[3] = h1; coeffs[4] = h0;
+    coeffs[0] = h0; coeffs[1] = h1; coeffs[2] = h2; coeffs[3] = h3; coeffs[4] = h4;
     // coeffs[0] = 1; coeffs[1] = 1; coeffs[2] = 1; coeffs[3] = 1; coeffs[4] = -19;
 
     // printf("h4 = %f, h3 = %f, h2 = %f, h1 = %f, h0 = %f", h4, h3, h2, h1, h0);
@@ -1760,8 +1760,8 @@ vector<TLorentzVector> AnalysisZprime::ReconstructDilepton(vector<TLorentzVector
     vector<double> Rroots;
     for(int i = 1; i < 5; i++) if (roots[2][i] == 0) Rroots.push_back(roots[1][i]);
 
-    // printf("pv1x    = %f\n", pv1x);
-    // for(int i = 0; i < 4; i++) printf("root(%i) = %f + %fi\n", i, roots[0][i], roots[1][i]);
+    printf("pv1x    = %f\n", pv1x);
+    for(int i = 0; i < 4; i++) printf("root(%i) = %f + %fi\n", i, roots[0][i], roots[1][i]);
 
     for(int i = 0; i < Rroots.size(); i++) {
 
