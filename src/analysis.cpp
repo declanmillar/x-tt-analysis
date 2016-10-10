@@ -1143,7 +1143,7 @@ void AnalysisZprime::Loop()
             Long64_t ientry = this->IncrementEvent(jentry);
             if (ientry < 0) break;
             this->EachEvent();
-            this->ProgressBar(jentry, nEntries-1, 50);
+            // this->ProgressBar(jentry, nEntries-1, 50);
         }
         this->CleanUp();
     }
@@ -1674,12 +1674,18 @@ vector<TLorentzVector> AnalysisZprime::ReconstructDilepton(vector<TLorentzVector
 
     double ml1 = 0, ml2 = 0, mv1 = 0, mv2 = 0;
 
+    printf("term1 = %f\nterm2 = %f\nterm3 = %f\nterm4 = %f\n", (Eb1 + El1)*(m_Wmass*m_Wmass - ml1*ml1 - mv1*mv1), - El1*(m_tmass*m_tmass - m_bmass*m_bmass - ml1*ml1 - mv1*mv1), 2*Eb1*El1*El1, -2*El1*pb1x*pl1x + pb1y*pl1y + pb1z*pl1z);
+
+    printf("%f\n", 10.0*2/2/5);
+
     double a1 = (Eb1 + El1)*(m_Wmass*m_Wmass - ml1*ml1 - mv1*mv1)
                 - El1*(m_tmass*m_tmass - m_bmass*m_bmass - ml1*ml1 - mv1*mv1)
                 + 2*Eb1*El1*El1 - 2*El1*(pb1x*pl1x + pb1y*pl1y + pb1z*pl1z);
     double a2 = 2*(Eb1*pl1x - El1*pb1x);
     double a3 = 2*(Eb1*pl1y - El1*pb1y);
     double a4 = 2*(Eb1*pl1z - El1*pb1z);
+
+    printf("a1 = %f\na2 = %f\na3 = %f\na4 = %f\n", a1, a2, a3, a4);
 
     double b1 = (Eb2 + El2)*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)
                 - El2*(m_tmass*m_tmass - m_bmass*m_bmass - ml2*ml2 - mv2*mv2)
@@ -1688,63 +1694,85 @@ vector<TLorentzVector> AnalysisZprime::ReconstructDilepton(vector<TLorentzVector
     double b3 = 2*(Eb2*pl2y - El2*pb2y);
     double b4 = 2*(Eb2*pl2z - El2*pb2z);
 
+    printf("b1 = %f\nb2 = %f\nb3 = %f\nb4 = %f\n", b1, b2, b3, b4);
+
     double c22 = (m_Wmass*m_Wmass - ml1*ml1 - mv1*mv1)*(m_Wmass*m_Wmass - ml1*ml1 - mv1*mv1)
                  - 4*(El1*El1 - pl1z*pl1z)*a1*a1/a4/a4
                  - 4*(m_Wmass*m_Wmass - ml1*ml1 - mv1*mv1)*pl1z*a1/a4;
+
     double c21 = 4*(m_Wmass*m_Wmass - ml1*ml1 - mv1*mv1)*(pl1x - pl1z*a2/a4)
                  - 8*(El1*El1 - pl1z*pl1z)*a1*a2/a4/a4 - 8*pl1x*pl1z*a1/a4;
-    double c20 = -4*(El1*El1 - pl1x*pl1x)
-                 - 4*(El1*El1 - pl1z*pl1z)*a2*a2/a4/a4
+
+    double c20 = -4*(El1*El1 - pl1x*pl1x) - 4*(El1*El1 - pl1z*pl1z)*a2*a2/a4/a4
                  - 8*pl1x*pl1z*a2/a4;
+
     double c11 = 4*(m_Wmass*m_Wmass - ml1*ml1 - mv1*mv1)*(pl1y - pl1z*a3/a4)
-                 - 8*(El1*El1 - pl1z*pl1z)*a1*a3/a4/a4
-                 - 8*pl1y*pl1z*a1/a4;
+                 - 8*(El1*El1 - pl1z*pl1z)*a1*a3/a4/a4 - 8*pl1y*pl1z*a1/a4;
+
     double c10 = -8*(El1*El1 - pl1z*pl1z)*a2*a3/a4/a4 + 8*pl1x*pl1y
                  - 8*pl1x*pl1z*a3/a4 - 8*pl1y*pl1z*a2/a4;
+
     double c00 = -4*(El1*El1 - pl1y*pl1y) - 4*(El1*El1 - pl1z*pl1z)*a3*a3/a4/a4
                  - 8*pl1y*pl1z*a3/a4;
 
-    double dd22 = (m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)
-                 - 4*(El2*El2 - pl1z*pl1z)*b1*b1/b4/b4
-                 - 4*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)*pl2z*b1/b4;
-    double dd21 = 4*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)*(pl2x - pl2z*b2/b4)
-                 - 8*(El2*El2 - pl1z*pl1z)*b1*b2/b4/b4 
-                 - 8*pl2x*pl2z*b1/b4;
-    double dd20 = -4*(El2*El2 - pl2x*pl2x) - 4*(El2*El2 - pl2z*pl2z)*b2*b2/b4/b4 
-                 - 8*pl2x*pl2z*b2/b4; 
-    double dd11 = 4*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)*(pl2y - pl2z*b3/b4)
-                 - 8*(El2*El2 - pl2z*pl2z)*b1*b3/b4/b4
-                 - 8*pl2y*pl2z*b1/b4;
-    double dd10 = -8*(El2*El2 - pl2z*pl2z)*b2*b3/b4/b4 + 8*pl2x*pl2y
-                 - 8*pl2x*pl2z*b3/b4 - 8*pl2y*pl2z*b2/b4;
-    double dd00 = -4*(El2*El2 - pl2y*pl2y) - 4*(El2*El2 - pl2z*pl2z)*b3*b3/b4/b4
-                 - 8*pl2y*pl2z*b3/b4;
+    printf("c22 = %f\nc21 = %f\nc20 = %f\nc11 = %f\nc10 = %f\nc00 = %f\n", c22, c21, c20, c11, c10, c00);
 
+    double dd22 = (m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)
+                  - 4*(El2*El2 - pl2z*pl2z)*b1*b1/b4/b4
+                  - 4*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)*pl2z*b1/b4;
+
+    double dd21 = 4*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)*(pl2x - pl2z*b2/b4)
+                  - 8*(El2*El2 - pl2z*pl2z)*b1*b2/b4/b4 - 8*pl2x*pl2z*b1/b4;
+
+    double dd20 = -4*(El2*El2 - pl2x*pl2x) - 4*(El2*El2 - pl2z*pl2z)*b2*b2/b4/b4 
+                  - 8*pl2x*pl2z*b2/b4;
+
+    double dd11 = 4*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)*(pl2y - pl2z*b3/b4)
+                  - 8*(El2*El2 - pl2z*pl2z)*b1*b3/b4/b4 - 8*pl2y*pl2z*b1/b4;
+
+    double dd10 = -8*(El2*El2 - pl2z*pl2z)*b2*b3/b4/b4 + 8*pl2x*pl2y
+                  - 8*pl2x*pl2z*b3/b4 - 8*pl2y*pl2z*b2/b4;
+
+    double dd00 = -4*(El2*El2 - pl2y*pl2y) - 4*(El2*El2 - pl2z*pl2z)*b3*b3/b4/b4
+                  - 8*pl2y*pl2z*b3/b4;
+
+    printf("dd22 = %f\ndd21 = %f\ndd20 = %f\ndd11 = %f\ndd10 = %f\ndd00 = %f\n", dd22, dd21, dd20, dd11, dd10, dd00);
 
     double d22 = dd22 + Emissx*Emissx*dd20 + Emissy*Emissy*dd00 + Emissx*Emissy*dd10 
                  + Emissx*dd21 + Emissy*dd11;
+
     double d21 = -dd21 - 2*Emissx*dd20 - Emissy*dd10;
+
     double d20 = dd20;
+
     double d11 = -dd11 - 2*Emissy*dd00 - Emissx*dd10;
+
     double d10 = dd10;
+
     double d00 = dd00;
+
+    printf("d22 = %f\nd21 = %f\nd20 = %f\nd11 = %f\nd10 = %f\nd00 = %f\n", d22, d21, d20, d11, d10, d00);
 
     double h4 = c00*c00*d22*d22 + c11*d22*(c11*d00 - c00*d11)
                 + c00*c22*(d11*d11 - 2*d00*d22) + c22*d00*(c22*d00 - c11*d11);
+
     double h3 = c00*d21*(2*c00*d22 - c11*d11) + c00*d11*(2*c22*d10 + c21*d11) 
-                + c22*d00*(2*c21*d00-c11*d10)-c00*d22*(c11*d10 + c10*d11)  
-                -2*c00*d00*(c22*d21 + c21*d22)-d00*d11*(c11*c21 + c10*c22) 
+                + c22*d00*(2*c21*d00-c11*d10) - c00*d22*(c11*d10 + c10*d11)  
+                -2*c00*d00*(c22*d21 + c21*d22) - d00*d11*(c11*c21 + c10*c22) 
                 + c11*d00*(c11*d21 + 2*c10*d22);
+
     double h2 = c00*c00*(2*d22*d20 + d21*d21) - c00*d21*(c11*d10 + c10*d11)  
                 + c11*d20*(c11*d00 - c00*d11) + c00*d10*(c22*d10 - c10*d22)   
                 + c00*d11*(2*c21*d10 + c20*d11) + (2*c22*c20 + c21*c21)*d00*d00   
-                -2*c00*d00*(c22*d20 + c21*d21 + c20*d22)    
+                - 2*c00*d00*(c22*d20 + c21*d21 + c20*d22)    
                 + c10*d00*(2*c11*d21 + c10*d22) - d00*d10*(c11*c21 + c10*c22)   
                 - d00*d11*(c11*c20 + c10*c21);
+
     double h1 = c00*d21*(2*c00*d20 - c10*d10) - c00*d20*(c11*d10 + c10*d11)  
                 + c00*d10*(c21*d10 + 2*c20*d11) - 2*c00*d00*(c21*d20 + c20*d21)  
                 + c10*d00*(2*c11*d20 + c10*d21) - c20*d00*(2*c21*d00 - c10*d11)  
                 - d00*d10*(c11*c20 + c10*c21);
+
     double h0 = c00*c00*d20*d20 + c10*d20*(c10*d00 - c00*d10)  
                 + c20*d10*(c00*d10 - c10*d00) + c20*d00*(c20*d00 - 2*c00*d20);
 
@@ -1752,16 +1780,16 @@ vector<TLorentzVector> AnalysisZprime::ReconstructDilepton(vector<TLorentzVector
     coeffs[0] = h0; coeffs[1] = h1; coeffs[2] = h2; coeffs[3] = h3; coeffs[4] = h4;
     // coeffs[0] = 1; coeffs[1] = 1; coeffs[2] = 1; coeffs[3] = 1; coeffs[4] = -19;
 
-    // printf("h4 = %f, h3 = %f, h2 = %f, h1 = %f, h0 = %f", h4, h3, h2, h1, h0);
+    printf("h0 = %f\nh1 = %f\nh2 = %f\nh3 = %f\nh4 = %f\n", h0, h1, h2, h3, h4);
 
     QuarticRoots(coeffs, roots);
+
+    printf("pv1x    = %f\n", pv1x);
+    for(int i = 0; i < 4; i++) printf("root(%i) = %f + %fi\n", i, roots[0][i], roots[1][i]);
 
     // Discard complex
     vector<double> Rroots;
     for(int i = 1; i < 5; i++) if (roots[2][i] == 0) Rroots.push_back(roots[1][i]);
-
-    printf("pv1x    = %f\n", pv1x);
-    for(int i = 0; i < 4; i++) printf("root(%i) = %f + %fi\n", i, roots[0][i], roots[1][i]);
 
     for(unsigned int i = 0; i < Rroots.size(); i++) {
 
