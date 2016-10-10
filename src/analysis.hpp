@@ -1,8 +1,8 @@
 #ifndef _ANALYSIS_ZPRIME_H_
 #define _ANALYSIS_ZPRIME_H_
 
-#include "RootTuple.hpp"
-#include "atlas_style.hpp"
+#include "root-tuple.hpp"
+#include "atlas-style.hpp"
 #include "TCanvas.h"
 #include "TApplication.h"
 #include <cmath>

@@ -15,7 +15,7 @@
 // This class is for accessing the RootTuple Ntuples
 // You should not have to edit this file
 
-#include "RootTuple.hpp"
+#include "root-tuple.hpp"
 
 RootTuple::RootTuple(TTree* tree) :
   m_isMC(false),

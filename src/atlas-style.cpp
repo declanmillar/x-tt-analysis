@@ -1,4 +1,4 @@
-#include "atlas_style.hpp"
+#include "atlas-style.hpp"
 
 AtlasROOTStyle::AtlasROOTStyle()
 {
