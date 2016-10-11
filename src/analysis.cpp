@@ -1674,10 +1674,6 @@ vector<TLorentzVector> AnalysisZprime::ReconstructDilepton(vector<TLorentzVector
 
     double ml1 = 0, ml2 = 0, mv1 = 0, mv2 = 0;
 
-    printf("term1 = %f\nterm2 = %f\nterm3 = %f\nterm4 = %f\n", (Eb1 + El1)*(m_Wmass*m_Wmass - ml1*ml1 - mv1*mv1), - El1*(m_tmass*m_tmass - m_bmass*m_bmass - ml1*ml1 - mv1*mv1), 2*Eb1*El1*El1, -2*El1*pb1x*pl1x + pb1y*pl1y + pb1z*pl1z);
-
-    printf("%f\n", 10.0*2/2/5);
-
     double a1 = (Eb1 + El1)*(m_Wmass*m_Wmass - ml1*ml1 - mv1*mv1)
                 - El1*(m_tmass*m_tmass - m_bmass*m_bmass - ml1*ml1 - mv1*mv1)
                 + 2*Eb1*El1*El1 - 2*El1*(pb1x*pl1x + pb1y*pl1y + pb1z*pl1z);
@@ -1718,23 +1714,23 @@ vector<TLorentzVector> AnalysisZprime::ReconstructDilepton(vector<TLorentzVector
     printf("c22 = %f\nc21 = %f\nc20 = %f\nc11 = %f\nc10 = %f\nc00 = %f\n", c22, c21, c20, c11, c10, c00);
 
     double dd22 = (m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)
-                  - 4*(El2*El2 - pl2z*pl2z)*b1*b1/b4/b4
-                  - 4*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)*pl2z*b1/b4;
+                  -4*(El2*El2 - pl2z*pl2z)*b1*b1/b4/b4
+                  -4*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)*pl2z*b1/b4;
 
     double dd21 = 4*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)*(pl2x - pl2z*b2/b4)
-                  - 8*(El2*El2 - pl2z*pl2z)*b1*b2/b4/b4 - 8*pl2x*pl2z*b1/b4;
+                  -8*(El2*El2 - pl2z*pl2z)*b1*b2/b4/b4 - 8*pl2x*pl2z*b1/b4;
 
     double dd20 = -4*(El2*El2 - pl2x*pl2x) - 4*(El2*El2 - pl2z*pl2z)*b2*b2/b4/b4 
-                  - 8*pl2x*pl2z*b2/b4;
+                  -8*pl2x*pl2z*b2/b4;
 
-    double dd11 = 4*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)*(pl2y - pl2z*b3/b4)
-                  - 8*(El2*El2 - pl2z*pl2z)*b1*b3/b4/b4 - 8*pl2y*pl2z*b1/b4;
+    double dd11 = 4*(m_Wmass*m_Wmass -ml2*ml2 -mv2*mv2)*(pl2y -pl2z*b3/b4)
+                  -8*(El2*El2 -pl2z*pl2z)*b1*b3/b4/b4 -8*pl2y*pl2z*b1/b4;
 
-    double dd10 = -8*(El2*El2 - pl2z*pl2z)*b2*b3/b4/b4 + 8*pl2x*pl2y
-                  - 8*pl2x*pl2z*b3/b4 - 8*pl2y*pl2z*b2/b4;
+    double dd10 = -8*(El2*El2 - pl2z*pl2z)*b2*b3/b4/b4 +8*pl2x*pl2y
+                  -8*pl2x*pl2z*b3/b4 -8*pl2y*pl2z*b2/b4;
 
     double dd00 = -4*(El2*El2 - pl2y*pl2y) - 4*(El2*El2 - pl2z*pl2z)*b3*b3/b4/b4
-                  - 8*pl2y*pl2z*b3/b4;
+                  -8*pl2y*pl2z*b3/b4;
 
     printf("dd22 = %f\ndd21 = %f\ndd20 = %f\ndd11 = %f\ndd10 = %f\ndd00 = %f\n", dd22, dd21, dd20, dd11, dd10, dd00);
 
