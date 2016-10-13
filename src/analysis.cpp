@@ -1786,7 +1786,7 @@ vector<TLorentzVector> AnalysisZprime::ReconstructDilepton(vector<TLorentzVector
 
     // find root closest to true pl1x
     double old_diff = std::abs(pv1x - Rroots[0]), new_diff, closest_root = Rroots[0];
-    for (int i = 1; i < Rroots.size(); i++) {
+    for (unsigned int i = 1; i < Rroots.size(); i++) {
         new_diff = std::abs(pv1x - Rroots[i]);
         if (new_diff < old_diff) closest_root = Rroots[i];
     }
