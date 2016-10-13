@@ -1660,7 +1660,7 @@ vector<TLorentzVector> AnalysisZprime::ReconstructDilepton(vector<TLorentzVector
     m_nReco++;
 
     vector<TLorentzVector> p_R(p.size());
-    vector<vector<TLorentzVector> > p_Rs(p.size(), vector<TLorentzVector>(4));
+    // vector<vector<TLorentzVector> > p_Rs(p.size(), vector<TLorentzVector>(4));
 
     TLorentzVector pb1 = p[0], pb2 = p[1], pl1 = p[2], pv1 = p[3], pl2 = p[4], pv2 = p[5];
 
@@ -1677,20 +1677,22 @@ vector<TLorentzVector> AnalysisZprime::ReconstructDilepton(vector<TLorentzVector
     double a1 = (Eb1 + El1)*(m_Wmass*m_Wmass - ml1*ml1 - mv1*mv1)
                 - El1*(m_tmass*m_tmass - m_bmass*m_bmass - ml1*ml1 - mv1*mv1)
                 + 2*Eb1*El1*El1 - 2*El1*(pb1x*pl1x + pb1y*pl1y + pb1z*pl1z);
-    double a2 = 2*(Eb1*pl1x - El1*pb1x);
-    double a3 = 2*(Eb1*pl1y - El1*pb1y);
-    double a4 = 2*(Eb1*pl1z - El1*pb1z);
 
-    printf("a1 = %f\na2 = %f\na3 = %f\na4 = %f\n", a1, a2, a3, a4);
+    double a2 = 2*(Eb1*pl1x - El1*pb1x);
+
+    double a3 = 2*(Eb1*pl1y - El1*pb1y);
+
+    double a4 = 2*(Eb1*pl1z - El1*pb1z);
 
     double b1 = (Eb2 + El2)*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)
                 - El2*(m_tmass*m_tmass - m_bmass*m_bmass - ml2*ml2 - mv2*mv2)
-                + 2*Eb2*El2*El2 - 2*El2*(pb2x*pl2x + pb2y*pl2y + pb2z*pl2z);                
-    double b2 = 2*(Eb2*pl2x - El2*pb2x);
-    double b3 = 2*(Eb2*pl2y - El2*pb2y);
-    double b4 = 2*(Eb2*pl2z - El2*pb2z);
+                + 2*Eb2*El2*El2 - 2*El2*(pb2x*pl2x + pb2y*pl2y + pb2z*pl2z);
 
-    printf("b1 = %f\nb2 = %f\nb3 = %f\nb4 = %f\n", b1, b2, b3, b4);
+    double b2 = 2*(Eb2*pl2x - El2*pb2x);
+
+    double b3 = 2*(Eb2*pl2y - El2*pb2y);
+
+    double b4 = 2*(Eb2*pl2z - El2*pb2z);
 
     double c22 = (m_Wmass*m_Wmass - ml1*ml1 - mv1*mv1)*(m_Wmass*m_Wmass - ml1*ml1 - mv1*mv1)
                  - 4*(El1*El1 - pl1z*pl1z)*a1*a1/a4/a4
@@ -1711,8 +1713,6 @@ vector<TLorentzVector> AnalysisZprime::ReconstructDilepton(vector<TLorentzVector
     double c00 = -4*(El1*El1 - pl1y*pl1y) - 4*(El1*El1 - pl1z*pl1z)*a3*a3/a4/a4
                  - 8*pl1y*pl1z*a3/a4;
 
-    printf("c22 = %f\nc21 = %f\nc20 = %f\nc11 = %f\nc10 = %f\nc00 = %f\n", c22, c21, c20, c11, c10, c00);
-
     double dd22 = (m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)
                   -4*(El2*El2 - pl2z*pl2z)*b1*b1/b4/b4
                   -4*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)*pl2z*b1/b4;
@@ -1723,16 +1723,14 @@ vector<TLorentzVector> AnalysisZprime::ReconstructDilepton(vector<TLorentzVector
     double dd20 = -4*(El2*El2 - pl2x*pl2x) - 4*(El2*El2 - pl2z*pl2z)*b2*b2/b4/b4 
                   -8*pl2x*pl2z*b2/b4;
 
-    double dd11 = 4*(m_Wmass*m_Wmass -ml2*ml2 -mv2*mv2)*(pl2y -pl2z*b3/b4)
-                  -8*(El2*El2 -pl2z*pl2z)*b1*b3/b4/b4 -8*pl2y*pl2z*b1/b4;
+    double dd11 = 4*(m_Wmass*m_Wmass -ml2*ml2 -mv2*mv2)*(pl2y - pl2z*b3/b4)
+                  -8*(El2*El2 -pl2z*pl2z)*b1*b3/b4/b4 - 8*pl2y*pl2z*b1/b4;
 
-    double dd10 = -8*(El2*El2 - pl2z*pl2z)*b2*b3/b4/b4 +8*pl2x*pl2y
-                  -8*pl2x*pl2z*b3/b4 -8*pl2y*pl2z*b2/b4;
+    double dd10 = -8*(El2*El2 - pl2z*pl2z)*b2*b3/b4/b4 + 8*pl2x*pl2y
+                  -8*pl2x*pl2z*b3/b4 - 8*pl2y*pl2z*b2/b4;
 
     double dd00 = -4*(El2*El2 - pl2y*pl2y) - 4*(El2*El2 - pl2z*pl2z)*b3*b3/b4/b4
                   -8*pl2y*pl2z*b3/b4;
-
-    printf("dd22 = %f\ndd21 = %f\ndd20 = %f\ndd11 = %f\ndd10 = %f\ndd00 = %f\n", dd22, dd21, dd20, dd11, dd10, dd00);
 
     double d22 = dd22 + Emissx*Emissx*dd20 + Emissy*Emissy*dd00 + Emissx*Emissy*dd10 
                  + Emissx*dd21 + Emissy*dd11;
@@ -1746,8 +1744,6 @@ vector<TLorentzVector> AnalysisZprime::ReconstructDilepton(vector<TLorentzVector
     double d10 = dd10;
 
     double d00 = dd00;
-
-    printf("d22 = %f\nd21 = %f\nd20 = %f\nd11 = %f\nd10 = %f\nd00 = %f\n", d22, d21, d20, d11, d10, d00);
 
     double h4 = c00*c00*d22*d22 + c11*d22*(c11*d00 - c00*d11)
                 + c00*c22*(d11*d11 - 2*d00*d22) + c22*d00*(c22*d00 - c11*d11);
@@ -1774,50 +1770,52 @@ vector<TLorentzVector> AnalysisZprime::ReconstructDilepton(vector<TLorentzVector
 
     double coeffs[5], roots[3][5];
     coeffs[0] = h0; coeffs[1] = h1; coeffs[2] = h2; coeffs[3] = h3; coeffs[4] = h4;
-    // coeffs[0] = 1; coeffs[1] = 1; coeffs[2] = 1; coeffs[3] = 1; coeffs[4] = -19;
-
-    printf("h0 = %f\nh1 = %f\nh2 = %f\nh3 = %f\nh4 = %f\n", h0, h1, h2, h3, h4);
 
     QuarticRoots(coeffs, roots);
 
-    printf("pv1x    = %f\n", pv1x);
-    for(int i = 0; i < 4; i++) printf("root(%i) = %f + %fi\n", i, roots[0][i], roots[1][i]);
+    // printf("pv1x    = %f\n", pv1x);
+    // for (int i = 0; i < 4; i++) printf("root(%i) = %f + %fi\n", i, roots[0][i], roots[1][i]);
 
     // Discard complex
+    // vector<double> Rroots;
+    // for(int i = 1; i < 5; i++) if (roots[1][i] == 0) Rroots.push_back(roots[0][i]);
+
+    // Take real part
     vector<double> Rroots;
-    for(int i = 1; i < 5; i++) if (roots[2][i] == 0) Rroots.push_back(roots[1][i]);
+    for (int i = 0; i < 4; i++) Rroots.push_back(roots[0][i]);
 
-    for(unsigned int i = 0; i < Rroots.size(); i++) {
-
-        double pv1x_R = Rroots[i];
-
-        double pv2x_R = Emissx - pv1x_R;
-
-        double c2 = c22 + c21*pv1x_R + c20*pv1x_R*pv1x_R;
-        double c1 = c11 + c10*pv1x_R;
-        double c0 = c00;
-        double d2 = d22 + d21*pv1x_R + d20*pv1x_R*pv1x_R;
-        double d1 = d11 + d10*pv1x_R;
-        double d0 = c00;
-
-        double pv1y_R = (c0*d2 - c2*d0)/(c1*d0 - c0*d1);
-        double pv2y_R = Emissy - pv1y_R;
-
-        double pv1z_R = -(a1 + a2*pv1x_R + a3*pv1y_R)/a4;
-        double pv2z_R = -(b1 + b2*pv2x_R + b3*pv2y_R)/b4;
-
-        TLorentzVector pv1_R(pv1x_R, pv1y_R, pv1z_R, sqrt(pv1x_R*pv1x_R + pv1y_R*pv1y_R + pv1z_R*pv1z_R));
-        TLorentzVector pv2_R(pv2x_R, pv2y_R, pv2z_R, sqrt(pv2x_R*pv2x_R + pv2y_R*pv2y_R + pv2z_R*pv2z_R));
-
-        p_Rs[0][i] = pb1;
-        p_Rs[1][i] = pb2;
-        p_Rs[2][i] = pl1;
-        p_Rs[3][i] = pv1_R;
-        p_Rs[4][i] = pl2;
-        p_Rs[5][i] = pv2_R;
+    // find root closest to true pl1x
+    double old_diff = std::abs(pv1x - Rroots[0]), new_diff, closest_root = Rroots[0];
+    for (int i = 1; i < Rroots.size(); i++) {
+        new_diff = std::abs(pv1x - Rroots[i]);
+        if (new_diff < old_diff) closest_root = Rroots[i];
     }
 
-    p_R = p_Rs[0];
+    double pv1x_R = closest_root;
+    double pv2x_R = Emissx - pv1x_R;
+
+    double c2 = c22 + c21*pv1x_R + c20*pv1x_R*pv1x_R;
+    double c1 = c11 + c10*pv1x_R;
+    double c0 = c00;
+    double d2 = d22 + d21*pv1x_R + d20*pv1x_R*pv1x_R;
+    double d1 = d11 + d10*pv1x_R;
+    double d0 = c00;
+
+    double pv1y_R = (c0*d2 - c2*d0)/(c1*d0 - c0*d1);
+    double pv2y_R = Emissy - pv1y_R;
+
+    double pv1z_R = -(a1 + a2*pv1x_R + a3*pv1y_R)/a4;
+    double pv2z_R = -(b1 + b2*pv2x_R + b3*pv2y_R)/b4;
+
+    TLorentzVector pv1_R(pv1x_R, pv1y_R, pv1z_R, sqrt(pv1x_R*pv1x_R + pv1y_R*pv1y_R + pv1z_R*pv1z_R));
+    TLorentzVector pv2_R(pv2x_R, pv2y_R, pv2z_R, sqrt(pv2x_R*pv2x_R + pv2y_R*pv2y_R + pv2z_R*pv2z_R));
+
+    p_R[0] = pb1;
+    p_R[1] = pb2;
+    p_R[2] = pl1;
+    p_R[3] = pv1_R;
+    p_R[4] = pl2;
+    p_R[5] = pv2_R;
 
     return p_R;
 }
