@@ -99,8 +99,8 @@ class HistPainter():
 
 
     def AddInfoBox(self, model):
-        x = 0.15
-        y = 0.25
+        x = 0.65
+        y = 0.85
 
         t1 = ROOT.TLatex(x + 0.02, y - 0.075, "#bf{#it{m_{Z'}} = 3 TeV}")
         t1.SetTextAlign(11)
@@ -115,11 +115,11 @@ class HistPainter():
         t2.Draw("same")
         self.members.append(t2)
 
-        # t3 = ROOT.TLatex(x+0.02, 0.825, "#bf{Model: %s}" % model)
-        # t3.SetNDC(True)
-        # t3.SetTextSize(0.04)
-        # t3.Draw("same")
-        # self.members.append(t3)
+        t3 = ROOT.TLatex(x + 0.02, y - 0.15, "#bf{Model: %s}" % model)
+        t3.SetNDC(True)
+        t3.SetTextSize(0.04)
+        t3.Draw("same")
+        self.members.append(t3)
 
 
     def AddLegend(self, xlow, ylow, xup, yup):
@@ -210,17 +210,17 @@ art = HistPainter(1920, 1080)
 art.SetStyle()
 art.AddPads()
 # art.SetZtitle("#it{cos#theta_{l}}")
-# art.SetXtitle("#it{m_{tt}} [TeV]")
-# art.SetYtitle("A_{L}")
+art.SetXtitle("#Delta R (b, l)")
+art.SetYtitle("d#sigma / d #Delta R (b, l)")
 
-art.AddHistogram("KT", "SM_ggqq-GAZ-tt-6f_2-4_5x10M.a.L100.root", "#bf{SM}", grey)
-art.AddHistogram("KT", "GLR-R-3_ggqq-GAZX-tt-6f_2-4_5x10M.a.L100.root", "#bf{SM}", blue)
+art.AddHistogram("deltaRb1l", "GSM-Q-3_ggqq-GAZX-tt-bbllvv_2-4_5x10M.a.y0.5.L100.root", "#bf{SM}", blue)
+# art.AddHistogram("KT", "GLR-R-3_ggqq-GAZX-tt-6f_2-4_5x10M.a.L100.root", "#bf{SM}", blue)
 
-art.AddInfoBox("GLR-R")
+art.AddInfoBox("GSM-Q")
 
 # art.SetHistTitle(0, "SM")
 # art.AddLegend(0.13, 0.65, 0.35, 0.95)
 
 filename = "~/Dropbox/zprime-paper/figures/al-r-glr-r-ggqq-gazx-tt-bbllvv-2-4-5x10M-a-y0-y0.5-l100.pdf"
 # art.Save(filename)
-art.Save("~/Desktop/canvas.pdf")
+art.Save("~/Desktop/canvas2.pdf")
