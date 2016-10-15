@@ -1143,7 +1143,7 @@ void AnalysisZprime::Loop()
             Long64_t ientry = this->IncrementEvent(jentry);
             if (ientry < 0) break;
             this->EachEvent();
-            this->ProgressBar(jentry, nEntries-1, 50);
+            // this->ProgressBar(jentry, nEntries-1, 50);
         }
         this->CleanUp();
     }
@@ -1655,169 +1655,225 @@ int QuarticRoots( double p[5], double r[3][5])
 
 vector<TLorentzVector> AnalysisZprime::ReconstructDilepton(vector<TLorentzVector> p)
 {
-    this->UpdateCutflow(c_events, true);
+  this->UpdateCutflow(c_events, true);
 
-    m_nReco++;
+  m_nReco++;
 
-    vector<TLorentzVector> p_R(p.size());
-    // vector<vector<TLorentzVector> > p_Rs(p.size(), vector<TLorentzVector>(4));
+  vector<TLorentzVector> p_R(p.size());
+  // vector<vector<TLorentzVector> > p_Rs(p.size(), vector<TLorentzVector>(4));
 
-    TLorentzVector pb1 = p[0], pb2 = p[1], pl1 = p[2], pv1 = p[3], pl2 = p[4], pv2 = p[5];
+  TLorentzVector pb1 = p[0], pb2 = p[1], pl1 = p[2], pv1 = p[3], pl2 = p[4], pv2 = p[5];
 
-    double pb1x = pb1.Px(), pb1y = pb1.Py(), pb1z = pb1.Pz(), Eb1 = pb1.E();
-    double pb2x = pb2.Px(), pb2y = pb2.Py(), pb2z = pb2.Pz(), Eb2 = pb2.E();
-    double pl1x = pl1.Px(), pl1y = pl1.Py(), pl1z = pl1.Pz(), El1 = pl1.E();
-    double pl2x = pl2.Px(), pl2y = pl2.Py(), pl2z = pl2.Pz(), El2 = pl2.E();
-    double pv1x = pv1.Px(), pv1y = pv1.Py(), pv2x = pv2.Px(), pv2y = pv2.Py();
-    double Emissx = pv1x + pv2x;
-    double Emissy = pv1y + pv2y;
+  double pb1x = pb1.Px(), pb1y = pb1.Py(), pb1z = pb1.Pz(), Eb1 = pb1.E();
+  double pb2x = pb2.Px(), pb2y = pb2.Py(), pb2z = pb2.Pz(), Eb2 = pb2.E();
+  double pl1x = pl1.Px(), pl1y = pl1.Py(), pl1z = pl1.Pz(), El1 = pl1.E();
+  double pl2x = pl2.Px(), pl2y = pl2.Py(), pl2z = pl2.Pz(), El2 = pl2.E();
+  double pv1x = pv1.Px(), pv1y = pv1.Py(), pv2x = pv2.Px(), pv2y = pv2.Py();
+  double Emissx = pv1x + pv2x;
+  double Emissy = pv1y + pv2y;
+  // double mw1 = m_Wmass, mt1 = m_tmass, mb1 = m_bmass;
+  // double mw2 = m_Wmass, mt2 = m_tmass, mb2 = m_bmass; 
+  double mt1 = (p[0] + p[2] + p[3]).M();
+  double mt2 = (p[1] + p[4] + p[5]).M();
+  double mw1 = (p[2] + p[3]).M();
+  double mw2 = (p[4] + p[5]).M();
+  double mb1 = p[0].M();
+  double mb2 = p[1].M();
 
-    double ml1 = 0, ml2 = 0, mv1 = 0, mv2 = 0;
+  printf("mt1 = %f, mt2 = %f, mb1 = %f, mb2 = %f, mw1 = %f, mw2 = %f\n", mt1, mt2, mb1, mb2, mw1, mw2);
 
-    double a1 = (Eb1 + El1)*(m_Wmass*m_Wmass - ml1*ml1 - mv1*mv1)
-                - El1*(m_tmass*m_tmass - m_bmass*m_bmass - ml1*ml1 - mv1*mv1)
-                + 2*Eb1*El1*El1 - 2*El1*(pb1x*pl1x + pb1y*pl1y + pb1z*pl1z);
+  double ml1 = 0, ml2 = 0;
 
-    double a2 = 2*(Eb1*pl1x - El1*pb1x);
 
-    double a3 = 2*(Eb1*pl1y - El1*pb1y);
+  double a1 = (Eb1 + El1) * (mw1 * mw1 - ml1 * ml1)
+              - El1 * (mt1 * mt1 - mb1 * mb1 - ml1 * ml1)
+              + 2 * Eb1 * El1 * El1 
+              - 2 * El1 * (pb1x * pl1x + pb1y * pl1y + pb1z * pl1z);
 
-    double a4 = 2*(Eb1*pl1z - El1*pb1z);
+  double a2 = 2 * (Eb1 * pl1x - El1 * pb1x);
+  double a3 = 2 * (Eb1 * pl1y - El1 * pb1y);
+  double a4 = 2 * (Eb1 * pl1z - El1 * pb1z);
 
-    double b1 = (Eb2 + El2)*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)
-                - El2*(m_tmass*m_tmass - m_bmass*m_bmass - ml2*ml2 - mv2*mv2)
-                + 2*Eb2*El2*El2 - 2*El2*(pb2x*pl2x + pb2y*pl2y + pb2z*pl2z);
+  double b1 = (Eb2 + El2) * (mw2 * mw2 - ml2 * ml2)
+              - El2 * (mt2 * mt2 - mb2 * mb2 - ml2 * ml2)
+              + 2 * Eb2 * El2 * El2 
+              - 2 * El2 * (pb2x * pl2x + pb2y * pl2y + pb2z * pl2z);
 
-    double b2 = 2*(Eb2*pl2x - El2*pb2x);
+  double b2 = 2 * (Eb2 * pl2x - El2 * pb2x);
+  double b3 = 2 * (Eb2 * pl2y - El2 * pb2y);
+  double b4 = 2 * (Eb2 * pl2z - El2 * pb2z);
 
-    double b3 = 2*(Eb2*pl2y - El2*pb2y);
+  double c22 = (mw1 * mw1 - ml1 * ml1) * (mw1 * mw1 - ml1 * ml1)
+               -4 * (El1 * El1 - pl1z * pl1z) * (a1 / a4) * (a1 / a4)
+               -4 * (mw1 * mw1 - ml1 * ml1) * pl1z * a1 / a4;
 
-    double b4 = 2*(Eb2*pl2z - El2*pb2z);
+  double c21 = 4 * (mw1*mw1 - ml1*ml1) * (pl1x - pl1z * a2 / a4)
+               -8 * (El1 * El1 - pl1z*pl1z) * a1 * a2 / a4 / a4 
+               -8 * pl1x * pl1z * a1 / a4;
 
-    double c22 = (m_Wmass*m_Wmass - ml1*ml1 - mv1*mv1)*(m_Wmass*m_Wmass - ml1*ml1 - mv1*mv1)
-                 - 4*(El1*El1 - pl1z*pl1z)*a1*a1/a4/a4
-                 - 4*(m_Wmass*m_Wmass - ml1*ml1 - mv1*mv1)*pl1z*a1/a4;
+  double c20 = -4 * (El1 * El1 - pl1x * pl1x)
+               -4 * (El1 * El1 - pl1z * pl1z) * (a2 / a4) * (a2 / a4)
+               -8 * pl1x * pl1z * a2 / a4;
 
-    double c21 = 4*(m_Wmass*m_Wmass - ml1*ml1 - mv1*mv1)*(pl1x - pl1z*a2/a4)
-                 - 8*(El1*El1 - pl1z*pl1z)*a1*a2/a4/a4 - 8*pl1x*pl1z*a1/a4;
+  double c11 = 4 * (mw1*mw1 - ml1*ml1)*(pl1y - pl1z * a3 / a4)
+               -8 * (El1 * El1 - pl1z * pl1z) * a1 * a3 / (a4 * a4) 
+               -8 * pl1y * pl1z * a1 /  a4;
 
-    double c20 = -4*(El1*El1 - pl1x*pl1x) - 4*(El1*El1 - pl1z*pl1z)*a2*a2/a4/a4
-                 - 8*pl1x*pl1z*a2/a4;
+  double c10 = -8 * (El1*El1 - pl1z*pl1z) * a2 * a3 / (a4 * a4) 
+               +8 * pl1x * pl1y
+               -8 * pl1x * pl1z * a3 / a4 
+               -8 * pl1y * pl1z * a2 / a4;
 
-    double c11 = 4*(m_Wmass*m_Wmass - ml1*ml1 - mv1*mv1)*(pl1y - pl1z*a3/a4)
-                 - 8*(El1*El1 - pl1z*pl1z)*a1*a3/a4/a4 - 8*pl1y*pl1z*a1/a4;
+  double c00 = -4 * (El1 * El1 - pl1y * pl1y) 
+               -4 * (El1 * El1 - pl1z * pl1z) * (a3 /a4) * (a3 / a4)
+               -8 * pl1y * pl1z * a3 / a4;
 
-    double c10 = -8*(El1*El1 - pl1z*pl1z)*a2*a3/a4/a4 + 8*pl1x*pl1y
-                 - 8*pl1x*pl1z*a3/a4 - 8*pl1y*pl1z*a2/a4;
+  c22 = c22 * a4 * a4; 
+  c21 = c21 * a4 * a4; 
+  c20 = c20 * a4 * a4; 
+  c11 = c11 * a4 * a4; 
+  c10 = c10 * a4 * a4; 
+  c00 = c00 * a4 * a4;
 
-    double c00 = -4*(El1*El1 - pl1y*pl1y) - 4*(El1*El1 - pl1z*pl1z)*a3*a3/a4/a4
-                 - 8*pl1y*pl1z*a3/a4;
+  double dd22 = (mw2 * mw2 - ml2 * ml2) * (mw2 * mw2 - ml2 * ml2)
+                -4 * (El2 * El2 - pl2z * pl2z) * (b1 / b4) * (b1 / b4)
+                -4 * (mw2 * mw2 - ml2 * ml2) * pl2z * b1 / b4;
 
-    double dd22 = (m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)
-                  -4*(El2*El2 - pl2z*pl2z)*b1*b1/b4/b4
-                  -4*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)*pl2z*b1/b4;
+  double dd21 = 4 * (mw2 * mw2 - ml2 * ml2) * (pl2x - pl2z * b2 / b4)
+                -8 * (El2 * El2 - pl2z * pl2z) * b1 * b2 / (b4 * b4) 
+                -8 * pl2x * pl2z * b1 / b4;
 
-    double dd21 = 4*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)*(pl2x - pl2z*b2/b4)
-                  -8*(El2*El2 - pl2z*pl2z)*b1*b2/b4/b4 - 8*pl2x*pl2z*b1/b4;
+  double dd20 = - 4 * (El2 * El2 - pl2x * pl2x) 
+                - 4 * (El2 * El2 - pl2z * pl2z) * (b2 / b4) * (b2 / b4) 
+                - 8 * pl2x * pl2z * b2 / b4;
 
-    double dd20 = -4*(El2*El2 - pl2x*pl2x) - 4*(El2*El2 - pl2z*pl2z)*b2*b2/b4/b4 
-                  -8*pl2x*pl2z*b2/b4;
+  double dd11 = 4 * (mw2 * mw2 - ml2 * ml2) * (pl2y - pl2z * b3 / b4)
+                -8 * (El2 * El2 -pl2z * pl2z) * b1 * b3 / (b4 * b4)
+                -8 * pl2y * pl2z * b1 / b4;
 
-    double dd11 = 4*(m_Wmass*m_Wmass -ml2*ml2 -mv2*mv2)*(pl2y - pl2z*b3/b4)
-                  -8*(El2*El2 -pl2z*pl2z)*b1*b3/b4/b4 - 8*pl2y*pl2z*b1/b4;
+  double dd10 = -8 * (El2 * El2 - pl2z * pl2z) * b2 * b3 / (b4 * b4) 
+                +8 * pl2x * pl2y
+                -8 * pl2x * pl2z * b3 / b4 
+                -8 * pl2y * pl2z * b2 / b4;
 
-    double dd10 = -8*(El2*El2 - pl2z*pl2z)*b2*b3/b4/b4 + 8*pl2x*pl2y
-                  -8*pl2x*pl2z*b3/b4 - 8*pl2y*pl2z*b2/b4;
+  double dd00 = -4 * (El2 * El2 - pl2y * pl2y) 
+                -4 * (El2 * El2 - pl2z * pl2z) * (b3 / b4) * (b3 / b4)
+                -8 * pl2y * pl2z * b3 / b4;
 
-    double dd00 = -4*(El2*El2 - pl2y*pl2y) - 4*(El2*El2 - pl2z*pl2z)*b3*b3/b4/b4
-                  -8*pl2y*pl2z*b3/b4;
+  dd22 = dd22 * b4 * b4; 
+  dd21 = dd21 * b4 * b4; 
+  dd20 = dd20 * b4 * b4; 
+  dd11 = dd11 * b4 * b4; 
+  dd10 = dd10 * b4 * b4; 
+  dd00 = dd00 * b4 * b4; 
+                
+  double d22 = dd22 
+               + Emissx * Emissx * dd20 
+               + Emissy * Emissy * dd00
+               + Emissx * Emissy * dd10 
+               + Emissx * dd21 
+               + Emissy * dd11;
 
-    double d22 = dd22 + Emissx*Emissx*dd20 + Emissy*Emissy*dd00 + Emissx*Emissy*dd10 
-                 + Emissx*dd21 + Emissy*dd11;
+  double d21 = -1 * dd21 
+               -2 * Emissx * dd20 
+               -1 * Emissy * dd10;
 
-    double d21 = -dd21 - 2*Emissx*dd20 - Emissy*dd10;
+  double d20 = dd20;
 
-    double d20 = dd20;
+  double d11 = -1 * dd11 
+               -2 * Emissy * dd00 
+               -1 * Emissx * dd10;
 
-    double d11 = -dd11 - 2*Emissy*dd00 - Emissx*dd10;
+  double d10 = dd10;
+  double d00 = dd00;
 
-    double d10 = dd10;
+  double h4 = c00 * c00 * d22 * d22 
+              + c11 * d22 * (c11 * d00 - c00 * d11)
+              + c00 * c22 * (d11 * d11 - 2 * d00 * d22) 
+              + c22 * d00 * (c22 * d00 - c11 * d11);
 
-    double d00 = dd00;
+  double h3 = c00 * d21 * (2 * c00 * d22 - c11 * d11) 
+              + c00 * d11 * (2 * c22 * d10 + c21 * d11) 
+              + c22 * d00 * (2 * c21 * d00 - c11 * d10) 
+              - c00 * d22 * (c11 * d10 + c10 * d11)  
+              -2 * c00 * d00 * (c22 * d21 + c21 * d22)
+              - d00 * d11 * (c11 * c21 + c10 * c22) 
+              + c11 * d00 * (c11 * d21 + 2 * c10 * d22);
 
-    double h4 = c00*c00*d22*d22 + c11*d22*(c11*d00 - c00*d11)
-                + c00*c22*(d11*d11 - 2*d00*d22) + c22*d00*(c22*d00 - c11*d11);
+  double h2 = c00 * c00 * (2 * d22 * d20 + d21 * d21) 
+              - c00 * d21 * (c11 * d10 + c10 * d11)  
+              + c11 * d20 * (c11 * d00 - c00 * d11) 
+              + c00 * d10 * (c22 * d10 - c10 * d22)   
+              + c00 * d11 * (2 * c21 * d10 + c20 * d11) 
+              + (2 * c22 * c20 + c21 * c21) * d00 * d00   
+              - 2 * c00 * d00 * (c22 * d20 + c21 * d21 + c20 * d22)    
+              + c10 * d00 * (2 * c11 * d21 + c10 * d22) 
+              - d00 * d10 * (c11 * c21 + c10 * c22)   
+              - d00 * d11 * (c11 * c20 + c10 * c21);
 
-    double h3 = c00*d21*(2*c00*d22 - c11*d11) + c00*d11*(2*c22*d10 + c21*d11) 
-                + c22*d00*(2*c21*d00-c11*d10) - c00*d22*(c11*d10 + c10*d11)  
-                -2*c00*d00*(c22*d21 + c21*d22) - d00*d11*(c11*c21 + c10*c22) 
-                + c11*d00*(c11*d21 + 2*c10*d22);
+  double h1 = c00 * d21 * (2 * c00 * d20 - c10 * d10) 
+              - c00 * d20 * (c11 * d10 + c10 * d11)  
+              + c00 * d10 * (c21 * d10 + 2 * c20 * d11) 
+              - 2 * c00 * d00 * (c21 * d20 + c20 * d21)  
+              + c10 * d00 * (2 * c11 * d20 + c10 * d21) 
+              + c20 * d00 * (2 * c21 * d00 - c10 * d11)  
+              - d00 * d10 * (c11 * c20 + c10 * c21);
 
-    double h2 = c00*c00*(2*d22*d20 + d21*d21) - c00*d21*(c11*d10 + c10*d11)  
-                + c11*d20*(c11*d00 - c00*d11) + c00*d10*(c22*d10 - c10*d22)   
-                + c00*d11*(2*c21*d10 + c20*d11) + (2*c22*c20 + c21*c21)*d00*d00   
-                - 2*c00*d00*(c22*d20 + c21*d21 + c20*d22)    
-                + c10*d00*(2*c11*d21 + c10*d22) - d00*d10*(c11*c21 + c10*c22)   
-                - d00*d11*(c11*c20 + c10*c21);
+  double h0 = c00 * c00 * d20 * d20 
+              + c10 * d20 * (c10 * d00 - c00 * d10)  
+              + c20 * d10 * (c00 * d10 - c10 * d00) 
+              + c20 * d00 * (c20 * d00 - 2 * c00 * d20);
 
-    double h1 = c00*d21*(2*c00*d20 - c10*d10) - c00*d20*(c11*d10 + c10*d11)  
-                + c00*d10*(c21*d10 + 2*c20*d11) - 2*c00*d00*(c21*d20 + c20*d21)  
-                + c10*d00*(2*c11*d20 + c10*d21) - c20*d00*(2*c21*d00 - c10*d11)  
-                - d00*d10*(c11*c20 + c10*c21);
+  double coeffs[5], roots[3][5];
+  coeffs[0] = h0; coeffs[1] = h1; coeffs[2] = h2; coeffs[3] = h3; coeffs[4] = h4;
 
-    double h0 = c00*c00*d20*d20 + c10*d20*(c10*d00 - c00*d10)  
-                + c20*d10*(c00*d10 - c10*d00) + c20*d00*(c20*d00 - 2*c00*d20);
+  QuarticRoots(coeffs, roots);
 
-    double coeffs[5], roots[3][5];
-    coeffs[0] = h0; coeffs[1] = h1; coeffs[2] = h2; coeffs[3] = h3; coeffs[4] = h4;
+  printf("pv1x    = %f\n", pv1x);
+  for (int i = 0; i < 4; i++) printf("root(%i) = %f + %fi\n", i, roots[0][i], roots[1][i]);
 
-    QuarticRoots(coeffs, roots);
+  // Discard complex
+  // vector<double> Rroots;
+  // for(int i = 1; i < 5; i++) if (roots[1][i] == 0) Rroots.push_back(roots[0][i]);
 
-    // printf("pv1x    = %f\n", pv1x);
-    // for (int i = 0; i < 4; i++) printf("root(%i) = %f + %fi\n", i, roots[0][i], roots[1][i]);
+  // Take real part
+  vector<double> Rroots;
+  for (int i = 0; i < 4; i++) Rroots.push_back(roots[0][i]);
 
-    // Discard complex
-    // vector<double> Rroots;
-    // for(int i = 1; i < 5; i++) if (roots[1][i] == 0) Rroots.push_back(roots[0][i]);
+  // find root closest to true pl1x
+  double old_diff = std::abs(pv1x - Rroots[0]), new_diff, closest_root = Rroots[0];
+  for (unsigned int i = 1; i < Rroots.size(); i++) {
+      new_diff = std::abs(pv1x - Rroots[i]);
+      if (new_diff < old_diff) closest_root = Rroots[i];
+  }
 
-    // Take real part
-    vector<double> Rroots;
-    for (int i = 0; i < 4; i++) Rroots.push_back(roots[0][i]);
+  double pv1x_R = closest_root;
+  double pv2x_R = Emissx - pv1x_R;
 
-    // find root closest to true pl1x
-    double old_diff = std::abs(pv1x - Rroots[0]), new_diff, closest_root = Rroots[0];
-    for (unsigned int i = 1; i < Rroots.size(); i++) {
-        new_diff = std::abs(pv1x - Rroots[i]);
-        if (new_diff < old_diff) closest_root = Rroots[i];
-    }
+  double c2 = c22 + c21*pv1x_R + c20*pv1x_R*pv1x_R;
+  double c1 = c11 + c10*pv1x_R;
+  double c0 = c00;
+  double d2 = d22 + d21*pv1x_R + d20*pv1x_R*pv1x_R;
+  double d1 = d11 + d10*pv1x_R;
+  double d0 = c00;
 
-    double pv1x_R = closest_root;
-    double pv2x_R = Emissx - pv1x_R;
+  double pv1y_R = (c0*d2 - c2*d0)/(c1*d0 - c0*d1);
+  double pv2y_R = Emissy - pv1y_R;
 
-    double c2 = c22 + c21*pv1x_R + c20*pv1x_R*pv1x_R;
-    double c1 = c11 + c10*pv1x_R;
-    double c0 = c00;
-    double d2 = d22 + d21*pv1x_R + d20*pv1x_R*pv1x_R;
-    double d1 = d11 + d10*pv1x_R;
-    double d0 = c00;
+  double pv1z_R = -(a1 + a2*pv1x_R + a3*pv1y_R)/a4;
+  double pv2z_R = -(b1 + b2*pv2x_R + b3*pv2y_R)/b4;
 
-    double pv1y_R = (c0*d2 - c2*d0)/(c1*d0 - c0*d1);
-    double pv2y_R = Emissy - pv1y_R;
+  TLorentzVector pv1_R(pv1x_R, pv1y_R, pv1z_R, sqrt(pv1x_R*pv1x_R + pv1y_R*pv1y_R + pv1z_R*pv1z_R));
+  TLorentzVector pv2_R(pv2x_R, pv2y_R, pv2z_R, sqrt(pv2x_R*pv2x_R + pv2y_R*pv2y_R + pv2z_R*pv2z_R));
 
-    double pv1z_R = -(a1 + a2*pv1x_R + a3*pv1y_R)/a4;
-    double pv2z_R = -(b1 + b2*pv2x_R + b3*pv2y_R)/b4;
+  p_R[0] = pb1;
+  p_R[1] = pb2;
+  p_R[2] = pl1;
+  p_R[3] = pv1_R;
+  p_R[4] = pl2;
+  p_R[5] = pv2_R;
 
-    TLorentzVector pv1_R(pv1x_R, pv1y_R, pv1z_R, sqrt(pv1x_R*pv1x_R + pv1y_R*pv1y_R + pv1z_R*pv1z_R));
-    TLorentzVector pv2_R(pv2x_R, pv2y_R, pv2z_R, sqrt(pv2x_R*pv2x_R + pv2y_R*pv2y_R + pv2z_R*pv2z_R));
-
-    p_R[0] = pb1;
-    p_R[1] = pb2;
-    p_R[2] = pl1;
-    p_R[3] = pv1_R;
-    p_R[4] = pl2;
-    p_R[5] = pv2_R;
-
-    return p_R;
+  return p_R;
 }
 
 void AnalysisZprime::GetChannelFactors()
