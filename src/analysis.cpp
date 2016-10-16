@@ -1807,7 +1807,7 @@ vector<TLorentzVector> AnalysisZprime::ReconstructDilepton(vector<TLorentzVector
                   + c20 * d10 * (c00 * d10 - c10 * d00) 
                   + c20 * d00 * (c20 * d00 - 2 * c00 * d20);
 
-  const bool debug = true;
+  const bool debug = false;
 
   int dig = DECIMAL_DIG;
   if (debug) {
@@ -1914,7 +1914,7 @@ void AnalysisZprime::GetChannelFactors()
     // scale dilepton to other classifications
     // fac_ee = 1
     // fac_emu = 2
-    if (m_reco) m_sigma = m_sigma*24; // 2 [e+ + e-] x 2 [e + mu] x 6 [3 x 2]
+    // if (m_reco) m_sigma = m_sigma*24; // 2 [e+ + e-] x 2 [e + mu] x 6 [3 x 2]
     // fac_qq = 36
 }
 
