@@ -494,8 +494,8 @@ void AnalysisZprime::CreateHistograms()
 {
 
     double binWidth = 0.05;
-    double Emin = 2.025;
-    double Emax = 2.975;
+    double Emin = 0;
+    double Emax = 13;
     double nbins = (Emax - Emin) / binWidth;
 
     h_mtt = new TH1D("mtt", "m_{tt}", nbins, Emin, Emax);
@@ -1842,11 +1842,12 @@ vector<TLorentzVector> AnalysisZprime::ReconstructDilepton(vector<TLorentzVector
     double x = roots[0][1];
     printf("x = %.*e\n", dig, x);
     printf("h0*x*x*x*x + h1*x*x*x + h2*x*x + h3*x + h4 = %.*e\n", dig, h0*pow(x,4) + h1*pow(x,3) + h2*pow(x,2) + h3*x + h4);
-
-    // Discard complex
-    vector<double> Rroots;
-    for (int i = 1; i < 5; i++) if (roots[1][i] == 0) Rroots.push_back(roots[0][i]);
   }
+
+  // Discard complex
+  // vector<double> Rroots;
+  // for (int i = 1; i < 5; i++) if (roots[1][i] == 0) Rroots.push_back(roots[0][i]);
+
 
   // Take real part
   vector<double> Rroots;
@@ -1964,11 +1965,11 @@ inline void AnalysisZprime::ProgressBar(unsigned int x, unsigned int n, unsigned
     float ratio = x / (float)n;
     unsigned int c = ratio * w;
 
-    cout << setw(3) << (int)(ratio * 100) << "%% [";
-    for (unsigned int i = 0; i < c; i++) cout << "=";
-    for (unsigned int i = c; i < w; i++) cout << " ";
-    if (x == n) cout << "\n" << flush;
-    else cout << "]\r" << flush;
+    cout << setw(3) << (int)(ratio * 100) << '%' << '[';
+    for (unsigned int i = 0; i < c; i++) cout << '=';
+    for (unsigned int i = c; i < w; i++) cout << ' ';
+    if (x == n) cout << '\n' << flush;
+    else cout << ']' << '\r' << flush;
 }
 
 void AnalysisZprime::SetYttCut(const double ytt)
