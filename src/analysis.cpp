@@ -248,7 +248,8 @@ void AnalysisZprime::EachEvent()
         weight = fb * weight * m_sigma/iteration_weights[it-1];
         // printf("Sigma = %.15le\n", m_sigma);
         // printf("Iteration weight = %.15le\n", iteration_weights[it-1]);
-        weight_R = weight/2;
+        if (m_reco == 2) weight_R = weight/2;
+        else weight_R = weight;
     }
     else {
         weight = 1;
