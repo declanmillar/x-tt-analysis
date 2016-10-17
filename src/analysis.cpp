@@ -276,7 +276,7 @@ void AnalysisZprime::EachEvent()
         h_cosTheta2->Fill(cosTheta2, weight);
         h_cos1cos2->Fill(cos1cos2, weight);
         h_deltaRbW->Fill(deltaRbW, weight);
-        h_deltaRmax->Fill( * deltaRmax, weight);
+        h_deltaRmax->Fill(deltaRmax, weight);
 
         for (int i = 0; i < (int) deltaRs.size(); i++)
             h_deltaRs[i]->Fill(deltaRs[i], weight);
