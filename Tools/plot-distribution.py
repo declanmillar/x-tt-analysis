@@ -3,7 +3,7 @@
 import ROOT, sys, optparse, os, glob, subprocess, math
 
 class HistPainter():
-    "Makes a canvas. Has members to add histograms and texboxes."
+    "Makes a canvas. Has members to add histograms and text boxes."
     canvas = ROOT.TCanvas("canvas", "canvas")
     grey = ROOT.TColor.GetColor(64.0/255.0, 64.0/255.0, 64.0/255.0)
 

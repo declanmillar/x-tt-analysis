@@ -4,8 +4,8 @@ import os, StringIO, re, optparse, subprocess, sys, glob, socket, string
 
 handler_name = sys.argv[2] + ".sh" 
 executable = "analysis"
-queue = "1nh"
-walltime = "04:00:00"
+walltime = "08:00:00"
+queue = "8nh"
 run_directory = "."
 data_directory = "."
 

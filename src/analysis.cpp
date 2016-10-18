@@ -59,7 +59,7 @@ inline string BoolToString(bool b) {return b ? "1" : "0";}
 void AnalysisZprime::EachEvent()
 {
     m_discardEvent = false;
-    UpdateCutflow(c_entries, true);
+    // UpdateCutflow(c_entries, true);
     p = vector<TLorentzVector>(6);
     for (int i = 0; i < 6; i++)
         p[i].SetPxPyPzE(m_ntup->Px()->at(i), m_ntup->Py()->at(i), m_ntup->Pz()->at(i), m_ntup->E()->at(i));
@@ -75,9 +75,9 @@ void AnalysisZprime::EachEvent()
         patop[i] = p[i];
     }
 
-    TVector3 V = -1*P.BoostVector();
-    TVector3 Vtop = -1*(p[0] + p[2] + p[3]).BoostVector();
-    TVector3 Vatop = -1*(p[1] + p[4] + p[5]).BoostVector();
+    TVector3 V = -1 * P.BoostVector();
+    TVector3 Vtop = -1 * (p[0] + p[2] + p[3]).BoostVector();
+    TVector3 Vatop = -1 * (p[1] + p[4] + p[5]).BoostVector();
 
     Pcm.SetPxPyPzE(0, 0, 0, 0);
     Ptop.SetPxPyPzE(0, 0, 0, 0);
@@ -97,9 +97,9 @@ void AnalysisZprime::EachEvent()
         P_R1.SetPxPyPzE(0, 0, 0, 0);
         for (int i = 0; i < 6; i++) P_R1 += p_R1[i];
 
-        TVector3 V_R1 = -1*P_R1.BoostVector();
-        TVector3 Vtop_R1 = -1*(p_R1[0] + p_R1[2] + p_R1[3]).BoostVector();
-        TVector3 Vatop_R1 = -1*(p_R1[1] + p_R1[4] + p_R1[5]).BoostVector();
+        TVector3 V_R1 = -1 * P_R1.BoostVector();
+        TVector3 Vtop_R1 = -1 * (p_R1[0] + p_R1[2] + p_R1[3]).BoostVector();
+        TVector3 Vatop_R1 = -1 * (p_R1[1] + p_R1[4] + p_R1[5]).BoostVector();
         pcm_R1 = vector<TLorentzVector>(p.size());
         ptop_R1 = vector<TLorentzVector>(p.size());
         patop_R2 = vector<TLorentzVector>(p.size());
@@ -126,10 +126,10 @@ void AnalysisZprime::EachEvent()
         }
 
         // reconstructed final particle parton CoM variables
-        TVector3 V_R1 = -1*P_R1.BoostVector();
-        TVector3 V_R2 = -1*P_R2.BoostVector();
-        TVector3 Vtop_R1 = -1*(p_R1[0] + p_R1[2] + p_R1[3]).BoostVector();
-        TVector3 Vatop_R2 = -1*(p_R2[1] + p_R2[4] + p_R2[5]).BoostVector();
+        TVector3 V_R1 = -1 * P_R1.BoostVector();
+        TVector3 V_R2 = -1 * P_R2.BoostVector();
+        TVector3 Vtop_R1 = -1 * (p_R1[0] + p_R1[2] + p_R1[3]).BoostVector();
+        TVector3 Vatop_R2 = -1 * (p_R2[1] + p_R2[4] + p_R2[5]).BoostVector();
         pcm_R1 = vector<TLorentzVector>(p.size());
         pcm_R2 = vector<TLorentzVector>(p.size());
         ptop_R1 = vector<TLorentzVector>(p.size());
@@ -171,14 +171,14 @@ void AnalysisZprime::EachEvent()
     HT = HT/1000;
     double mvis = (p[0] + p[1] +p[2] + p[4]).M();
     double pTvis = (p[0] + p[1] +p[2] + p[4]).Pt();
-    double mTvis = sqrt(mvis*mvis + pTvis*pTvis);
+    double mTvis = sqrt(mvis * mvis + pTvis * pTvis);
     double KT = mTvis + (p[3] + p[5]).Pt();
     KT = KT/1000;
     double mt = pcm_t.M();
     double mtb = pcm_tb.M();
     double ytt = P.Rapidity();
     double cosTheta = pcm_t.CosTheta();
-    double cosThetaStar = int(ytt/abs(ytt))*cosTheta;
+    double cosThetaStar = int(ytt / abs(ytt)) * cosTheta;
     double ytt_R1 = -999;
     double ytt_R2 = -999;
     double mt_R1 = -999;
@@ -216,7 +216,7 @@ void AnalysisZprime::EachEvent()
 
     cosTheta1 = cos(ptop[2].Angle(pcm_t.Vect()));
     cosTheta2 = cos(patop[4].Angle(pcm_tb.Vect()));
-    cos1cos2 = cosTheta1*cosTheta2;
+    cos1cos2 = cosTheta1 * cosTheta2;
     deltaPhi = p[2].DeltaPhi(p[4])/m_pi;
 
     if (m_reco > 0) {
@@ -224,7 +224,7 @@ void AnalysisZprime::EachEvent()
         mt_R1 = p_t_R1.M();
         mtb_R1 = p_tb_R1.M();
         cosTheta_R1 = p_t_R1.CosTheta();
-        cosThetaStar_R1 = int(ytt_R1/abs(ytt_R1))*cosTheta_R1;
+        cosThetaStar_R1 = int(ytt_R1/abs(ytt_R1)) * cosTheta_R1;
         cosTheta1_R1 = cos(ptop_R1[2].Angle(p_t_R1.Vect()));
     }
     if (m_reco == 2) {
@@ -232,7 +232,7 @@ void AnalysisZprime::EachEvent()
         mt_R2 = p_t_R2.M();
         mtb_R2 = p_tb_R2.M();
         cosTheta_R2 = p_t_R2.CosTheta();
-        cosThetaStar_R2 = int(ytt_R2/abs(ytt_R2))*cosTheta_R2;
+        cosThetaStar_R2 = int(ytt_R2/abs(ytt_R2)) * cosTheta_R2;
         cosTheta2_R2 = cos(patop_R2[4].Angle(p_tb_R2.Vect()));
     }
 
@@ -245,17 +245,18 @@ void AnalysisZprime::EachEvent()
         double it = m_ntup->iteration();
         weight = m_ntup->weight();
         double fb = 1000;
-        weight = fb*weight*m_sigma/iteration_weights[it-1];
+        weight = fb * weight * m_sigma/iteration_weights[it-1];
         // printf("Sigma = %.15le\n", m_sigma);
         // printf("Iteration weight = %.15le\n", iteration_weights[it-1]);
-        weight_R = weight/2;
+        if (m_reco == 2) weight_R = weight/2;
+        else weight_R = weight;
     }
     else {
         weight = 1;
         weight_R = 1;
     }
 
-    if (this->PassCuts("truth")) {
+    // if (this->PassCuts("truth")) {
         h_mt->Fill(mt, weight);
         h_mtbar->Fill(mtb, weight);
         h_mtt->Fill(mtt, weight);
@@ -298,10 +299,10 @@ void AnalysisZprime::EachEvent()
         h2_mtt_cos1cos2->Fill(mtt, cos1cos2, weight);
         h2_HT_deltaPhi->Fill(HT, deltaPhi, weight);
         h2_KT_deltaPhi->Fill(KT, deltaPhi, weight);
-    }
+    // }
 
     if (m_reco > 0) {
-        if (this->PassCuts("R1")) {
+        // if (this->PassCuts("R1")) {
             h_mtt_R->Fill(mtt_R1, weight_R);
             h_ytt_R->Fill(ytt_R1, weight_R);
             h_mt_R->Fill(mt_R1, weight_R);
@@ -318,10 +319,10 @@ void AnalysisZprime::EachEvent()
             if (cosThetaStar_R1 < 0) h_mtt_BR->Fill(mtt_R1, weight_R);
             h2_mtt_cosThetaStar_R->Fill(mtt_R1, cosThetaStar_R1, weight_R);
             h2_mtt_cosThetal_R->Fill(mtt_R1, cosTheta1_R1, weight_R);
-        }
+        // }
     }
     if (m_reco == 2) {
-        if (this->PassCuts("R2")) {
+        // if (this->PassCuts("R2")) {
             h_mtt_R->Fill(mtt_R2, weight_R);
             h_ytt_R->Fill(ytt_R2, weight_R);
             h_mt_R->Fill(mt_R2, weight_R);
@@ -332,7 +333,7 @@ void AnalysisZprime::EachEvent()
             if (cosThetaStar_R2 < 0) h_mtt_BR->Fill(mtt_R2, weight_R);
             h2_mtt_cosThetaStar_R->Fill(mtt_R2, cosThetaStar_R2, weight_R);
             h2_mtt_cosThetal_R->Fill(mtt_R2, cosTheta2_R2, weight_R);
-        }
+        // }
     }
 }
 
@@ -417,7 +418,7 @@ void AnalysisZprime::PostLoop()
     this->CheckResults();
     if (m_reco == 2) this->CheckPerformance();
     this->MakeGraphs();
-    this->PrintCutflow();
+    // this->PrintCutflow();
     this->WriteHistograms();
 }
 
@@ -449,7 +450,7 @@ void AnalysisZprime::ApplyLuminosity(TH1D* h) {
     double sigma, N, dN;
     for (int i = 1; i < h->GetNbinsX() + 1; i++) {
         sigma = h->GetBinContent(i);
-        N = m_luminosity*m_efficiency*sigma;
+        N = m_luminosity * m_efficiency * sigma;
         h->SetBinContent(i, N);
         dN = sqrt(N);
         h->SetBinError(i, dN);
@@ -483,7 +484,7 @@ void AnalysisZprime::AsymmetryUncertainty(TH1D* hA, TH1D* h1, TH1D* h2) {
         N1 = h1->GetBinContent(i);
         N2 = h2->GetBinContent(i);
         N = N1 + N2;
-        if (N > 0) dA = sqrt((1.0 - A*A)/N);
+        if (N > 0) dA = sqrt((1.0 - A * A) / N);
         else dA = 0;
         hA->SetBinError(i, dA);
     }
@@ -493,9 +494,9 @@ void AnalysisZprime::CreateHistograms()
 {
 
     double binWidth = 0.05;
-    double Emin = 2.025;
-    double Emax = 2.975;
-    double nbins = (Emax - Emin)/binWidth;
+    double Emin = 0;
+    double Emax = 13;
+    double nbins = (Emax - Emin) / binWidth;
 
     h_mtt = new TH1D("mtt", "m_{tt}", nbins, Emin, Emax);
     h_mtt->Sumw2();
@@ -984,7 +985,7 @@ bool AnalysisZprime::PassCutsET(string type) {
         return true;
     }
     if (type == "truth") {
-        for(unsigned int i = 0; i < p.size(); i++) {
+        for (unsigned int i = 0; i < p.size(); i++) {
             if(p[i].Et() <= 25) {
                 UpdateCutflow(c_Et, false);
                 return false;
@@ -993,7 +994,7 @@ bool AnalysisZprime::PassCutsET(string type) {
         }
     }
     else if (type == "R1") {
-        for(unsigned int i = 0; i < p_R1.size(); i++) {
+        for (unsigned int i = 0; i < p_R1.size(); i++) {
             if(p_R1[i].Et() <= 25) {
                 UpdateCutflow(c_Et, false);
                 return false;
@@ -1002,7 +1003,7 @@ bool AnalysisZprime::PassCutsET(string type) {
         }
     }
     else if (type == "R2") {
-        for(unsigned int i = 0; i < p_R2.size(); i++) {
+        for (unsigned int i = 0; i < p_R2.size(); i++) {
             if(p_R2[i].Et() <= 25) {
                 UpdateCutflow(c_Et, false);
                 return false;
@@ -1114,7 +1115,7 @@ void AnalysisZprime::GetIterationWeights(TString log)
     while(getline(logstream, line)) {
         trim(line);
         split(parts, line, is_any_of(":"));
-        for(auto part: parts) trim(part);
+        for (auto part: parts) trim(part);
         if (parts[0] == target) {
             iteration_weights.push_back(stod(parts[2]));
             found = true;
@@ -1122,7 +1123,7 @@ void AnalysisZprime::GetIterationWeights(TString log)
     }
     logstream.close();
     if (!found) {
-        printf("Error: Failed to read Vegas iteration weights. Check target log file: %s", m_weightsFilename.Data());
+        printf("Error: Failed to read Vegas iteration weights. Check %s", m_weightsFilename.Data());
         exit(1);
     }
 }
@@ -1143,7 +1144,7 @@ void AnalysisZprime::Loop()
             Long64_t ientry = this->IncrementEvent(jentry);
             if (ientry < 0) break;
             this->EachEvent();
-            // this->ProgressBar(jentry, nEntries-1, 50);
+            this->ProgressBar(jentry, nEntries-1, 50);
         }
         this->CleanUp();
     }
@@ -1197,7 +1198,7 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVe
     // If we want the results combining each final state, we must add these together.
     // Note: Experimentally p^{x,y}_nu is equated to the MET, of course.
 
-    this->UpdateCutflow(c_events, true);
+    // this->UpdateCutflow(c_events, true);
 
     m_nReco++;
 
@@ -1209,12 +1210,12 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVe
 
     // Calculate neutrino p_z solutions
     if (Q_l == 1) {
-        this->UpdateCutflow(c_topDecays, true);
+        // this->UpdateCutflow(c_topDecays, true);
         p_l = p[2];
         p_nu = p[3];
     }
     else if (Q_l == -1) {
-        this->UpdateCutflow(c_antitopDecays, true);
+        // this->UpdateCutflow(c_antitopDecays, true);
         p_l = p[4];
         p_nu = p[5];
     }
@@ -1236,7 +1237,7 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVe
     p_nu_R.clear();
     if (roots[0].imag() == 0 and roots[1].imag() == 0) {
         // two real solutions; pick best match
-        this->UpdateCutflow(c_realSolutions, true);
+        // this->UpdateCutflow(c_realSolutions, true);
         for (auto root: roots) {
             double pz = root.real();
             TLorentzVector p(px_nu, py_nu, pz, sqrt(px_nu*px_nu + py_nu*py_nu + pz*pz));
@@ -1392,9 +1393,9 @@ vector<complex<double> > AnalysisZprime::SolveQuadratic(double a, double b, doub
     complex<double> term2;
     complex<double> discriminator;
 
-    term1 = -b/(2*a);
-    discriminator = b*b - 4*a*c;
-    term2 = sqrt(discriminator)/(2*a);
+    term1 = -b / (2 * a);
+    discriminator = b * b - 4 * a * c;
+    term2 = sqrt(discriminator) / (2 * a);
 
     roots.push_back(term1 + term2);
     roots.push_back(term1 - term2);
@@ -1402,88 +1403,80 @@ vector<complex<double> > AnalysisZprime::SolveQuadratic(double a, double b, doub
     return roots;
 }
 
-int CubicRoots( double p[5], double r[3][5] )
+int CubicRoots(double p[5], double r[3][5])
 {
-  double x,t,b,c,d;
+  double x, t, b, c, d;
   int k;
 
-  if( p[0] != 1. )
-  {
-    for(k = 1; k < 4; k++ ) { p[k] = p[k]/p[0]; }
-    p[0] = 1.;
+  if (p[0] != 1.0) {
+    for (k = 1; k < 4; k++) p[k] = p[k] / p[0];
+    p[0] = 1.0;
   }
-  x = p[1]/3.0; 
-  t = x*p[1];
-  b = 0.5*( x*( t/1.5 - p[2] ) + p[3] ); 
-  t = ( t - p[2] )/3.0;
-  c = t*t*t; 
-  d = b*b - c;
+  x = p[1] / 3.0; 
+  t = x * p[1];
+  b = 0.5 * (x * (t/1.5 - p[2]) + p[3] ); 
+  t = ( t - p[2] ) / 3.0;
+  c = t * t * t; 
+  d = b * b - c;
 
-  if( d >= 0. )
-  {
-    d = std::pow( (std::sqrt(d) + std::fabs(b) ), 1.0/3.0 );
+  if (d >= 0.0) {
+    d = std::pow((std::sqrt(d) + std::fabs(b)), 1.0 / 3.0);
     
-    if( d != 0. )
-    {
-       if( b > 0. ) { b = -d; }
-       else         { b =  d; }
-       c =  t/b;
+    if (d != 0.0) {
+       if (b > 0.0) b = -d;
+       else         b = d;
+       c =  t / b;
     }
-    d       =  std::sqrt(0.75)*(b - c); 
+    d       =  std::sqrt(0.75) * (b - c); 
     r[1][1] =  d; 
     b       =  b + c;
-    c       = -0.5*b-x;
+    c       = -0.5 * b-x;
     r[0][1] =  c;
 
-    if( ( b > 0. &&  x <= 0. ) || ( b < 0. && x > 0. ) )
-    {
-       r[0][0] =  c; 
+    if ((b > 0.0 &&  x <= 0.0) || (b < 0.0 && x > 0.0)) {
+       r[0][0] = c; 
        r[1][0] = -d; 
-       r[0][2] =  b - x;
-       r[1][2] =  0;
+       r[0][2] = b - x;
+       r[1][2] = 0;
     }
-    else
-    {
-       r[0][0] =  b - x; 
-       r[1][0] =  0.; 
-       r[0][2] =  c;
+    else {
+       r[0][0] = b - x; 
+       r[1][0] = 0.0; 
+       r[0][2] = c;
        r[1][2] = -d;
     }
-  }              // end of 2 equal or complex roots 
-  else
-  {
-    if( b == 0. ) { d =  std::atan(1.0)/1.5; }
-    else          { d =  std::atan( std::sqrt(-d)/std::fabs(b) )/3.0; }
+  } // end of 2 equal or complex roots 
+  else {
+    if (b == 0.0) d = std::atan(1.0) / 1.5;
+    else          d = std::atan(std::sqrt(-d) / std::fabs(b)) / 3.0;
 
-    if( b < 0. )  { b =  std::sqrt(t)*2.0; }
-    else          { b = -2.0*std::sqrt(t); }
+    if (b < 0.0)  b = std::sqrt(t) * 2.0;
+    else          b = -2.0 * std::sqrt(t);
 
-    c =  std::cos(d)*b; 
-    t = -std::sqrt(0.75)*std::sin(d)*b - 0.5*c;
+    c = std::cos(d) * b; 
+    t = -std::sqrt(0.75) * std::sin(d) * b - 0.5 * c;
     d = -t - c - x; 
-    c =  c - x; 
-    t =  t - x;
+    c = c - x; 
+    t = t - x;
 
-    if( std::fabs(c) > std::fabs(t) ) { r[0][2] = c; }
-    else
-    {
+    if (std::fabs(c) > std::fabs(t)) r[0][2] = c;
+    else {
       r[0][2] = t; 
-      t       = c;
+      t = c;
     }
-    if( std::fabs(d) > std::fabs(t) ) { r[0][1] = d; }
-    else
-    {
+    if (std::fabs(d) > std::fabs(t)) r[0][1] = d;
+    else {
       r[0][1] = t; 
-      t       = d;
+      t  = d;
     }
     r[0][0] = t;
 
-    for(k = 1; k < 4; k++ ) { r[1][k] = 0.; }
+    for (k = 1; k < 4; k++) r[1][k] = 0.0;
   }
   return 0;
 }
 
-int QuarticRoots( double p[5], double r[3][5])
+int QuarticRoots(double p[5], double r[3][5])
 {
   double a0, a1, a2, a3, y1;
   double R2, D2, E2, D, E, R = 0.;
@@ -1492,12 +1485,11 @@ int QuarticRoots( double p[5], double r[3][5])
   double reRoot[4];
   int k, noReRoots = 0;
   
-  for( k = 0; k < 4; k++ ) { reRoot[k] = DBL_MAX; }
+  for (k = 0; k < 4; k++) reRoot[k] = DBL_MAX;
 
-  if( p[0] != 1.0 )
-  {
-    for( k = 1; k < 5; k++) { p[k] = p[k]/p[0]; }
-    p[0] = 1.;
+  if (p[0] != 1.0) {
+    for ( k = 1; k < 5; k++) p[k] = p[k] / p[0];
+    p[0] = 1.0;
   }
   a3 = p[1];
   a2 = p[2];
@@ -1507,147 +1499,135 @@ int QuarticRoots( double p[5], double r[3][5])
   // resolvent cubic equation cofs:
 
   p[1] = -a2;
-  p[2] = a1*a3 - 4*a0;
-  p[3] = 4*a2*a0 - a1*a1 - a3*a3*a0;
+  p[2] = a1 * a3 - 4 * a0;
+  p[3] = 4 * a2 * a0 - a1 * a1 - a3 * a3 * a0;
 
-  CubicRoots(p,r);
+  CubicRoots(p, r);
 
-  for( k = 1; k < 4; k++ )
-  {
-    if( r[1][k] == 0. ) // find a real root
-    {
+  for (k = 1; k < 4; k++) {
+    if (r[1][k] == 0.0) {
+      // find a real root
       noReRoots++;
       reRoot[k] = r[0][k];
     }
     else reRoot[k] = DBL_MAX; // kInfinity;
   }
   y1 = DBL_MAX; // kInfinity;  
-  for( k = 1; k < 4; k++ )
-  {
-    if ( reRoot[k] < y1 ) { y1 = reRoot[k]; }
+  for (k = 1; k < 4; k++) {
+    if (reRoot[k] < y1) y1 = reRoot[k];
   }
 
-  R2 = 0.25*a3*a3 - a2 + y1;
-  b  = 0.25*(4*a3*a2 - 8*a1 - a3*a3*a3);
-  c  = 0.75*a3*a3 - 2*a2;
+  R2 = 0.25 * a3 * a3 - a2 + y1;
+  b  = 0.25 * (4 * a3 * a2 - 8 * a1 - a3 * a3 * a3);
+  c  = 0.75 * a3 * a3 - 2 * a2;
   a  = c - R2;
-  d  = 4*y1*y1 - 16*a0;
+  d  = 4 * y1 * y1 - 16 * a0;
 
   if( R2 > 0.)
   {
     R = std::sqrt(R2);
-    D2 = a + b/R;
-    E2 = a - b/R;
+    D2 = a + b / R;
+    E2 = a - b / R;
 
-    if( D2 >= 0. )
-    {
-      D       = std::sqrt(D2);
-      r[0][0] = -0.25*a3 + 0.5*R + 0.5*D;
-      r[0][1] = -0.25*a3 + 0.5*R - 0.5*D;
+    if(D2 >= 0.0) {
+      D = std::sqrt(D2);
+      r[0][0] = -0.25 * a3 + 0.5 * R + 0.5 * D;
+      r[0][1] = -0.25 * a3 + 0.5 * R - 0.5 * D;
       r[1][0] = 0.;
       r[1][1] = 0.;
     }
-    else
-    {
-      D       = std::sqrt(-D2);
-      r[0][0] = -0.25*a3 + 0.5*R;
-      r[0][1] = -0.25*a3 + 0.5*R;
-      r[1][0] =  0.5*D;
-      r[1][1] = -0.5*D;
+    else {
+      D = std::sqrt(-D2);
+      r[0][0] = -0.25 * a3 + 0.5 * R;
+      r[0][1] = -0.25 * a3 + 0.5 * R;
+      r[1][0] =  0.5 * D;
+      r[1][1] = -0.5 * D;
     }
-    if( E2 >= 0. )
-    {
-      E       = std::sqrt(E2);
-      r[0][2] = -0.25*a3 - 0.5*R + 0.5*E;
-      r[0][3] = -0.25*a3 - 0.5*R - 0.5*E;
+    if(E2 >= 0.0) {
+      E = std::sqrt(E2);
+      r[0][2] = -0.25 * a3 - 0.5 * R + 0.5 * E;
+      r[0][3] = -0.25 * a3 - 0.5 * R - 0.5 * E;
       r[1][2] = 0.;
       r[1][3] = 0.;
     }
     else
     {
-      E       = std::sqrt(-E2);
-      r[0][2] = -0.25*a3 - 0.5*R;
-      r[0][3] = -0.25*a3 - 0.5*R;
-      r[1][2] =  0.5*E;
-      r[1][3] = -0.5*E;
+      E = std::sqrt(-E2);
+      r[0][2] = -0.25 * a3 - 0.5 * R;
+      r[0][3] = -0.25 * a3 - 0.5 * R;
+      r[1][2] =  0.5 * E;
+      r[1][3] = -0.5 * E;
     }
   }
-  else if( R2 < 0.)
-  {
+  else if (R2 < 0.0) {
     R = std::sqrt(-R2);
-    complex<double> CD2(a,-b/R);
+    complex<double> CD2(a, -b / R);
     complex<double> CD = std::sqrt(CD2);
 
-    r[0][0] = -0.25*a3 + 0.5*std::real(CD);
-    r[0][1] = -0.25*a3 - 0.5*std::real(CD);
-    r[1][0] =  0.5*R + 0.5*imag(CD);
-    r[1][1] =  0.5*R - 0.5*imag(CD);
-    complex<double> CE2(a,b/R);
+    r[0][0] = -0.25 * a3 + 0.5 * std::real(CD);
+    r[0][1] = -0.25 * a3 - 0.5 * std::real(CD);
+    r[1][0] =  0.5 * R + 0.5 * imag(CD);
+    r[1][1] =  0.5 * R - 0.5 * imag(CD);
+    complex<double> CE2(a, b / R);
     complex<double> CE = std::sqrt(CE2);
 
-    r[0][2] = -0.25*a3 + 0.5*std::real(CE);
-    r[0][3] = -0.25*a3 - 0.5*std::real(CE);
-    r[1][2] =  -0.5*R + 0.5*imag(CE);
-    r[1][3] =  -0.5*R - 0.5*imag(CE);
+    r[0][2] = -0.25 * a3 + 0.5 * std::real(CE);
+    r[0][3] = -0.25 * a3 - 0.5 * std::real(CE);
+    r[1][2] =  -0.5 * R + 0.5 * imag(CE);
+    r[1][3] =  -0.5 * R - 0.5 * imag(CE);
   }
-  else // R2=0 case
-  {
-    if(d >= 0.)
-    {
+  else { 
+    // R2=0 case
+    if (d >= 0.0) {
       D2 = c + std::sqrt(d);
       E2 = c - std::sqrt(d);
 
-      if( D2 >= 0. )
-      {
-        D       = std::sqrt(D2);
-        r[0][0] = -0.25*a3 + 0.5*R + 0.5*D;
-        r[0][1] = -0.25*a3 + 0.5*R - 0.5*D;
+      if (D2 >= 0.0) {
+        D = std::sqrt(D2);
+        r[0][0] = -0.25 * a3 + 0.5 * R + 0.5 * D;
+        r[0][1] = -0.25 * a3 + 0.5 * R - 0.5 * D;
         r[1][0] = 0.;
         r[1][1] = 0.;
       }
-      else
-      {
-        D       = std::sqrt(-D2);
-        r[0][0] = -0.25*a3 + 0.5*R;
-        r[0][1] = -0.25*a3 + 0.5*R;
-        r[1][0] =  0.5*D;
-        r[1][1] = -0.5*D;
+      else {
+        D = std::sqrt(-D2);
+        r[0][0] = -0.25 * a3 + 0.5 * R;
+        r[0][1] = -0.25 * a3 + 0.5 * R;
+        r[1][0] =  0.5 * D;
+        r[1][1] = -0.5 * D;
       }
-      if( E2 >= 0. )
-      {
-        E       = std::sqrt(E2);
-        r[0][2] = -0.25*a3 - 0.5*R + 0.5*E;
-        r[0][3] = -0.25*a3 - 0.5*R - 0.5*E;
+      if ( E2 >= 0. ) {
+        E = std::sqrt(E2);
+        r[0][2] = -0.25 * a3 - 0.5 * R + 0.5 * E;
+        r[0][3] = -0.25 * a3 - 0.5 * R - 0.5 * E;
         r[1][2] = 0.;
         r[1][3] = 0.;
       }
-      else
-      {
-        E       = std::sqrt(-E2);
-        r[0][2] = -0.25*a3 - 0.5*R;
-        r[0][3] = -0.25*a3 - 0.5*R;
-        r[1][2] =  0.5*E;
-        r[1][3] = -0.5*E;
+      else {
+        E = std::sqrt(-E2);
+        r[0][2] = -0.25 * a3 - 0.5 * R;
+        r[0][3] = -0.25 * a3 - 0.5 * R;
+        r[1][2] =  0.5 * E;
+        r[1][3] = -0.5 * E;
       }
     }
-    else
-    {
+    else {
       ds = std::sqrt(-d);
       complex<double> CD2(c,ds);
       complex<double> CD = std::sqrt(CD2);
 
-      r[0][0] = -0.25*a3 + 0.5*std::real(CD);
-      r[0][1] = -0.25*a3 - 0.5*std::real(CD);
-      r[1][0] =  0.5*R + 0.5*imag(CD);
-      r[1][1] =  0.5*R - 0.5*imag(CD);
+      r[0][0] = -0.25 * a3 + 0.5 * std::real(CD);
+      r[0][1] = -0.25 * a3 - 0.5 * std::real(CD);
+      r[1][0] = 0.5 * R + 0.5 * imag(CD);
+      r[1][1] = 0.5 * R - 0.5 * imag(CD);
 
-      complex<double> CE2(c,-ds);
+      complex<double> CE2(c, -ds);
       complex<double> CE = std::sqrt(CE2);
 
-      r[0][2] = -0.25*a3 + 0.5*std::real(CE);
-      r[0][3] = -0.25*a3 - 0.5*std::real(CE);
-      r[1][2] =  -0.5*R + 0.5*imag(CE);
-      r[1][3] =  -0.5*R - 0.5*imag(CE);
+      r[0][2] = -0.25 * a3 + 0.5 * std::real(CE);
+      r[0][3] = -0.25 * a3 - 0.5 * std::real(CE);
+      r[1][2] = -0.5 * R + 0.5 * imag(CE);
+      r[1][3] = -0.5 * R - 0.5 * imag(CE);
     }  
   }
   return 4;
@@ -1655,169 +1635,280 @@ int QuarticRoots( double p[5], double r[3][5])
 
 vector<TLorentzVector> AnalysisZprime::ReconstructDilepton(vector<TLorentzVector> p)
 {
-    this->UpdateCutflow(c_events, true);
+  // this->UpdateCutflow(c_events, true);
 
-    m_nReco++;
+  m_nReco++;
 
-    vector<TLorentzVector> p_R(p.size());
-    // vector<vector<TLorentzVector> > p_Rs(p.size(), vector<TLorentzVector>(4));
+  vector<TLorentzVector> p_R(p.size());
+  // vector<vector<TLorentzVector> > p_Rs(p.size(), vector<TLorentzVector>(4));
 
-    TLorentzVector pb1 = p[0], pb2 = p[1], pl1 = p[2], pv1 = p[3], pl2 = p[4], pv2 = p[5];
+  TLorentzVector pb1 = p[0], pb2 = p[1], pl1 = p[2], pv1 = p[3], pl2 = p[4], pv2 = p[5];
 
-    double pb1x = pb1.Px(), pb1y = pb1.Py(), pb1z = pb1.Pz(), Eb1 = pb1.E();
-    double pb2x = pb2.Px(), pb2y = pb2.Py(), pb2z = pb2.Pz(), Eb2 = pb2.E();
-    double pl1x = pl1.Px(), pl1y = pl1.Py(), pl1z = pl1.Pz(), El1 = pl1.E();
-    double pl2x = pl2.Px(), pl2y = pl2.Py(), pl2z = pl2.Pz(), El2 = pl2.E();
-    double pv1x = pv1.Px(), pv1y = pv1.Py(), pv2x = pv2.Px(), pv2y = pv2.Py();
-    double Emissx = pv1x + pv2x;
-    double Emissy = pv1y + pv2y;
+  double pb1x = pb1.Px(), pb1y = pb1.Py(), pb1z = pb1.Pz(), Eb1 = pb1.E();
+  double pb2x = pb2.Px(), pb2y = pb2.Py(), pb2z = pb2.Pz(), Eb2 = pb2.E();
+  double pl1x = pl1.Px(), pl1y = pl1.Py(), pl1z = pl1.Pz(), El1 = pl1.E();
+  double pl2x = pl2.Px(), pl2y = pl2.Py(), pl2z = pl2.Pz(), El2 = pl2.E();
+  double pv1x = pv1.Px(), pv1y = pv1.Py(), pv1z = pv1.Pz(), Ev1 = pv1.E();
+  double pv2x = pv2.Px(), pv2y = pv2.Py(), pv2z = pv2.Pz(), Ev2 = pv2.E();
+  double Emissx = pv1x + pv2x;
+  double Emissy = pv1y + pv2y;
 
-    double ml1 = 0, ml2 = 0, mv1 = 0, mv2 = 0;
+  // Use on-shell pole masses
+  // double mw1 = m_Wmass, mt1 = m_tmass, mb1 = m_bmass;
+  // double mw2 = m_Wmass, mt2 = m_tmass, mb2 = m_bmass;
 
-    double a1 = (Eb1 + El1)*(m_Wmass*m_Wmass - ml1*ml1 - mv1*mv1)
-                - El1*(m_tmass*m_tmass - m_bmass*m_bmass - ml1*ml1 - mv1*mv1)
-                + 2*Eb1*El1*El1 - 2*El1*(pb1x*pl1x + pb1y*pl1y + pb1z*pl1z);
+  // Use off-shell true masses
+  double mt1 = (p[0] + p[2] + p[3]).M();
+  double mt2 = (p[1] + p[4] + p[5]).M();
+  double mw1 = (p[2] + p[3]).M();
+  double mw2 = (p[4] + p[5]).M();
+  double mb1 = p[0].M();
+  double mb2 = p[1].M();
 
-    double a2 = 2*(Eb1*pl1x - El1*pb1x);
+  // printf("mt1 = %f\nmt2 = %f\nmb1 = %f\nmb2 = %f\nmw1 = %f\nmw2 = %f\n", mt1, mt2, mb1, mb2, mw1, mw2);
 
-    double a3 = 2*(Eb1*pl1y - El1*pb1y);
+  double ml1 = 0, ml2 = 0;
 
-    double a4 = 2*(Eb1*pl1z - El1*pb1z);
+  double a1 = (Eb1 + El1) * (mw1 * mw1 - ml1 * ml1)
+              - El1 * (mt1 * mt1 - mb1 * mb1 - ml1 * ml1)
+              + 2 * Eb1 * El1 * El1 
+              - 2 * El1 * (pb1x * pl1x + pb1y * pl1y + pb1z * pl1z);
 
-    double b1 = (Eb2 + El2)*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)
-                - El2*(m_tmass*m_tmass - m_bmass*m_bmass - ml2*ml2 - mv2*mv2)
-                + 2*Eb2*El2*El2 - 2*El2*(pb2x*pl2x + pb2y*pl2y + pb2z*pl2z);
+  double a2 = 2 * (Eb1 * pl1x - El1 * pb1x);
+  double a3 = 2 * (Eb1 * pl1y - El1 * pb1y);
+  double a4 = 2 * (Eb1 * pl1z - El1 * pb1z);
 
-    double b2 = 2*(Eb2*pl2x - El2*pb2x);
+  double b1 = (Eb2 + El2) * (mw2 * mw2 - ml2 * ml2)
+              - El2 * (mt2 * mt2 - mb2 * mb2 - ml2 * ml2)
+              + 2 * Eb2 * El2 * El2 
+              - 2 * El2 * (pb2x * pl2x + pb2y * pl2y + pb2z * pl2z);
 
-    double b3 = 2*(Eb2*pl2y - El2*pb2y);
+  double b2 = 2 * (Eb2 * pl2x - El2 * pb2x);
+  double b3 = 2 * (Eb2 * pl2y - El2 * pb2y);
+  double b4 = 2 * (Eb2 * pl2z - El2 * pb2z);
 
-    double b4 = 2*(Eb2*pl2z - El2*pb2z);
+  double c22 = (mw1 * mw1 - ml1 * ml1) * (mw1 * mw1 - ml1 * ml1)
+               -4 * (El1 * El1 - pl1z * pl1z) * (a1 / a4) * (a1 / a4)
+               -4 * (mw1 * mw1 - ml1 * ml1) * pl1z * a1 / a4;
 
-    double c22 = (m_Wmass*m_Wmass - ml1*ml1 - mv1*mv1)*(m_Wmass*m_Wmass - ml1*ml1 - mv1*mv1)
-                 - 4*(El1*El1 - pl1z*pl1z)*a1*a1/a4/a4
-                 - 4*(m_Wmass*m_Wmass - ml1*ml1 - mv1*mv1)*pl1z*a1/a4;
+  double c21 = 4 * (mw1*mw1 - ml1*ml1) * (pl1x - pl1z * a2 / a4)
+               -8 * (El1 * El1 - pl1z*pl1z) * a1 * a2 / (a4 * a4) 
+               -8 * pl1x * pl1z * a1 / a4;
 
-    double c21 = 4*(m_Wmass*m_Wmass - ml1*ml1 - mv1*mv1)*(pl1x - pl1z*a2/a4)
-                 - 8*(El1*El1 - pl1z*pl1z)*a1*a2/a4/a4 - 8*pl1x*pl1z*a1/a4;
+  double c20 = -4 * (El1 * El1 - pl1x * pl1x)
+               -4 * (El1 * El1 - pl1z * pl1z) * (a2 / a4) * (a2 / a4)
+               -8 * pl1x * pl1z * a2 / a4;
 
-    double c20 = -4*(El1*El1 - pl1x*pl1x) - 4*(El1*El1 - pl1z*pl1z)*a2*a2/a4/a4
-                 - 8*pl1x*pl1z*a2/a4;
+  double c11 = 4 * (mw1*mw1 - ml1*ml1)*(pl1y - pl1z * a3 / a4)
+               -8 * (El1 * El1 - pl1z * pl1z) * a1 * a3 / (a4 * a4) 
+               -8 * pl1y * pl1z * a1 /  a4;
 
-    double c11 = 4*(m_Wmass*m_Wmass - ml1*ml1 - mv1*mv1)*(pl1y - pl1z*a3/a4)
-                 - 8*(El1*El1 - pl1z*pl1z)*a1*a3/a4/a4 - 8*pl1y*pl1z*a1/a4;
+  double c10 = -8 * (El1*El1 - pl1z*pl1z) * a2 * a3 / (a4 * a4) 
+               +8 * pl1x * pl1y
+               -8 * pl1x * pl1z * a3 / a4 
+               -8 * pl1y * pl1z * a2 / a4;
 
-    double c10 = -8*(El1*El1 - pl1z*pl1z)*a2*a3/a4/a4 + 8*pl1x*pl1y
-                 - 8*pl1x*pl1z*a3/a4 - 8*pl1y*pl1z*a2/a4;
+  double c00 = -4 * (El1 * El1 - pl1y * pl1y) 
+               -4 * (El1 * El1 - pl1z * pl1z) * (a3 /a4) * (a3 / a4)
+               -8 * pl1y * pl1z * a3 / a4;
 
-    double c00 = -4*(El1*El1 - pl1y*pl1y) - 4*(El1*El1 - pl1z*pl1z)*a3*a3/a4/a4
-                 - 8*pl1y*pl1z*a3/a4;
+  c22 = c22 * a4 * a4; 
+  c21 = c21 * a4 * a4; 
+  c20 = c20 * a4 * a4; 
+  c11 = c11 * a4 * a4; 
+  c10 = c10 * a4 * a4; 
+  c00 = c00 * a4 * a4;
 
-    double dd22 = (m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)
-                  -4*(El2*El2 - pl2z*pl2z)*b1*b1/b4/b4
-                  -4*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)*pl2z*b1/b4;
+  double dd22 = (mw2 * mw2 - ml2 * ml2) * (mw2 * mw2 - ml2 * ml2)
+                -4 * (El2 * El2 - pl2z * pl2z) * (b1 / b4) * (b1 / b4)
+                -4 * (mw2 * mw2 - ml2 * ml2) * pl2z * b1 / b4;
 
-    double dd21 = 4*(m_Wmass*m_Wmass - ml2*ml2 - mv2*mv2)*(pl2x - pl2z*b2/b4)
-                  -8*(El2*El2 - pl2z*pl2z)*b1*b2/b4/b4 - 8*pl2x*pl2z*b1/b4;
+  double dd21 = 4 * (mw2 * mw2 - ml2 * ml2) * (pl2x - pl2z * b2 / b4)
+                -8 * (El2 * El2 - pl2z * pl2z) * b1 * b2 / (b4 * b4) 
+                -8 * pl2x * pl2z * b1 / b4;
 
-    double dd20 = -4*(El2*El2 - pl2x*pl2x) - 4*(El2*El2 - pl2z*pl2z)*b2*b2/b4/b4 
-                  -8*pl2x*pl2z*b2/b4;
+  double dd20 = -4 * (El2 * El2 - pl2x * pl2x) 
+                -4 * (El2 * El2 - pl2z * pl2z) * (b2 / b4) * (b2 / b4) 
+                -8 * pl2x * pl2z * b2 / b4;
 
-    double dd11 = 4*(m_Wmass*m_Wmass -ml2*ml2 -mv2*mv2)*(pl2y - pl2z*b3/b4)
-                  -8*(El2*El2 -pl2z*pl2z)*b1*b3/b4/b4 - 8*pl2y*pl2z*b1/b4;
+  double dd11 = 4 * (mw2 * mw2 - ml2 * ml2) * (pl2y - pl2z * b3 / b4)
+                -8 * (El2 * El2 -pl2z * pl2z) * b1 * b3 / (b4 * b4)
+                -8 * pl2y * pl2z * b1 / b4;
 
-    double dd10 = -8*(El2*El2 - pl2z*pl2z)*b2*b3/b4/b4 + 8*pl2x*pl2y
-                  -8*pl2x*pl2z*b3/b4 - 8*pl2y*pl2z*b2/b4;
+  double dd10 = -8 * (El2 * El2 - pl2z * pl2z) * b2 * b3 / (b4 * b4) 
+                +8 * pl2x * pl2y
+                -8 * pl2x * pl2z * b3 / b4 
+                -8 * pl2y * pl2z * b2 / b4;
 
-    double dd00 = -4*(El2*El2 - pl2y*pl2y) - 4*(El2*El2 - pl2z*pl2z)*b3*b3/b4/b4
-                  -8*pl2y*pl2z*b3/b4;
+  double dd00 = -4 * (El2 * El2 - pl2y * pl2y) 
+                -4 * (El2 * El2 - pl2z * pl2z) * (b3 / b4) * (b3 / b4)
+                -8 * pl2y * pl2z * b3 / b4;
 
-    double d22 = dd22 + Emissx*Emissx*dd20 + Emissy*Emissy*dd00 + Emissx*Emissy*dd10 
-                 + Emissx*dd21 + Emissy*dd11;
+  dd22 = dd22 * b4 * b4; 
+  dd21 = dd21 * b4 * b4; 
+  dd20 = dd20 * b4 * b4; 
+  dd11 = dd11 * b4 * b4; 
+  dd10 = dd10 * b4 * b4; 
+  dd00 = dd00 * b4 * b4; 
+                
+  double d22 = dd22 
+               + Emissx * Emissx * dd20 
+               + Emissy * Emissy * dd00
+               + Emissx * Emissy * dd10 
+               + Emissx * dd21 
+               + Emissy * dd11;
 
-    double d21 = -dd21 - 2*Emissx*dd20 - Emissy*dd10;
+  double d21 = -dd21 
+               - 2 * Emissx * dd20 
+               - Emissy * dd10;
 
-    double d20 = dd20;
+  double d20 = dd20;
 
-    double d11 = -dd11 - 2*Emissy*dd00 - Emissx*dd10;
+  double d11 = -dd11 
+               - 2 * Emissy * dd00 
+               - Emissx * dd10;
 
-    double d10 = dd10;
+  double d10 = dd10;
+  double d00 = dd00;
 
-    double d00 = dd00;
+  const double h4 = c00 * c00 * d22 * d22 
+                  + c11 * d22 * (c11 * d00 - c00 * d11)
+                  + c00 * c22 * (d11 * d11 - 2 * d00 * d22) 
+                  + c22 * d00 * (c22 * d00 - c11 * d11);
 
-    double h4 = c00*c00*d22*d22 + c11*d22*(c11*d00 - c00*d11)
-                + c00*c22*(d11*d11 - 2*d00*d22) + c22*d00*(c22*d00 - c11*d11);
+  const double h3 = c00 * d21 * (2 * c00 * d22 - c11 * d11) 
+                  + c00 * d11 * (2 * c22 * d10 + c21 * d11) 
+                  + c22 * d00 * (2 * c21 * d00 - c11 * d10) 
+                  - c00 * d22 * (c11 * d10 + c10 * d11)  
+                  -2 * c00 * d00 * (c22 * d21 + c21 * d22)
+                  - d00 * d11 * (c11 * c21 + c10 * c22) 
+                  + c11 * d00 * (c11 * d21 + 2 * c10 * d22);
 
-    double h3 = c00*d21*(2*c00*d22 - c11*d11) + c00*d11*(2*c22*d10 + c21*d11) 
-                + c22*d00*(2*c21*d00-c11*d10) - c00*d22*(c11*d10 + c10*d11)  
-                -2*c00*d00*(c22*d21 + c21*d22) - d00*d11*(c11*c21 + c10*c22) 
-                + c11*d00*(c11*d21 + 2*c10*d22);
+  const double h2 = c00 * c00 * (2 * d22 * d20 + d21 * d21) 
+                  - c00 * d21 * (c11 * d10 + c10 * d11)  
+                  + c11 * d20 * (c11 * d00 - c00 * d11) 
+                  + c00 * d10 * (c22 * d10 - c10 * d22)   
+                  + c00 * d11 * (2 * c21 * d10 + c20 * d11) 
+                  + (2 * c22 * c20 + c21 * c21) * d00 * d00   
+                  - 2 * c00 * d00 * (c22 * d20 + c21 * d21 + c20 * d22)    
+                  + c10 * d00 * (2 * c11 * d21 + c10 * d22) 
+                  - d00 * d10 * (c11 * c21 + c10 * c22)   
+                  - d00 * d11 * (c11 * c20 + c10 * c21);
 
-    double h2 = c00*c00*(2*d22*d20 + d21*d21) - c00*d21*(c11*d10 + c10*d11)  
-                + c11*d20*(c11*d00 - c00*d11) + c00*d10*(c22*d10 - c10*d22)   
-                + c00*d11*(2*c21*d10 + c20*d11) + (2*c22*c20 + c21*c21)*d00*d00   
-                - 2*c00*d00*(c22*d20 + c21*d21 + c20*d22)    
-                + c10*d00*(2*c11*d21 + c10*d22) - d00*d10*(c11*c21 + c10*c22)   
-                - d00*d11*(c11*c20 + c10*c21);
+  const double h1 = c00 * d21 * (2 * c00 * d20 - c10 * d10) 
+                  - c00 * d20 * (c11 * d10 + c10 * d11)  
+                  + c00 * d10 * (c21 * d10 + 2 * c20 * d11) 
+                  - 2 * c00 * d00 * (c21 * d20 + c20 * d21)  
+                  + c10 * d00 * (2 * c11 * d20 + c10 * d21) 
+                  + c20 * d00 * (2 * c21 * d00 - c10 * d11)  
+                  - d00 * d10 * (c11 * c20 + c10 * c21);
 
-    double h1 = c00*d21*(2*c00*d20 - c10*d10) - c00*d20*(c11*d10 + c10*d11)  
-                + c00*d10*(c21*d10 + 2*c20*d11) - 2*c00*d00*(c21*d20 + c20*d21)  
-                + c10*d00*(2*c11*d20 + c10*d21) - c20*d00*(2*c21*d00 - c10*d11)  
-                - d00*d10*(c11*c20 + c10*c21);
+  const double h0 = c00 * c00 * d20 * d20 
+                  + c10 * d20 * (c10 * d00 - c00 * d10)  
+                  + c20 * d10 * (c00 * d10 - c10 * d00) 
+                  + c20 * d00 * (c20 * d00 - 2 * c00 * d20);
 
-    double h0 = c00*c00*d20*d20 + c10*d20*(c10*d00 - c00*d10)  
-                + c20*d10*(c00*d10 - c10*d00) + c20*d00*(c20*d00 - 2*c00*d20);
+  const bool debug = false;
 
-    double coeffs[5], roots[3][5];
-    coeffs[0] = h0; coeffs[1] = h1; coeffs[2] = h2; coeffs[3] = h3; coeffs[4] = h4;
+  int dig = DECIMAL_DIG;
+  if (debug) {
+    printf("h4 = %.*e\n", dig, h4);
+    printf("h3 = %.*e\n", dig, h3);
+    printf("h2 = %.*e\n", dig, h2);
+    printf("h1 = %.*e\n", dig, h1);
+    printf("h0 = %.*e\n", dig, h0);
+  }
 
-    QuarticRoots(coeffs, roots);
+  double coeffs[5], roots[3][5];
+  coeffs[0] = h0; coeffs[1] = h1; coeffs[2] = h2; coeffs[3] = h3; coeffs[4] = h4;
 
-    // printf("pv1x    = %f\n", pv1x);
-    // for (int i = 0; i < 4; i++) printf("root(%i) = %f + %fi\n", i, roots[0][i], roots[1][i]);
+  // TCanvas* c_quartic = new TCanvas("quartic", "quartic");
+  // c_quartic->cd(0);
+  // TF1 *quartic = new TF1("quartic", "[0]*x*x*x*x + [1]*x*x*x + [2]*x*x + [1]*x + [4]", -1 * pv1x,  1 * pv1x);
+  // quartic->SetParameter(0, h0);
+  // quartic->SetParameter(1, h1);
+  // quartic->SetParameter(2, h2);
+  // quartic->SetParameter(3, h3);
+  // quartic->SetParameter(4, h4);
+  // quartic->Draw();
+  // c_quartic->SaveAs("quartic.pdf");
 
-    // Discard complex
-    // vector<double> Rroots;
-    // for(int i = 1; i < 5; i++) if (roots[1][i] == 0) Rroots.push_back(roots[0][i]);
+  QuarticRoots(coeffs, roots);
 
-    // Take real part
-    vector<double> Rroots;
-    for (int i = 0; i < 4; i++) Rroots.push_back(roots[0][i]);
+  if (debug) {
+    printf("pv1x    = %.*e\n", dig, pv1x);
+    for (int i = 0; i < 4; i++) printf("root(%i) = %.*e + %.*ei\n", i, dig, roots[0][i], dig, roots[1][i]);
 
-    // find root closest to true pl1x
-    double old_diff = std::abs(pv1x - Rroots[0]), new_diff, closest_root = Rroots[0];
-    for (unsigned int i = 1; i < Rroots.size(); i++) {
-        new_diff = std::abs(pv1x - Rroots[i]);
-        if (new_diff < old_diff) closest_root = Rroots[i];
-    }
+    double x = roots[0][1];
+    printf("x = %.*e\n", dig, x);
+    printf("h0*x*x*x*x + h1*x*x*x + h2*x*x + h3*x + h4 = %.*e\n", dig, h0*pow(x,4) + h1*pow(x,3) + h2*pow(x,2) + h3*x + h4);
+  }
 
-    double pv1x_R = closest_root;
-    double pv2x_R = Emissx - pv1x_R;
+  // Discard complex
+  // vector<double> Rroots;
+  // for (int i = 1; i < 5; i++) if (roots[1][i] == 0) Rroots.push_back(roots[0][i]);
 
-    double c2 = c22 + c21*pv1x_R + c20*pv1x_R*pv1x_R;
-    double c1 = c11 + c10*pv1x_R;
-    double c0 = c00;
-    double d2 = d22 + d21*pv1x_R + d20*pv1x_R*pv1x_R;
-    double d1 = d11 + d10*pv1x_R;
-    double d0 = c00;
 
-    double pv1y_R = (c0*d2 - c2*d0)/(c1*d0 - c0*d1);
-    double pv2y_R = Emissy - pv1y_R;
+  // Take real part
+  vector<double> Rroots;
+  for (int i = 0; i < 4; i++) Rroots.push_back(roots[0][i]);
 
-    double pv1z_R = -(a1 + a2*pv1x_R + a3*pv1y_R)/a4;
-    double pv2z_R = -(b1 + b2*pv2x_R + b3*pv2y_R)/b4;
+  // find root closest to true pl1x
+  double old_diff = std::abs(pv1x - Rroots[0]), new_diff, closest_root = Rroots[0];
+  for (unsigned int i = 1; i < Rroots.size(); i++) {
+      new_diff = std::abs(pv1x - Rroots[i]);
+      if (new_diff < old_diff) closest_root = Rroots[i];
+  }
 
-    TLorentzVector pv1_R(pv1x_R, pv1y_R, pv1z_R, sqrt(pv1x_R*pv1x_R + pv1y_R*pv1y_R + pv1z_R*pv1z_R));
-    TLorentzVector pv2_R(pv2x_R, pv2y_R, pv2z_R, sqrt(pv2x_R*pv2x_R + pv2y_R*pv2y_R + pv2z_R*pv2z_R));
+  double pv1x_R = closest_root;
+  double pv2x_R = Emissx - pv1x_R;
 
-    p_R[0] = pb1;
-    p_R[1] = pb2;
-    p_R[2] = pl1;
-    p_R[3] = pv1_R;
-    p_R[4] = pl2;
-    p_R[5] = pv2_R;
+  double c2 = c22 + c21 * pv1x_R + c20 * pv1x_R * pv1x_R;
+  double c1 = c11 + c10 * pv1x_R;
+  double c0 = c00;
+  double d2 = d22 + d21 * pv1x_R + d20 * pv1x_R * pv1x_R;
+  double d1 = d11 + d10 * pv1x_R;
+  double d0 = d00;
 
-    return p_R;
+  double pv1y_R = (c0 * d2 - c2 * d0) / (c1 * d0 - c0 * d1);
+  double pv2y_R = Emissy - pv1y_R;
+
+  double pv1z_R = -(a1 + a2 * pv1x_R + a3 * pv1y_R) / a4;
+  double pv2z_R = -(b1 + b2 * pv2x_R + b3 * pv2y_R) / b4;
+
+  double Ev1_R = sqrt(pv1x_R * pv1x_R + pv1y_R * pv1y_R + pv1z_R * pv1z_R);
+  double Ev2_R = sqrt(pv2x_R * pv2x_R + pv2y_R * pv2y_R + pv2z_R * pv2z_R);
+
+  TLorentzVector pv1_R(pv1x_R, pv1y_R, pv1z_R, Ev1_R);
+  TLorentzVector pv2_R(pv2x_R, pv2y_R, pv2z_R, Ev2_R);
+
+  if (debug) {
+    printf("pv1x   = %.*e\n", dig, pv1x);
+    printf("pv1x_R = %.*e\n", dig, pv1x_R);
+    printf("pv2x   = %.*e\n", dig, pv2x);
+    printf("pv2x_R = %.*e\n", dig, pv2x_R);
+    printf("pv1y   = %.*e\n", dig, pv1y);
+    printf("pv1y_R = %.*e\n", dig, pv1y_R);
+    printf("pv2y   = %.*e\n", dig, pv2y);
+    printf("pv2y_R = %.*e\n", dig, pv2y_R);
+    printf("pv1z   = %.*e\n", dig, pv1z);
+    printf("pv1z_R = %.*e\n", dig, pv1z_R);
+    printf("pv2z   = %.*e\n", dig, pv2z);
+    printf("pv2z_R = %.*e\n", dig, pv2z_R);
+    printf("Ev1    = %.*e\n", dig, Ev1);
+    printf("Ev1_R  = %.*e\n", dig, Ev1_R);
+    printf("Ev2    = %.*e\n", dig, Ev2);
+    printf("Ev2_R  = %.*e\n", dig, Ev2_R);
+  }
+
+  p_R[0] = pb1;
+  p_R[1] = pb2;
+  p_R[2] = pl1;
+  p_R[3] = pv1_R;
+  p_R[4] = pl2;
+  p_R[5] = pv2_R;
+
+  return p_R;
 }
 
 void AnalysisZprime::GetChannelFactors()
@@ -1825,14 +1916,14 @@ void AnalysisZprime::GetChannelFactors()
     // scale dilepton to other classifications
     // fac_ee = 1
     // fac_emu = 2
-    if (m_reco) m_sigma = m_sigma*24; // 2 [e+ + e-] x 2 [e + mu] x 6 [3 x 2]
+    // if (m_reco) m_sigma = m_sigma*24; // 2 [e+ + e-] x 2 [e + mu] x 6 [3 x 2]
     // fac_qq = 36
 }
 
 const void AnalysisZprime::UpdateCutflow(int cut, bool passed)
 {
     if (m_cutflow[cut] == -999) m_cutflow[cut] = 0;
-    if (passed) m_cutflow[cut] +=1;
+    if (passed) m_cutflow[cut] += 1;
 }
 
 void AnalysisZprime::InitialiseCutflow()
@@ -1869,16 +1960,16 @@ void AnalysisZprime::PrintCutflow()
 
 inline void AnalysisZprime::ProgressBar(unsigned int x, unsigned int n, unsigned int w)
 {
-    if ( (x != n) && (x % (n/100+1) != 0) ) return;
+    if ((x != n) && (x % (n / 100 + 1) != 0)) return;
 
-    float ratio = x/(float)n;
+    float ratio = x / (float)n;
     unsigned int c = ratio * w;
 
-    cout << setw(3) << (int)(ratio*100) << "% [";
-    for (unsigned int i = 0; i < c; i++) cout << "=";
-    for (unsigned int i = c; i < w; i++) cout << " ";
-    if (x == n) cout << "\n" << flush;
-    else cout << "]\r" << flush;
+    cout << setw(3) << (int)(ratio * 100) << '%' << '[';
+    for (unsigned int i = 0; i < c; i++) cout << '=';
+    for (unsigned int i = c; i < w; i++) cout << ' ';
+    if (x == n) cout << '\n' << flush;
+    else cout << ']' << '\r' << flush;
 }
 
 void AnalysisZprime::SetYttCut(const double ytt)
