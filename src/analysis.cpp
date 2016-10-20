@@ -44,7 +44,8 @@ AnalysisZprime::AnalysisZprime(const TString model, const TString initial_state,
     m_weightFiles(NULL),
     m_ntup(NULL),
     m_chainNtup(NULL),
-    m_outputFile(NULL) {
+    m_outputFile(NULL),
+    m_debug(false) {
 }
 
 void AnalysisZprime::Run()
@@ -113,8 +114,8 @@ void AnalysisZprime::EachEvent()
         }
     }
     if (m_reco == 2) {
-        p_R1 = this->ReconstructSemiLeptonic(p, 1); // top decays leptonically
-        p_R2 = this->ReconstructSemiLeptonic(p, -1); // top decays hadronically
+        p_R1 = this->ReconstructSemilepton(p, 1); // top decays leptonically
+        p_R2 = this->ReconstructSemilepton(p, -1); // top decays hadronically
 
         if (m_discardEvent) return;
 
@@ -1182,254 +1183,22 @@ void AnalysisZprime::CleanUp()
 }
 
 
-vector<complex<double> > QuadraticRoots(double a, double b, double c)
+std::vector<std::complex<double> > QuadraticRoots(double a[3])
 {
-    vector<complex<double> > roots;
-    complex<double> term1;
-    complex<double> term2;
-    complex<double> discriminator;
+    std::vector<std::complex<double> > r(2);
+    std::complex<double> s, t, u;
 
-    term1 = -b / (2 * a);
-    discriminator = b * b - 4 * a * c;
-    term2 = sqrt(discriminator) / (2 * a);
+    s = -a[1] / (2 * a[0]);
+    u = a[1] * a[1] - 4 * a[0] * a[2];
+    t = sqrt(u) / (2 * a[0]);
 
-    roots.push_back(term1 + term2);
-    roots.push_back(term1 - term2);
+    r[0] = s + t;
+    r[1] = s - t;
 
-    return roots;
+    return r;
 }
 
-int CubicRoots(double p[5], double r[3][5])
-{
-  double x, t, b, c, d;
-  int k;
-
-  if (p[0] != 1.0) {
-    for (k = 1; k < 4; k++) p[k] = p[k] / p[0];
-    p[0] = 1.0;
-  }
-  x = p[1] / 3.0; 
-  t = x * p[1];
-  b = 0.5 * (x * (t/1.5 - p[2]) + p[3] ); 
-  t = ( t - p[2] ) / 3.0;
-  c = t * t * t; 
-  d = b * b - c;
-
-  if (d >= 0.0) {
-    d = std::pow((std::sqrt(d) + std::fabs(b)), 1.0 / 3.0);
-    
-    if (d != 0.0) {
-       if (b > 0.0) b = -d;
-       else         b = d;
-       c =  t / b;
-    }
-    d       =  std::sqrt(0.75) * (b - c); 
-    r[1][1] =  d; 
-    b       =  b + c;
-    c       = -0.5 * b-x;
-    r[0][1] =  c;
-
-    if ((b > 0.0 &&  x <= 0.0) || (b < 0.0 && x > 0.0)) {
-       r[0][0] = c; 
-       r[1][0] = -d; 
-       r[0][2] = b - x;
-       r[1][2] = 0;
-    }
-    else {
-       r[0][0] = b - x; 
-       r[1][0] = 0.0; 
-       r[0][2] = c;
-       r[1][2] = -d;
-    }
-  } // end of 2 equal or complex roots 
-  else {
-    if (b == 0.0) d = std::atan(1.0) / 1.5;
-    else          d = std::atan(std::sqrt(-d) / std::fabs(b)) / 3.0;
-
-    if (b < 0.0)  b = std::sqrt(t) * 2.0;
-    else          b = -2.0 * std::sqrt(t);
-
-    c = std::cos(d) * b; 
-    t = -std::sqrt(0.75) * std::sin(d) * b - 0.5 * c;
-    d = -t - c - x; 
-    c = c - x; 
-    t = t - x;
-
-    if (std::fabs(c) > std::fabs(t)) r[0][2] = c;
-    else {
-      r[0][2] = t; 
-      t = c;
-    }
-    if (std::fabs(d) > std::fabs(t)) r[0][1] = d;
-    else {
-      r[0][1] = t; 
-      t  = d;
-    }
-    r[0][0] = t;
-
-    for (k = 1; k < 4; k++) r[1][k] = 0.0;
-  }
-  return 0;
-}
-
-int QuarticRoots(double p[5], double r[3][5])
-{
-  double a0, a1, a2, a3, y1;
-  double R2, D2, E2, D, E, R = 0.;
-  double a, b, c, d, ds;
-
-  double reRoot[4];
-  int k, noReRoots = 0;
-  
-  for (k = 0; k < 4; k++) reRoot[k] = DBL_MAX;
-
-  if (p[0] != 1.0) {
-    for ( k = 1; k < 5; k++) p[k] = p[k] / p[0];
-    p[0] = 1.0;
-  }
-  a3 = p[1];
-  a2 = p[2];
-  a1 = p[3];
-  a0 = p[4];
-
-  // resolvent cubic equation cofs:
-
-  p[1] = -a2;
-  p[2] = a1 * a3 - 4 * a0;
-  p[3] = 4 * a2 * a0 - a1 * a1 - a3 * a3 * a0;
-
-  CubicRoots(p, r);
-
-  for (k = 1; k < 4; k++) {
-    if (r[1][k] == 0.0) {
-      // find a real root
-      noReRoots++;
-      reRoot[k] = r[0][k];
-    }
-    else reRoot[k] = DBL_MAX; // kInfinity;
-  }
-  y1 = DBL_MAX; // kInfinity;  
-  for (k = 1; k < 4; k++) {
-    if (reRoot[k] < y1) y1 = reRoot[k];
-  }
-
-  R2 = 0.25 * a3 * a3 - a2 + y1;
-  b  = 0.25 * (4 * a3 * a2 - 8 * a1 - a3 * a3 * a3);
-  c  = 0.75 * a3 * a3 - 2 * a2;
-  a  = c - R2;
-  d  = 4 * y1 * y1 - 16 * a0;
-
-  if( R2 > 0.)
-  {
-    R = std::sqrt(R2);
-    D2 = a + b / R;
-    E2 = a - b / R;
-
-    if(D2 >= 0.0) {
-      D = std::sqrt(D2);
-      r[0][0] = -0.25 * a3 + 0.5 * R + 0.5 * D;
-      r[0][1] = -0.25 * a3 + 0.5 * R - 0.5 * D;
-      r[1][0] = 0.;
-      r[1][1] = 0.;
-    }
-    else {
-      D = std::sqrt(-D2);
-      r[0][0] = -0.25 * a3 + 0.5 * R;
-      r[0][1] = -0.25 * a3 + 0.5 * R;
-      r[1][0] =  0.5 * D;
-      r[1][1] = -0.5 * D;
-    }
-    if(E2 >= 0.0) {
-      E = std::sqrt(E2);
-      r[0][2] = -0.25 * a3 - 0.5 * R + 0.5 * E;
-      r[0][3] = -0.25 * a3 - 0.5 * R - 0.5 * E;
-      r[1][2] = 0.;
-      r[1][3] = 0.;
-    }
-    else
-    {
-      E = std::sqrt(-E2);
-      r[0][2] = -0.25 * a3 - 0.5 * R;
-      r[0][3] = -0.25 * a3 - 0.5 * R;
-      r[1][2] =  0.5 * E;
-      r[1][3] = -0.5 * E;
-    }
-  }
-  else if (R2 < 0.0) {
-    R = std::sqrt(-R2);
-    complex<double> CD2(a, -b / R);
-    complex<double> CD = std::sqrt(CD2);
-
-    r[0][0] = -0.25 * a3 + 0.5 * std::real(CD);
-    r[0][1] = -0.25 * a3 - 0.5 * std::real(CD);
-    r[1][0] =  0.5 * R + 0.5 * imag(CD);
-    r[1][1] =  0.5 * R - 0.5 * imag(CD);
-    complex<double> CE2(a, b / R);
-    complex<double> CE = std::sqrt(CE2);
-
-    r[0][2] = -0.25 * a3 + 0.5 * std::real(CE);
-    r[0][3] = -0.25 * a3 - 0.5 * std::real(CE);
-    r[1][2] =  -0.5 * R + 0.5 * imag(CE);
-    r[1][3] =  -0.5 * R - 0.5 * imag(CE);
-  }
-  else { 
-    // R2=0 case
-    if (d >= 0.0) {
-      D2 = c + std::sqrt(d);
-      E2 = c - std::sqrt(d);
-
-      if (D2 >= 0.0) {
-        D = std::sqrt(D2);
-        r[0][0] = -0.25 * a3 + 0.5 * R + 0.5 * D;
-        r[0][1] = -0.25 * a3 + 0.5 * R - 0.5 * D;
-        r[1][0] = 0.;
-        r[1][1] = 0.;
-      }
-      else {
-        D = std::sqrt(-D2);
-        r[0][0] = -0.25 * a3 + 0.5 * R;
-        r[0][1] = -0.25 * a3 + 0.5 * R;
-        r[1][0] =  0.5 * D;
-        r[1][1] = -0.5 * D;
-      }
-      if ( E2 >= 0. ) {
-        E = std::sqrt(E2);
-        r[0][2] = -0.25 * a3 - 0.5 * R + 0.5 * E;
-        r[0][3] = -0.25 * a3 - 0.5 * R - 0.5 * E;
-        r[1][2] = 0.;
-        r[1][3] = 0.;
-      }
-      else {
-        E = std::sqrt(-E2);
-        r[0][2] = -0.25 * a3 - 0.5 * R;
-        r[0][3] = -0.25 * a3 - 0.5 * R;
-        r[1][2] =  0.5 * E;
-        r[1][3] = -0.5 * E;
-      }
-    }
-    else {
-      ds = std::sqrt(-d);
-      complex<double> CD2(c,ds);
-      complex<double> CD = std::sqrt(CD2);
-
-      r[0][0] = -0.25 * a3 + 0.5 * std::real(CD);
-      r[0][1] = -0.25 * a3 - 0.5 * std::real(CD);
-      r[1][0] = 0.5 * R + 0.5 * imag(CD);
-      r[1][1] = 0.5 * R - 0.5 * imag(CD);
-
-      complex<double> CE2(c, -ds);
-      complex<double> CE = std::sqrt(CE2);
-
-      r[0][2] = -0.25 * a3 + 0.5 * std::real(CE);
-      r[0][3] = -0.25 * a3 - 0.5 * std::real(CE);
-      r[1][2] = -0.5 * R + 0.5 * imag(CE);
-      r[1][3] = -0.5 * R - 0.5 * imag(CE);
-    }  
-  }
-  return 4;
-}
-
-vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVector> p, int Q_l)
+vector<TLorentzVector> AnalysisZprime::ReconstructSemilepton(vector<TLorentzVector> p, int Q_l)
 {
     // Returns a vector of 4-momenta for all 6 particles in the final state with matching of b-quarks to each top
     // and matching of
@@ -1452,9 +1221,9 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVe
 
     vector<TLorentzVector> p_nu_R, p_R(p.size());
     TLorentzVector p_l, p_nu;
-    double a, b, c, k, dh, dl, mblv, mjjb, chi2, chi2min = 1.0e10;
+    double a[3], k, dh, dl, mblv, mjjb, chi2, chi2min = 1.0e10;
     unsigned int imin, jmin;
-    vector<complex<double> > roots;
+    std::vector<std::complex<double> > roots;
 
     // Calculate neutrino p_z solutions
     if (Q_l == 1) {
@@ -1473,22 +1242,22 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVe
 
     double px_l = p_l.Px(), py_l = p_l.Py(), pz_l = p_l.Pz(), E_l;
     double px_nu = p_nu.Px(), py_nu = p_nu.Py();
-    E_l = sqrt(px_l*px_l + py_l*py_l + pz_l*pz_l);
+    E_l = sqrt(px_l * px_l + py_l * py_l + pz_l * pz_l);
     if (abs(E_l - p_l.E()) > 0.00001) printf("ERROR: Lepton energy doesn't match.\n");
 
-    k = 3218.42645 + px_l*px_nu + py_l*py_nu; // m_Wmass*m_Wmass/2 = 3218.42645
-    a = px_l*px_l + py_l*py_l;
-    b = -2*k*(pz_l);
-    c = (px_nu*px_nu + py_nu*py_nu)*E_l*E_l - k*k;
+    k = 3218.42645 + px_l * px_nu + py_l * py_nu; // m_Wmass * m_Wmass/2 = 3218.42645
+    a[0] = px_l * px_l + py_l * py_l;
+    a[1] = -2 * k * (pz_l);
+    a[2] = (px_nu * px_nu + py_nu * py_nu) * E_l * E_l - k * k;
 
-    roots = QuadraticRoots(a, b, c);
+    roots = QuadraticRoots(a);
     p_nu_R.clear();
     if (roots[0].imag() == 0 and roots[1].imag() == 0) {
         // two real solutions; pick best match
         // this->UpdateCutflow(c_realSolutions, true);
         for (auto root: roots) {
             double pz = root.real();
-            TLorentzVector p(px_nu, py_nu, pz, sqrt(px_nu*px_nu + py_nu*py_nu + pz*pz));
+            TLorentzVector p(px_nu, py_nu, pz, sqrt(px_nu * px_nu + py_nu * py_nu + pz * pz));
             p_nu_R.push_back(p);
         }
     }
@@ -1496,7 +1265,7 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVe
         // no real solutions; take the real part of 1 (real parts are the same)
         if (m_discardComplex) m_discardEvent = true; // dump complex events
         double pz = roots[0].real();
-        TLorentzVector p(px_nu, py_nu, pz, sqrt(px_nu*px_nu + py_nu*py_nu + pz*pz));
+        TLorentzVector p(px_nu, py_nu, pz, sqrt(px_nu * px_nu + py_nu * py_nu + pz * pz));
         p_nu_R.push_back(p);
     }
     bool oldreco = false;
@@ -1522,7 +1291,7 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVe
                 mjjb = (p_b[1-j] + p_q[0] + p_q[1]).M();
                 dh = mjjb - m_tmass;
                 dl = mblv - m_tmass;
-                chi2 = dh*dh + dl*dl;
+                chi2 = dh * dh + dl * dl;
                 if (chi2 < chi2min) {
                     chi2min = chi2;
                     imin = i;
@@ -1637,11 +1406,11 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemiLeptonic(vector<TLorentzVe
 vector<TLorentzVector> AnalysisZprime::ReconstructDilepton(vector<TLorentzVector> p)
 {
   // this->UpdateCutflow(c_events, true);
+  if (m_debug) printf("--- start dilepton reconstruction ---\n");
 
   m_nReco++;
 
   vector<TLorentzVector> p_R(p.size());
-  // vector<vector<TLorentzVector> > p_Rs(p.size(), vector<TLorentzVector>(4));
 
   TLorentzVector pb1 = p[0], pb2 = p[1], pl1 = p[2], pv1 = p[3], pl2 = p[4], pv2 = p[5];
 
@@ -1657,6 +1426,7 @@ vector<TLorentzVector> AnalysisZprime::ReconstructDilepton(vector<TLorentzVector
   // Use on-shell pole masses
   // double mw1 = m_Wmass, mt1 = m_tmass, mb1 = m_bmass;
   // double mw2 = m_Wmass, mt2 = m_tmass, mb2 = m_bmass;
+  double ml1 = 0, ml2 = 0;
 
   // Use off-shell true masses
   double mt1 = (p[0] + p[2] + p[3]).M();
@@ -1665,10 +1435,6 @@ vector<TLorentzVector> AnalysisZprime::ReconstructDilepton(vector<TLorentzVector
   double mw2 = (p[4] + p[5]).M();
   double mb1 = p[0].M();
   double mb2 = p[1].M();
-
-  // printf("mt1 = %f\nmt2 = %f\nmb1 = %f\nmb2 = %f\nmw1 = %f\nmw2 = %f\n", mt1, mt2, mb1, mb2, mw1, mw2);
-
-  double ml1 = 0, ml2 = 0;
 
   double a1 = (Eb1 + El1) * (mw1 * mw1 - ml1 * ml1)
               - El1 * (mt1 * mt1 - mb1 * mb1 - ml1 * ml1)
@@ -1809,108 +1575,143 @@ vector<TLorentzVector> AnalysisZprime::ReconstructDilepton(vector<TLorentzVector
                   + c20 * d10 * (c00 * d10 - c10 * d00) 
                   + c20 * d00 * (c20 * d00 - 2 * c00 * d20);
 
-  const bool debug = false;
-
   int dig = DECIMAL_DIG;
-  if (debug) {
+  if (m_debug) {
     printf("h4 = %.*e\n", dig, h4);
     printf("h3 = %.*e\n", dig, h3);
-    printf("h2 = %.*e\n", dig, h2);
+    printf("h2 = %.*e\n", dig, h2);   
     printf("h1 = %.*e\n", dig, h1);
     printf("h0 = %.*e\n", dig, h0);
+    printf("\n");
   }
 
-  double coeffs[5], roots[3][5];
-  coeffs[0] = h0; coeffs[1] = h1; coeffs[2] = h2; coeffs[3] = h3; coeffs[4] = h4;
+  double a[5] = {1.0, h1/h0, h2/h0, h3/h0, h4/h0};
+
+  if (m_debug) {
+    for (int i = 0; i < 5; i++){
+      cout << "a(" << i << ") = "<<  a[i] << endl; 
+    }
+  }
 
   // TCanvas* c_quartic = new TCanvas("quartic", "quartic");
   // c_quartic->cd(0);
   // TF1 *quartic = new TF1("quartic", "[0]*x*x*x*x + [1]*x*x*x + [2]*x*x + [1]*x + [4]", -1 * pv1x,  1 * pv1x);
-  // quartic->SetParameter(0, h0);
-  // quartic->SetParameter(1, h1);
-  // quartic->SetParameter(2, h2);
-  // quartic->SetParameter(3, h3);
-  // quartic->SetParameter(4, h4);
+  // quartic->SetParameter(0, a[0]);
+  // quartic->SetParameter(1, a[1]);
+  // quartic->SetParameter(2, a[2]);
+  // quartic->SetParameter(3, a[3]);
+  // quartic->SetParameter(4, a[4]);
   // quartic->Draw();
   // c_quartic->SaveAs("quartic.pdf");
 
-  QuarticRoots(coeffs, roots);
+  double x[4];
+  const int nRealRoots = SolveP4(x, a[1], a[2], a[3], a[4]);
+  // If nRealRoots = 4, they live in x[0], x[1], x[2], x[3].
+  // If nRealRoots = 2, x[0], x[1] are the real roots and x[2]±i*x[3] are the complex.
+  // If nRealRoots = 0, the equation has two pairs of pairs of complex conjugate roots in x[0]±i*x[1] and x[2]±i*x[3].
 
-  if (debug) {
-    printf("pv1x    = %.*e\n", dig, pv1x);
-    for (int i = 0; i < 4; i++) printf("root(%i) = %.*e + %.*ei\n", i, dig, roots[0][i], dig, roots[1][i]);
+  if (m_debug) cout << "Found " << nRealRoots << " real roots" << endl;
 
-    double x = roots[0][1];
-    printf("x = %.*e\n", dig, x);
-    printf("h0*x*x*x*x + h1*x*x*x + h2*x*x + h3*x + h4 = %.*e\n", dig, h0*pow(x,4) + h1*pow(x,3) + h2*pow(x,2) + h3*x + h4);
+  int nSolutions;
+  std::vector<double> pv1x_Rs;
+  if (nRealRoots == 4) {
+    nSolutions = 4;
+    for (int i = 0; i < nSolutions; i++) pv1x_Rs.push_back(x[i]);
+  }
+  else if (nRealRoots == 2) {
+    nSolutions = 3;
+    for (int i = 0; i < nSolutions; i++) pv1x_Rs.push_back(x[i]); 
+  }
+  else if (nRealRoots == 0) {
+    nSolutions = 2;
+    pv1x_Rs.push_back(x[0]);
+    pv1x_Rs.push_back(x[2]); 
   }
 
-  // Discard complex
-  // vector<double> Rroots;
-  // for (int i = 1; i < 5; i++) if (roots[1][i] == 0) Rroots.push_back(roots[0][i]);
-
-
-  // Take real part
-  vector<double> Rroots;
-  for (int i = 0; i < 4; i++) Rroots.push_back(roots[0][i]);
+  if (m_debug) {
+    cout << "pv1x = " << pv1x << endl; 
+    for (int i = 0; i < 4; i++) cout << "x(" << i << ") = " << x[i] << endl;
+  }
 
   // find root closest to true pl1x
-  double old_diff = std::abs(pv1x - Rroots[0]), new_diff, closest_root = Rroots[0];
-  for (unsigned int i = 1; i < Rroots.size(); i++) {
-      new_diff = std::abs(pv1x - Rroots[i]);
-      if (new_diff < old_diff) closest_root = Rroots[i];
+  // double old_diff = std::abs(pv1x - x[0]), new_diff, closest_root = x[0];
+  // for (unsigned int i = 1; i < 4; i++) {
+  //   new_diff = std::abs(pv1x - x[i]);
+  //   if (new_diff < old_diff) {
+  //     closest_root = x[i];
+  //     old_diff = new_diff;
+  //   }
+  // }
+  // std::vector<double> realRoots;
+  // for (int i = 0; i < nRealRoots; i++) realRoots.push_back(x[i]);
+
+  // Create pairs of neutrino momenta for each real root
+  std::vector<TLorentzVector> pv1_Rs(nSolutions), pv2_Rs(nSolutions);
+  for (int i = 0; i < nSolutions; i++) {
+    double pv1x_R = x[i];
+    double pv2x_R = Emissx - pv1x_R;
+
+    double c2 = c22 + c21 * pv1x_R + c20 * pv1x_R * pv1x_R;
+    double c1 = c11 + c10 * pv1x_R;
+    double c0 = c00;
+    double d2 = d22 + d21 * pv1x_R + d20 * pv1x_R * pv1x_R;
+    double d1 = d11 + d10 * pv1x_R;
+    double d0 = d00;
+
+    double pv1y_R = (c0 * d2 - c2 * d0) / (c1 * d0 - c0 * d1);
+    double pv2y_R = Emissy - pv1y_R;
+
+    double pv1z_R = -(a1 + a2 * pv1x_R + a3 * pv1y_R) / a4;
+    double pv2z_R = -(b1 + b2 * pv2x_R + b3 * pv2y_R) / b4;
+
+    double Ev1_R = sqrt(pv1x_R * pv1x_R + pv1y_R * pv1y_R + pv1z_R * pv1z_R);
+    double Ev2_R = sqrt(pv2x_R * pv2x_R + pv2y_R * pv2y_R + pv2z_R * pv2z_R);
+
+    pv1_Rs[i].SetPxPyPzE(pv1x_R, pv1y_R, pv1z_R, Ev1_R);
+    pv2_Rs[i].SetPxPyPzE(pv2x_R, pv2y_R, pv2z_R, Ev2_R);
+
+    if (m_debug) {
+      printf("pv1x   = %.*e\n", dig, pv1x);
+      printf("pv1x_R = %.*e\n", dig, pv1x_R);
+      printf("pv2x   = %.*e\n", dig, pv2x);
+      printf("pv2x_R = %.*e\n", dig, pv2x_R);
+      printf("pv1y   = %.*e\n", dig, pv1y);
+      printf("pv1y_R = %.*e\n", dig, pv1y_R);
+      printf("pv2y   = %.*e\n", dig, pv2y);
+      printf("pv2y_R = %.*e\n", dig, pv2y_R);
+      printf("pv1z   = %.*e\n", dig, pv1z);
+      printf("pv1z_R = %.*e\n", dig, pv1z_R);
+      printf("pv2z   = %.*e\n", dig, pv2z);
+      printf("pv2z_R = %.*e\n", dig, pv2z_R);
+      printf("Ev1    = %.*e\n", dig, Ev1);
+      printf("Ev1_R  = %.*e\n", dig, Ev1_R);
+      printf("Ev2    = %.*e\n", dig, Ev2);
+      printf("Ev2_R  = %.*e\n", dig, Ev2_R);
+
+    }
   }
 
-  double pv1x_R = closest_root;
-  double pv2x_R = Emissx - pv1x_R;
-
-  double c2 = c22 + c21 * pv1x_R + c20 * pv1x_R * pv1x_R;
-  double c1 = c11 + c10 * pv1x_R;
-  double c0 = c00;
-  double d2 = d22 + d21 * pv1x_R + d20 * pv1x_R * pv1x_R;
-  double d1 = d11 + d10 * pv1x_R;
-  double d0 = d00;
-
-  double pv1y_R = (c0 * d2 - c2 * d0) / (c1 * d0 - c0 * d1);
-  double pv2y_R = Emissy - pv1y_R;
-
-  double pv1z_R = -(a1 + a2 * pv1x_R + a3 * pv1y_R) / a4;
-  double pv2z_R = -(b1 + b2 * pv2x_R + b3 * pv2y_R) / b4;
-
-  double Ev1_R = sqrt(pv1x_R * pv1x_R + pv1y_R * pv1y_R + pv1z_R * pv1z_R);
-  double Ev2_R = sqrt(pv2x_R * pv2x_R + pv2y_R * pv2y_R + pv2z_R * pv2z_R);
-
-  TLorentzVector pv1_R(pv1x_R, pv1y_R, pv1z_R, Ev1_R);
-  TLorentzVector pv2_R(pv2x_R, pv2y_R, pv2z_R, Ev2_R);
-
-  if (debug) {
-    printf("pv1x   = %.*e\n", dig, pv1x);
-    printf("pv1x_R = %.*e\n", dig, pv1x_R);
-    printf("pv2x   = %.*e\n", dig, pv2x);
-    printf("pv2x_R = %.*e\n", dig, pv2x_R);
-    printf("pv1y   = %.*e\n", dig, pv1y);
-    printf("pv1y_R = %.*e\n", dig, pv1y_R);
-    printf("pv2y   = %.*e\n", dig, pv2y);
-    printf("pv2y_R = %.*e\n", dig, pv2y_R);
-    printf("pv1z   = %.*e\n", dig, pv1z);
-    printf("pv1z_R = %.*e\n", dig, pv1z_R);
-    printf("pv2z   = %.*e\n", dig, pv2z);
-    printf("pv2z_R = %.*e\n", dig, pv2z_R);
-    printf("Ev1    = %.*e\n", dig, Ev1);
-    printf("Ev1_R  = %.*e\n", dig, Ev1_R);
-    printf("Ev2    = %.*e\n", dig, Ev2);
-    printf("Ev2_R  = %.*e\n", dig, Ev2_R);
+  int I = 0;
+  double mtt_min = DBL_MAX;
+  for (int i = 0; i < nSolutions; i++) {
+    double mtt = (p[0] + p[1] + p[2] + p[4] + pv1_Rs[i] + pv2_Rs[i]).M();
+    if (mtt < mtt_min) {
+      mtt_min = mtt;
+      I = i;
+    }
   }
 
   p_R[0] = pb1;
   p_R[1] = pb2;
   p_R[2] = pl1;
-  p_R[3] = pv1_R;
+  p_R[3] = pv1_Rs[I];
   p_R[4] = pl2;
-  p_R[5] = pv2_R;
+  p_R[5] = pv2_Rs[I];
 
+  if (m_debug) printf("--- end dilepton reconstruction ---\n\n");
   return p_R;
 }
+
 
 void AnalysisZprime::GetChannelFactors()
 {

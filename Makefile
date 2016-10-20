@@ -1,7 +1,7 @@
 # Makefile for zprime-top-analysis
 # declan.millar@cern.ch
 
-OBJ = main.o atlas-style.o root-tuple.o analysis.o
+OBJ = main.o atlas-style.o root-tuple.o analysis.o poly34.o
 BIN = analysis
 LIB = lib
 SRC = src

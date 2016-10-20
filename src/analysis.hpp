@@ -27,6 +27,7 @@
 #include <sys/stat.h>
 #include <complex>
 #include <cfloat>
+#include "poly34.h"
 
 
 class AnalysisZprime{
@@ -77,7 +78,7 @@ protected:
   TH1D* MakeALL();
   TH1D* MakeAL();
   vector<std::complex<double> > SolveQuadratic(double a, double b, double c);
-  std::vector<TLorentzVector> ReconstructSemiLeptonic(std::vector<TLorentzVector> p, int l_Q);
+  std::vector<TLorentzVector> ReconstructSemilepton(std::vector<TLorentzVector> p, int l_Q);
   std::vector<TLorentzVector> ReconstructDilepton(std::vector<TLorentzVector> p);
 
   bool PassCuts(string type);
@@ -184,6 +185,8 @@ private:
   // Cutflow
   std::vector<int> m_cutflow;
   std::vector<TString> m_cutNames;
+
+  const bool m_debug;
 
   // Final particle 4-vectors
   vector<TLorentzVector> p;
