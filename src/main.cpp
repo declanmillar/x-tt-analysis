@@ -1,4 +1,5 @@
 #include "analysis.hpp"
+#include "boost/program_options.hpp"
 
 namespace po = boost::program_options;
 
@@ -51,7 +52,7 @@ int main(int argc, char* argv[])
 
   if (model == "SM" && intermediates == "AZX-") intermediates = "AZ-";
 
-  AnalysisZprime* analysis = new AnalysisZprime(model, initial_state, intermediates, final_state, energy, options, it, points, add_ggG, add_qqG, luminosity, btags, discardComplex, analysisLabel);
+  Analysis* analysis = new Analysis(model, initial_state, intermediates, final_state, energy, options, it, points, add_ggG, add_qqG, luminosity, btags, discardComplex, analysisLabel);
   analysis->SetYttCut(ytt);
   analysis->SetXsec(xsec);
   analysis->SetFiducial(fid);

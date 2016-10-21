@@ -4,9 +4,34 @@
 //
 #include <math.h>
 
-#include "poly34.h"     // solution of cubic and quartic equation
+#include "solve-poly.hpp"     // solution of cubic and quartic equation
 #define	TwoPi  6.28318530717958648
 const double eps=1e-14;
+//---------------------------------------------------------------------------
+// x - array of size 2
+// In case 2 real roots: x[0], x[1], return 2
+//         0 real roots: x[0] ± i*x[1], return 0
+int SolveP2(double *x, double a, double b)
+{
+    double c;
+
+    c = a * a - 4 * b;
+
+    if (c < 0) {
+    	// 2 complex roots
+    	c = sqrt(-c);
+    	x[0] = -a / 2;
+    	x[1] = c / 2;
+    	return 0;
+    }
+    else {
+    	// 2 real roots
+    	c = sqrt(c);
+    	x[0] = (-a + c) / 2;
+    	x[1] = (-a - c) / 2;
+    	return 2;
+    }
+}
 //---------------------------------------------------------------------------
 // x - array of size 3
 // In case 3 real roots: => x[0], x[1], x[2], return 3

@@ -1,20 +1,9 @@
 #include "analysis.hpp"
+#include "trim.hpp"
+#include "progress-bar.hpp"
+#include "bool-to-string.hpp"
 
-using namespace std;
-using namespace boost;
-
-string trim(string const& str)
-{
-    if(str.empty())
-    return str;
-
-    size_t firstScan = str.find_first_not_of(' ');
-    size_t first = firstScan == string::npos ? str.length() : firstScan;
-    size_t last = str.find_last_not_of(' ');
-    return str.substr(first, last-first+1);
-}
-
-AnalysisZprime::AnalysisZprime(const TString model, const TString initial_state, const TString intermediates, const TString final_state,  const int energy, const TString options, const int vegasIterations, const string vegasPoints, const bool add_ggG, const bool add_qqG, const int luminosity, const int btags, const bool discardComplex, const TString analysisLabel):
+Analysis::Analysis(const TString model, const TString initial_state, const TString intermediates, const TString final_state,  const int energy, const TString options, const int vegasIterations, const string vegasPoints, const bool add_ggG, const bool add_qqG, const int luminosity, const int btags, const bool discardComplex, const TString analysisLabel):
     m_model(model),
     m_initial_state(initial_state),
     m_intermediates(intermediates),
@@ -30,7 +19,7 @@ AnalysisZprime::AnalysisZprime(const TString model, const TString initial_state,
     nBtags(btags),
     m_discardComplex(discardComplex),
     m_analysisLabel(analysisLabel),
-    m_reco(1),
+    m_reco(1), 
     m_pi(3.14159265),
     m_GeV(1000.0),
     m_bmass(4.18),
@@ -45,30 +34,30 @@ AnalysisZprime::AnalysisZprime(const TString model, const TString initial_state,
     m_ntup(NULL),
     m_chainNtup(NULL),
     m_outputFile(NULL),
-    m_debug(false) {
+    m_debug(false) 
+{ 
+    ;
 }
 
-void AnalysisZprime::Run()
+void Analysis::Run()
 {
     this->PreLoop();
     this->Loop();
     this->PostLoop();
 }
 
-inline string BoolToString(bool b) {return b ? "1" : "0";}
-
-void AnalysisZprime::EachEvent()
+void Analysis::EachEvent()
 {
     m_discardEvent = false;
     // UpdateCutflow(c_entries, true);
-    p = vector<TLorentzVector>(6);
+    p = std::vector<TLorentzVector>(6);
     for (int i = 0; i < 6; i++)
         p[i].SetPxPyPzE(m_ntup->Px()->at(i), m_ntup->Py()->at(i), m_ntup->Pz()->at(i), m_ntup->E()->at(i));
 
     P.SetPxPyPzE(0, 0, 0, 0);
-    pcm = vector<TLorentzVector>(p.size());
-    ptop = vector<TLorentzVector>(p.size());
-    patop = vector<TLorentzVector>(p.size());
+    pcm = std::vector<TLorentzVector>(p.size());
+    ptop = std::vector<TLorentzVector>(p.size());
+    patop = std::vector<TLorentzVector>(p.size());
     for (int i = 0; i < 6; i++) {
         P += p[i];
         pcm[i] = p[i];
@@ -101,9 +90,9 @@ void AnalysisZprime::EachEvent()
         TVector3 V_R1 = -1 * P_R1.BoostVector();
         TVector3 Vtop_R1 = -1 * (p_R1[0] + p_R1[2] + p_R1[3]).BoostVector();
         TVector3 Vatop_R1 = -1 * (p_R1[1] + p_R1[4] + p_R1[5]).BoostVector();
-        pcm_R1 = vector<TLorentzVector>(p.size());
-        ptop_R1 = vector<TLorentzVector>(p.size());
-        patop_R2 = vector<TLorentzVector>(p.size());
+        pcm_R1 = std::vector<TLorentzVector>(p.size());
+        ptop_R1 = std::vector<TLorentzVector>(p.size());
+        patop_R2 = std::vector<TLorentzVector>(p.size());
         for (unsigned int i = 0; i < p.size(); i++) {
             pcm_R1[i] = p_R1[i];
             ptop_R1[i] = p_R1[i];
@@ -131,10 +120,10 @@ void AnalysisZprime::EachEvent()
         TVector3 V_R2 = -1 * P_R2.BoostVector();
         TVector3 Vtop_R1 = -1 * (p_R1[0] + p_R1[2] + p_R1[3]).BoostVector();
         TVector3 Vatop_R2 = -1 * (p_R2[1] + p_R2[4] + p_R2[5]).BoostVector();
-        pcm_R1 = vector<TLorentzVector>(p.size());
-        pcm_R2 = vector<TLorentzVector>(p.size());
-        ptop_R1 = vector<TLorentzVector>(p.size());
-        patop_R2 = vector<TLorentzVector>(p.size());
+        pcm_R1 = std::vector<TLorentzVector>(p.size());
+        pcm_R2 = std::vector<TLorentzVector>(p.size());
+        ptop_R1 = std::vector<TLorentzVector>(p.size());
+        patop_R2 = std::vector<TLorentzVector>(p.size());
         for (unsigned int i = 0; i < p.size(); i++) {
             pcm_R1[i] = p_R1[i];
             ptop_R1[i] = p_R1[i];
@@ -179,7 +168,7 @@ void AnalysisZprime::EachEvent()
     double mtb = pcm_tb.M();
     double ytt = P.Rapidity();
     double cosTheta = pcm_t.CosTheta();
-    double cosThetaStar = int(ytt / abs(ytt)) * cosTheta;
+    double cosThetaStar = int(ytt / std::abs(ytt)) * cosTheta;
     double ytt_R1 = -999;
     double ytt_R2 = -999;
     double mt_R1 = -999;
@@ -197,19 +186,19 @@ void AnalysisZprime::EachEvent()
     double cosTheta2_R2 = -999;
     double cos1cos2 = -999;
 
-    vector<double> deltaRs;
+    std::vector<double> deltaRs;
     for (int i = 0; i < 6; i++)
         for (int j = i + 1; j < 6; j++)
             deltaRs.push_back(p[i].DeltaR(p[j]));
 
-    vector<double> eta, pt;
+    std::vector<double> eta, pt;
     for (int i = 0; i < 6; i++) {
         pt.push_back(p[i].Pt());
         eta.push_back(p[i].Eta());
     }
 
     double deltaRbW = p_W.DeltaR(p[0]);
-    vector<double> deltaRt;
+    std::vector<double> deltaRt;
     deltaRt.push_back(p_t.DeltaR(p[0]));
     deltaRt.push_back(p_t.DeltaR(p[2]));
     deltaRt.push_back(p_t.DeltaR(p[3]));
@@ -225,7 +214,7 @@ void AnalysisZprime::EachEvent()
         mt_R1 = p_t_R1.M();
         mtb_R1 = p_tb_R1.M();
         cosTheta_R1 = p_t_R1.CosTheta();
-        cosThetaStar_R1 = int(ytt_R1/abs(ytt_R1)) * cosTheta_R1;
+        cosThetaStar_R1 = int(ytt_R1/std::abs(ytt_R1)) * cosTheta_R1;
         cosTheta1_R1 = cos(ptop_R1[2].Angle(p_t_R1.Vect()));
     }
     if (m_reco == 2) {
@@ -233,7 +222,7 @@ void AnalysisZprime::EachEvent()
         mt_R2 = p_t_R2.M();
         mtb_R2 = p_tb_R2.M();
         cosTheta_R2 = p_t_R2.CosTheta();
-        cosThetaStar_R2 = int(ytt_R2/abs(ytt_R2)) * cosTheta_R2;
+        cosThetaStar_R2 = int(ytt_R2/std::abs(ytt_R2)) * cosTheta_R2;
         cosTheta2_R2 = cos(patop_R2[4].Angle(p_tb_R2.Vect()));
     }
 
@@ -338,31 +327,31 @@ void AnalysisZprime::EachEvent()
     }
 }
 
-void AnalysisZprime::SetupInputFiles()
+void Analysis::SetupInputFiles()
 {
-    m_inputFiles = new vector<TString>;
-    m_weightFiles = new vector<TString>;
+    m_inputFiles = new std::vector<TString>;
+    m_weightFiles = new std::vector<TString>;
     TString filename;
 
     string E = "";
-    if (m_energy != 13) "_" + to_string(m_energy);
+    if (m_energy != 13) "_" + std::to_string(m_energy);
 
     if (m_add_ggG) {
-      filename = m_dataDirectory + "/SM_" + "gg-G-" + m_channel + E + "_2-4_" + to_string(m_vegasIterations) + "x" + m_vegasPoints;
+      filename = m_dataDirectory + "/SM_" + "gg-G-" + m_channel + E + "_2-4_" + std::to_string(m_vegasIterations) + "x" + m_vegasPoints;
       m_inputFiles->push_back(filename + ".root");
       m_weightFiles->push_back(filename + ".log");
     }
 
     if (m_add_qqG) {
-      filename = m_dataDirectory + "/SM_" + "qq-G-" + m_channel + E + "_2-4_" + to_string(m_vegasIterations) + "x" + m_vegasPoints;
+      filename = m_dataDirectory + "/SM_" + "qq-G-" + m_channel + E + "_2-4_" + std::to_string(m_vegasIterations) + "x" + m_vegasPoints;
       m_inputFiles->push_back(filename + ".root");
       m_weightFiles->push_back(filename + ".log");
-      // filename = m_dataDirectory + "/SM_" + "qq-" + m_channel + E + "_3-4_" + to_string(m_vegasIterations) + "x" + m_vegasPoints;
+      // filename = m_dataDirectory + "/SM_" + "qq-" + m_channel + E + "_3-4_" + std::to_string(m_vegasIterations) + "x" + m_vegasPoints;
       // m_inputFiles->push_back(filename + ".root");
       // m_weightFiles->push_back(filename + ".log");
     }
 
-    filename = m_dataDirectory + "/" + m_model + "_" + m_initial_state + "-" + m_intermediates + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
+    filename = m_dataDirectory + "/" + m_model + "_" + m_initial_state + "-" + m_intermediates + m_channel + E + m_options + std::to_string(m_vegasIterations) + "x" + m_vegasPoints;
     m_inputFiles->push_back(filename + ".root");
     m_weightFiles->push_back(filename + ".log");
 
@@ -385,26 +374,26 @@ void AnalysisZprime::SetupInputFiles()
     }
 }
 
-void AnalysisZprime::SetupOutputFiles()
+void Analysis::SetupOutputFiles()
 {
     TString outfilename;
     TString initial_state = m_initial_state;
     TString intermediates = m_intermediates;
     string E = "";
-    if (m_energy != 13) "_" + to_string(m_energy);
+    if (m_energy != 13) "_" + std::to_string(m_energy);
 
     if (m_add_ggG || m_add_qqG) intermediates = "G" + intermediates;
     if (m_add_ggG) initial_state = "gg" + initial_state;
-    outfilename = m_dataDirectory + "/" + m_model + "_" + initial_state + "-" + intermediates + m_channel + E + m_options + to_string(m_vegasIterations) + "x" + m_vegasPoints;
+    outfilename = m_dataDirectory + "/" + m_model + "_" + initial_state + "-" + intermediates + m_channel + E + m_options + std::to_string(m_vegasIterations) + "x" + m_vegasPoints;
     m_outputFilename = outfilename + ".a";
 
-    if (m_reco == 2 && nBtags != 2) m_outputFilename += ".b" + to_string(nBtags) + ".c" + BoolToString(m_discardComplex);
-    string ytt = to_string(m_ytt);
+    if (m_reco == 2 && nBtags != 2) m_outputFilename += ".b" + std::to_string(nBtags) + ".c" + BoolToString(m_discardComplex);
+    string ytt = std::to_string(m_ytt);
     if (m_ytt > 0) m_outputFilename += ".y" + ytt.erase(ytt.find_last_not_of('0') + 1, string::npos);
-    if (m_Emin >= 0 || m_Emax >= 0) m_outputFilename += ".E" + to_string(m_Emin) + "-" + to_string(m_Emax);
-    string eff = to_string(m_efficiency);
+    if (m_Emin >= 0 || m_Emax >= 0) m_outputFilename += ".E" + std::to_string(m_Emin) + "-" + std::to_string(m_Emax);
+    string eff = std::to_string(m_efficiency);
     if (m_efficiency < 1.0) m_outputFilename += ".e" + eff.erase(eff.find_last_not_of('0') + 1, string::npos);
-    if (m_luminosity > 0) m_outputFilename += ".L" + to_string(m_luminosity);
+    if (m_luminosity > 0) m_outputFilename += ".L" + std::to_string(m_luminosity);
     if (m_fid == true) m_outputFilename += ".fid";
     m_outputFilename += m_analysisLabel;
     m_outputFilename += ".root";
@@ -414,16 +403,16 @@ void AnalysisZprime::SetupOutputFiles()
     m_outputFile = new TFile(m_outputFilename, "RECREATE");
 }
 
-void AnalysisZprime::PostLoop()
+void Analysis::PostLoop()
 {
     this->CheckResults();
     if (m_reco == 2) this->CheckPerformance();
-    this->MakeGraphs();
+    this->MakeDistributions();
     // this->PrintCutflow();
     this->WriteHistograms();
 }
 
-void AnalysisZprime::CheckResults()
+void Analysis::CheckResults()
 {
     printf("-- Results --\n");
     double sigma = h_mtt->Integral("width");
@@ -431,23 +420,19 @@ void AnalysisZprime::CheckResults()
     printf("\n");
 }
 
-void AnalysisZprime::CheckPerformance ()
+void Analysis::CheckPerformance()
 {
     double quarkRecoRatio = m_nQuarksMatched/(double)m_nReco;
     double neutrinoRecoRatio = m_nNeutrinoMatched/(double)m_nReco;
     printf("-- Performance --\n");
-    printf("Quark assignment: %.1f%% correct\n", quarkRecoRatio*100);
-    printf("pzNu assignment: %.1f%% correct\n", neutrinoRecoRatio*100);
+    printf("Quark assignment: %.1f%% correct\n", quarkRecoRatio * 100);
+    printf("pzNu assignment: %.1f%% correct\n", neutrinoRecoRatio * 100);
     printf("\n");
 }
 
-double AnalysisZprime::TotalAsymmetry(TH1D* h1, TH1D* h2) {
-    double N1 = h1->Integral("width");
-    double N2 = h2->Integral("width");
-    return (N1 - N2)/(N1 + N2);
-}
 
-void AnalysisZprime::ApplyLuminosity(TH1D* h) {
+void Analysis::ApplyLuminosity(TH1D* h) 
+{
     double sigma, N, dN;
     for (int i = 1; i < h->GetNbinsX() + 1; i++) {
         sigma = h->GetBinContent(i);
@@ -459,7 +444,9 @@ void AnalysisZprime::ApplyLuminosity(TH1D* h) {
     h->GetYaxis()->SetTitle("Expected events");
 }
 
-TH1D* AnalysisZprime::Asymmetry(TString name, TString title, TH1D* h1, TH1D* h2) {
+
+TH1D* Analysis::Asymmetry(TString name, TString title, TH1D* h1, TH1D* h2)
+{
     TH1D* h_numerator = (TH1D*) h1->Clone(name);
     TH1D* h_denominator = (TH1D*) h1->Clone();
     h_numerator->SetTitle(title);
@@ -471,14 +458,9 @@ TH1D* AnalysisZprime::Asymmetry(TString name, TString title, TH1D* h1, TH1D* h2)
     return h_numerator;
 }
 
-TH1D* AnalysisZprime::Asymmetry2(TString name, TString title, TH1D* h1, TH1D* h2) {
-    TH1D* h = (TH1D*) h1->Clone(name);
-    h->SetTitle(title);
-    h->Add(h2, -1);
-    return h;
-}
 
-void AnalysisZprime::AsymmetryUncertainty(TH1D* hA, TH1D* h1, TH1D* h2) {
+void Analysis::AsymmetryUncertainty(TH1D* hA, TH1D* h1, TH1D* h2) 
+{
     double A, dA, N, N1, N2;
     for (int i = 1; i < hA->GetNbinsX() + 1; i++) {
         A = hA->GetBinContent(i);
@@ -491,9 +473,8 @@ void AnalysisZprime::AsymmetryUncertainty(TH1D* hA, TH1D* h1, TH1D* h2) {
     }
 }
 
-void AnalysisZprime::CreateHistograms()
+void Analysis::MakeHistograms()
 {
-
     double binWidth = 0.05;
     double Emin = 0;
     double Emax = 13;
@@ -593,11 +574,11 @@ void AnalysisZprime::CreateHistograms()
     h2_KT_deltaPhi->GetYaxis()->SetTitle("#Delta#phi_{l} [rad] / #pi");
     h2_KT_deltaPhi->Sumw2();
 
-    vector<string> deltaRnames, deltaRtitles;
-    vector<string> n_eta, t_eta, n_pt, t_pt;
+    std::vector<string> deltaRnames, deltaRtitles;
+    std::vector<string> n_eta, t_eta, n_pt, t_pt;
 
-    vector<string> particles1 = {"b1", "b2", "l", "v", "q1", "q2"};
-    vector<string> particles2 = {"b", "#bar{b}", "l+", "#nu", "q", "#bar{q}'"};
+    std::vector<string> particles1 = {"b1", "b2", "l", "v", "q1", "q2"};
+    std::vector<string> particles2 = {"b", "#bar{b}", "l+", "#nu", "q", "#bar{q}'"};
 
     for (int i = 0; i < 6; i++ ) {
         n_eta.push_back("eta" + particles1[i]);
@@ -665,33 +646,33 @@ void AnalysisZprime::CreateHistograms()
     }
 }
 
-void AnalysisZprime::MakeGraphs()
+void Analysis::MakeDistributions()
 {
-    this->MakeDistribution(h_mtt, "TeV");
-    this->MakeDistribution(h_mtt_F, "TeV");
-    this->MakeDistribution(h_mtt_B, "TeV");
-    this->MakeDistribution(h_mtt_Fl, "TeV");
-    this->MakeDistribution(h_mtt_Bl, "TeV");
-    this->MakeDistribution(h_mt, "TeV");
-    this->MakeDistribution(h_mtbar, "TeV");
-    this->MakeDistribution(h_ytt, "");
-    this->MakeDistribution(h_cosTheta, "");
-    this->MakeDistribution(h_cosThetaStar, "");
-    this->MakeDistribution(h_deltaPhi, "rad / #pi");
-    this->MakeDistribution(h_pv1x, "GeV");
-    this->MakeDistribution(h_pv1y, "GeV");
-    this->MakeDistribution(h_pv1z, "GeV");
-    this->MakeDistribution(h_pv2x, "GeV");
-    this->MakeDistribution(h_pv2y, "GeV");
-    this->MakeDistribution(h_pv2z, "GeV");
-    this->MakeDistribution(h_cosTheta1, "");
-    this->MakeDistribution(h_cosTheta2, "");
-    this->MakeDistribution(h_cos1cos2, "");
-    this->MakeDistribution(h_HT, "TeV");
-    this->MakeDistribution(h_KT, "TeV");
-    this->MakeDistribution(h_deltaRbW, "");
-    this->MakeDistribution(h_deltaRmax, "");
-    this->MakeDistribution(h_KT, "TeV");
+    this->MakeDistribution1D(h_mtt, "TeV");
+    this->MakeDistribution1D(h_mtt_F, "TeV");
+    this->MakeDistribution1D(h_mtt_B, "TeV");
+    this->MakeDistribution1D(h_mtt_Fl, "TeV");
+    this->MakeDistribution1D(h_mtt_Bl, "TeV");
+    this->MakeDistribution1D(h_mt, "TeV");
+    this->MakeDistribution1D(h_mtbar, "TeV");
+    this->MakeDistribution1D(h_ytt, "");
+    this->MakeDistribution1D(h_cosTheta, "");
+    this->MakeDistribution1D(h_cosThetaStar, "");
+    this->MakeDistribution1D(h_deltaPhi, "rad / #pi");
+    this->MakeDistribution1D(h_pv1x, "GeV");
+    this->MakeDistribution1D(h_pv1y, "GeV");
+    this->MakeDistribution1D(h_pv1z, "GeV");
+    this->MakeDistribution1D(h_pv2x, "GeV");
+    this->MakeDistribution1D(h_pv2y, "GeV");
+    this->MakeDistribution1D(h_pv2z, "GeV");
+    this->MakeDistribution1D(h_cosTheta1, "");
+    this->MakeDistribution1D(h_cosTheta2, "");
+    this->MakeDistribution1D(h_cos1cos2, "");
+    this->MakeDistribution1D(h_HT, "TeV");
+    this->MakeDistribution1D(h_KT, "TeV");
+    this->MakeDistribution1D(h_deltaRbW, "");
+    this->MakeDistribution1D(h_deltaRmax, "");
+    this->MakeDistribution1D(h_KT, "TeV");
 
     h_mtt_Fn = (TH1D*) h_mtt_F->Clone("h_mtt_Fn");
     h_mtt_Fn->Divide(h_mtt);
@@ -723,20 +704,20 @@ void AnalysisZprime::MakeGraphs()
     }
 
     if (m_reco > 0) {
-        this->MakeDistribution(h_mtt_R, "TeV");
-        this->MakeDistribution(h_mtt_FR, "TeV");
-        this->MakeDistribution(h_mtt_BR, "TeV");
-        this->MakeDistribution(h_mt_R, "TeV");
-        this->MakeDistribution(h_mtbar_R, "TeV");
-        this->MakeDistribution(h_ytt_R, "TeV");
-        this->MakeDistribution(h_cosTheta_R, "");
-        this->MakeDistribution(h_cosThetaStar_R, "");
-        this->MakeDistribution(h_pv1x_R, "GeV");
-        this->MakeDistribution(h_pv1y_R, "GeV");
-        this->MakeDistribution(h_pv1z_R, "GeV");
-        this->MakeDistribution(h_pv2x_R, "GeV");
-        this->MakeDistribution(h_pv2y_R, "GeV");
-        this->MakeDistribution(h_pv2z_R, "GeV");
+        this->MakeDistribution1D(h_mtt_R, "TeV");
+        this->MakeDistribution1D(h_mtt_FR, "TeV");
+        this->MakeDistribution1D(h_mtt_BR, "TeV");
+        this->MakeDistribution1D(h_mt_R, "TeV");
+        this->MakeDistribution1D(h_mtbar_R, "TeV");
+        this->MakeDistribution1D(h_ytt_R, "TeV");
+        this->MakeDistribution1D(h_cosTheta_R, "");
+        this->MakeDistribution1D(h_cosThetaStar_R, "");
+        this->MakeDistribution1D(h_pv1x_R, "GeV");
+        this->MakeDistribution1D(h_pv1y_R, "GeV");
+        this->MakeDistribution1D(h_pv1z_R, "GeV");
+        this->MakeDistribution1D(h_pv2x_R, "GeV");
+        this->MakeDistribution1D(h_pv2y_R, "GeV");
+        this->MakeDistribution1D(h_pv2z_R, "GeV");
 
         h_mtt_FRn = (TH1D*) h_mtt_FR->Clone("h_mtt_FRn");
         h_mtt_FRn->Divide(h_mtt_R);
@@ -750,7 +731,8 @@ void AnalysisZprime::MakeGraphs()
     }
 }
 
-void AnalysisZprime::MakeDistribution(TH1D* h, TString units) {
+void Analysis::MakeDistribution1D(TH1D* h, TString units)
+{
     TString ytitle, yunits, xunits;
     if (m_xsec) {
         ytitle = "d#sigma / d"; //pp->t#bar{t}->b#bar{b}l^{+}l^{-}#nu#bar{#nu}
@@ -778,7 +760,7 @@ void AnalysisZprime::MakeDistribution(TH1D* h, TString units) {
     h->Write();
 }
 
-void AnalysisZprime::Make2dDistribution(TH2D* h) {
+void Analysis::MakeDistribution2D(TH2D* h) {
   double sigma, N, dN;
   int k;
   if (m_xsec && m_useLumi) {
@@ -800,7 +782,8 @@ void AnalysisZprime::Make2dDistribution(TH2D* h) {
   h->Write();
 }
 
-void AnalysisZprime::NormalizeSliceY(TH2D* h) {
+void Analysis::NormalizeSliceY(TH2D* h) 
+{
     double integral = 1;
     int k;
     for (int i = 1; i < h->GetNbinsX() + 1; i++) {
@@ -813,7 +796,7 @@ void AnalysisZprime::NormalizeSliceY(TH2D* h) {
     }
 }
 
-void AnalysisZprime::WriteHistograms()
+void Analysis::WriteHistograms()
 {
     m_outputFile->cd();
     m_outputFile->cd("/");
@@ -838,15 +821,15 @@ void AnalysisZprime::WriteHistograms()
         h_AFB_R->Write();
     }
 
-    this->Make2dDistribution(h2_mtt_deltaPhi);
-    this->Make2dDistribution(h2_mtt_cos1cos2);
-    this->Make2dDistribution(h2_HT_deltaPhi);
-    this->Make2dDistribution(h2_KT_deltaPhi);
-    this->Make2dDistribution(h2_mtt_cosThetaStar);
-    this->Make2dDistribution(h2_mtt_cosThetaStar_R);
-    this->Make2dDistribution(h2_mtt_cosTheta1);
-    this->Make2dDistribution(h2_mtt_cosTheta2);
-    this->Make2dDistribution(h2_mtt_cosThetal_R);
+    this->MakeDistribution2D(h2_mtt_deltaPhi);
+    this->MakeDistribution2D(h2_mtt_cos1cos2);
+    this->MakeDistribution2D(h2_HT_deltaPhi);
+    this->MakeDistribution2D(h2_KT_deltaPhi);
+    this->MakeDistribution2D(h2_mtt_cosThetaStar);
+    this->MakeDistribution2D(h2_mtt_cosThetaStar_R);
+    this->MakeDistribution2D(h2_mtt_cosTheta1);
+    this->MakeDistribution2D(h2_mtt_cosTheta2);
+    this->MakeDistribution2D(h2_mtt_cosThetal_R);
 
     TF1 *func = new TF1("func1", "[0]*x + [1]", -1, 1);
     TObjArray slices1;
@@ -891,7 +874,8 @@ void AnalysisZprime::WriteHistograms()
     delete m_outputFile;
 }
 
-bool AnalysisZprime::PassCuts(string type) {
+bool Analysis::PassCuts(string type) 
+{
     if(!(type == "truth" or type == "R1" or type == "R2")) return false;
     if(this->PassCutsET(type)) {
         if(this->PassCutsEta(type)) {
@@ -907,7 +891,8 @@ bool AnalysisZprime::PassCuts(string type) {
     return false;
 }
 
-bool AnalysisZprime::PassCutsMET(string type) {
+bool Analysis::PassCutsMET(string type)
+{
     bool pass;
     pass = true;
 
@@ -915,7 +900,8 @@ bool AnalysisZprime::PassCutsMET(string type) {
     return pass;
 }
 
-bool AnalysisZprime::PassCutsMtt(string type) {
+bool Analysis::PassCutsMtt(string type)
+{
     double mtt;
     if (type == "truth") mtt = P.M()/1000;
     else if (type == "R1") mtt = P_R1.M()/1000;
@@ -934,7 +920,8 @@ bool AnalysisZprime::PassCutsMtt(string type) {
     return false;
 }
 
-bool AnalysisZprime::PassCutsEta(string type) {
+bool Analysis::PassCutsEta(string type)
+{
     if (m_fid == false) {
         UpdateCutflow(c_eta, true);
         return true;
@@ -942,7 +929,7 @@ bool AnalysisZprime::PassCutsEta(string type) {
     if (type == "truth") {
         for (unsigned int i = 0; i < p.size(); i++) {
             // bool outsideCrack = abs(p[i].PseudoRapidity()) <= 1.37 || abs(p[i].PseudoRapidity()) >= 1.52;
-            bool central = abs(p[i].PseudoRapidity()) <= 2.5;
+            bool central = std::abs(p[i].PseudoRapidity()) <= 2.5;
             // bool passesEtaCuts = outsideCrack && central;
             if (central == false) {
                 UpdateCutflow(c_eta, false);
@@ -980,7 +967,8 @@ bool AnalysisZprime::PassCutsEta(string type) {
     return true;
 }
 
-bool AnalysisZprime::PassCutsET(string type) {
+bool Analysis::PassCutsET(string type)
+{
     if (m_fid == false) {
         UpdateCutflow(c_Et, true);
         return true;
@@ -1017,12 +1005,12 @@ bool AnalysisZprime::PassCutsET(string type) {
     return true;
 }
 
-bool AnalysisZprime::PassCutsYtt(string type)
+bool Analysis::PassCutsYtt(string type)
 {
     double ytt;
-    if (type == "truth") ytt = abs(P.Rapidity());
-    else if (type == "R1") ytt = abs(P_R1.Rapidity());
-    else if (type == "R2") ytt = abs(P_R2.Rapidity());
+    if (type == "truth") ytt = std::abs(P.Rapidity());
+    else if (type == "R1") ytt = std::abs(P_R1.Rapidity());
+    else if (type == "R2") ytt = std::abs(P_R2.Rapidity());
     else return false;
     if (ytt > m_ytt) {
         UpdateCutflow(c_ytt, true);
@@ -1032,17 +1020,17 @@ bool AnalysisZprime::PassCutsYtt(string type)
     return false;
 }
 
-void AnalysisZprime::PreLoop()
+void Analysis::PreLoop()
 {
     this->SetDataDirectory();
     this->SetupInputFiles();
     this->SetupOutputFiles();
     this->ResetCounters();
     this->InitialiseCutflow();
-    this->CreateHistograms();
+    this->MakeHistograms();
 }
 
-void AnalysisZprime::SetDataDirectory()
+void Analysis::SetDataDirectory()
 {
 
     char hostname[1024];
@@ -1060,12 +1048,12 @@ void AnalysisZprime::SetDataDirectory()
         printf("Hostname %s not recognised.\n", Hostname.c_str());
 }
 
-TString AnalysisZprime::GetOutputFilename()
+TString Analysis::GetOutputFilename()
 {
     return m_outputFilename;
 }
 
-void AnalysisZprime::ResetCounters()
+void Analysis::ResetCounters()
 {
     if (m_luminosity >= 0) m_useLumi = true;
     else m_useLumi = false;
@@ -1076,19 +1064,19 @@ void AnalysisZprime::ResetCounters()
     m_nComplexRoots = 0;
 }
 
-void AnalysisZprime::GetCrossSection(TString log)
+void Analysis::GetCrossSection(TString log)
 {
     log.Replace(log.Last('.'), 5, ".log");
     printf("%s\n", log.Data());
-    ifstream logstream(log.Data());
+    std::ifstream logstream(log.Data());
     if (!logstream.is_open()) printf("Error: failed to open %s!\n", log.Data());
     string line;
     string target = "Cross section";
-    vector<string> parts;
+    std::vector<string> parts;
     bool found = false;
     while(getline(logstream, line)) {
         trim(line);
-        split(parts, line, is_any_of(":"));
+        split(parts, line, boost::is_any_of(":"));
         for (auto part : parts) trim(part);
         if (parts[0] == target) {
             m_sigma = stod(parts[1]);
@@ -1103,19 +1091,19 @@ void AnalysisZprime::GetCrossSection(TString log)
     else printf("Generation Cross section = %.15le [pb]\n", m_sigma);
 }
 
-void AnalysisZprime::GetIterationWeights(TString log)
+void Analysis::GetIterationWeights(TString log)
 {
     iteration_weights.clear();
     log.Replace(log.Last('.'), 5, ".log");
-    ifstream logstream(log.Data());
+    std::ifstream logstream(log.Data());
     if (!logstream.is_open()) printf("Error: failed to open %s!\n", log.Data());
     string line;
     string target = "Iteration weighting";
-    vector<string> parts;
+    std::vector<string> parts;
     bool found = false;
     while(getline(logstream, line)) {
         trim(line);
-        split(parts, line, is_any_of(":"));
+        split(parts, line, boost::is_any_of(":"));
         for (auto part: parts) trim(part);
         if (parts[0] == target) {
             iteration_weights.push_back(stod(parts[2]));
@@ -1124,12 +1112,12 @@ void AnalysisZprime::GetIterationWeights(TString log)
     }
     logstream.close();
     if (!found) {
-        printf("Error: Failed to read Vegas iteration weights. Check %s", m_weightsFilename.Data());
+        printf("Error: Failed to read Vegas iteration weights. Check %s", log.Data());
         exit(1);
     }
 }
 
-void AnalysisZprime::Loop()
+void Analysis::Loop()
 {
     for (Itr_s i = m_inputFiles->begin(); i != m_inputFiles->end(); ++i) {
         printf("\n-- Input %li --\n", i - m_inputFiles->begin() + 1);
@@ -1145,29 +1133,33 @@ void AnalysisZprime::Loop()
             Long64_t ientry = this->IncrementEvent(jentry);
             if (ientry < 0) break;
             this->EachEvent();
-            this->ProgressBar(jentry, nEntries-1, 50);
+            ProgressBar(jentry, nEntries-1, 50);
         }
         this->CleanUp();
     }
     cout << endl;
 }
 
-AnalysisZprime::~AnalysisZprime()
-{delete m_inputFiles;}
+Analysis::~Analysis()
+{
+    delete m_inputFiles;
+}
 
-Long64_t AnalysisZprime::TotalEvents()
+Long64_t Analysis::TotalEvents()
 {
     if (m_ntup != 0) {return m_ntup->totalEvents();}
     return -999;
 }
 
-Long64_t AnalysisZprime::IncrementEvent(Long64_t i) {
+Long64_t Analysis::IncrementEvent(Long64_t i)
+{
     Long64_t ev(-1);
     if (m_ntup != 0) {ev = m_ntup->LoadTree(i);}
     return ev;
 }
 
-void AnalysisZprime::SetupTreesForNewFile(const TString& s) {
+void Analysis::SetupTreesForNewFile(const TString& s)
+{
     TString treeToUse = "RootTuple";
 
     m_chainNtup = new TChain(treeToUse,"");
@@ -1176,33 +1168,17 @@ void AnalysisZprime::SetupTreesForNewFile(const TString& s) {
     m_ntup = new RootTuple(m_chainNtup);
 }
 
-void AnalysisZprime::CleanUp()
+void Analysis::CleanUp()
 {
     delete m_chainNtup;
     delete m_ntup;
 }
 
-
-std::vector<std::complex<double> > QuadraticRoots(double a[3])
+std::vector<TLorentzVector> Analysis::ReconstructSemilepton(std::vector<TLorentzVector> p, int Q_l)
 {
-    std::vector<std::complex<double> > r(2);
-    std::complex<double> s, t, u;
-
-    s = -a[1] / (2 * a[0]);
-    u = a[1] * a[1] - 4 * a[0] * a[2];
-    t = sqrt(u) / (2 * a[0]);
-
-    r[0] = s + t;
-    r[1] = s - t;
-
-    return r;
-}
-
-vector<TLorentzVector> AnalysisZprime::ReconstructSemilepton(vector<TLorentzVector> p, int Q_l)
-{
-    // Returns a vector of 4-momenta for all 6 particles in the final state with matching of b-quarks to each top
+    // Returns a std::vector of 4-momenta for all 6 particles in the final state with matching of b-quarks to each top
     // and matching of
-    // Takes a vector of true final-state particle momenta as the argument and the charge of the final
+    // Takes a std::vector of true final-state particle momenta as the argument and the charge of the final
     // state lepton: if +, t decayed leptonically; if -, t~ decayed leptonically.
     // As going from bbllnn->bblnqq/bbqqln requires only a simple reweighting for parton truth,
     // it saves on storage space and processing time to store all events as bbllnn. However,
@@ -1210,7 +1186,7 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemilepton(vector<TLorentzVect
     // may decay hadronically. This means there are two distinguishable final states:
     // Q_l = +1 : pp -> b b~ l+ nu q q'
     // Q_l = -1 : pp -> b b~ q q' l- nu
-    // Note that the order here is important, as the order of indicies in the vector of final state momenta
+    // Note that the order here is important, as the order of indicies in the std::vector of final state momenta
     // relates to the parent particle t=(0,2,3), t~=(1,4,5) and is fixed at the generator level.
     // If we want the results combining each final state, we must add these together.
     // Note: Experimentally p^{x,y}_nu is equated to the MET, of course.
@@ -1219,11 +1195,10 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemilepton(vector<TLorentzVect
 
     m_nReco++;
 
-    vector<TLorentzVector> p_nu_R, p_R(p.size());
+    std::vector<TLorentzVector> p_nu_R, p_R(p.size());
     TLorentzVector p_l, p_nu;
-    double a[3], k, dh, dl, mblv, mjjb, chi2, chi2min = 1.0e10;
+    double a, b, c, k, dh, dl, mblv, mjjb, chi2, chi2min = 1.0e10;
     unsigned int imin, jmin;
-    std::vector<std::complex<double> > roots;
 
     // Calculate neutrino p_z solutions
     if (Q_l == 1) {
@@ -1236,42 +1211,43 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemilepton(vector<TLorentzVect
         p_l = p[4];
         p_nu = p[5];
     }
-    else{
+    else {
         exit(1);
     }
 
     double px_l = p_l.Px(), py_l = p_l.Py(), pz_l = p_l.Pz(), E_l;
     double px_nu = p_nu.Px(), py_nu = p_nu.Py();
     E_l = sqrt(px_l * px_l + py_l * py_l + pz_l * pz_l);
-    if (abs(E_l - p_l.E()) > 0.00001) printf("ERROR: Lepton energy doesn't match.\n");
+    if (std::abs(E_l - p_l.E()) > 0.00001) printf("ERROR: Lepton energy doesn't match.\n");
 
     k = 3218.42645 + px_l * px_nu + py_l * py_nu; // m_Wmass * m_Wmass/2 = 3218.42645
-    a[0] = px_l * px_l + py_l * py_l;
-    a[1] = -2 * k * (pz_l);
-    a[2] = (px_nu * px_nu + py_nu * py_nu) * E_l * E_l - k * k;
+    a = px_l * px_l + py_l * py_l;
+    b = -2 * k * (pz_l);
+    c = (px_nu * px_nu + py_nu * py_nu) * E_l * E_l - k * k;
 
-    roots = QuadraticRoots(a);
+    double roots[2];
+    int nRealRoots = SolveP2(roots, b/a, c/a);
     p_nu_R.clear();
-    if (roots[0].imag() == 0 and roots[1].imag() == 0) {
+    if (nRealRoots == 2) {
         // two real solutions; pick best match
         // this->UpdateCutflow(c_realSolutions, true);
-        for (auto root: roots) {
-            double pz = root.real();
+        for (auto root : roots) {
+            double pz = root;
             TLorentzVector p(px_nu, py_nu, pz, sqrt(px_nu * px_nu + py_nu * py_nu + pz * pz));
             p_nu_R.push_back(p);
         }
     }
-    else{
-        // no real solutions; take the real part of 1 (real parts are the same)
+    else {
+        // no real solutions; take the real part
         if (m_discardComplex) m_discardEvent = true; // dump complex events
-        double pz = roots[0].real();
+        double pz = roots[0];
         TLorentzVector p(px_nu, py_nu, pz, sqrt(px_nu * px_nu + py_nu * py_nu + pz * pz));
         p_nu_R.push_back(p);
     }
     bool oldreco = false;
 
     if (oldreco) {
-        vector<TLorentzVector> p_b(2), p_q(2);
+        std::vector<TLorentzVector> p_b(2), p_q(2);
 
         p_b[0] = p[0];
         p_b[1] = p[1];
@@ -1318,7 +1294,7 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemilepton(vector<TLorentzVect
         }
     }
     else {
-        vector<TLorentzVector> p_q(4);
+        std::vector<TLorentzVector> p_q(4);
 
         p_q[0] = p[0];
         p_q[1] = p[1];
@@ -1330,7 +1306,7 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemilepton(vector<TLorentzVect
             p_q[2] = p[2];
             p_q[3]= p[3];
         }
-        vector<vector<int> > q_perms;
+        std::vector<std::vector<int> > q_perms;
         if (nBtags == 2) q_perms = { {0, 1, 2, 3}, {1, 0, 2, 3} };
         if (nBtags == 1) q_perms = { {0, 1, 2, 3}, {0, 2, 1, 3}, {0, 3, 1, 2},
         {1, 0, 2, 3}, {2, 0, 1, 3}, {3, 0, 1, 2} };
@@ -1375,20 +1351,20 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemilepton(vector<TLorentzVect
     }
 
     // Assess b-matching performance
-    unsigned int b_lep;
-    if (Q_l == 1) b_lep = 0;
-    if (Q_l == -1) b_lep = 1;
-    if (b_lep == jmin) m_nQuarksMatched++;
+    // unsigned int b_lep;
+    // if (Q_l == 1) b_lep = 0;
+    // if (Q_l == -1) b_lep = 1;
+    // if (b_lep == jmin) m_nQuarksMatched++;
 
     // Assess neutrino reconstruction performance.
-    double pz_nu_truth = p_nu.Pz();
-    double Root0MinusTruth = abs(roots[0].real() - pz_nu_truth);
-    double Root1MinusTruth = abs(roots[1].real() - pz_nu_truth);
-    unsigned int bestRoot;
-    if (Root0MinusTruth < Root1MinusTruth) bestRoot = 0;
-    else if (Root1MinusTruth < Root0MinusTruth) bestRoot = 1;
-    else bestRoot = 0;
-    if (imin == bestRoot) m_nNeutrinoMatched++;
+    // double pz_nu_truth = p_nu.Pz();
+    // double Root0MinusTruth = std::abs(roots[0].real() - pz_nu_truth);
+    // double Root1MinusTruth = std::abs(roots[1].real() - pz_nu_truth);
+    // unsigned int bestRoot;
+    // if (Root0MinusTruth < Root1MinusTruth) bestRoot = 0;
+    // else if (Root1MinusTruth < Root0MinusTruth) bestRoot = 1;
+    // else bestRoot = 0;
+    // if (imin == bestRoot) m_nNeutrinoMatched++;
     // Print reconstruction performance.
     // printf("True pz_nu = %f\n", p_nu.Pz());
     // printf("Possible neutrino solutions:\n");
@@ -1403,7 +1379,7 @@ vector<TLorentzVector> AnalysisZprime::ReconstructSemilepton(vector<TLorentzVect
     return p_R;
 }
 
-vector<TLorentzVector> AnalysisZprime::ReconstructDilepton(vector<TLorentzVector> p)
+std::vector<TLorentzVector> Analysis::ReconstructDilepton(std::vector<TLorentzVector> p)
 {
   // Uses the Sonnenschein method algebraically solve tt dilepton equations.
   // http://arxiv.org/abs/hep-ph/0510100
@@ -1414,7 +1390,7 @@ vector<TLorentzVector> AnalysisZprime::ReconstructDilepton(vector<TLorentzVector
 
   m_nReco++;
 
-  vector<TLorentzVector> p_R(p.size());
+  std::vector<TLorentzVector> p_R(p.size());
 
   TLorentzVector pb1 = p[0], pb2 = p[1], pl1 = p[2], pv1 = p[3], pl2 = p[4], pv2 = p[5];
 
@@ -1717,7 +1693,7 @@ vector<TLorentzVector> AnalysisZprime::ReconstructDilepton(vector<TLorentzVector
 }
 
 
-void AnalysisZprime::GetChannelFactors()
+void Analysis::GetChannelFactors()
 {
     // scale dilepton to other classifications
     // fac_ee = 1
@@ -1726,16 +1702,16 @@ void AnalysisZprime::GetChannelFactors()
     // fac_qq = 36
 }
 
-const void AnalysisZprime::UpdateCutflow(int cut, bool passed)
+const void Analysis::UpdateCutflow(int cut, bool passed)
 {
     if (m_cutflow[cut] == -999) m_cutflow[cut] = 0;
     if (passed) m_cutflow[cut] += 1;
 }
 
-void AnalysisZprime::InitialiseCutflow()
+void Analysis::InitialiseCutflow()
 {
-    m_cutflow = vector<int>(m_cuts, -999);
-    m_cutNames = vector<TString>(m_cuts, "no name");
+    m_cutflow = std::vector<int>(m_cuts, -999);
+    m_cutNames = std::vector<TString>(m_cuts, "no name");
     m_cutNames[c_entries]       = "Entries         ";
     m_cutNames[c_topDecays]     = "t->be#nu        ";
     m_cutNames[c_antitopDecays] = "#bar{t}->be#nu  ";
@@ -1750,7 +1726,7 @@ void AnalysisZprime::InitialiseCutflow()
     h_cutflow = new TH1D("Cutflow", "Cutflow", m_cuts, 0, m_cuts);
 }
 
-void AnalysisZprime::PrintCutflow()
+void Analysis::PrintCutflow()
 {
     printf("-- Cutflow --\n");
     for (int cut = 0; cut < m_cuts; cut++) {
@@ -1764,31 +1740,18 @@ void AnalysisZprime::PrintCutflow()
     h_cutflow->Write();
 }
 
-inline void AnalysisZprime::ProgressBar(unsigned int x, unsigned int n, unsigned int w)
-{
-    if ((x != n) && (x % (n / 100 + 1) != 0)) return;
 
-    float ratio = x / (float)n;
-    unsigned int c = ratio * w;
-
-    cout << setw(3) << (int)(ratio * 100) << '%' << '[';
-    for (unsigned int i = 0; i < c; i++) cout << '=';
-    for (unsigned int i = c; i < w; i++) cout << ' ';
-    if (x == n) cout << '\n' << flush;
-    else cout << ']' << '\r' << flush;
-}
-
-void AnalysisZprime::SetYttCut(const double ytt)
+void Analysis::SetYttCut(const double ytt)
 {
     m_ytt = ytt;
 }
 
-void AnalysisZprime::SetXsec(const bool xsec)
+void Analysis::SetXsec(const bool xsec)
 {
     m_xsec = xsec;
 }
 
-void AnalysisZprime::SetFiducial(const bool fid)
+void Analysis::SetFiducial(const bool fid)
 {
     m_fid = fid;
 }
