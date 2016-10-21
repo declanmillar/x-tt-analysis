@@ -14,6 +14,8 @@ class HistPainter():
         self.histograms = []
         self.ymin = -99.9
         self.ymax = -99.9
+        self.xmin = -99.9
+        self.xmax = -99.9
         self.ztitle = ""
         self.ytitle = ""
         self.xtitle = ""
@@ -48,6 +50,9 @@ class HistPainter():
         # set range
         if self.ymin != -99.9 and self.ymax != -99.9:
             hist.GetYaxis().SetRangeUser(self.ymin, self.ymax)
+
+        if self.xmin != -99.9 and self.xmax != -99.9:
+            hist.GetXaxis().SetRangeUser(self.xmin, self.xmax)
 
         # axis style
         hist.GetXaxis().SetLabelSize(0.05)
@@ -99,8 +104,8 @@ class HistPainter():
 
 
     def AddInfoBox(self, model):
-        x = 0.65
-        y = 0.85
+        x = 0.75
+        y = 0.9
 
         t1 = ROOT.TLatex(x + 0.02, y - 0.075, "#bf{#it{m_{Z'}} = 3 TeV}")
         t1.SetTextAlign(11)
@@ -109,7 +114,8 @@ class HistPainter():
         t1.Draw("same")
         self.members.append(t1)
 
-        t2 = ROOT.TLatex(x, y, "#bf{#int #it{L dt} = 100 fb^{-1}}, #bf{#it{#sqrt{s}} = 13 TeV}")
+        # t2 = ROOT.TLatex(x, y, "#bf{#int #it{L dt} = 100 fb^{-1}}, #bf{#it{#sqrt{s}} = 13 TeV}")
+        t2 = ROOT.TLatex(x + 0.02, y, "#bf{#it{#sqrt{s}} = 13 TeV}")
         t2.SetNDC(True)
         t2.SetTextSize(0.04)
         t2.Draw("same")
@@ -177,16 +183,12 @@ class HistPainter():
         self.histograms[i].SetTitle("#bf{%s}" % title)
 
 
-    def SetRange(self, ymin, ymax):
-        self.ymin = ymin
-        self.ymax = ymax
+    def SetDomain(self, xmin, xmax):
+        self.xmin = xmin
+        self.xmax = xmax
 
 
     def SetLogy(self):
-        pass
-
-
-    def SetDomain():
         pass
 
 
@@ -210,17 +212,22 @@ art = HistPainter(1920, 1080)
 art.SetStyle()
 art.AddPads()
 # art.SetZtitle("#it{cos#theta_{l}}")
-art.SetXtitle("#Delta R (b, l)")
-art.SetYtitle("d#sigma / d #Delta R (b, l)")
+art.SetXtitle("#it{m_{tt}} [TeV]")
+art.SetYtitle("d#it{#sigma} / d#it{m_{tt}} [pb/TeV]")
+art.SetDomain(0, 6)
+art.SetRange(-1, 1)
 
-art.AddHistogram("deltaRb1l", "GSM-Q-3_ggqq-GAZX-tt-bbllvv_2-4_5x10M.a.y0.5.L100.root", "#bf{SM}", blue)
+art.AddHistogram("AL2", "GLR-R-3_ggqq-GAZX-tt-bbllvv_2-4_5x10M.a.root", "#bf{SM}", blue)
+art.AddHistogram("AL_R", "GLR-R-3_ggqq-GAZX-tt-bbllvv_2-4_5x10M.a.root", "#bf{SM}", red)
 # art.AddHistogram("KT", "GLR-R-3_ggqq-GAZX-tt-6f_2-4_5x10M.a.L100.root", "#bf{SM}", blue)
 
-art.AddInfoBox("GSM-Q")
+art.AddInfoBox("GLR-R")
 
-# art.SetHistTitle(0, "SM")
-# art.AddLegend(0.13, 0.65, 0.35, 0.95)
+art.SetHistTitle(1, "reco")
+art.SetHistTitle(0, "truth")
+# art.AddLegend(0.13, 0.75, 0.35, 0.95)
+art.AddLegend(0.13, 0.15, 0.35, 0.35)
 
 filename = "~/Dropbox/zprime-paper/figures/al-r-glr-r-ggqq-gazx-tt-bbllvv-2-4-5x10M-a-y0-y0.5-l100.pdf"
 # art.Save(filename)
-art.Save("~/Desktop/canvas2.pdf")
+art.Save("~/Desktop/AL_dilepton_GLR-R-3.pdf")
