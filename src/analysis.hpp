@@ -93,17 +93,8 @@ class Analysis{
     std::vector<TLorentzVector> ptop_R1;
     std::vector<TLorentzVector> patop_R2;
     TLorentzVector P;
-    TLorentzVector Pcm;
-    TLorentzVector Ptop;
-    TLorentzVector Patop;
     TLorentzVector P_R1;
     TLorentzVector P_R2;
-    TLorentzVector pcm_t;
-    TLorentzVector pcm_tb;
-    TLorentzVector p_t_R1;
-    TLorentzVector p_tb_R1;
-    TLorentzVector p_t_R2;
-    TLorentzVector p_tb_R2;
 
     // Histograms
     TH1D* h_mtt;
@@ -113,8 +104,6 @@ class Analysis{
     TH1D* h_mtt_B;
     TH1D* h_mtt_Fn;
     TH1D* h_mtt_Bn;
-    TH1D* h_mtt_Fy;
-    TH1D* h_mtt_By;
     TH1D* h_mtt_R;
     TH1D* h_mt_R;
     TH1D* h_mtbar_R;
@@ -126,10 +115,6 @@ class Analysis{
     TH1D* h_mtt_BD;
     TH1D* h_mtt_Fl;
     TH1D* h_mtt_Bl;
-    TH1D* h_mtt_LL;
-    TH1D* h_mtt_LR;
-    TH1D* h_mtt_RL;
-    TH1D* h_mtt_RR;
     TH1D* h_pv1x;
     TH1D* h_pv1x_R;
     TH1D* h_pv1y;
