@@ -150,11 +150,8 @@ void Analysis::EachEvent()
     KT = KT / 1000;
 
     double ytt = P.Rapidity();
-    printf("ytt = %f\n", ytt);
     double cosTheta = pcm_t.CosTheta();
-    printf("cosTheta = %f\n", cosTheta);
     double cosThetaStar = int(ytt / std::abs(ytt)) * cosTheta;
-    printf("cosThetaStar = %f\n", cosThetaStar);
 
     std::vector<double> deltaRs;
     for (int i = 0; i < 6; i++)
