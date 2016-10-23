@@ -1083,7 +1083,7 @@ void Analysis::Loop()
             Long64_t ientry = this->IncrementEvent(jentry);
             if (ientry < 0) break;
             this->EachEvent();
-            // ProgressBar(jentry, nEntries - 1, 50);
+            ProgressBar(jentry, nEntries - 1, 50);
         }
         this->CleanUp();
     }
