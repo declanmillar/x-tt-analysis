@@ -21,7 +21,6 @@ Analysis::Analysis(const TString model, const TString initial_state, const TStri
     m_analysisLabel(analysisLabel),
     m_reco(1), 
     m_pi(3.14159265),
-    m_GeV(1000.0),
     m_bmass(4.18),
     m_Wmass(80.23),
     m_tmass(173.0),
@@ -55,65 +54,65 @@ void Analysis::EachEvent()
         p[i].SetPxPyPzE(m_ntup->Px()->at(i), m_ntup->Py()->at(i), m_ntup->Pz()->at(i), m_ntup->E()->at(i));
 
     P.SetPxPyPzE(0, 0, 0, 0);
-    for (auto l : p) P += l;
+    for (auto& l : p) P += l;
 
     pcm = p;
     TVector3 v = -1 * P.BoostVector();
-    for (auto l : pcm) l.Boost(v);
+    for (auto& l : pcm) l.Boost(v);
 
     ptop = p;
     v = -1 * (p[0] + p[2] + p[3]).BoostVector();
-    for (auto l : ptop) l.Boost(v);
+    for (auto& l : ptop) l.Boost(v);
 
     patop = p;
     v = -1 * (p[1] + p[4] + p[5]).BoostVector();
-    for (auto l : patop) l.Boost(v);
+    for (auto& l : patop) l.Boost(v);
 
     if (m_reco == 1) {
         p_R1 = this->ReconstructDilepton(p); // both decay leptonically
 
         P_R1.SetPxPyPzE(0, 0, 0, 0);
-        for (auto l : p_R1) P_R1 += l;
+        for (auto& l : p_R1) P_R1 += l;
 
         pcm_R1 = p_R1;
         v = -1 * P_R1.BoostVector();
-        for (auto l : pcm_R1) l.Boost(v);
+        for (auto& l : pcm_R1) l.Boost(v);
 
         ptop_R1 = p_R1;
         v = -1 * (p_R1[0] + p_R1[2] + p_R1[3]).BoostVector();
-        for (auto l : ptop_R1) l.Boost(v);
+        for (auto& l : ptop_R1) l.Boost(v);
 
         patop_R2 = p_R1;
         v = -1 * (p_R1[1] + p_R1[4] + p_R1[5]).BoostVector();
-        for (auto l : patop_R2) l.Boost(v);
+        for (auto& l : patop_R2) l.Boost(v);
     }
     else if (m_reco == 2) {
         m_discardEvent = false;
-        p_R1 = this->ReconstructSemilepton(p, 1); // top decays leptonically
+        p_R1 = this->ReconstructSemilepton(p, +1); // top decays leptonically
         p_R2 = this->ReconstructSemilepton(p, -1); // antitop decays leptonically
         if (m_discardEvent) return;
 
         P_R1.SetPxPyPzE(0, 0, 0, 0);
-        for (auto l : p_R1) P_R1 += l;
+        for (auto& l : p_R1) P_R1 += l;
 
         P_R2.SetPxPyPzE(0, 0, 0, 0);
-        for (auto l : p_R2) P_R2 += l;
+        for (auto& l : p_R2) P_R2 += l;
 
         pcm_R1 = p_R1;
         v = -1 * P_R1.BoostVector();
-        for (auto l : pcm_R1) l.Boost(v);
+        for (auto& l : pcm_R1) l.Boost(v);
 
         pcm_R2 = p_R2;
         v = -1 * P_R2.BoostVector();
-        for (auto l : pcm_R2) l.Boost(v);
+        for (auto& l : pcm_R2) l.Boost(v);
 
         ptop_R1 = p_R1;
         v = -1 * (p_R1[0] + p_R1[2] + p_R1[3]).BoostVector();
-        for (auto l : ptop_R1) l.Boost(v);
+        for (auto& l : ptop_R1) l.Boost(v);
 
         patop_R2 = p_R2;
         v = -1 * (p_R2[1] + p_R2[4] + p_R2[5]).BoostVector();
-        for (auto l : patop_R2) l.Boost(v);
+        for (auto& l : patop_R2) l.Boost(v);
     }
 
     // top and antitop
@@ -142,17 +141,20 @@ void Analysis::EachEvent()
     double mtt_R2 = P_R2.M() / 1000;
 
     double HT = 0;
-    for (auto l : p) HT += l.Pt();
+    for (auto& l : p) HT += l.Pt();
     HT = HT / 1000;
-    double mvis = (p[0] + p[1] +p[2] + p[4]).M();
-    double pTvis = (p[0] + p[1] +p[2] + p[4]).Pt();
-    double mTvis = sqrt(mvis * mvis + pTvis * pTvis);
-    double KT = mTvis + (p[3] + p[5]).Pt();
+    TLorentzVector pvis = p[0] + p[1] +p[2] + p[4];
+    double mvis = pvis.M();
+    double pTvis = pvis.Pt();
+    double KT = sqrt(mvis * mvis + pTvis * pTvis) + (p[3] + p[5]).Pt();
     KT = KT / 1000;
 
     double ytt = P.Rapidity();
+    printf("ytt = %f\n", ytt);
     double cosTheta = pcm_t.CosTheta();
+    printf("cosTheta = %f\n", cosTheta);
     double cosThetaStar = int(ytt / std::abs(ytt)) * cosTheta;
+    printf("cosThetaStar = %f\n", cosThetaStar);
 
     std::vector<double> deltaRs;
     for (int i = 0; i < 6; i++)
@@ -639,17 +641,17 @@ void Analysis::MakeDistributions()
     h_Ap->GetYaxis()->SetTitle(h_Ap->GetTitle());
     h_Ap->GetXaxis()->SetTitle("m_{tt} [TeV]");
 
-    for (auto h_deltaR : h_deltaRs) {
+    for (auto& h_deltaR : h_deltaRs) {
         h_deltaR->GetYaxis()->SetTitle("d#sigma / d #Delta R");
         h_deltaR->GetXaxis()->SetTitle("#Delta R");
     }
 
-    for (auto h : h_eta) {
+    for (auto& h : h_eta) {
         h->GetYaxis()->SetTitle("d#sigma / d #eta");
         h->GetXaxis()->SetTitle("#eta");
     }
 
-    for (auto h : h_pt) {
+    for (auto& h : h_pt) {
         h->GetYaxis()->SetTitle("d#sigma / d p_{T}");
         h->GetXaxis()->SetTitle("p_{T}");
     }
@@ -741,8 +743,8 @@ void Analysis::NormalizeSliceY(TH2D* h)
       integral = h->Integral(i, i, 1, h->GetNbinsY());
       for (int j = 1; j < h->GetNbinsY() + 1; j++) {
         k = h->GetBin(i, j);
-        h->SetBinContent(k, h->GetBinContent(k)/integral);
-        h->SetBinError(k, h->GetBinError(k)/integral);
+        h->SetBinContent(k, h->GetBinContent(k) / integral);
+        h->SetBinError(k, h->GetBinError(k) / integral);
       }
     }
 }
@@ -1028,7 +1030,7 @@ void Analysis::GetCrossSection(TString log)
     while(getline(logstream, line)) {
         trim(line);
         boost::split(parts, line, boost::is_any_of(":"));
-        for (auto part : parts) trim(part);
+        for (auto& part : parts) trim(part);
         if (parts[0] == target) {
             m_sigma = std::stod(parts[1]);
             found = true;
@@ -1055,7 +1057,7 @@ void Analysis::GetIterationWeights(TString log)
     while(getline(logstream, line)) {
         trim(line);
         split(parts, line, boost::is_any_of(":"));
-        for (auto part: parts) trim(part);
+        for (auto& part: parts) trim(part);
         if (parts[0] == target) {
             iteration_weights.push_back(stod(parts[2]));
             found = true;
@@ -1084,7 +1086,7 @@ void Analysis::Loop()
             Long64_t ientry = this->IncrementEvent(jentry);
             if (ientry < 0) break;
             this->EachEvent();
-            ProgressBar(jentry, nEntries-1, 50);
+            // ProgressBar(jentry, nEntries - 1, 50);
         }
         this->CleanUp();
     }
@@ -1182,7 +1184,7 @@ std::vector<TLorentzVector> Analysis::ReconstructSemilepton(std::vector<TLorentz
     if (nRealRoots == 2) {
         // two real solutions; pick best match
         // this->UpdateCutflow(c_realSolutions, true);
-        for (auto root : roots) {
+        for (auto& root : roots) {
             double pz = root;
             TLorentzVector p(px_nu, py_nu, pz, sqrt(px_nu * px_nu + py_nu * py_nu + pz * pz));
             p_nu_R.push_back(p);
