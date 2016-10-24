@@ -28,13 +28,14 @@ class Analysis{
     TString m_options;
     int m_vegasIterations;
     std::string m_vegasPoints;
-    int m_add_ggG;
-    int m_add_qqG;
+    int m_add_gg;
+    int m_add_qq;
     int m_luminosity;
     double m_efficiency;
-    const int nBtags;
+    const int m_btags;
     const bool m_discardComplex;
     const TString m_analysisLabel;
+
     bool m_xsec;
     const int m_reco;
     bool m_fid;
@@ -46,6 +47,27 @@ class Analysis{
     double m_ytt;
     double m_Emin;
     double m_Emax;
+    bool m_useLumi;
+    bool m_discardEvent;
+    unsigned int m_nReco;
+    unsigned int m_nQuarksMatched;
+    unsigned int m_nNeutrinoMatched;
+    unsigned int m_nRealRoots;
+    unsigned int m_nComplexRoots;
+    double m_sigma;
+
+    std::vector<double> iteration_weights;
+    TString m_dataDirectory;
+    TString m_outputFilename;
+    TFile* m_outputFile;
+    std::vector<TString>* m_inputFiles;
+    std::vector<TString>* m_weightFiles;
+    TChain* m_chainNtup;
+    RootTuple* m_ntup;
+
+    std::vector<int> m_cutflow;
+    std::vector<TString> m_cutNames;
+    const bool m_debug;
     enum m_cutlist{
       c_entries,
       c_topDecays,
@@ -59,42 +81,6 @@ class Analysis{
       c_ytt,
       m_cuts // Keep as last entry
     };
-    bool m_useLumi;
-    bool m_discardEvent;
-    unsigned int m_nReco;
-    unsigned int m_nQuarksMatched;
-    unsigned int m_nNeutrinoMatched;
-    unsigned int m_nRealRoots;
-    unsigned int m_nComplexRoots;
-    bool m_R1solutionIsReal;
-    bool m_R2solutionIsReal;
-    double m_sigma;
-    std::vector<double> iteration_weights;
-    TString m_dataDirectory;
-    TString m_outputFilename;
-    std::vector<TString>* m_inputFiles;
-    std::vector<TString>* m_weightFiles;
-    RootTuple* m_ntup;
-    TChain* m_chainNtup;
-    TFile* m_outputFile;
-    std::vector<int> m_cutflow;
-    std::vector<TString> m_cutNames;
-    const bool m_debug;
-
-    // 4-vectors
-    std::vector<TLorentzVector> p;
-    std::vector<TLorentzVector> pcm;
-    std::vector<TLorentzVector> ptop;
-    std::vector<TLorentzVector> patop;
-    std::vector<TLorentzVector> p_R1;
-    std::vector<TLorentzVector> p_R2;
-    std::vector<TLorentzVector> pcm_R1;
-    std::vector<TLorentzVector> pcm_R2;
-    std::vector<TLorentzVector> ptop_R1;
-    std::vector<TLorentzVector> patop_R2;
-    TLorentzVector P;
-    TLorentzVector P_R1;
-    TLorentzVector P_R2;
 
     // Histograms
     TH1D* h_mtt;
@@ -146,6 +132,11 @@ class Analysis{
     TH1D* h_AL_R;
     TH1D* h_HT;
     TH1D* h_KT;
+    TH1D* h_deltaRmax;
+    TH1D* h_deltaRbW;
+    std::vector<TH1D*> h_eta;
+    std::vector<TH1D*> h_pt;
+    std::vector<TH1D*> h_deltaRs;
     TH2D* h2_mtt_cosThetaStar;
     TH2D* h2_mtt_cosThetaStar_R;
     TH2D* h2_mtt_deltaPhi;
@@ -155,11 +146,7 @@ class Analysis{
     TH2D* h2_mtt_cos1cos2;
     TH2D* h2_HT_deltaPhi;
     TH2D* h2_KT_deltaPhi;
-    TH1D* h_deltaRmax;
-    TH1D* h_deltaRbW;
-    std::vector<TH1D*> h_eta;
-    std::vector<TH1D*> h_pt;
-    std::vector<TH1D*> h_deltaRs;
+    
   protected:
     Long64_t TotalEvents();
     Long64_t IncrementEvent(Long64_t i);
@@ -173,7 +160,7 @@ class Analysis{
     void EachEvent();
     void MakeHistograms();
     void MakeDistributions();
-    void MakeDistribution1D(TH1D*, TString);
+    void MakeDistribution1D(TH1D*, const TString&);
     void MakeDistribution2D(TH2D*);
     void NormalizeSliceY(TH2D*);
     void WriteHistograms();
@@ -186,22 +173,24 @@ class Analysis{
     void SetDataDirectory();
     void GetChannelFactors();
     void ApplyLuminosity(TH1D*);
-    void AsymmetryUncertainty(TH1D* h_Asymmetry, TH1D* h_A, TH1D* h_B);
+    void AsymmetryUncertainty(TH1D*, TH1D*, TH1D*);
     void ResetCounters();
+
     void InitialiseCutflow();
     void PrintCutflow();
-    const void UpdateCutflow(int cut, bool passed);  
-    bool PassCuts(string type);
-    bool PassCutsMET(string type);
-    bool PassCutsMtt(string type);
-    bool PassCutsEta(string type);
-    bool PassCutsYtt(string type);
-    bool PassCutsET(string type);
-    TH1D* Asymmetry(TString name, TString title, TH1D* h_A, TH1D* h_B);
-    std::vector<TLorentzVector> ReconstructSemilepton(std::vector<TLorentzVector> p, int l_Q);
-    std::vector<TLorentzVector> ReconstructDilepton(std::vector<TLorentzVector> p);
+    void UpdateCutflow(int, bool);
+    bool PassCuts(const string&);
+    bool PassCutsMET(const string&);
+    bool PassCutsMtt(const string&);
+    bool PassCutsEta(const string&);
+    bool PassCutsYtt(const string&);
+    bool PassCutsET(const string&);
+
+    TH1D* Asymmetry(const TString&, const TString&, TH1D*, TH1D*);
+    std::vector<TLorentzVector> ReconstructSemilepton(const std::vector<TLorentzVector>&, const int);
+    std::vector<TLorentzVector> ReconstructDilepton(const std::vector<TLorentzVector>&);
   public:
-    Analysis(const TString, const TString, const TString, const TString, const int energy, const TString options, const int vegasIterations, const string vegasPoints, const bool add_ggG, const bool add_qqG, const int luminosity, const int btags, const bool discardComplex, const TString analysis_label);
+    Analysis(const TString&, const TString&, const TString&, const TString&, const int, const TString&, const int, const string, const bool, const bool, const int, const int, const bool, const TString&);
     virtual ~Analysis();
     TString GetOutputFilename();
     void SetYttCut(const double);

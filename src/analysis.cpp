@@ -3,7 +3,7 @@
 #include "progress-bar.hpp"
 #include "bool-to-string.hpp"
 
-Analysis::Analysis(const TString model, const TString initial_state, const TString intermediates, const TString final_state,  const int energy, const TString options, const int vegasIterations, const string vegasPoints, const bool add_ggG, const bool add_qqG, const int luminosity, const int btags, const bool discardComplex, const TString analysisLabel):
+Analysis::Analysis(const TString& model, const TString& initial_state, const TString& intermediates, const TString& final_state,  const int energy, const TString& options, const int vegasIterations, const string vegasPoints, const bool add_gg, const bool add_qq, const int luminosity, const int btags, const bool discardComplex, const TString& analysisLabel):
     m_model(model),
     m_initial_state(initial_state),
     m_intermediates(intermediates),
@@ -12,11 +12,11 @@ Analysis::Analysis(const TString model, const TString initial_state, const TStri
     m_options(options),
     m_vegasIterations(vegasIterations),
     m_vegasPoints(vegasPoints),
-    m_add_ggG(add_ggG),
-    m_add_qqG(add_qqG),
+    m_add_gg(add_gg),
+    m_add_qq(add_qq),
     m_luminosity(luminosity),
     m_efficiency(1.0),
-    nBtags(btags),
+    m_btags(btags),
     m_discardComplex(discardComplex),
     m_analysisLabel(analysisLabel),
     m_reco(1), 
@@ -28,11 +28,11 @@ Analysis::Analysis(const TString model, const TString initial_state, const TStri
     m_Emin(-1),
     m_Emax(-1),
     m_discardEvent(false),
+    m_outputFile(NULL),
     m_inputFiles(NULL),
     m_weightFiles(NULL),
-    m_ntup(NULL),
     m_chainNtup(NULL),
-    m_outputFile(NULL),
+    m_ntup(NULL),
     m_debug(false) 
 { 
     ;
@@ -49,25 +49,28 @@ void Analysis::EachEvent()
 {
     // UpdateCutflow(c_entries, true);
 
-    p = std::vector<TLorentzVector>(6);
+    std::vector<TLorentzVector> p(6);
     for (int i = 0; i < 6; i++)
         p[i].SetPxPyPzE(m_ntup->Px()->at(i), m_ntup->Py()->at(i), m_ntup->Pz()->at(i), m_ntup->E()->at(i));
 
-    P.SetPxPyPzE(0, 0, 0, 0);
+    TLorentzVector P(0, 0, 0, 0);
     for (auto& l : p) P += l;
 
-    pcm = p;
+    std::vector<TLorentzVector> pcm = p;
     TVector3 v = -1 * P.BoostVector();
     for (auto& l : pcm) l.Boost(v);
 
-    ptop = p;
+    std::vector<TLorentzVector> ptop = p;
     v = -1 * (p[0] + p[2] + p[3]).BoostVector();
     for (auto& l : ptop) l.Boost(v);
 
-    patop = p;
+    std::vector<TLorentzVector> patop = p;
     v = -1 * (p[1] + p[4] + p[5]).BoostVector();
     for (auto& l : patop) l.Boost(v);
 
+    std::vector<TLorentzVector> p_R1(6), pcm_R1(6), ptop_R1(6), patop_R1(6);
+    std::vector<TLorentzVector> p_R2(6), pcm_R2(6), ptop_R2(6), patop_R2(6);
+    TLorentzVector P_R1, P_R2;
     if (m_reco == 1) {
         p_R1 = this->ReconstructDilepton(p); // both decay leptonically
 
@@ -194,6 +197,7 @@ void Analysis::EachEvent()
         weight = m_ntup->weight();
         weight = 1000 * weight * m_sigma/iteration_weights[it - 1];
         if (m_reco == 2) weight_R = weight / 2;
+        else weight_R = weight;
     }
 
     // if (this->PassCuts("truth")) {
@@ -286,13 +290,13 @@ void Analysis::SetupInputFiles()
     string E = "";
     if (m_energy != 13) "_" + std::to_string(m_energy);
 
-    if (m_add_ggG) {
+    if (m_add_gg) {
       filename = m_dataDirectory + "/SM_" + "gg-G-" + m_channel + E + "_2-4_" + std::to_string(m_vegasIterations) + "x" + m_vegasPoints;
       m_inputFiles->push_back(filename + ".root");
       m_weightFiles->push_back(filename + ".log");
     }
 
-    if (m_add_qqG) {
+    if (m_add_qq) {
       filename = m_dataDirectory + "/SM_" + "qq-G-" + m_channel + E + "_2-4_" + std::to_string(m_vegasIterations) + "x" + m_vegasPoints;
       m_inputFiles->push_back(filename + ".root");
       m_weightFiles->push_back(filename + ".log");
@@ -332,12 +336,12 @@ void Analysis::SetupOutputFiles()
     string E = "";
     if (m_energy != 13) "_" + std::to_string(m_energy);
 
-    if (m_add_ggG || m_add_qqG) intermediates = "G" + intermediates;
-    if (m_add_ggG) initial_state = "gg" + initial_state;
+    if (m_add_gg || m_add_qq) intermediates = "G" + intermediates;
+    if (m_add_gg) initial_state = "gg" + initial_state;
     outfilename = m_dataDirectory + "/" + m_model + "_" + initial_state + "-" + intermediates + m_channel + E + m_options + std::to_string(m_vegasIterations) + "x" + m_vegasPoints;
     m_outputFilename = outfilename + ".a";
 
-    if (m_reco == 2 && nBtags != 2) m_outputFilename += ".b" + std::to_string(nBtags) + ".c" + BoolToString(m_discardComplex);
+    if (m_reco == 2 && m_btags != 2) m_outputFilename += ".b" + std::to_string(m_btags) + ".c" + BoolToString(m_discardComplex);
     string ytt = std::to_string(m_ytt);
     if (m_ytt > 0) m_outputFilename += ".y" + ytt.erase(ytt.find_last_not_of('0') + 1, string::npos);
     if (m_Emin >= 0 || m_Emax >= 0) m_outputFilename += ".E" + std::to_string(m_Emin) + "-" + std::to_string(m_Emax);
@@ -395,7 +399,7 @@ void Analysis::ApplyLuminosity(TH1D* h)
 }
 
 
-TH1D* Analysis::Asymmetry(TString name, TString title, TH1D* h1, TH1D* h2)
+TH1D* Analysis::Asymmetry(const TString& name, const TString& title, TH1D* h1, TH1D* h2)
 {
     TH1D* h_numerator = (TH1D*) h1->Clone(name);
     TH1D* h_denominator = (TH1D*) h1->Clone();
@@ -681,7 +685,7 @@ void Analysis::MakeDistributions()
     }
 }
 
-void Analysis::MakeDistribution1D(TH1D* h, TString units)
+void Analysis::MakeDistribution1D(TH1D* h, const TString& units)
 {
     TString ytitle, yunits, xunits;
     if (m_xsec) {
@@ -824,151 +828,151 @@ void Analysis::WriteHistograms()
     delete m_outputFile;
 }
 
-bool Analysis::PassCuts(string type) 
-{
-    if(!(type == "truth" or type == "R1" or type == "R2")) return false;
-    if(this->PassCutsET(type)) {
-        if(this->PassCutsEta(type)) {
-            if(this->PassCutsMET(type)) {
-                if(this->PassCutsMtt(type)) {
-                    if(this->PassCutsYtt(type)) {
-                        return true;
-                    }
-                }
-            }
-        }
-    }
-    return false;
-}
+// bool Analysis::PassCuts(string& type) 
+// {
+//     if(!(type == "truth" or type == "R1" or type == "R2")) return false;
+//     if(this->PassCutsET(type)) {
+//         if(this->PassCutsEta(type)) {
+//             if(this->PassCutsMET(type)) {
+//                 if(this->PassCutsMtt(type)) {
+//                     if(this->PassCutsYtt(type)) {
+//                         return true;
+//                     }
+//                 }
+//             }
+//         }
+//     }
+//     return false;
+// }
 
-bool Analysis::PassCutsMET(string type)
-{
-    bool pass;
-    pass = true;
+// bool Analysis::PassCutsMET(string& type)
+// {
+//     bool pass;
+//     pass = true;
 
-    this->UpdateCutflow(c_MET, pass);
-    return pass;
-}
+//     this->UpdateCutflow(c_MET, pass);
+//     return pass;
+// }
 
-bool Analysis::PassCutsMtt(string type)
-{
-    double mtt;
-    if (type == "truth") mtt = P.M()/1000;
-    else if (type == "R1") mtt = P_R1.M()/1000;
-    else if (type == "R2") mtt = P_R2.M()/1000;
-    else return false;
+// bool Analysis::PassCutsMtt(string& type)
+// {
+//     double mtt;
+//     if (type == "truth") mtt = P.M()/1000;
+//     else if (type == "R1") mtt = P_R1.M()/1000;
+//     else if (type == "R2") mtt = P_R2.M()/1000;
+//     else return false;
 
-    if (m_Emin < 0 and m_Emax < 0) return true;
+//     if (m_Emin < 0 and m_Emax < 0) return true;
 
-    if (mtt > m_Emin) {
-        if (mtt < m_Emax) {
-            UpdateCutflow(c_mtt, true);
-            return true;
-        }
-    }
-    UpdateCutflow(c_mtt, false);
-    return false;
-}
+//     if (mtt > m_Emin) {
+//         if (mtt < m_Emax) {
+//             UpdateCutflow(c_mtt, true);
+//             return true;
+//         }
+//     }
+//     UpdateCutflow(c_mtt, false);
+//     return false;
+// }
 
-bool Analysis::PassCutsEta(string type)
-{
-    if (m_fid == false) {
-        UpdateCutflow(c_eta, true);
-        return true;
-    }
-    if (type == "truth") {
-        for (unsigned int i = 0; i < p.size(); i++) {
-            // bool outsideCrack = abs(p[i].PseudoRapidity()) <= 1.37 || abs(p[i].PseudoRapidity()) >= 1.52;
-            bool central = std::abs(p[i].PseudoRapidity()) <= 2.5;
-            // bool passesEtaCuts = outsideCrack && central;
-            if (central == false) {
-                UpdateCutflow(c_eta, false);
-                return false;
-            }
-            else continue;
-        }
-    }
-    else if (type == "R1") {
-        for (unsigned int i = 0; i < p_R1.size(); i++) {
-            // bool outsideCrack = p_R1[i].PseudoRapidity() <= 1.37 || p_R1[i].PseudoRapidity() >= 1.52;
-            bool central = p_R1[i].PseudoRapidity() <= 2.5;
-            // bool passesEtaCuts = outsideCrack && central;
-            if (central == false) {
-                UpdateCutflow(c_eta, false);
-                return false;
-            }
-            else continue;
-        }
-    }
-    else if (type == "R2") {
-        for (unsigned int i = 0; i < p_R2.size(); i++) {
-            // bool outsideCrack = p_R2[i].PseudoRapidity() <= 1.37 || p_R2[i].PseudoRapidity() >= 1.52;
-            bool central = p_R2[i].PseudoRapidity() <= 2.5;
-            // bool passesEtaCuts = outsideCrack && central;
-            if (central == false) {
-                UpdateCutflow(c_eta, false);
-                return false;
-            }
-            else continue;
-        }
-    }
-    else return false;
-    UpdateCutflow(c_eta, true);
-    return true;
-}
+// bool Analysis::PassCutsEta(string& type)
+// {
+//     if (m_fid == false) {
+//         UpdateCutflow(c_eta, true);
+//         return true;
+//     }
+//     if (type == "truth") {
+//         for (unsigned int i = 0; i < p.size(); i++) {
+//             // bool outsideCrack = abs(p[i].PseudoRapidity()) <= 1.37 || abs(p[i].PseudoRapidity()) >= 1.52;
+//             bool central = std::abs(p[i].PseudoRapidity()) <= 2.5;
+//             // bool passesEtaCuts = outsideCrack && central;
+//             if (central == false) {
+//                 UpdateCutflow(c_eta, false);
+//                 return false;
+//             }
+//             else continue;
+//         }
+//     }
+//     else if (type == "R1") {
+//         for (unsigned int i = 0; i < p_R1.size(); i++) {
+//             // bool outsideCrack = p_R1[i].PseudoRapidity() <= 1.37 || p_R1[i].PseudoRapidity() >= 1.52;
+//             bool central = p_R1[i].PseudoRapidity() <= 2.5;
+//             // bool passesEtaCuts = outsideCrack && central;
+//             if (central == false) {
+//                 UpdateCutflow(c_eta, false);
+//                 return false;
+//             }
+//             else continue;
+//         }
+//     }
+//     else if (type == "R2") {
+//         for (unsigned int i = 0; i < p_R2.size(); i++) {
+//             // bool outsideCrack = p_R2[i].PseudoRapidity() <= 1.37 || p_R2[i].PseudoRapidity() >= 1.52;
+//             bool central = p_R2[i].PseudoRapidity() <= 2.5;
+//             // bool passesEtaCuts = outsideCrack && central;
+//             if (central == false) {
+//                 UpdateCutflow(c_eta, false);
+//                 return false;
+//             }
+//             else continue;
+//         }
+//     }
+//     else return false;
+//     UpdateCutflow(c_eta, true);
+//     return true;
+// }
 
-bool Analysis::PassCutsET(string type)
-{
-    if (m_fid == false) {
-        UpdateCutflow(c_Et, true);
-        return true;
-    }
-    if (type == "truth") {
-        for (unsigned int i = 0; i < p.size(); i++) {
-            if(p[i].Et() <= 25) {
-                UpdateCutflow(c_Et, false);
-                return false;
-            }
-            else continue;
-        }
-    }
-    else if (type == "R1") {
-        for (unsigned int i = 0; i < p_R1.size(); i++) {
-            if(p_R1[i].Et() <= 25) {
-                UpdateCutflow(c_Et, false);
-                return false;
-            }
-            else continue;
-        }
-    }
-    else if (type == "R2") {
-        for (unsigned int i = 0; i < p_R2.size(); i++) {
-            if(p_R2[i].Et() <= 25) {
-                UpdateCutflow(c_Et, false);
-                return false;
-            }
-            else continue;
-        }
-    }
-    else return false;
-    UpdateCutflow(c_Et, true);
-    return true;
-}
+// bool Analysis::PassCutsET(string& type)
+// {
+//     if (m_fid == false) {
+//         UpdateCutflow(c_Et, true);
+//         return true;
+//     }
+//     if (type == "truth") {
+//         for (unsigned int i = 0; i < p.size(); i++) {
+//             if(p[i].Et() <= 25) {
+//                 UpdateCutflow(c_Et, false);
+//                 return false;
+//             }
+//             else continue;
+//         }
+//     }
+//     else if (type == "R1") {
+//         for (unsigned int i = 0; i < p_R1.size(); i++) {
+//             if(p_R1[i].Et() <= 25) {
+//                 UpdateCutflow(c_Et, false);
+//                 return false;
+//             }
+//             else continue;
+//         }
+//     }
+//     else if (type == "R2") {
+//         for (unsigned int i = 0; i < p_R2.size(); i++) {
+//             if(p_R2[i].Et() <= 25) {
+//                 UpdateCutflow(c_Et, false);
+//                 return false;
+//             }
+//             else continue;
+//         }
+//     }
+//     else return false;
+//     UpdateCutflow(c_Et, true);
+//     return true;
+// }
 
-bool Analysis::PassCutsYtt(string type)
-{
-    double ytt;
-    if (type == "truth") ytt = std::abs(P.Rapidity());
-    else if (type == "R1") ytt = std::abs(P_R1.Rapidity());
-    else if (type == "R2") ytt = std::abs(P_R2.Rapidity());
-    else return false;
-    if (ytt > m_ytt) {
-        UpdateCutflow(c_ytt, true);
-        return true;
-    }
-    UpdateCutflow(c_ytt, false);
-    return false;
-}
+// bool Analysis::PassCutsYtt(string& type)
+// {
+//     double ytt;
+//     if (type == "truth") ytt = std::abs(P.Rapidity());
+//     else if (type == "R1") ytt = std::abs(P_R1.Rapidity());
+//     else if (type == "R2") ytt = std::abs(P_R2.Rapidity());
+//     else return false;
+//     if (ytt > m_ytt) {
+//         UpdateCutflow(c_ytt, true);
+//         return true;
+//     }
+//     UpdateCutflow(c_ytt, false);
+//     return false;
+// }
 
 void Analysis::PreLoop()
 {
@@ -1014,12 +1018,12 @@ void Analysis::ResetCounters()
     m_nComplexRoots = 0;
 }
 
-void Analysis::GetCrossSection(TString log)
+void Analysis::GetCrossSection(TString filename)
 {
-    log.Replace(log.Last('.'), 5, ".log");
-    printf("%s\n", log.Data());
-    std::ifstream logstream(log.Data());
-    if (!logstream.is_open()) printf("Error: failed to open %s!\n", log.Data());
+    filename.Replace(filename.Last('.'), 5, ".log");
+    printf("%s\n", filename.Data());
+    std::ifstream logstream(filename.Data());
+    if (!logstream.is_open()) printf("Error: failed to open %s!\n", filename.Data());
     string line;
     string target = " Cross section";
     std::vector<string> parts;
@@ -1035,7 +1039,7 @@ void Analysis::GetCrossSection(TString log)
     }
     logstream.close();
     if (!found) {
-        printf("Error: Failed to read generation cross section. Check target log file: %s", log.Data());
+        printf("Error: Failed to read generation cross section. Check target log file: %s", filename.Data());
         exit(1);
     }
     else printf("Generation Cross section = %.15le [pb]\n", m_sigma);
@@ -1124,19 +1128,19 @@ void Analysis::CleanUp()
     delete m_ntup;
 }
 
-std::vector<TLorentzVector> Analysis::ReconstructSemilepton(std::vector<TLorentzVector> p, int Q_l)
+std::vector<TLorentzVector> Analysis::ReconstructSemilepton(const std::vector<TLorentzVector>& p, int Q_l)
 {
     // Returns a std::vector of 4-momenta for all 6 particles in the final state with matching of b-quarks to each top
     // and matching of
     // Takes a std::vector of true final-state particle momenta as the argument and the charge of the final
     // state lepton: if +, t decayed leptonically; if -, t~ decayed leptonically.
-    // As going from bbllnn->bblnqq/bbqqln requires only a simple reweighting for parton truth,
+    // As going from bbllnn->bblnqq/bbqqln requires only a simple re-weighting for parton truth,
     // it saves on storage space and processing time to store all events as bbllnn. However,
     // when we reconstruct the neutrino, we must account for the fact either the top, or the anti-top
     // may decay hadronically. This means there are two distinguishable final states:
     // Q_l = +1 : pp -> b b~ l+ nu q q'
     // Q_l = -1 : pp -> b b~ q q' l- nu
-    // Note that the order here is important, as the order of indicies in the std::vector of final state momenta
+    // Note that the order here is important, as the order of indices in the std::vector of final state momenta
     // relates to the parent particle t=(0,2,3), t~=(1,4,5) and is fixed at the generator level.
     // If we want the results combining each final state, we must add these together.
     // Note: Experimentally p^{x,y}_nu is equated to the MET, of course.
@@ -1257,10 +1261,10 @@ std::vector<TLorentzVector> Analysis::ReconstructSemilepton(std::vector<TLorentz
             p_q[3]= p[3];
         }
         std::vector<std::vector<int> > q_perms;
-        if (nBtags == 2) q_perms = { {0, 1, 2, 3}, {1, 0, 2, 3} };
-        if (nBtags == 1) q_perms = { {0, 1, 2, 3}, {0, 2, 1, 3}, {0, 3, 1, 2},
+        if (m_btags == 2) q_perms = { {0, 1, 2, 3}, {1, 0, 2, 3} };
+        if (m_btags == 1) q_perms = { {0, 1, 2, 3}, {0, 2, 1, 3}, {0, 3, 1, 2},
         {1, 0, 2, 3}, {2, 0, 1, 3}, {3, 0, 1, 2} };
-        if (nBtags == 0) q_perms = { {0, 1, 2, 3}, {0, 2, 1, 3}, {0, 3, 1, 2},
+        if (m_btags == 0) q_perms = { {0, 1, 2, 3}, {0, 2, 1, 3}, {0, 3, 1, 2},
         {1, 0, 2, 3}, {2, 0, 1, 3}, {3, 0, 1, 2},
         {2, 0, 1, 3}, {2, 1, 0, 3}, {2, 3, 0, 1},
         {3, 0, 1, 2}, {3, 1, 0, 2}, {3, 2, 0, 1} };
@@ -1329,12 +1333,11 @@ std::vector<TLorentzVector> Analysis::ReconstructSemilepton(std::vector<TLorentz
     return p_R;
 }
 
-std::vector<TLorentzVector> Analysis::ReconstructDilepton(std::vector<TLorentzVector> p)
+std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::vector<TLorentzVector>& p)
 {
   // Uses the Sonnenschein method algebraically solve tt dilepton equations.
   // http://arxiv.org/abs/hep-ph/0510100
   // selects solution that minimises mtt
-
 
   // this->UpdateCutflow(c_events, true);
   if (m_debug) printf("--- start dilepton reconstruction ---\n");
@@ -1355,14 +1358,14 @@ std::vector<TLorentzVector> Analysis::ReconstructDilepton(std::vector<TLorentzVe
   double Emissy = pv1y + pv2y;
 
   // Use on-shell pole masses
-  // double mt1 = m_tmass, mt2 = m_tmass;
+  double mt1 = m_tmass, mt2 = m_tmass;
   double mw1 = m_Wmass, mw2 = m_Wmass;
   double mb1 = m_bmass, mb2 = m_bmass;
   double ml1 = 0, ml2 = 0;
 
   // Use off-shell true masses
-  double mt1 = (p[0] + p[2] + p[3]).M();
-  double mt2 = (p[1] + p[4] + p[5]).M();
+  // double mt1 = (p[0] + p[2] + p[3]).M();
+  // double mt2 = (p[1] + p[4] + p[5]).M();
   // double mw1 = (p[2] + p[3]).M(), mw2 = (p[4] + p[5]).M();
   // double mb1 = p[0].M();
   // double mb2 = p[1].M();
@@ -1518,22 +1521,7 @@ std::vector<TLorentzVector> Analysis::ReconstructDilepton(std::vector<TLorentzVe
 
   double a[5] = {1.0, h1/h0, h2/h0, h3/h0, h4/h0};
 
-  if (m_debug) {
-    for (int i = 0; i < 5; i++){
-      cout << "a(" << i << ") = "<<  a[i] << endl; 
-    }
-  }
-
-  // TCanvas* c_quartic = new TCanvas("quartic", "quartic");
-  // c_quartic->cd(0);
-  // TF1 *quartic = new TF1("quartic", "[0]*x*x*x*x + [1]*x*x*x + [2]*x*x + [1]*x + [4]", -1 * pv1x,  1 * pv1x);
-  // quartic->SetParameter(0, a[0]);
-  // quartic->SetParameter(1, a[1]);
-  // quartic->SetParameter(2, a[2]);
-  // quartic->SetParameter(3, a[3]);
-  // quartic->SetParameter(4, a[4]);
-  // quartic->Draw();
-  // c_quartic->SaveAs("quartic.pdf");
+  if (m_debug) for (int i = 0; i < 5; i++) cout << "a(" << i << ") = "<<  a[i] << endl; 
 
   double x[4];
   const int nRealRoots = SolveP4(x, a[1], a[2], a[3], a[4]);
@@ -1653,7 +1641,7 @@ void Analysis::GetChannelFactors()
     // fac_qq = 36
 }
 
-const void Analysis::UpdateCutflow(int cut, bool passed)
+void Analysis::UpdateCutflow(const int cut, const bool passed)
 {
     if (m_cutflow[cut] == -999) m_cutflow[cut] = 0;
     if (passed) m_cutflow[cut] += 1;
