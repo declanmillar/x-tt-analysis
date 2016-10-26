@@ -3,7 +3,7 @@
 #include "progress-bar.hpp"
 #include "bool-to-string.hpp"
 
-Analysis::Analysis(const TString& model, const TString& initial_state, const TString& intermediates, const TString& final_state,  const int energy, const TString& options, const int vegasIterations, const string vegasPoints, const bool add_gg, const bool add_qq, const int luminosity, const int btags, const bool discardComplex, const TString& analysisLabel):
+Analysis::Analysis(const TString& model, const TString& initial_state, const TString& intermediates, const TString& final_state,  const int energy, const TString& options, const int vegasIterations, const string vegasPoints, const bool add_gg, const bool add_qq, const int luminosity, const int btags, const TString& tag):
     m_model(model),
     m_initial_state(initial_state),
     m_intermediates(intermediates),
@@ -17,23 +17,14 @@ Analysis::Analysis(const TString& model, const TString& initial_state, const TSt
     m_luminosity(luminosity),
     m_efficiency(1.0),
     m_btags(btags),
-    m_discardComplex(discardComplex),
-    m_analysisLabel(analysisLabel),
+    m_tag(tag),
     m_reco(1), 
-    m_pi(3.14159265),
-    m_bmass(4.18),
-    m_Wmass(80.23),
-    m_tmass(173.0),
-    m_ytt(0),
-    m_Emin(-1),
-    m_Emax(-1),
-    m_discardEvent(false),
+    m_debug(false),
     m_outputFile(NULL),
     m_inputFiles(NULL),
     m_weightFiles(NULL),
     m_chainNtup(NULL),
-    m_ntup(NULL),
-    m_debug(false) 
+    m_ntup(NULL)
 { 
     ;
 }
@@ -90,10 +81,8 @@ void Analysis::EachEvent()
         for (auto& l : patop_R2) l.Boost(v);
     }
     else if (m_reco == 2) {
-        m_discardEvent = false;
         p_R1 = this->ReconstructSemilepton(p, +1); // top decays leptonically
         p_R2 = this->ReconstructSemilepton(p, -1); // antitop decays leptonically
-        if (m_discardEvent) return;
 
         P_R1.SetPxPyPzE(0, 0, 0, 0);
         for (auto& l : p_R1) P_R1 += l;
@@ -300,29 +289,19 @@ void Analysis::SetupInputFiles()
       filename = m_dataDirectory + "/SM_" + "qq-G-" + m_channel + E + "_2-4_" + std::to_string(m_vegasIterations) + "x" + m_vegasPoints;
       m_inputFiles->push_back(filename + ".root");
       m_weightFiles->push_back(filename + ".log");
-      // filename = m_dataDirectory + "/SM_" + "qq-" + m_channel + E + "_3-4_" + std::to_string(m_vegasIterations) + "x" + m_vegasPoints;
-      // m_inputFiles->push_back(filename + ".root");
-      // m_weightFiles->push_back(filename + ".log");
     }
 
     filename = m_dataDirectory + "/" + m_model + "_" + m_initial_state + "-" + m_intermediates + m_channel + E + m_options + std::to_string(m_vegasIterations) + "x" + m_vegasPoints;
     m_inputFiles->push_back(filename + ".root");
     m_weightFiles->push_back(filename + ".log");
 
-    // filename = m_dataDirectory + "/" + "SM_qq-tt-bbllvv_2-3_5x10M";
-    // m_inputFiles->push_back(filename + ".root");
-    // m_weightFiles->push_back(filename + ".log");
-    // filename = m_dataDirectory + "/" + "SM_qq-tt-bbllvv_3-4_5x10M";
-    // m_inputFiles->push_back(filename + ".root");
-    // m_weightFiles->push_back(filename + ".log");
-
     // Check all input files exist
-    for (Itr_s i = m_inputFiles->begin(); i != m_inputFiles->end(); ++i) {
-        bool exists;
+    for (auto inputFile : *m_inputFiles) {
+        bool exists = false;
         struct stat buffer;
-        exists = stat ((*i).Data(), &buffer) == 0;
+        exists = stat(inputFile.Data(), &buffer) == 0;
         if (exists == false) {
-            printf("Error: %s does not exist.\n", (*i).Data());
+            printf("Error: %s does not exist.\n", inputFile.Data());
             exit(exists);
         }
     }
@@ -341,7 +320,7 @@ void Analysis::SetupOutputFiles()
     outfilename = m_dataDirectory + "/" + m_model + "_" + initial_state + "-" + intermediates + m_channel + E + m_options + std::to_string(m_vegasIterations) + "x" + m_vegasPoints;
     m_outputFilename = outfilename + ".a";
 
-    if (m_reco == 2 && m_btags != 2) m_outputFilename += ".b" + std::to_string(m_btags) + ".c" + BoolToString(m_discardComplex);
+    if (m_reco == 2 && m_btags != 2) m_outputFilename += ".b" + std::to_string(m_btags);
     string ytt = std::to_string(m_ytt);
     if (m_ytt > 0) m_outputFilename += ".y" + ytt.erase(ytt.find_last_not_of('0') + 1, string::npos);
     if (m_Emin >= 0 || m_Emax >= 0) m_outputFilename += ".E" + std::to_string(m_Emin) + "-" + std::to_string(m_Emax);
@@ -349,7 +328,7 @@ void Analysis::SetupOutputFiles()
     if (m_efficiency < 1.0) m_outputFilename += ".e" + eff.erase(eff.find_last_not_of('0') + 1, string::npos);
     if (m_luminosity > 0) m_outputFilename += ".L" + std::to_string(m_luminosity);
     if (m_fid == true) m_outputFilename += ".fid";
-    m_outputFilename += m_analysisLabel;
+    m_outputFilename += m_tag;
     m_outputFilename += ".root";
 
     printf("-- Output --\n");
@@ -1193,7 +1172,6 @@ std::vector<TLorentzVector> Analysis::ReconstructSemilepton(const std::vector<TL
     }
     else {
         // no real solutions; take the real part
-        if (m_discardComplex) m_discardEvent = true; // dump complex events
         double pz = roots[0];
         TLorentzVector p(px_nu, py_nu, pz, sqrt(px_nu * px_nu + py_nu * py_nu + pz * pz));
         p_nu_R.push_back(p);
@@ -1693,4 +1671,10 @@ void Analysis::SetXsec(const bool xsec)
 void Analysis::SetFiducial(const bool fid)
 {
     m_fid = fid;
+}
+
+void Analysis::SetEnergyRange(double Emin = -1, double Emax = 1)
+{
+    m_Emin = Emin;
+    m_Emax = Emax;
 }

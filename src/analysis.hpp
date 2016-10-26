@@ -33,22 +33,17 @@ class Analysis{
     int m_luminosity;
     double m_efficiency;
     const int m_btags;
-    const bool m_discardComplex;
-    const TString m_analysisLabel;
+    const TString m_tag;
 
     bool m_xsec;
     const int m_reco;
     bool m_fid;
-    float m_pi;
-    float m_GeV;
-    double m_bmass;
-    double m_Wmass;
-    double m_tmass;
-    double m_ytt;
-    double m_Emin;
-    double m_Emax;
+    double m_ytt = 0;
+    double m_Emin = -1;
+    double m_Emax = -1;
     bool m_useLumi;
-    bool m_discardEvent;
+    const bool m_debug;
+
     unsigned int m_nReco;
     unsigned int m_nQuarksMatched;
     unsigned int m_nNeutrinoMatched;
@@ -67,7 +62,6 @@ class Analysis{
 
     std::vector<int> m_cutflow;
     std::vector<TString> m_cutNames;
-    const bool m_debug;
     enum m_cutlist{
       c_entries,
       c_topDecays,
@@ -81,6 +75,9 @@ class Analysis{
       c_ytt,
       m_cuts // Keep as last entry
     };
+
+    const double m_pi = 3.14159265358979323846;
+    const double m_bmass = 4.18, m_Wmass = 80.23, m_tmass = 173.0;
 
     // Histograms
     TH1D* h_mtt;
@@ -190,9 +187,10 @@ class Analysis{
     std::vector<TLorentzVector> ReconstructSemilepton(const std::vector<TLorentzVector>&, const int);
     std::vector<TLorentzVector> ReconstructDilepton(const std::vector<TLorentzVector>&);
   public:
-    Analysis(const TString&, const TString&, const TString&, const TString&, const int, const TString&, const int, const string, const bool, const bool, const int, const int, const bool, const TString&);
+    Analysis(const TString&, const TString&, const TString&, const TString&, const int, const TString&, const int, const string, const bool, const bool, const int, const int, const TString&);
     virtual ~Analysis();
     TString GetOutputFilename();
+    void SetEnergyRange(double, double);
     void SetYttCut(const double);
     void SetXsec(const bool);
     void SetFiducial(const bool);

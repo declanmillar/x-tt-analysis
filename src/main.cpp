@@ -8,7 +8,6 @@ int main(int argc, char* argv[])
   po::options_description desc("Allowed options");
   desc.add_options()
     ("btags,b", po::value<int>()->default_value(2))
-    ("discard,d", po::value<bool>()->default_value(false)->implicit_value(true))
     ("energy,E", po::value<int>()->default_value(13))
     ("fid,F", po::value<bool>()->default_value(false)->implicit_value(true))
     ("final_state,f", po::value<string>()->default_value("tt-bbllvv"))
@@ -43,7 +42,6 @@ int main(int argc, char* argv[])
   string points = opts["points"].as<string>();
   int btags = opts["btags"].as<int>();
   int luminosity = opts["luminosity"].as<double>();
-  bool discardComplex = opts["discard"].as<bool>();
   bool add_ggG = opts["ggG"].as<bool>();
   bool add_qqG = opts["qqG"].as<bool>();
   double ytt = opts["ytt"].as<double>();
@@ -52,7 +50,7 @@ int main(int argc, char* argv[])
 
   if (model == "SM" && intermediates == "AZX-") intermediates = "AZ-";
 
-  Analysis* analysis = new Analysis(model, initial_state, intermediates, final_state, energy, options, it, points, add_ggG, add_qqG, luminosity, btags, discardComplex, analysisLabel);
+  Analysis* analysis = new Analysis(model, initial_state, intermediates, final_state, energy, options, it, points, add_ggG, add_qqG, luminosity, btags, analysisLabel);
   analysis->SetYttCut(ytt);
   analysis->SetXsec(xsec);
   analysis->SetFiducial(fid);
