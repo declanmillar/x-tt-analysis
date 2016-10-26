@@ -1673,7 +1673,7 @@ void Analysis::SetFiducial(const bool fid)
     m_fid = fid;
 }
 
-void Analysis::SetEnergyRange(double Emin = -1, double Emax = 1)
+void Analysis::SetEnergyRange(double Emin = -1, double Emax = -1)
 {
     m_Emin = Emin;
     m_Emax = Emax;
