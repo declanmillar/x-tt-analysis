@@ -20,11 +20,11 @@ Analysis::Analysis(const TString& model, const TString& initial_state, const TSt
     m_tag(tag),
     m_reco(1), 
     m_debug(false),
-    m_outputFile(NULL),
-    m_inputFiles(NULL),
-    m_weightFiles(NULL),
-    m_chainNtup(NULL),
-    m_ntup(NULL)
+    m_outputFile(nullptr),
+    m_inputFiles(nullptr),
+    m_weightFiles(nullptr),
+    m_chainNtup(nullptr),
+    m_ntup(nullptr)
 { 
     ;
 }
