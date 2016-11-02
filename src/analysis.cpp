@@ -283,15 +283,15 @@ void Analysis::SetupInputFiles()
     if (m_energy != 13) "_" + std::to_string(m_energy);
 
     if (m_add_gg) {
-      filename = m_dataDirectory + "/SM_" + "gg-G-" + m_channel + E + "_2-4_" + std::to_string(m_vegasIterations) + "x" + m_vegasPoints;
-      m_inputFiles->push_back(filename + ".root");
-      m_weightFiles->push_back(filename + ".log");
+        filename = m_dataDirectory + "/SM_" + "gg-G-" + m_channel + E + "_2-4_" + std::to_string(m_vegasIterations) + "x" + m_vegasPoints;
+        m_inputFiles->push_back(filename + ".root");
+        m_weightFiles->push_back(filename + ".log");
     }
 
     if (m_add_qq) {
-      filename = m_dataDirectory + "/SM_" + "qq-G-" + m_channel + E + "_2-4_" + std::to_string(m_vegasIterations) + "x" + m_vegasPoints;
-      m_inputFiles->push_back(filename + ".root");
-      m_weightFiles->push_back(filename + ".log");
+        filename = m_dataDirectory + "/SM_" + "qq-G-" + m_channel + E + "_2-4_" + std::to_string(m_vegasIterations) + "x" + m_vegasPoints;
+        m_inputFiles->push_back(filename + ".root");
+        m_weightFiles->push_back(filename + ".log");
     }
 
     filename = m_dataDirectory + "/" + m_model + "_" + m_initial_state + "-" + m_intermediates + m_channel + E + m_options + std::to_string(m_vegasIterations) + "x" + m_vegasPoints;
@@ -704,25 +704,25 @@ void Analysis::MakeDistribution1D(TH1D* h, const TString& units)
 
 
 void Analysis::MakeDistribution2D(TH2D* h) {
-  double sigma, N, dN;
-  int k;
-  if (m_xsec && m_useLumi) {
-    for (int i = 1; i < h->GetNbinsX() + 1; i++) {
-      for (int j = 1; j < h->GetNbinsY() + 1; j++) {
-        k = h->GetBin(i, j);
-        sigma = h->GetBinContent(k);
-        N = sigma*m_luminosity*m_efficiency;
-        h->SetBinContent(k, N);
-        dN = sqrt(N);
-        h->SetBinError(k, dN);
-      }
+    double sigma, N, dN;
+    int k;
+    if (m_xsec && m_useLumi) {
+        for (int i = 1; i < h->GetNbinsX() + 1; i++) {
+            for (int j = 1; j < h->GetNbinsY() + 1; j++) {
+                k = h->GetBin(i, j);
+                sigma = h->GetBinContent(k);
+                N = sigma*m_luminosity*m_efficiency;
+                h->SetBinContent(k, N);
+                dN = sqrt(N);
+                h->SetBinError(k, dN);
+            }
+        }
+        h->GetZaxis()->SetTitle("Expected events");
     }
-    h->GetZaxis()->SetTitle("Expected events");
-  }
-  else h->Scale(1, "width");
-  m_outputFile->cd();
-  m_outputFile->cd("/");
-  h->Write();
+    else h->Scale(1, "width");
+    m_outputFile->cd();
+    m_outputFile->cd("/");
+    h->Write();
 }
 
 
@@ -731,12 +731,12 @@ void Analysis::NormalizeSliceY(TH2D* h)
     double integral = 1;
     int k;
     for (int i = 1; i < h->GetNbinsX() + 1; i++) {
-      integral = h->Integral(i, i, 1, h->GetNbinsY());
-      for (int j = 1; j < h->GetNbinsY() + 1; j++) {
-        k = h->GetBin(i, j);
-        h->SetBinContent(k, h->GetBinContent(k) / integral);
-        h->SetBinError(k, h->GetBinError(k) / integral);
-      }
+        integral = h->Integral(i, i, 1, h->GetNbinsY());
+        for (int j = 1; j < h->GetNbinsY() + 1; j++) {
+            k = h->GetBin(i, j);
+            h->SetBinContent(k, h->GetBinContent(k) / integral);
+            h->SetBinError(k, h->GetBinError(k) / integral);
+        }
     }
 }
 
@@ -980,7 +980,6 @@ void Analysis::PreLoop()
 
 void Analysis::SetDataDirectory()
 {
-
     char hostname[1024];
     hostname[1023] = '\0';
     gethostname(hostname, 1023);
@@ -1171,7 +1170,7 @@ std::vector<TLorentzVector> Analysis::ReconstructSemilepton(const std::vector<TL
         p_nu = p[5];
     }
     else {
-        printf("Error: Q_l must be ±1.\n");;
+        printf("Error: Q_l must be ±1.\n");
     }
 
     double px_l = p_l.Px(), py_l = p_l.Py(), pz_l = p_l.Pz(), E_l;
@@ -1209,11 +1208,11 @@ std::vector<TLorentzVector> Analysis::ReconstructSemilepton(const std::vector<TL
     p_q[1] = p[1];
     if (Q_l == +1) {
         p_q[2] = p[4];
-        p_q[3]= p[5];
+        p_q[3] = p[5];
     }
     else if (Q_l == -1) {
         p_q[2] = p[2];
-        p_q[3]= p[3];
+        p_q[3] = p[3];
     }
     std::vector<std::vector<int> > q_perms;
     if (m_btags == 2) q_perms = { {0, 1, 2, 3}, {1, 0, 2, 3} };
@@ -1290,7 +1289,7 @@ std::vector<TLorentzVector> Analysis::ReconstructSemilepton(const std::vector<TL
 
 std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::vector<TLorentzVector>& p)
 {
-    // Uses the Sonnenschein method algebraically solve tt dilepton equations.
+    // Uses the Sonnenschein method algebraically solve tt dilepton equations. 
     // http://arxiv.org/abs/hep-ph/0510100
     // selects solution that minimises mtt
 
