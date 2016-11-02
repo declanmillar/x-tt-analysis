@@ -1340,149 +1340,149 @@ std::vector<TLorentzVector> Analysis::ReconstructSemilepton(const std::vector<TL
 
 std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::vector<TLorentzVector>& p)
 {
-  // Uses the Sonnenschein method algebraically solve tt dilepton equations.
-  // http://arxiv.org/abs/hep-ph/0510100
-  // selects solution that minimises mtt
+    // Uses the Sonnenschein method algebraically solve tt dilepton equations.
+    // http://arxiv.org/abs/hep-ph/0510100
+    // selects solution that minimises mtt
 
-  // this->UpdateCutflow(c_events, true);
-  if (m_debug) printf("--- start dilepton reconstruction ---\n");
+    // this->UpdateCutflow(c_events, true);
+    if (m_debug) printf("--- start dilepton reconstruction ---\n");
 
-  m_nReco++;
+    m_nReco++;
 
-  std::vector<TLorentzVector> p_R(p.size());
+    std::vector<TLorentzVector> p_R(p.size());
 
-  TLorentzVector pb1 = p[0], pb2 = p[1], pl1 = p[2], pv1 = p[3], pl2 = p[4], pv2 = p[5];
+    TLorentzVector pb1 = p[0], pb2 = p[1], pl1 = p[2], pv1 = p[3], pl2 = p[4], pv2 = p[5];
 
-  double pb1x = pb1.Px(), pb1y = pb1.Py(), pb1z = pb1.Pz(), Eb1 = pb1.E();
-  double pb2x = pb2.Px(), pb2y = pb2.Py(), pb2z = pb2.Pz(), Eb2 = pb2.E();
-  double pl1x = pl1.Px(), pl1y = pl1.Py(), pl1z = pl1.Pz(), El1 = pl1.E();
-  double pl2x = pl2.Px(), pl2y = pl2.Py(), pl2z = pl2.Pz(), El2 = pl2.E();
-  double pv1x = pv1.Px(), pv1y = pv1.Py(), pv1z = pv1.Pz(), Ev1 = pv1.E();
-  double pv2x = pv2.Px(), pv2y = pv2.Py(), pv2z = pv2.Pz(), Ev2 = pv2.E();
-  double Emissx = pv1x + pv2x;
-  double Emissy = pv1y + pv2y;
+    double pb1x = pb1.Px(), pb1y = pb1.Py(), pb1z = pb1.Pz(), Eb1 = pb1.E();
+    double pb2x = pb2.Px(), pb2y = pb2.Py(), pb2z = pb2.Pz(), Eb2 = pb2.E();
+    double pl1x = pl1.Px(), pl1y = pl1.Py(), pl1z = pl1.Pz(), El1 = pl1.E();
+    double pl2x = pl2.Px(), pl2y = pl2.Py(), pl2z = pl2.Pz(), El2 = pl2.E();
+    double pv1x = pv1.Px(), pv1y = pv1.Py(), pv1z = pv1.Pz(), Ev1 = pv1.E();
+    double pv2x = pv2.Px(), pv2y = pv2.Py(), pv2z = pv2.Pz(), Ev2 = pv2.E();
+    double Emissx = pv1x + pv2x;
+    double Emissy = pv1y + pv2y;
 
-  // Use on-shell pole masses
-  double mt1 = m_tmass, mt2 = m_tmass;
-  double mw1 = m_Wmass, mw2 = m_Wmass;
-  double mb1 = m_bmass, mb2 = m_bmass;
-  double ml1 = 0, ml2 = 0;
+    // Use on-shell pole masses
+    double mt1 = m_tmass, mt2 = m_tmass;
+    double mw1 = m_Wmass, mw2 = m_Wmass;
+    double mb1 = m_bmass, mb2 = m_bmass;
+    double ml1 = 0, ml2 = 0;
 
-  // Use off-shell true masses
-  // double mt1 = (p[0] + p[2] + p[3]).M();
-  // double mt2 = (p[1] + p[4] + p[5]).M();
-  // double mw1 = (p[2] + p[3]).M(), mw2 = (p[4] + p[5]).M();
-  // double mb1 = p[0].M();
-  // double mb2 = p[1].M();
+    // Use off-shell true masses
+    // double mt1 = (p[0] + p[2] + p[3]).M();
+    // double mt2 = (p[1] + p[4] + p[5]).M();
+    // double mw1 = (p[2] + p[3]).M(), mw2 = (p[4] + p[5]).M();
+    // double mb1 = p[0].M();
+    // double mb2 = p[1].M();
 
-  double a1 = (Eb1 + El1) * (mw1 * mw1 - ml1 * ml1)
+    double a1 = (Eb1 + El1) * (mw1 * mw1 - ml1 * ml1)
               - El1 * (mt1 * mt1 - mb1 * mb1 - ml1 * ml1)
               + 2 * Eb1 * El1 * El1 
               - 2 * El1 * (pb1x * pl1x + pb1y * pl1y + pb1z * pl1z);
 
-  double a2 = 2 * (Eb1 * pl1x - El1 * pb1x);
-  double a3 = 2 * (Eb1 * pl1y - El1 * pb1y);
-  double a4 = 2 * (Eb1 * pl1z - El1 * pb1z);
+    double a2 = 2 * (Eb1 * pl1x - El1 * pb1x);
+    double a3 = 2 * (Eb1 * pl1y - El1 * pb1y);
+    double a4 = 2 * (Eb1 * pl1z - El1 * pb1z);
 
-  double b1 = (Eb2 + El2) * (mw2 * mw2 - ml2 * ml2)
+    double b1 = (Eb2 + El2) * (mw2 * mw2 - ml2 * ml2)
               - El2 * (mt2 * mt2 - mb2 * mb2 - ml2 * ml2)
               + 2 * Eb2 * El2 * El2 
               - 2 * El2 * (pb2x * pl2x + pb2y * pl2y + pb2z * pl2z);
 
-  double b2 = 2 * (Eb2 * pl2x - El2 * pb2x);
-  double b3 = 2 * (Eb2 * pl2y - El2 * pb2y);
-  double b4 = 2 * (Eb2 * pl2z - El2 * pb2z);
+    double b2 = 2 * (Eb2 * pl2x - El2 * pb2x);
+    double b3 = 2 * (Eb2 * pl2y - El2 * pb2y);
+    double b4 = 2 * (Eb2 * pl2z - El2 * pb2z);
 
-  double c22 = (mw1 * mw1 - ml1 * ml1) * (mw1 * mw1 - ml1 * ml1)
+    double c22 = (mw1 * mw1 - ml1 * ml1) * (mw1 * mw1 - ml1 * ml1)
                -4 * (El1 * El1 - pl1z * pl1z) * (a1 / a4) * (a1 / a4)
                -4 * (mw1 * mw1 - ml1 * ml1) * pl1z * a1 / a4;
 
-  double c21 = 4 * (mw1*mw1 - ml1*ml1) * (pl1x - pl1z * a2 / a4)
+    double c21 = 4 * (mw1*mw1 - ml1*ml1) * (pl1x - pl1z * a2 / a4)
                -8 * (El1 * El1 - pl1z*pl1z) * a1 * a2 / (a4 * a4) 
                -8 * pl1x * pl1z * a1 / a4;
 
-  double c20 = -4 * (El1 * El1 - pl1x * pl1x)
+    double c20 = -4 * (El1 * El1 - pl1x * pl1x)
                -4 * (El1 * El1 - pl1z * pl1z) * (a2 / a4) * (a2 / a4)
                -8 * pl1x * pl1z * a2 / a4;
 
-  double c11 = 4 * (mw1*mw1 - ml1*ml1)*(pl1y - pl1z * a3 / a4)
+    double c11 = 4 * (mw1*mw1 - ml1*ml1)*(pl1y - pl1z * a3 / a4)
                -8 * (El1 * El1 - pl1z * pl1z) * a1 * a3 / (a4 * a4) 
                -8 * pl1y * pl1z * a1 /  a4;
 
-  double c10 = -8 * (El1*El1 - pl1z*pl1z) * a2 * a3 / (a4 * a4) 
+    double c10 = -8 * (El1*El1 - pl1z*pl1z) * a2 * a3 / (a4 * a4) 
                +8 * pl1x * pl1y
                -8 * pl1x * pl1z * a3 / a4 
                -8 * pl1y * pl1z * a2 / a4;
 
-  double c00 = -4 * (El1 * El1 - pl1y * pl1y) 
+    double c00 = -4 * (El1 * El1 - pl1y * pl1y) 
                -4 * (El1 * El1 - pl1z * pl1z) * (a3 /a4) * (a3 / a4)
                -8 * pl1y * pl1z * a3 / a4;
 
-  c22 = c22 * a4 * a4; 
-  c21 = c21 * a4 * a4; 
-  c20 = c20 * a4 * a4; 
-  c11 = c11 * a4 * a4; 
-  c10 = c10 * a4 * a4; 
-  c00 = c00 * a4 * a4;
+    c22 = c22 * a4 * a4; 
+    c21 = c21 * a4 * a4; 
+    c20 = c20 * a4 * a4; 
+    c11 = c11 * a4 * a4; 
+    c10 = c10 * a4 * a4; 
+    c00 = c00 * a4 * a4;
 
-  double dd22 = (mw2 * mw2 - ml2 * ml2) * (mw2 * mw2 - ml2 * ml2)
+    double dd22 = (mw2 * mw2 - ml2 * ml2) * (mw2 * mw2 - ml2 * ml2)
                 -4 * (El2 * El2 - pl2z * pl2z) * (b1 / b4) * (b1 / b4)
                 -4 * (mw2 * mw2 - ml2 * ml2) * pl2z * b1 / b4;
 
-  double dd21 = 4 * (mw2 * mw2 - ml2 * ml2) * (pl2x - pl2z * b2 / b4)
+    double dd21 = 4 * (mw2 * mw2 - ml2 * ml2) * (pl2x - pl2z * b2 / b4)
                 -8 * (El2 * El2 - pl2z * pl2z) * b1 * b2 / (b4 * b4) 
                 -8 * pl2x * pl2z * b1 / b4;
 
-  double dd20 = -4 * (El2 * El2 - pl2x * pl2x) 
+    double dd20 = -4 * (El2 * El2 - pl2x * pl2x) 
                 -4 * (El2 * El2 - pl2z * pl2z) * (b2 / b4) * (b2 / b4) 
                 -8 * pl2x * pl2z * b2 / b4;
 
-  double dd11 = 4 * (mw2 * mw2 - ml2 * ml2) * (pl2y - pl2z * b3 / b4)
+    double dd11 = 4 * (mw2 * mw2 - ml2 * ml2) * (pl2y - pl2z * b3 / b4)
                 -8 * (El2 * El2 -pl2z * pl2z) * b1 * b3 / (b4 * b4)
                 -8 * pl2y * pl2z * b1 / b4;
 
-  double dd10 = -8 * (El2 * El2 - pl2z * pl2z) * b2 * b3 / (b4 * b4) 
+    double dd10 = -8 * (El2 * El2 - pl2z * pl2z) * b2 * b3 / (b4 * b4) 
                 +8 * pl2x * pl2y
                 -8 * pl2x * pl2z * b3 / b4 
                 -8 * pl2y * pl2z * b2 / b4;
 
-  double dd00 = -4 * (El2 * El2 - pl2y * pl2y) 
+    double dd00 = -4 * (El2 * El2 - pl2y * pl2y) 
                 -4 * (El2 * El2 - pl2z * pl2z) * (b3 / b4) * (b3 / b4)
                 -8 * pl2y * pl2z * b3 / b4;
 
-  dd22 = dd22 * b4 * b4; 
-  dd21 = dd21 * b4 * b4; 
-  dd20 = dd20 * b4 * b4; 
-  dd11 = dd11 * b4 * b4; 
-  dd10 = dd10 * b4 * b4; 
-  dd00 = dd00 * b4 * b4; 
+    dd22 = dd22 * b4 * b4; 
+    dd21 = dd21 * b4 * b4; 
+    dd20 = dd20 * b4 * b4; 
+    dd11 = dd11 * b4 * b4; 
+    dd10 = dd10 * b4 * b4; 
+    dd00 = dd00 * b4 * b4; 
                 
-  double d22 = dd22 
+    double d22 = dd22 
                + Emissx * Emissx * dd20 
                + Emissy * Emissy * dd00
                + Emissx * Emissy * dd10 
                + Emissx * dd21 
                + Emissy * dd11;
 
-  double d21 = -dd21 
+    double d21 = -dd21 
                - 2 * Emissx * dd20 
                - Emissy * dd10;
 
-  double d20 = dd20;
+    double d20 = dd20;
 
-  double d11 = -dd11 
+    double d11 = -dd11 
                - 2 * Emissy * dd00 
                - Emissx * dd10;
 
-  double d10 = dd10;
-  double d00 = dd00;
+    double d10 = dd10;
+    double d00 = dd00;
 
-  const double h4 = c00 * c00 * d22 * d22 
+    const double h4 = c00 * c00 * d22 * d22 
                   + c11 * d22 * (c11 * d00 - c00 * d11)
                   + c00 * c22 * (d11 * d11 - 2 * d00 * d22) 
                   + c22 * d00 * (c22 * d00 - c11 * d11);
 
-  const double h3 = c00 * d21 * (2 * c00 * d22 - c11 * d11) 
+    const double h3 = c00 * d21 * (2 * c00 * d22 - c11 * d11) 
                   + c00 * d11 * (2 * c22 * d10 + c21 * d11) 
                   + c22 * d00 * (2 * c21 * d00 - c11 * d10) 
                   - c00 * d22 * (c11 * d10 + c10 * d11)  
@@ -1490,7 +1490,7 @@ std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::vector<TLor
                   - d00 * d11 * (c11 * c21 + c10 * c22) 
                   + c11 * d00 * (c11 * d21 + 2 * c10 * d22);
 
-  const double h2 = c00 * c00 * (2 * d22 * d20 + d21 * d21) 
+    const double h2 = c00 * c00 * (2 * d22 * d20 + d21 * d21) 
                   - c00 * d21 * (c11 * d10 + c10 * d11)  
                   + c11 * d20 * (c11 * d00 - c00 * d11) 
                   + c00 * d10 * (c22 * d10 - c10 * d22)   
@@ -1501,7 +1501,7 @@ std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::vector<TLor
                   - d00 * d10 * (c11 * c21 + c10 * c22)   
                   - d00 * d11 * (c11 * c20 + c10 * c21);
 
-  const double h1 = c00 * d21 * (2 * c00 * d20 - c10 * d10) 
+    const double h1 = c00 * d21 * (2 * c00 * d20 - c10 * d10) 
                   - c00 * d20 * (c11 * d10 + c10 * d11)  
                   + c00 * d10 * (c21 * d10 + 2 * c20 * d11) 
                   - 2 * c00 * d00 * (c21 * d20 + c20 * d21)  
@@ -1509,69 +1509,69 @@ std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::vector<TLor
                   + c20 * d00 * (2 * c21 * d00 - c10 * d11)  
                   - d00 * d10 * (c11 * c20 + c10 * c21);
 
-  const double h0 = c00 * c00 * d20 * d20 
+    const double h0 = c00 * c00 * d20 * d20 
                   + c10 * d20 * (c10 * d00 - c00 * d10)  
                   + c20 * d10 * (c00 * d10 - c10 * d00) 
                   + c20 * d00 * (c20 * d00 - 2 * c00 * d20);
 
-  int dig = DECIMAL_DIG;
-  if (m_debug) {
+    int dig = DECIMAL_DIG;
+    if (m_debug) {
     printf("h4 = %.*e\n", dig, h4);
     printf("h3 = %.*e\n", dig, h3);
     printf("h2 = %.*e\n", dig, h2);   
     printf("h1 = %.*e\n", dig, h1);
     printf("h0 = %.*e\n", dig, h0);
     printf("\n");
-  }
+    }
 
-  double a[5] = {1.0, h1/h0, h2/h0, h3/h0, h4/h0};
+    double a[5] = {1.0, h1/h0, h2/h0, h3/h0, h4/h0};
 
-  if (m_debug) for (int i = 0; i < 5; i++) cout << "a(" << i << ") = "<<  a[i] << endl; 
+    if (m_debug) for (int i = 0; i < 5; i++) cout << "a(" << i << ") = "<<  a[i] << endl; 
 
-  double x[4];
-  const int nRealRoots = SolveP4(x, a[1], a[2], a[3], a[4]);
-  // If nRealRoots = 4, they live in x[0], x[1], x[2], x[3].
-  // If nRealRoots = 2, x[0], x[1] are the real roots and x[2]±i*x[3] are the complex.
-  // If nRealRoots = 0, the equation has two pairs of pairs of complex conjugate roots in x[0]±i*x[1] and x[2]±i*x[3].
+    double x[4];
+    const int nRealRoots = SolveP4(x, a[1], a[2], a[3], a[4]);
+    // If nRealRoots = 4, they live in x[0], x[1], x[2], x[3].
+    // If nRealRoots = 2, x[0], x[1] are the real roots and x[2]±i*x[3] are the complex.
+    // If nRealRoots = 0, the equation has two pairs of pairs of complex conjugate roots in x[0]±i*x[1] and x[2]±i*x[3].
 
-  if (m_debug) cout << "Found " << nRealRoots << " real roots" << endl;
+    if (m_debug) cout << "Found " << nRealRoots << " real roots" << endl;
 
-  int nSolutions;
-  std::vector<double> pv1x_Rs;
-  if (nRealRoots == 4) {
+    int nSolutions;
+    std::vector<double> pv1x_Rs;
+    if (nRealRoots == 4) {
     nSolutions = 4;
     for (int i = 0; i < nSolutions; i++) pv1x_Rs.push_back(x[i]);
-  }
-  else if (nRealRoots == 2) {
+    }
+    else if (nRealRoots == 2) {
     nSolutions = 3;
     for (int i = 0; i < nSolutions; i++) pv1x_Rs.push_back(x[i]); 
-  }
-  else if (nRealRoots == 0) {
+    }
+    else if (nRealRoots == 0) {
     nSolutions = 2;
     pv1x_Rs.push_back(x[0]);
     pv1x_Rs.push_back(x[2]); 
-  }
+    }
 
-  if (m_debug) {
+    if (m_debug) {
     cout << "pv1x = " << pv1x << endl; 
     for (int i = 0; i < 4; i++) cout << "x(" << i << ") = " << x[i] << endl;
-  }
+    }
 
-  // find root closest to true pl1x
-  // double old_diff = std::abs(pv1x - x[0]), new_diff, closest_root = x[0];
-  // for (unsigned int i = 1; i < 4; i++) {
-  //   new_diff = std::abs(pv1x - x[i]);
-  //   if (new_diff < old_diff) {
-  //     closest_root = x[i];
-  //     old_diff = new_diff;
-  //   }
-  // }
-  // std::vector<double> realRoots;
-  // for (int i = 0; i < nRealRoots; i++) realRoots.push_back(x[i]);
+    // find root closest to true pl1x
+    // double old_diff = std::abs(pv1x - x[0]), new_diff, closest_root = x[0];
+    // for (unsigned int i = 1; i < 4; i++) {
+    //   new_diff = std::abs(pv1x - x[i]);
+    //   if (new_diff < old_diff) {
+    //     closest_root = x[i];
+    //     old_diff = new_diff;
+    //   }
+    // }
+    // std::vector<double> realRoots;
+    // for (int i = 0; i < nRealRoots; i++) realRoots.push_back(x[i]);
 
-  // Create pairs of neutrino momenta for each real root
-  std::vector<TLorentzVector> pv1_Rs(nSolutions), pv2_Rs(nSolutions);
-  for (int i = 0; i < nSolutions; i++) {
+    // Create pairs of neutrino momenta for each real root
+    std::vector<TLorentzVector> pv1_Rs(nSolutions), pv2_Rs(nSolutions);
+    for (int i = 0; i < nSolutions; i++) {
     double pv1x_R = x[i];
     double pv2x_R = Emissx - pv1x_R;
 
@@ -1595,45 +1595,45 @@ std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::vector<TLor
     pv2_Rs[i].SetPxPyPzE(pv2x_R, pv2y_R, pv2z_R, Ev2_R);
 
     if (m_debug) {
-      printf("pv1x   = %.*e\n", dig, pv1x);
-      printf("pv1x_R = %.*e\n", dig, pv1x_R);
-      printf("pv2x   = %.*e\n", dig, pv2x);
-      printf("pv2x_R = %.*e\n", dig, pv2x_R);
-      printf("pv1y   = %.*e\n", dig, pv1y);
-      printf("pv1y_R = %.*e\n", dig, pv1y_R);
-      printf("pv2y   = %.*e\n", dig, pv2y);
-      printf("pv2y_R = %.*e\n", dig, pv2y_R);
-      printf("pv1z   = %.*e\n", dig, pv1z);
-      printf("pv1z_R = %.*e\n", dig, pv1z_R);
-      printf("pv2z   = %.*e\n", dig, pv2z);
-      printf("pv2z_R = %.*e\n", dig, pv2z_R);
-      printf("Ev1    = %.*e\n", dig, Ev1);
-      printf("Ev1_R  = %.*e\n", dig, Ev1_R);
-      printf("Ev2    = %.*e\n", dig, Ev2);
-      printf("Ev2_R  = %.*e\n", dig, Ev2_R);
+        printf("pv1x   = %.*e\n", dig, pv1x);
+        printf("pv1x_R = %.*e\n", dig, pv1x_R);
+        printf("pv2x   = %.*e\n", dig, pv2x);
+        printf("pv2x_R = %.*e\n", dig, pv2x_R);
+        printf("pv1y   = %.*e\n", dig, pv1y);
+        printf("pv1y_R = %.*e\n", dig, pv1y_R);
+        printf("pv2y   = %.*e\n", dig, pv2y);
+        printf("pv2y_R = %.*e\n", dig, pv2y_R);
+        printf("pv1z   = %.*e\n", dig, pv1z);
+        printf("pv1z_R = %.*e\n", dig, pv1z_R);
+        printf("pv2z   = %.*e\n", dig, pv2z);
+        printf("pv2z_R = %.*e\n", dig, pv2z_R);
+        printf("Ev1    = %.*e\n", dig, Ev1);
+        printf("Ev1_R  = %.*e\n", dig, Ev1_R);
+        printf("Ev2    = %.*e\n", dig, Ev2);
+        printf("Ev2_R  = %.*e\n", dig, Ev2_R);
 
     }
-  }
-
-  int I = 0;
-  double mtt_min = DBL_MAX;
-  for (int i = 0; i < nSolutions; i++) {
-    double mtt = (p[0] + p[1] + p[2] + p[4] + pv1_Rs[i] + pv2_Rs[i]).M();
-    if (mtt < mtt_min) {
-      mtt_min = mtt;
-      I = i;
     }
-  }
 
-  p_R[0] = pb1;
-  p_R[1] = pb2;
-  p_R[2] = pl1;
-  p_R[3] = pv1_Rs[I];
-  p_R[4] = pl2;
-  p_R[5] = pv2_Rs[I];
+    int I = 0;
+    double mtt_min = DBL_MAX;
+    for (int i = 0; i < nSolutions; i++) {
+        double mtt = (p[0] + p[1] + p[2] + p[4] + pv1_Rs[i] + pv2_Rs[i]).M();
+        if (mtt < mtt_min) {
+            mtt_min = mtt;
+            I = i;
+        }
+    }
 
-  if (m_debug) printf("--- end dilepton reconstruction ---\n\n");
-  return p_R;
+    p_R[0] = pb1;
+    p_R[1] = pb2;
+    p_R[2] = pl1;
+    p_R[3] = pv1_Rs[I];
+    p_R[4] = pl2;
+    p_R[5] = pv2_Rs[I];
+
+    if (m_debug) printf("--- end dilepton reconstruction ---\n\n");
+    return p_R;
 }
 
 
