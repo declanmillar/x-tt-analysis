@@ -1369,11 +1369,9 @@ std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::vector<TLor
     double ml1 = 0, ml2 = 0;
 
     // Use off-shell true masses
-    // double mt1 = (p[0] + p[2] + p[3]).M();
-    // double mt2 = (p[1] + p[4] + p[5]).M();
+    // double mt1 = (p[0] + p[2] + p[3]).M(), mt2 = (p[1] + p[4] + p[5]).M();
     // double mw1 = (p[2] + p[3]).M(), mw2 = (p[4] + p[5]).M();
-    // double mb1 = p[0].M();
-    // double mb2 = p[1].M();
+    // double mb1 = p[0].M(), mb2 = p[1].M();
 
     double a1 = (Eb1 + El1) * (mw1 * mw1 - ml1 * ml1)
               - El1 * (mt1 * mt1 - mb1 * mb1 - ml1 * ml1)
