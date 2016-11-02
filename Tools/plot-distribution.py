@@ -218,17 +218,17 @@ art.SetYtitle("d#it{#sigma} / d#it{m_{tt}} [pb/TeV]")
 art.SetDomain(0, 6)
 # art.SetRange(-1, 1)
 
-art.AddHistogram("mtt", "GLR-R-3_ggqq-GAZX-tt-bbllvv_2-4_5x10M.a.wpole.root", "#bf{SM}", blue)
-art.AddHistogram("mtt_R", "GLR-R-3_ggqq-GAZX-tt-bbllvv_2-4_5x10M.a.wpole.root", "#bf{SM}", red)
+art.AddHistogram("KT_deltaphi", "GLR-R-3_ggqq-GAZX-tt-bbllvv_2-4_5x10M.a.pole.root", "#bf{SM}", blue)
+# art.AddHistogram("KT", "GLR-R-3_ggqq-GAZX-tt-bbllvv_2-4_5x10M.a.pole.root", "#bf{SM}", red)
 # art.AddHistogram("KT", "GLR-R-3_ggqq-GAZX-tt-6f_2-4_5x10M.a.L100.root", "#bf{SM}", blue)
 
 art.AddInfoBox("GLR-R")
 
-art.SetHistTitle(1, "reco")
-art.SetHistTitle(0, "truth")
+# art.SetHistTitle(1, "reco")
+# art.SetHistTitle(0, "truth")
 # art.AddLegend(0.13, 0.75, 0.35, 0.95)
 art.AddLegend(0.13, 0.75, 0.35, 0.95)
 
 filename = "~/Dropbox/zprime-paper/figures/al-r-glr-r-ggqq-gazx-tt-bbllvv-2-4-5x10M-a-y0-y0.5-l100.pdf"
 # art.Save(filename)
-art.Save("~/Desktop/mtt_dilepton_GLR-R-3_wpole.pdf")
+art.Save("~/Desktop/KT_dilepton_GLR-R-3_pole.pdf")

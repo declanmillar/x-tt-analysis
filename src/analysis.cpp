@@ -437,10 +437,10 @@ void Analysis::MakeHistograms()
     h_cosThetaStar = new TH1D("costhetastar", "cos#theta^{*}", nbins, -1.0, 1.0);
     h_cosThetaStar->Sumw2();
 
-    h_HT = new TH1D("HT", "H_{T}", nbins, 0, 4);
+    h_HT = new TH1D("HT", "H_{T}", 40, 0, 4);
     h_HT->Sumw2();
 
-    h_KT = new TH1D("KT", "K_{T}", nbins, 0, 4);
+    h_KT = new TH1D("KT", "K_{T}", 40, 0, 4);
     h_KT->Sumw2();
 
     h_deltaPhi = new TH1D("deltaphi", "#Delta#phi", 10, 0, 1);
@@ -504,12 +504,12 @@ void Analysis::MakeHistograms()
     h2_mtt_cos1cos2->GetYaxis()->SetTitle("cos#theta_{l+}cos#theta_{l-}");
     h2_mtt_cos1cos2->Sumw2();
 
-    h2_HT_deltaPhi = new TH2D("HT_deltaphi", "H_{T} #Delta#phi_{l}", nbins, 0, 4, 10, 0, 1);
+    h2_HT_deltaPhi = new TH2D("HT_deltaphi", "H_{T} #Delta#phi_{l}", 40, 0, 4, 10, 0, 1);
     h2_HT_deltaPhi->GetXaxis()->SetTitle("H_{T} [TeV]");
     h2_HT_deltaPhi->GetYaxis()->SetTitle("#Delta#phi_{l} [rad] / #pi");
     h2_HT_deltaPhi->Sumw2();
 
-    h2_KT_deltaPhi = new TH2D("KT_deltaphi", "K_{T} #Delta#phi_{l}", nbins, 0, 4, 10, 0, 1);
+    h2_KT_deltaPhi = new TH2D("KT_deltaphi", "K_{T} #Delta#phi_{l}", 40, 0, 4, 10, 0, 1);
     h2_KT_deltaPhi->GetXaxis()->SetTitle("K_{T} [TeV]");
     h2_KT_deltaPhi->GetYaxis()->SetTitle("#Delta#phi_{l} [rad] / #pi");
     h2_KT_deltaPhi->Sumw2();
@@ -1202,110 +1202,60 @@ std::vector<TLorentzVector> Analysis::ReconstructSemilepton(const std::vector<TL
         TLorentzVector p(px_nu, py_nu, pz, sqrt(px_nu * px_nu + py_nu * py_nu + pz * pz));
         p_nu_R.push_back(p);
     }
-    bool oldreco = false;
 
-    if (oldreco) {
-        std::vector<TLorentzVector> p_b(2), p_q(2);
+    std::vector<TLorentzVector> p_q(4);
 
-        p_b[0] = p[0];
-        p_b[1] = p[1];
-        if (Q_l == 1) {
-            p_q[0] = p[4];
-            p_q[1]= p[5];
-        }
-        else{
-            p_q[0] = p[2];
-            p_q[1]= p[3];
-        }
-        imin = 0;
-        jmin = 0;
-        for (int i = 0; i < (int) p_nu_R.size(); i++) {
-            for (int j = 0; j < 2; j++) {
-                mblv = (p_b[j] + p_l + p_nu_R[i]).M();
-                mjjb = (p_b[1-j] + p_q[0] + p_q[1]).M();
-                dh = mjjb - m_tmass;
-                dl = mblv - m_tmass;
-                chi2 = dh * dh + dl * dl;
-                if (chi2 < chi2min) {
-                    chi2min = chi2;
-                    imin = i;
-                    jmin = j;
-                }
-                // printf("i = %i, j = %i: m_bjj = %.15le, mblv = %.15le, chi2 = %.15le\n", i, j, mjjb, mblv, chi2);
+    p_q[0] = p[0];
+    p_q[1] = p[1];
+    if (Q_l == +1) {
+        p_q[2] = p[4];
+        p_q[3]= p[5];
+    }
+    else if (Q_l == -1) {
+        p_q[2] = p[2];
+        p_q[3]= p[3];
+    }
+    std::vector<std::vector<int> > q_perms;
+    if (m_btags == 2) q_perms = { {0, 1, 2, 3}, {1, 0, 2, 3} };
+    if (m_btags == 1) q_perms = { {0, 1, 2, 3}, {0, 2, 1, 3}, {0, 3, 1, 2},
+                                  {1, 0, 2, 3}, {2, 0, 1, 3}, {3, 0, 1, 2} };
+    if (m_btags == 0) q_perms = { {0, 1, 2, 3}, {0, 2, 1, 3}, {0, 3, 1, 2},
+                                  {1, 0, 2, 3}, {2, 0, 1, 3}, {3, 0, 1, 2},
+                                  {2, 0, 1, 3}, {2, 1, 0, 3}, {2, 3, 0, 1},
+                                  {3, 0, 1, 2}, {3, 1, 0, 2}, {3, 2, 0, 1} };
+
+    imin = 0;
+    jmin = 0;
+    for (unsigned int i = 0; i < p_nu_R.size(); i++) {
+        for (unsigned int j = 0; j < q_perms.size(); j++) {
+            mblv = (p_q[q_perms[j][0]] + p_l + p_nu_R[i]).M();
+            mjjb = (p_q[q_perms[j][1]] + p_q[q_perms[j][2]] + p_q[q_perms[j][3]]).M();
+            dh = mjjb - m_tmass;
+            dl = mblv - m_tmass;
+            chi2 = dh * dh + dl * dl;
+            if (chi2 < chi2min) {
+                chi2min = chi2;
+                imin = i;
+                jmin = j;
             }
-        }
-        if (Q_l == +1) {
-            p_R[0] = p_b[jmin];
-            p_R[1] = p_b[1 - jmin];
-            p_R[2] = p[2];
-            p_R[3] = p_nu_R[imin];
-            p_R[4] = p[4];
-            p_R[5] = p[5];
-        }
-        else if (Q_l == -1) {
-            p_R[0] = p_b[1 - jmin];
-            p_R[1] = p_b[jmin];
-            p_R[2] = p[2];
-            p_R[3] = p[3];
-            p_R[4] = p[4];
-            p_R[5] = p_nu_R[imin];
         }
     }
-    else {
-        std::vector<TLorentzVector> p_q(4);
 
-        p_q[0] = p[0];
-        p_q[1] = p[1];
-        if (Q_l == 1) {
-            p_q[2] = p[4];
-            p_q[3]= p[5];
-        }
-        else if (Q_l == -1) {
-            p_q[2] = p[2];
-            p_q[3]= p[3];
-        }
-        std::vector<std::vector<int> > q_perms;
-        if (m_btags == 2) q_perms = { {0, 1, 2, 3}, {1, 0, 2, 3} };
-        if (m_btags == 1) q_perms = { {0, 1, 2, 3}, {0, 2, 1, 3}, {0, 3, 1, 2},
-        {1, 0, 2, 3}, {2, 0, 1, 3}, {3, 0, 1, 2} };
-        if (m_btags == 0) q_perms = { {0, 1, 2, 3}, {0, 2, 1, 3}, {0, 3, 1, 2},
-        {1, 0, 2, 3}, {2, 0, 1, 3}, {3, 0, 1, 2},
-        {2, 0, 1, 3}, {2, 1, 0, 3}, {2, 3, 0, 1},
-        {3, 0, 1, 2}, {3, 1, 0, 2}, {3, 2, 0, 1} };
-
-        imin = 0;
-        jmin = 0;
-        for (unsigned int i = 0; i < p_nu_R.size(); i++) {
-            for (unsigned int j = 0; j < q_perms.size(); j++) {
-                mblv = (p_q[q_perms[j][0]] + p_l + p_nu_R[i]).M();
-                mjjb = (p_q[q_perms[j][1]] + p_q[q_perms[j][2]] + p_q[q_perms[j][3]]).M();
-                dh = mjjb - m_tmass;
-                dl = mblv - m_tmass;
-                chi2 = dh * dh + dl * dl;
-                if (chi2 < chi2min) {
-                    chi2min = chi2;
-                    imin = i;
-                    jmin = j;
-                }
-            }
-        }
-
-        if (Q_l == 1) {
-            p_R[0] = p_q[q_perms[jmin][0]];
-            p_R[1] = p_q[q_perms[jmin][1]];
-            p_R[2] = p_l;
-            p_R[3] = p_nu_R[imin];
-            p_R[4] = p_q[q_perms[jmin][2]];
-            p_R[5] = p_q[q_perms[jmin][3]];
-        }
-        else if (Q_l == -1) {
-            p_R[0] = p_q[q_perms[jmin][1]];
-            p_R[1] = p_q[q_perms[jmin][0]];
-            p_R[2] = p_q[q_perms[jmin][2]];
-            p_R[3] = p_q[q_perms[jmin][3]];
-            p_R[4] = p_l;
-            p_R[5] = p_nu_R[imin];
-        }
+    if (Q_l == +1) {
+        p_R[0] = p_q[q_perms[jmin][0]];
+        p_R[1] = p_q[q_perms[jmin][1]];
+        p_R[2] = p_l;
+        p_R[3] = p_nu_R[imin];
+        p_R[4] = p_q[q_perms[jmin][2]];
+        p_R[5] = p_q[q_perms[jmin][3]];
+    }
+    else if (Q_l == -1) {
+        p_R[0] = p_q[q_perms[jmin][1]];
+        p_R[1] = p_q[q_perms[jmin][0]];
+        p_R[2] = p_q[q_perms[jmin][2]];
+        p_R[3] = p_q[q_perms[jmin][3]];
+        p_R[4] = p_l;
+        p_R[5] = p_nu_R[imin];
     }
 
     // Assess b-matching performance
