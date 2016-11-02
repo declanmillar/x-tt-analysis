@@ -1234,16 +1234,16 @@ std::vector<TLorentzVector> Analysis::ReconstructSemilepton(const std::vector<TL
                 // printf("i = %i, j = %i: m_bjj = %.15le, mblv = %.15le, chi2 = %.15le\n", i, j, mjjb, mblv, chi2);
             }
         }
-        if (Q_l == 1) {
+        if (Q_l == +1) {
             p_R[0] = p_b[jmin];
-            p_R[1] = p_b[1-jmin];
+            p_R[1] = p_b[1 - jmin];
             p_R[2] = p[2];
             p_R[3] = p_nu_R[imin];
             p_R[4] = p[4];
             p_R[5] = p[5];
         }
         else if (Q_l == -1) {
-            p_R[0] = p_b[1-jmin];
+            p_R[0] = p_b[1 - jmin];
             p_R[1] = p_b[jmin];
             p_R[2] = p[2];
             p_R[3] = p[3];
@@ -1281,7 +1281,7 @@ std::vector<TLorentzVector> Analysis::ReconstructSemilepton(const std::vector<TL
                 mjjb = (p_q[q_perms[j][1]] + p_q[q_perms[j][2]] + p_q[q_perms[j][3]]).M();
                 dh = mjjb - m_tmass;
                 dl = mblv - m_tmass;
-                chi2 = dh*dh + dl*dl;
+                chi2 = dh * dh + dl * dl;
                 if (chi2 < chi2min) {
                     chi2min = chi2;
                     imin = i;
