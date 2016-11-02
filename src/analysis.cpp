@@ -29,12 +29,14 @@ Analysis::Analysis(const TString& model, const TString& initial_state, const TSt
     ;
 }
 
+
 void Analysis::Run()
 {
     this->PreLoop();
     this->Loop();
     this->PostLoop();
 }
+
 
 void Analysis::EachEvent()
 {
@@ -270,6 +272,7 @@ void Analysis::EachEvent()
     }
 }
 
+
 void Analysis::SetupInputFiles()
 {
     m_inputFiles = new std::vector<TString>;
@@ -306,6 +309,7 @@ void Analysis::SetupInputFiles()
         }
     }
 }
+
 
 void Analysis::SetupOutputFiles()
 {
@@ -345,6 +349,7 @@ void Analysis::PostLoop()
     this->WriteHistograms();
 }
 
+
 void Analysis::CheckResults()
 {
     printf("-- Results --\n");
@@ -352,6 +357,7 @@ void Analysis::CheckResults()
     printf("Analysis Cross Section = %.15le [pb]\n", sigma);
     printf("\n");
 }
+
 
 void Analysis::CheckPerformance()
 {
@@ -405,6 +411,7 @@ void Analysis::AsymmetryUncertainty(TH1D* hA, TH1D* h1, TH1D* h2)
         hA->SetBinError(i, dA);
     }
 }
+
 
 void Analysis::MakeHistograms()
 {
@@ -579,6 +586,7 @@ void Analysis::MakeHistograms()
     }
 }
 
+
 void Analysis::MakeDistributions()
 {
     this->MakeDistribution1D(h_mtt, "TeV");
@@ -664,6 +672,7 @@ void Analysis::MakeDistributions()
     }
 }
 
+
 void Analysis::MakeDistribution1D(TH1D* h, const TString& units)
 {
     TString ytitle, yunits, xunits;
@@ -693,6 +702,7 @@ void Analysis::MakeDistribution1D(TH1D* h, const TString& units)
     h->Write();
 }
 
+
 void Analysis::MakeDistribution2D(TH2D* h) {
   double sigma, N, dN;
   int k;
@@ -715,6 +725,7 @@ void Analysis::MakeDistribution2D(TH2D* h) {
   h->Write();
 }
 
+
 void Analysis::NormalizeSliceY(TH2D* h) 
 {
     double integral = 1;
@@ -728,6 +739,7 @@ void Analysis::NormalizeSliceY(TH2D* h)
       }
     }
 }
+
 
 void Analysis::WriteHistograms()
 {
@@ -806,6 +818,7 @@ void Analysis::WriteHistograms()
     m_outputFile->Close();
     delete m_outputFile;
 }
+
 
 // bool Analysis::PassCuts(string& type) 
 // {
@@ -953,6 +966,7 @@ void Analysis::WriteHistograms()
 //     return false;
 // }
 
+
 void Analysis::PreLoop()
 {
     this->SetDataDirectory();
@@ -962,6 +976,7 @@ void Analysis::PreLoop()
     this->InitialiseCutflow();
     this->MakeHistograms();
 }
+
 
 void Analysis::SetDataDirectory()
 {
@@ -981,10 +996,12 @@ void Analysis::SetDataDirectory()
         printf("Hostname %s not recognised.\n", Hostname.c_str());
 }
 
+
 TString Analysis::GetOutputFilename()
 {
     return m_outputFilename;
 }
+
 
 void Analysis::ResetCounters()
 {
@@ -996,6 +1013,7 @@ void Analysis::ResetCounters()
     m_nRealRoots = 0;
     m_nComplexRoots = 0;
 }
+
 
 void Analysis::GetCrossSection(TString filename)
 {
@@ -1024,6 +1042,7 @@ void Analysis::GetCrossSection(TString filename)
     else printf("Generation Cross section = %.15le [pb]\n", m_sigma);
 }
 
+
 void Analysis::GetIterationWeights(TString log)
 {
     iteration_weights.clear();
@@ -1050,6 +1069,7 @@ void Analysis::GetIterationWeights(TString log)
     }
 }
 
+
 void Analysis::Loop()
 {
     for (Itr_s i = m_inputFiles->begin(); i != m_inputFiles->end(); ++i) {
@@ -1073,10 +1093,12 @@ void Analysis::Loop()
     cout << endl;
 }
 
+
 Analysis::~Analysis()
 {
     delete m_inputFiles;
 }
+
 
 Long64_t Analysis::TotalEvents()
 {
@@ -1084,12 +1106,14 @@ Long64_t Analysis::TotalEvents()
     return -999;
 }
 
+
 Long64_t Analysis::IncrementEvent(Long64_t i)
 {
     Long64_t ev(-1);
     if (m_ntup != 0) {ev = m_ntup->LoadTree(i);}
     return ev;
 }
+
 
 void Analysis::SetupTreesForNewFile(const TString& s)
 {
@@ -1101,11 +1125,13 @@ void Analysis::SetupTreesForNewFile(const TString& s)
     m_ntup = new RootTuple(m_chainNtup);
 }
 
+
 void Analysis::CleanUp()
 {
     delete m_chainNtup;
     delete m_ntup;
 }
+
 
 std::vector<TLorentzVector> Analysis::ReconstructSemilepton(const std::vector<TLorentzVector>& p, int Q_l)
 {
@@ -1310,6 +1336,7 @@ std::vector<TLorentzVector> Analysis::ReconstructSemilepton(const std::vector<TL
     // printf("--\n");
     return p_R;
 }
+
 
 std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::vector<TLorentzVector>& p)
 {
@@ -1619,11 +1646,13 @@ void Analysis::GetChannelFactors()
     // fac_qq = 36
 }
 
+
 void Analysis::UpdateCutflow(const int cut, const bool passed)
 {
     if (m_cutflow[cut] == -999) m_cutflow[cut] = 0;
     if (passed) m_cutflow[cut] += 1;
 }
+
 
 void Analysis::InitialiseCutflow()
 {
@@ -1642,6 +1671,7 @@ void Analysis::InitialiseCutflow()
 
     h_cutflow = new TH1D("Cutflow", "Cutflow", m_cuts, 0, m_cuts);
 }
+
 
 void Analysis::PrintCutflow()
 {
@@ -1663,15 +1693,18 @@ void Analysis::SetYttCut(const double ytt)
     m_ytt = ytt;
 }
 
+
 void Analysis::SetXsec(const bool xsec)
 {
     m_xsec = xsec;
 }
 
+
 void Analysis::SetFiducial(const bool fid)
 {
     m_fid = fid;
 }
+
 
 void Analysis::SetEnergyRange(double Emin = -1, double Emax = -1)
 {
