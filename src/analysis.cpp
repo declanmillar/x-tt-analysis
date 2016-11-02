@@ -1395,7 +1395,7 @@ std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::vector<TLor
                -4 * (El1 * El1 - pl1z * pl1z) * (a1 / a4) * (a1 / a4)
                -4 * (mw1 * mw1 - ml1 * ml1) * pl1z * a1 / a4;
 
-    double c21 = 4 * (mw1*mw1 - ml1*ml1) * (pl1x - pl1z * a2 / a4)
+    double c21 = 4 * (mw1 * mw1 - ml1 * ml1) * (pl1x - pl1z * a2 / a4)
                -8 * (El1 * El1 - pl1z*pl1z) * a1 * a2 / (a4 * a4) 
                -8 * pl1x * pl1z * a1 / a4;
 
@@ -1403,11 +1403,11 @@ std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::vector<TLor
                -4 * (El1 * El1 - pl1z * pl1z) * (a2 / a4) * (a2 / a4)
                -8 * pl1x * pl1z * a2 / a4;
 
-    double c11 = 4 * (mw1*mw1 - ml1*ml1)*(pl1y - pl1z * a3 / a4)
+    double c11 = 4 * (mw1 * mw1 - ml1 * ml1)*(pl1y - pl1z * a3 / a4)
                -8 * (El1 * El1 - pl1z * pl1z) * a1 * a3 / (a4 * a4) 
                -8 * pl1y * pl1z * a1 /  a4;
 
-    double c10 = -8 * (El1*El1 - pl1z*pl1z) * a2 * a3 / (a4 * a4) 
+    double c10 = -8 * (El1 * El1 - pl1z * pl1z) * a2 * a3 / (a4 * a4) 
                +8 * pl1x * pl1y
                -8 * pl1x * pl1z * a3 / a4 
                -8 * pl1y * pl1z * a2 / a4;
@@ -1514,12 +1514,12 @@ std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::vector<TLor
 
     int dig = DECIMAL_DIG;
     if (m_debug) {
-    printf("h4 = %.*e\n", dig, h4);
-    printf("h3 = %.*e\n", dig, h3);
-    printf("h2 = %.*e\n", dig, h2);   
-    printf("h1 = %.*e\n", dig, h1);
-    printf("h0 = %.*e\n", dig, h0);
-    printf("\n");
+        printf("h4 = %.*e\n", dig, h4);
+        printf("h3 = %.*e\n", dig, h3);
+        printf("h2 = %.*e\n", dig, h2);   
+        printf("h1 = %.*e\n", dig, h1);
+        printf("h0 = %.*e\n", dig, h0);
+        printf("\n");
     }
 
     double a[5] = {1.0, h1/h0, h2/h0, h3/h0, h4/h0};
@@ -1537,22 +1537,22 @@ std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::vector<TLor
     int nSolutions;
     std::vector<double> pv1x_Rs;
     if (nRealRoots == 4) {
-    nSolutions = 4;
-    for (int i = 0; i < nSolutions; i++) pv1x_Rs.push_back(x[i]);
+        nSolutions = 4;
+        for (int i = 0; i < nSolutions; i++) pv1x_Rs.push_back(x[i]);
     }
     else if (nRealRoots == 2) {
-    nSolutions = 3;
-    for (int i = 0; i < nSolutions; i++) pv1x_Rs.push_back(x[i]); 
+        nSolutions = 3;
+        for (int i = 0; i < nSolutions; i++) pv1x_Rs.push_back(x[i]); 
     }
     else if (nRealRoots == 0) {
-    nSolutions = 2;
-    pv1x_Rs.push_back(x[0]);
-    pv1x_Rs.push_back(x[2]); 
+        nSolutions = 2;
+        pv1x_Rs.push_back(x[0]);
+        pv1x_Rs.push_back(x[2]); 
     }
 
     if (m_debug) {
-    cout << "pv1x = " << pv1x << endl; 
-    for (int i = 0; i < 4; i++) cout << "x(" << i << ") = " << x[i] << endl;
+        cout << "pv1x = " << pv1x << endl; 
+        for (int i = 0; i < 4; i++) cout << "x(" << i << ") = " << x[i] << endl;
     }
 
     // find root closest to true pl1x
@@ -1570,47 +1570,47 @@ std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::vector<TLor
     // Create pairs of neutrino momenta for each real root
     std::vector<TLorentzVector> pv1_Rs(nSolutions), pv2_Rs(nSolutions);
     for (int i = 0; i < nSolutions; i++) {
-    double pv1x_R = x[i];
-    double pv2x_R = Emissx - pv1x_R;
+        double pv1x_R = x[i];
+        double pv2x_R = Emissx - pv1x_R;
 
-    double c2 = c22 + c21 * pv1x_R + c20 * pv1x_R * pv1x_R;
-    double c1 = c11 + c10 * pv1x_R;
-    double c0 = c00;
-    double d2 = d22 + d21 * pv1x_R + d20 * pv1x_R * pv1x_R;
-    double d1 = d11 + d10 * pv1x_R;
-    double d0 = d00;
+        double c2 = c22 + c21 * pv1x_R + c20 * pv1x_R * pv1x_R;
+        double c1 = c11 + c10 * pv1x_R;
+        double c0 = c00;
+        double d2 = d22 + d21 * pv1x_R + d20 * pv1x_R * pv1x_R;
+        double d1 = d11 + d10 * pv1x_R;
+        double d0 = d00;
 
-    double pv1y_R = (c0 * d2 - c2 * d0) / (c1 * d0 - c0 * d1);
-    double pv2y_R = Emissy - pv1y_R;
+        double pv1y_R = (c0 * d2 - c2 * d0) / (c1 * d0 - c0 * d1);
+        double pv2y_R = Emissy - pv1y_R;
 
-    double pv1z_R = -(a1 + a2 * pv1x_R + a3 * pv1y_R) / a4;
-    double pv2z_R = -(b1 + b2 * pv2x_R + b3 * pv2y_R) / b4;
+        double pv1z_R = -(a1 + a2 * pv1x_R + a3 * pv1y_R) / a4;
+        double pv2z_R = -(b1 + b2 * pv2x_R + b3 * pv2y_R) / b4;
 
-    double Ev1_R = sqrt(pv1x_R * pv1x_R + pv1y_R * pv1y_R + pv1z_R * pv1z_R);
-    double Ev2_R = sqrt(pv2x_R * pv2x_R + pv2y_R * pv2y_R + pv2z_R * pv2z_R);
+        double Ev1_R = sqrt(pv1x_R * pv1x_R + pv1y_R * pv1y_R + pv1z_R * pv1z_R);
+        double Ev2_R = sqrt(pv2x_R * pv2x_R + pv2y_R * pv2y_R + pv2z_R * pv2z_R);
 
-    pv1_Rs[i].SetPxPyPzE(pv1x_R, pv1y_R, pv1z_R, Ev1_R);
-    pv2_Rs[i].SetPxPyPzE(pv2x_R, pv2y_R, pv2z_R, Ev2_R);
+        pv1_Rs[i].SetPxPyPzE(pv1x_R, pv1y_R, pv1z_R, Ev1_R);
+        pv2_Rs[i].SetPxPyPzE(pv2x_R, pv2y_R, pv2z_R, Ev2_R);
 
-    if (m_debug) {
-        printf("pv1x   = %.*e\n", dig, pv1x);
-        printf("pv1x_R = %.*e\n", dig, pv1x_R);
-        printf("pv2x   = %.*e\n", dig, pv2x);
-        printf("pv2x_R = %.*e\n", dig, pv2x_R);
-        printf("pv1y   = %.*e\n", dig, pv1y);
-        printf("pv1y_R = %.*e\n", dig, pv1y_R);
-        printf("pv2y   = %.*e\n", dig, pv2y);
-        printf("pv2y_R = %.*e\n", dig, pv2y_R);
-        printf("pv1z   = %.*e\n", dig, pv1z);
-        printf("pv1z_R = %.*e\n", dig, pv1z_R);
-        printf("pv2z   = %.*e\n", dig, pv2z);
-        printf("pv2z_R = %.*e\n", dig, pv2z_R);
-        printf("Ev1    = %.*e\n", dig, Ev1);
-        printf("Ev1_R  = %.*e\n", dig, Ev1_R);
-        printf("Ev2    = %.*e\n", dig, Ev2);
-        printf("Ev2_R  = %.*e\n", dig, Ev2_R);
+        if (m_debug) {
+            printf("pv1x   = %.*e\n", dig, pv1x);
+            printf("pv1x_R = %.*e\n", dig, pv1x_R);
+            printf("pv2x   = %.*e\n", dig, pv2x);
+            printf("pv2x_R = %.*e\n", dig, pv2x_R);
+            printf("pv1y   = %.*e\n", dig, pv1y);
+            printf("pv1y_R = %.*e\n", dig, pv1y_R);
+            printf("pv2y   = %.*e\n", dig, pv2y);
+            printf("pv2y_R = %.*e\n", dig, pv2y_R);
+            printf("pv1z   = %.*e\n", dig, pv1z);
+            printf("pv1z_R = %.*e\n", dig, pv1z_R);
+            printf("pv2z   = %.*e\n", dig, pv2z);
+            printf("pv2z_R = %.*e\n", dig, pv2z_R);
+            printf("Ev1    = %.*e\n", dig, Ev1);
+            printf("Ev1_R  = %.*e\n", dig, Ev1_R);
+            printf("Ev2    = %.*e\n", dig, Ev2);
+            printf("Ev2_R  = %.*e\n", dig, Ev2_R);
 
-    }
+        }
     }
 
     int I = 0;
