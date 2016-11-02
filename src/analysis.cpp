@@ -1160,7 +1160,7 @@ std::vector<TLorentzVector> Analysis::ReconstructSemilepton(const std::vector<TL
     unsigned int imin, jmin;
 
     // Calculate neutrino p_z solutions
-    if (Q_l == 1) {
+    if (Q_l == +1) {
         // this->UpdateCutflow(c_topDecays, true);
         p_l = p[2];
         p_nu = p[3];
@@ -1171,7 +1171,7 @@ std::vector<TLorentzVector> Analysis::ReconstructSemilepton(const std::vector<TL
         p_nu = p[5];
     }
     else {
-        exit(1);
+        printf("Error: Q_l must be ±1.\n");;
     }
 
     double px_l = p_l.Px(), py_l = p_l.Py(), pz_l = p_l.Pz(), E_l;
