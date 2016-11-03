@@ -212,23 +212,27 @@ art = HistPainter(1920, 1080)
 art.SetStyle()
 art.AddPads()
 # art.SetZtitle("#it{cos#theta_{l}}")
-art.SetXtitle("#it{m_{tt}} [TeV]")
-art.SetYtitle("d#it{#sigma} / d#it{m_{tt}} [pb/TeV]")
+# art.SetXtitle("#it{m_{tt}} [TeV]")
+# art.SetYtitle("d#it{#sigma} / d#it{m_{tt}} [pb/TeV]")
 # art.SetYtitle("A^{*}_{FB}")
-art.SetDomain(0, 6)
+# art.SetDomain(0, 6)
 # art.SetRange(-1, 1)
 
-art.AddHistogram("KT_deltaphi", "GLR-R-3_ggqq-GAZX-tt-bbllvv_2-4_5x10M.a.pole.root", "#bf{SM}", blue)
+h = "etat"
+art.AddHistogram(h, "GLR-R-3_qq-AZX-tt-bbllvv_2-4_5x10M.a.root", "#bf{SM}", blue)
+art.AddHistogram(h + "_R", "GLR-R-3_qq-AZX-tt-bbllvv_2-4_5x10M.a.root", "#bf{SM}", red)
+
+# art.AddHistogram("KT_deltaphi", "GLR-R-3_ggqq-GAZX-tt-bbllvv_2-4_5x10M.a.pole.root", "#bf{SM}", blue)
 # art.AddHistogram("KT", "GLR-R-3_ggqq-GAZX-tt-bbllvv_2-4_5x10M.a.pole.root", "#bf{SM}", red)
 # art.AddHistogram("KT", "GLR-R-3_ggqq-GAZX-tt-6f_2-4_5x10M.a.L100.root", "#bf{SM}", blue)
 
 art.AddInfoBox("GLR-R")
 
-# art.SetHistTitle(1, "reco")
-# art.SetHistTitle(0, "truth")
+art.SetHistTitle(1, "reco")
+art.SetHistTitle(0, "truth")
 # art.AddLegend(0.13, 0.75, 0.35, 0.95)
 art.AddLegend(0.13, 0.75, 0.35, 0.95)
 
 filename = "~/Dropbox/zprime-paper/figures/al-r-glr-r-ggqq-gazx-tt-bbllvv-2-4-5x10M-a-y0-y0.5-l100.pdf"
 # art.Save(filename)
-art.Save("~/Desktop/KT_dilepton_GLR-R-3_pole.pdf")
+art.Save("~/Desktop/" + h +"_GLR-R-3_pole.pdf")

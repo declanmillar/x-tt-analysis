@@ -81,15 +81,11 @@ class Analysis{
 
     // Histograms
     TH1D* h_mtt;
-    TH1D* h_mt;
-    TH1D* h_mtbar;
     TH1D* h_mtt_F;
     TH1D* h_mtt_B;
     TH1D* h_mtt_Fn;
     TH1D* h_mtt_Bn;
     TH1D* h_mtt_R;
-    TH1D* h_mt_R;
-    TH1D* h_mtbar_R;
     TH1D* h_mtt_FR;
     TH1D* h_mtt_BR;
     TH1D* h_mtt_FRn;
@@ -98,6 +94,41 @@ class Analysis{
     TH1D* h_mtt_BD;
     TH1D* h_mtt_Fl;
     TH1D* h_mtt_Bl;
+
+    TH1D* h_pxt;
+    TH1D* h_pxt_R;
+    TH1D* h_pyt;
+    TH1D* h_pyt_R;
+    TH1D* h_pzt;
+    TH1D* h_pzt_R;
+    TH1D* h_Et;
+    TH1D* h_Et_R;
+    TH1D* h_pTt;
+    TH1D* h_pTt_R;
+    TH1D* h_etat;
+    TH1D* h_etat_R;
+    TH1D* h_phit;
+    TH1D* h_phit_R;
+    TH1D* h_mt;
+    TH1D* h_mt_R;
+
+    TH1D* h_pxtbar;
+    TH1D* h_pxtbar_R;
+    TH1D* h_pytbar;
+    TH1D* h_pytbar_R;
+    TH1D* h_pztbar;
+    TH1D* h_pztbar_R;
+    TH1D* h_Etbar;
+    TH1D* h_Etbar_R;
+    TH1D* h_pTtbar;
+    TH1D* h_pTtbar_R;
+    TH1D* h_etatbar;
+    TH1D* h_etatbar_R;
+    TH1D* h_phitbar;
+    TH1D* h_phitbar_R;
+    TH1D* h_mtbar;
+    TH1D* h_mtbar_R;
+
     TH1D* h_pv1x;
     TH1D* h_pv1x_R;
     TH1D* h_pv1y;
@@ -120,6 +151,8 @@ class Analysis{
     TH1D* h_cosThetaStar;
     TH1D* h_cosTheta_R;
     TH1D* h_cosThetaStar_R;
+    TH1D* h_costhetatt;
+    TH1D* h_costhetatt_R;
     TH1D* h_cutflow;
     TH1D* h_AFB;
     TH1D* h_AFB_R;
@@ -129,11 +162,14 @@ class Analysis{
     TH1D* h_AL_R;
     TH1D* h_HT;
     TH1D* h_KT;
+
     TH1D* h_deltaRmax;
     TH1D* h_deltaRbW;
+
     std::vector<TH1D*> h_eta;
     std::vector<TH1D*> h_pt;
     std::vector<TH1D*> h_deltaRs;
+
     TH2D* h2_mtt_cosThetaStar;
     TH2D* h2_mtt_cosThetaStar_R;
     TH2D* h2_mtt_deltaPhi;
