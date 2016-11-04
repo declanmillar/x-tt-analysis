@@ -149,7 +149,7 @@ void Analysis::EachEvent()
     double HT = 0;
     for (auto& l : p) HT += l.Pt();
     HT = HT / 1000;
-    TLorentzVector pvis = p[0] + p[1] +p[2] + p[4];
+    TLorentzVector pvis = p[0] + p[1] + p[2] + p[4];
     double mvis = pvis.M();
     double pTvis = pvis.Pt();
     double KT = sqrt(mvis * mvis + pTvis * pTvis) + (p[3] + p[5]).Pt();
@@ -1626,7 +1626,7 @@ std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::vector<TLor
     int nRealRoots = SolveP4(x, a[0], a[1], a[2], a[3]);
 
     if (x[0] != x[0] && x[1] != x[1] && x[2] != x[2]) printf("ERROR! Three NaNs in quartics solutions.");
-    
+
     int nSolutions;
     std::vector<double> pv1x_Rs;
     if (nRealRoots == 4) {

@@ -1,29 +1,31 @@
 # Makefile for zprime-top-analysis
 # declan.millar@cern.ch
 
-OBJ = solve-poly.o main.o atlas-style.o root-tuple.o analysis.o trim.o progress-bar.o bool-to-string.o
+OBJ = solve-poly.o main.o atlas-style.o root-tuple.o trim.o progress-bar.o bool-to-string.o analysis.o
 BIN = analysis
 LIB = lib
 SRC = src
 OUT = .
 
-ROOTFLAGS = $(shell root-config --cflags)
+ROOTCFLAGS = $(shell root-config --cflags)
 ROOTLIBS = $(shell root-config --libs)
 
 HOSTNAME := $(shell hostname)
 ifeq ($(HOSTNAME), Sunder)
-	BOOSTFLAGS = -isystem /usr/local/Cellar/boost/1.62.0/include
-	BOOSTLIBS  = -L /usr/local/Cellar/boost/1.62.0/lib -lboost_system -lboost_program_options
+	BOOSTCFLAGS = -isystem /usr/local/Cellar/boost/1.62.0/include
+	BOOSTLIB = -L /usr/local/Cellar/boost/1.62.0/lib
 else ifeq ($(HOSTNAME), cyan03)
-	BOOSTFLAGS = -I /local/software/boost/1.60.0/include
-	BOOSTLIBS  = -L /local/software/boost/1.60.0/lib -lboost_system -lboost_program_options
+	BOOSTCFLAGS = -I /local/software/boost/1.60.0/include
+	BOOSTLIB = -L /local/software/boost/1.60.0/lib
 else
-	BOOSTFLAGS = -I /afs/cern.ch/sw/lcg/external/Boost/1.60.0/include
-	BOOSTLIBS  = -L /afs/cern.ch/sw/lcg/external/Boost/1.60.0/lib -lboost_system -lboost_program_options
+	BOOSTCFLAGS = -I /afs/cern.ch/sw/lcg/external/Boost/1.60.0/include
+	BOOSTLIB = -L /afs/cern.ch/sw/lcg/external/Boost/1.60.0/lib
 endif
 
+BOOSTLIBS = $(BOOSTLIB) -lboost_system -lboost_program_options
+
 C = clang++
-CFLAGS = $(ROOTFLAGS) $(BOOSTFLAGS)
+CFLAGS = $(ROOTCFLAGS) $(BOOSTCFLAGS)
 LIBS = $(ROOTLIBS) $(BOOSTLIBS)
 
 # Compile all files ending in .cpp in SRC
