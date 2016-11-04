@@ -1625,7 +1625,9 @@ std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::vector<TLor
     double x[4];
     int nRealRoots = SolveP4(x, a[0], a[1], a[2], a[3]);
 
-    if (x[0] != x[0] && x[1] != x[1] && x[2] != x[2]) printf("ERROR! Three NaNs in quartics solutions.");
+    if (x[0] != x[0] && x[1] != x[1] && x[2] != x[2]) printf("ERROR! Three NaNs in quartic solutions.\n");
+
+    // if (x[0] != x[0] || x[1] != x[1] || x[2] != x[2] || x[3] != x[3]) printf("ERROR! NaN in quartic solutions.\n");
 
     int nSolutions;
     std::vector<double> pv1x_Rs;
