@@ -19,7 +19,6 @@ Analysis::Analysis(const TString& model, const TString& initial_state, const TSt
     m_btags(btags),
     m_tag(tag),
     m_reco(1), 
-    m_debug(false),
     m_outputFile(nullptr),
     m_inputFiles(nullptr),
     m_weightFiles(nullptr),
@@ -66,6 +65,15 @@ void Analysis::EachEvent()
     TLorentzVector P_R1, P_R2;
     if (m_reco == 1) {
         p_R1 = this->ReconstructDilepton(p); // both decay leptonically
+
+        // int i = 0;
+        // for (auto& l : p_R1) {
+        //     if (l != l) {
+        //         printf("p[%i] has a nan!\n", i);
+        //         l.Print();
+        //     }
+        //     i++;
+        // }
 
         P_R1.SetPxPyPzE(0, 0, 0, 0);
         for (auto& l : p_R1) P_R1 += l;
@@ -200,7 +208,6 @@ void Analysis::EachEvent()
     }
 
     // if (this->PassCuts("truth")) {
-
         h_pxt->Fill(p_t.Px(), weight);
         h_pyt->Fill(p_t.Py(), weight);
         h_pzt->Fill(p_t.Pz(), weight);
@@ -264,6 +271,7 @@ void Analysis::EachEvent()
 
     if (m_reco > 0) {
         // if (this->PassCuts("R1")) {
+
             h_mtt_R->Fill(mtt_R1, weight_R);
             h_ytt_R->Fill(ytt_R1, weight_R);
 
@@ -1207,7 +1215,7 @@ void Analysis::GetIterationWeights(TString log)
     while(getline(logstream, line)) {
         trim(line);
         split(parts, line, boost::is_any_of(":"));
-        for (auto& part: parts) trim(part);
+        for (auto& part : parts) trim(part);
         if (parts[0] == target) {
             iteration_weights.push_back(stod(parts[2]));
             found = true;
@@ -1446,7 +1454,6 @@ std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::vector<TLor
     // selects solution that minimises mtt
 
     // this->UpdateCutflow(c_events, true);
-    if (m_debug) printf("--- start dilepton reconstruction ---\n");
 
     m_nReco++;
 
@@ -1576,12 +1583,12 @@ std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::vector<TLor
     double d10 = dd10;
     double d00 = dd00;
 
-    const double h4 = c00 * c00 * d22 * d22 
+    double h4 = c00 * c00 * d22 * d22 
                     + c11 * d22 * (c11 * d00 - c00 * d11)
                     + c00 * c22 * (d11 * d11 - 2 * d00 * d22) 
                     + c22 * d00 * (c22 * d00 - c11 * d11);
 
-    const double h3 = c00 * d21 * (2 * c00 * d22 - c11 * d11) 
+    double h3 = c00 * d21 * (2 * c00 * d22 - c11 * d11) 
                     + c00 * d11 * (2 * c22 * d10 + c21 * d11) 
                     + c22 * d00 * (2 * c21 * d00 - c11 * d10) 
                     - c00 * d22 * (c11 * d10 + c10 * d11)  
@@ -1589,7 +1596,7 @@ std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::vector<TLor
                     - d00 * d11 * (c11 * c21 + c10 * c22) 
                     + c11 * d00 * (c11 * d21 + 2 * c10 * d22);
 
-    const double h2 = c00 * c00 * (2 * d22 * d20 + d21 * d21) 
+    double h2 = c00 * c00 * (2 * d22 * d20 + d21 * d21) 
                     - c00 * d21 * (c11 * d10 + c10 * d11)  
                     + c11 * d20 * (c11 * d00 - c00 * d11) 
                     + c00 * d10 * (c22 * d10 - c10 * d22)   
@@ -1600,7 +1607,7 @@ std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::vector<TLor
                     - d00 * d10 * (c11 * c21 + c10 * c22)   
                     - d00 * d11 * (c11 * c20 + c10 * c21);
 
-    const double h1 = c00 * d21 * (2 * c00 * d20 - c10 * d10) 
+    double h1 = c00 * d21 * (2 * c00 * d20 - c10 * d10) 
                     - c00 * d20 * (c11 * d10 + c10 * d11)  
                     + c00 * d10 * (c21 * d10 + 2 * c20 * d11) 
                     - 2 * c00 * d00 * (c21 * d20 + c20 * d21)  
@@ -1608,52 +1615,35 @@ std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::vector<TLor
                     + c20 * d00 * (2 * c21 * d00 - c10 * d11)  
                     - d00 * d10 * (c11 * c20 + c10 * c21);
 
-    const double h0 = c00 * c00 * d20 * d20 
+    double h0 = c00 * c00 * d20 * d20 
                     + c10 * d20 * (c10 * d00 - c00 * d10)  
                     + c20 * d10 * (c00 * d10 - c10 * d00) 
                     + c20 * d00 * (c20 * d00 - 2 * c00 * d20);
 
-    int dig = DECIMAL_DIG;
-    if (m_debug) {
-        printf("h4 = %.*e\n", dig, h4);
-        printf("h3 = %.*e\n", dig, h3);
-        printf("h2 = %.*e\n", dig, h2);   
-        printf("h1 = %.*e\n", dig, h1);
-        printf("h0 = %.*e\n", dig, h0);
-        printf("\n");
-    }
-
-    double a[5] = {1.0, h1/h0, h2/h0, h3/h0, h4/h0};
-
-    if (m_debug) for (int i = 0; i < 5; i++) cout << "a(" << i << ") = "<<  a[i] << endl; 
+    float a[4] = {static_cast<float>(h1 / h0), static_cast<float>(h2 / h0), static_cast<float>(h3 / h0), static_cast<float>(h4 / h0)};
 
     double x[4];
-    const int nRealRoots = SolveP4(x, a[1], a[2], a[3], a[4]);
-    // If nRealRoots = 4, they live in x[0], x[1], x[2], x[3].
-    // If nRealRoots = 2, x[0], x[1] are the real roots and x[2]±i*x[3] are the complex.
-    // If nRealRoots = 0, the equation has two pairs of pairs of complex conjugate roots in x[0]±i*x[1] and x[2]±i*x[3].
+    int nRealRoots = SolveP4(x, a[0], a[1], a[2], a[3]);
 
-    if (m_debug) cout << "Found " << nRealRoots << " real roots" << endl;
-
+    if (x[0] != x[0] && x[1] != x[1] && x[2] != x[2]) printf("ERROR! Three NaNs in quartics solutions.");
+    
     int nSolutions;
     std::vector<double> pv1x_Rs;
     if (nRealRoots == 4) {
+        // they live in x[0], x[1], x[2], x[3].
         nSolutions = 4;
         for (int i = 0; i < nSolutions; i++) pv1x_Rs.push_back(x[i]);
     }
     else if (nRealRoots == 2) {
+        // x[0], x[1] are the real roots and x[2]±i*x[3] are the complex
         nSolutions = 3;
         for (int i = 0; i < nSolutions; i++) pv1x_Rs.push_back(x[i]); 
     }
     else if (nRealRoots == 0) {
+        // the equation has two pairs of pairs of complex conjugate roots in x[0]±i*x[1] and x[2]±i*x[3].
         nSolutions = 2;
         pv1x_Rs.push_back(x[0]);
         pv1x_Rs.push_back(x[2]); 
-    }
-
-    if (m_debug) {
-        cout << "pv1x = " << pv1x << endl; 
-        for (int i = 0; i < 4; i++) cout << "x(" << i << ") = " << x[i] << endl;
     }
 
     // find root closest to true pl1x
@@ -1692,31 +1682,11 @@ std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::vector<TLor
 
         pv1_Rs[i].SetPxPyPzE(pv1x_R, pv1y_R, pv1z_R, Ev1_R);
         pv2_Rs[i].SetPxPyPzE(pv2x_R, pv2y_R, pv2z_R, Ev2_R);
-
-        if (m_debug) {
-            printf("pv1x   = %.*e\n", dig, pv1x);
-            printf("pv1x_R = %.*e\n", dig, pv1x_R);
-            printf("pv2x   = %.*e\n", dig, pv2x);
-            printf("pv2x_R = %.*e\n", dig, pv2x_R);
-            printf("pv1y   = %.*e\n", dig, pv1y);
-            printf("pv1y_R = %.*e\n", dig, pv1y_R);
-            printf("pv2y   = %.*e\n", dig, pv2y);
-            printf("pv2y_R = %.*e\n", dig, pv2y_R);
-            printf("pv1z   = %.*e\n", dig, pv1z);
-            printf("pv1z_R = %.*e\n", dig, pv1z_R);
-            printf("pv2z   = %.*e\n", dig, pv2z);
-            printf("pv2z_R = %.*e\n", dig, pv2z_R);
-            printf("Ev1    = %.*e\n", dig, Ev1);
-            printf("Ev1_R  = %.*e\n", dig, Ev1_R);
-            printf("Ev2    = %.*e\n", dig, Ev2);
-            printf("Ev2_R  = %.*e\n", dig, Ev2_R);
-
-        }
     }
 
     int I = 0;
     double mtt_min = DBL_MAX;
-    for (int i = 0; i < nSolutions; i++) {
+    for (int i = 0; i < nSolutions; i++) { 
         double mtt = (p[0] + p[1] + p[2] + p[4] + pv1_Rs[i] + pv2_Rs[i]).M();
         if (mtt < mtt_min) {
             mtt_min = mtt;
@@ -1731,7 +1701,6 @@ std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::vector<TLor
     p_R[4] = pl2;
     p_R[5] = pv2_Rs[I];
 
-    if (m_debug) printf("--- end dilepton reconstruction ---\n\n");
     return p_R;
 }
 

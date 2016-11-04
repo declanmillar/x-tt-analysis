@@ -6,8 +6,9 @@
 #include <math.h>
 #include "solve-poly.hpp"
 
-const double TwoPi = 6.28318530717958648;
-const double eps = 1e-14;
+#define	TwoPi  6.28318530717958648
+// const double eps=1e-14;
+const double eps=1e-10;
 
 
 int SolveP2(double *x, double a, double b)
@@ -37,15 +38,7 @@ int SolveP2(double *x, double a, double b)
     }
 }
 
-
-int SolveP3(double *x,double a,double b,double c) 
-{	
-	// solve cubic equation x^3 + a*x^2 + b*x + c
-	// x - array of size 3
-	// In case 3 real roots: => x[0], x[1], x[2], return 3
-	//         2 real roots: x[0], x[1],          return 2
-	//         1 real root : x[0], x[1] � i*x[2], return 1
-
+int SolveP3(double *x,double a,double b,double c) {	// solve cubic equation x^3 + a*x^2 + b*x + c
 	double a2 = a*a;
     double q  = (a2 - 3*b)/9; 
 	double r  = (a*(2*a2-9*b) + 27*c)/54;
@@ -74,13 +67,11 @@ int SolveP3(double *x,double a,double b,double c)
 		if(fabs(x[2])<eps) { x[2]=x[1]; return(2); }
         return(1);
     }
-}
-
-void  CSqrt( double x, double y, double &a, double &b)
+}// SolveP3(double *x,double a,double b,double c) {	
+//---------------------------------------------------------------------------
+// a>=0!
+void  CSqrt( double x, double y, double &a, double &b) // returns:  a+i*s = sqrt(x+i*y)
 {
-	// returns:  a+i*s = sqrt(x+i*y)
-	// a>=0!
-
 	double r  = sqrt(x*x+y*y);
 	if( y==0 ) { 
 		r = sqrt(r);
@@ -90,12 +81,9 @@ void  CSqrt( double x, double y, double &a, double &b)
 		b = 0.5*y/a;
 	}
 }
-
-
-int   SolveP4Bi(double *x, double b, double d)
+//---------------------------------------------------------------------------
+int   SolveP4Bi(double *x, double b, double d)	// solve equation x^4 + b*x^2 + d = 0
 {
-	// solve equation x^4 + b*x^2 + d = 0
-
 	double D = b*b-4*d;
 	if( D>=0 ) 
 	{
@@ -136,9 +124,8 @@ int   SolveP4Bi(double *x, double b, double d)
 		CSqrt(-0.5*b,-sD2, x[2],x[3]);
 		return 0;
 	} // if( D>=0 ) 
-}
-
-
+} // SolveP4Bi(double *x, double b, double d)	// solve equation x^4 + b*x^2 d
+//---------------------------------------------------------------------------
 #define SWAP(a,b) { t=b; b=a; a=t; }
 static void  dblSort3( double &a, double &b, double &c) // make: a <= b <= c
 {
@@ -149,14 +136,11 @@ static void  dblSort3( double &a, double &b, double &c) // make: a <= b <= c
 		if( a>b ) SWAP(a,b);// now a<=b
 	}
 }
-
-
-int   SolveP4De(double *x, double b, double c, double d)
+//---------------------------------------------------------------------------
+int   SolveP4De(double *x, double b, double c, double d)	// solve equation x^4 + b*x^2 + c*x + d
 {
-	// solve equation x^4 + b*x^2 + c*x + d
 	//if( c==0 ) return SolveP4Bi(x,b,d); // After that, c!=0
-
-	if( fabs(c)<1e-14*(fabs(b)+fabs(d)) ) return SolveP4Bi(x,b,d); // After that, c!=0
+	if( fabs(c)<eps*(fabs(b)+fabs(d)) ) return SolveP4Bi(x,b,d); // After that, c!=0
 
 	int res3 = SolveP3( x, 2*b, b*b-4*d, -c*c);	// solve resolvent
 	// by Viet theorem:  x1*x2*x3=-c*c not equals to 0, so x1!=0, x2!=0, x3!=0
@@ -226,27 +210,21 @@ int   SolveP4De(double *x, double b, double c, double d)
 	x[2] = -sz1/2;
 	x[3] = szi;
 	return 2;
-}
-
-double N4Step(double x, double a,double b,double c,double d)
+} // SolveP4De(double *x, double b, double c, double d)	// solve equation x^4 + b*x^2 + c*x + d
+//-----------------------------------------------------------------------------
+double N4Step(double x, double a,double b,double c,double d)	// one Newton step for x^4 + a*x^3 + b*x^2 + c*x + d
 {
-	// one Newton step for x^4 + a*x^3 + b*x^2 + c*x + d
-
 	double fxs= ((4*x+3*a)*x+2*b)*x+c;	// f'(x)
 	if( fxs==0 ) return 1e99;
 	double fx = (((x+a)*x+b)*x+c)*x+d;	// f(x)
 	return x - fx/fxs;
 } 
-
-
-int   SolveP4(double *x,double a,double b,double c,double d) 
-{	
-	// solve equation x^4 + a*x^3 + b*x^2 + c*x + d by Dekart-Euler method
-	// x - array of size 4
-	// return 4: 4 real roots x[0], x[1], x[2], x[3], possible multiple roots
-	// return 2: 2 real roots x[0], x[1] and complex x[2]켲*x[3], 
-	// return 0: two pair of complex roots: x[0]켲*x[1],  x[2]켲*x[3], 
-
+//-----------------------------------------------------------------------------
+// x - array of size 4
+// return 4: 4 real roots x[0], x[1], x[2], x[3], possible multiple roots
+// return 2: 2 real roots x[0], x[1] and complex x[2]켲*x[3], 
+// return 0: two pair of complex roots: x[0]켲*x[1],  x[2]켲*x[3], 
+int   SolveP4(double *x,double a,double b,double c,double d) {	// solve equation x^4 + a*x^3 + b*x^2 + c*x + d by Dekart-Euler method
 	// move to a=0:
 	double d1 = d + 0.25*a*( 0.25*b*a - 3./64*a*a*a - c);
 	double c1 = c + 0.5*a*(0.25*a*a - b);
@@ -268,13 +246,11 @@ int   SolveP4(double *x,double a,double b,double c,double d)
 	}
 	return res;
 }
-
+//-----------------------------------------------------------------------------
 #define F5(t) (((((t+a)*t+b)*t+c)*t+d)*t+e)
-
-double SolveP5_1(double a,double b,double c,double d,double e)	
+//-----------------------------------------------------------------------------
+double SolveP5_1(double a,double b,double c,double d,double e)	// return real root of x^5 + a*x^4 + b*x^3 + c*x^2 + d*x + e = 0
 {
-	// return real root of x^5 + a*x^4 + b*x^3 + c*x^2 + d*x + e = 0
-
 	int cnt;
 	if( fabs(e)<eps ) return 0;
 
@@ -324,27 +300,23 @@ double SolveP5_1(double a,double b,double c,double d,double e)
 		x2 -= dx;
 	} while(fabs(dx)>eps);
 	return x2;
-}
-
-int SolveP5(double *x,double a,double b,double c,double d,double e)	
+} // SolveP5_1(double a,double b,double c,double d,double e)	// return real root of x^5 + a*x^4 + b*x^3 + c*x^2 + d*x + e = 0
+//-----------------------------------------------------------------------------
+int   SolveP5(double *x,double a,double b,double c,double d,double e)	// solve equation x^5 + a*x^4 + b*x^3 + c*x^2 + d*x + e = 0
 {
-	// solve equation x^5 + a*x^4 + b*x^3 + c*x^2 + d*x + e = 0
-
 	double r = x[0] = SolveP5_1(a,b,c,d,e);
 	double a1 = a+r, b1=b+r*a1, c1=c+r*b1, d1=d+r*c1;
 	return 1+SolveP4(x+1, a1,b1,c1,d1);
-}
-
-
+} // SolveP5(double *x,double a,double b,double c,double d,double e)	// solve equation x^5 + a*x^4 + b*x^3 + c*x^2 + d*x + e = 0
+//-----------------------------------------------------------------------------
+// let f(x ) = a*x^2 + b*x + c and 
+//     f(x0) = f0,
+//     f(x1) = f1,
+//     f(x2) = f3
+// Then r1, r2 - root of f(x)=0.
+// Returns 0, if there are no roots, else return 2.
 int Solve2( double x0, double x1, double x2, double f0, double f1, double f2, double &r1, double &r2)
-{	
-	// let f(x ) = a*x^2 + b*x + c and 
-	//     f(x0) = f0,
-	//     f(x1) = f1,
-	//     f(x2) = f3
-	// Then r1, r2 - root of f(x)=0.
-	// Returns 0, if there are no roots, else return 2.
-	
+{
 	double w0 = f0*(x1-x2);
 	double w1 = f1*(x2-x0);
 	double w2 = f2*(x0-x1);
@@ -358,3 +330,5 @@ int Solve2( double x0, double x1, double x2, double f0, double f1, double f2, do
 	r2 =  (-b1 - Di)/2/a1;
 	return 2;
 }
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------

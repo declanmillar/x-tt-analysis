@@ -42,7 +42,6 @@ class Analysis{
     double m_Emin = -1;
     double m_Emax = -1;
     bool m_useLumi;
-    const bool m_debug;
 
     unsigned int m_nReco;
     unsigned int m_nQuarksMatched;
