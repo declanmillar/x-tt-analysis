@@ -76,7 +76,8 @@ class Analysis{
     };
 
     const double m_pi = 3.14159265358979323846;
-    const double m_bmass = 4.18, m_Wmass = 80.23, m_tmass = 173.0;
+    // const double m_bmass = 4.18, m_Wmass = 80.23, m_tmass = 173.0;
+    const double m_bmass = 4.18, m_Wmass = 80.4, m_tmass = 172.5;
 
     // Histograms
     TH1D* h_mtt;
@@ -162,8 +163,9 @@ class Analysis{
     TH1D* h_HT;
     TH1D* h_KT;
 
-    TH1D* h_deltaRmax;
-    TH1D* h_deltaRbW;
+    TH1D* h_deltaR_max;
+    TH1D* h_deltaR_bW;
+    TH1D* h_deltaR_tt;
 
     std::vector<TH1D*> h_eta;
     std::vector<TH1D*> h_pt;

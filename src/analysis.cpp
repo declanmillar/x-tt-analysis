@@ -69,7 +69,7 @@ void Analysis::EachEvent()
         // int i = 0;
         // for (auto& l : p_R1) {
         //     if (l != l) {
-        //         printf("p[%i] has a nan!\n", i);
+        //         printf("p[%i] has a NaN!\n", i);
         //         l.Print();
         //     }
         //     i++;
@@ -171,12 +171,12 @@ void Analysis::EachEvent()
     double cos1cos2 = cosTheta1 * cosTheta2;
     double deltaPhi = p[2].DeltaPhi(p[4]) / m_pi;
 
-    double deltaRbW = p_W.DeltaR(p[0]);
-    std::vector<double> deltaRt;
-    deltaRt.push_back(p_t.DeltaR(p[0]));
-    deltaRt.push_back(p_t.DeltaR(p[2]));
-    deltaRt.push_back(p_t.DeltaR(p[3]));
-    auto deltaRmax = max_element(std::begin(deltaRt), std::end(deltaRt));
+    double deltaR_bW = p_W.DeltaR(p[0]);
+    std::vector<double> deltaR_ts;
+    deltaR_ts.push_back(p_t.DeltaR(p[0]));
+    deltaR_ts.push_back(p_t.DeltaR(p[2]));
+    deltaR_ts.push_back(p_t.DeltaR(p[3]));
+    auto deltaR_max = max_element(std::begin(deltaR_ts), std::end(deltaR_ts));
 
     double ytt_R1, ytt_R2;
     double cosTheta_R1, cosTheta_R2;
@@ -243,8 +243,9 @@ void Analysis::EachEvent()
         h_cosTheta1->Fill(cosTheta1, weight);
         h_cosTheta2->Fill(cosTheta2, weight);
         h_cos1cos2->Fill(cos1cos2, weight);
-        h_deltaRbW->Fill(deltaRbW, weight);
-        h_deltaRmax->Fill(*deltaRmax, weight);
+        h_deltaR_bW->Fill(deltaR_bW, weight);
+        h_deltaR_max->Fill(*deltaR_max, weight);
+        h_deltaR_tt->Fill(p_t.DeltaR(p_tbar), weight);
 
         for (int i = 0; i < (int) deltaRs.size(); i++)
             h_deltaRs[i]->Fill(deltaRs[i], weight);
@@ -334,14 +335,22 @@ void Analysis::SetupInputFiles()
     string E = "";
     if (m_energy != 13) "_" + std::to_string(m_energy);
 
+    bool add_02 = true;
+
+    if (add_02) {
+        filename = m_dataDirectory + "/" + m_model + "_" + "uudd-AZX-" + m_channel + E + "_0-2_" + std::to_string(m_vegasIterations) + "x" + m_vegasPoints;
+        m_inputFiles->push_back(filename + ".root");
+        m_weightFiles->push_back(filename + ".log");
+    }
+
     if (m_add_gg) {
-        filename = m_dataDirectory + "/SM_" + "gg-G-" + m_channel + E + "_2-4_" + std::to_string(m_vegasIterations) + "x" + m_vegasPoints;
+        filename = m_dataDirectory + "/SM_" + "gg-" + m_channel + E + "_2-4_" + std::to_string(m_vegasIterations) + "x" + m_vegasPoints;
         m_inputFiles->push_back(filename + ".root");
         m_weightFiles->push_back(filename + ".log");
     }
 
     if (m_add_qq) {
-        filename = m_dataDirectory + "/SM_" + "qq-G-" + m_channel + E + "_2-4_" + std::to_string(m_vegasIterations) + "x" + m_vegasPoints;
+        filename = m_dataDirectory + "/SM_" + "qq-" + m_channel + E + "_2-4_" + std::to_string(m_vegasIterations) + "x" + m_vegasPoints;
         m_inputFiles->push_back(filename + ".root");
         m_weightFiles->push_back(filename + ".log");
     }
@@ -468,56 +477,56 @@ void Analysis::AsymmetryUncertainty(TH1D* hA, TH1D* h1, TH1D* h2)
 void Analysis::MakeHistograms()
 {
     double binWidth = 0.05;
-    double Emin = 2.05;
-    double Emax = 3.95;
+    double Emin = 0.025;
+    double Emax = 3.975;
     double nbins = (Emax - Emin) / binWidth;
 
-    h_mtt = new TH1D("mtt", "m_{tt}", nbins, Emin, Emax);
+    h_mtt = new TH1D("m_tt", "m_{tt}", nbins, Emin, Emax);
     h_mtt->Sumw2();
-    h_ytt = new TH1D("ytt", "y_{tt}", 50, -2.5, 2.5);
+    h_ytt = new TH1D("y_tt", "y_{tt}", 50, -2.5, 2.5);
     h_ytt->Sumw2();
 
-    h_pxt = new TH1D("pxt", "p_{x}_{t}", nbins, 0, 7000);
+    h_pxt = new TH1D("px_t", "p_{x}_{t}", nbins, 0, 7000);
     h_pxt->Sumw2();
-    h_pyt = new TH1D("pyt", "p_{y}_{t}", nbins, 0, 7000);
+    h_pyt = new TH1D("py_t", "p_{y}_{t}", nbins, 0, 7000);
     h_pyt->Sumw2();
-    h_pzt = new TH1D("pzt", "p_{z}^{t}", nbins, 0, 7000);
+    h_pzt = new TH1D("pz_t", "p_{z}^{t}", nbins, 0, 7000);
     h_pzt->Sumw2();
-    h_Et = new TH1D("Et", "E_{t}", nbins, 0, 7000);
+    h_Et = new TH1D("E_t", "E_{t}", nbins, 0, 7000);
     h_Et->Sumw2();
-    h_pTt = new TH1D("pTt", "p_{T}^{t}", nbins, 0, 7000);
+    h_pTt = new TH1D("pT_t", "p_{T}^{t}", nbins, 0, 7000);
     h_pTt->Sumw2();
-    h_etat = new TH1D("etat", "#eta_{t}", nbins, 0, 10);
+    h_etat = new TH1D("eta_t", "#eta_{t}", nbins, 0, 10);
     h_etat->Sumw2();
-    h_phit = new TH1D("phit", "#phi_{t}", nbins, -1, 1);
+    h_phit = new TH1D("phi_t", "#phi_{t}", nbins, -1, 1);
     h_phit->Sumw2();
-    h_mt = new TH1D("mt", "m_{t}", nbins, 0, 350);
+    h_mt = new TH1D("m_t", "m_{t}", nbins, 100, 300);
     h_mt->Sumw2();
 
-    h_pxtbar = new TH1D("pxtbar", "p_{x}^{#bar{t}}", nbins, 0, 7000);
+    h_pxtbar = new TH1D("px_tbar", "p_{x}^{#bar{t}}", nbins, 0, 7000);
     h_pxtbar->Sumw2();
-    h_pytbar = new TH1D("pytbar", "p_{y}^{#bar{t}}", nbins, 0, 7000);
+    h_pytbar = new TH1D("py_tbar", "p_{y}^{#bar{t}}", nbins, 0, 7000);
     h_pytbar->Sumw2();
-    h_pztbar = new TH1D("pztbar", "p_{z}^{#bar{t}}", nbins, 0, 7000);
+    h_pztbar = new TH1D("pz_tbar", "p_{z}^{#bar{t}}", nbins, 0, 7000);
     h_pztbar->Sumw2();
-    h_Etbar = new TH1D("Etbar", "E_{#bar{t}}", nbins, 0, 7000);
+    h_Etbar = new TH1D("Et_bar", "E_{#bar{t}}", nbins, 0, 7000);
     h_Etbar->Sumw2();
-    h_pTtbar = new TH1D("pTtbar", "p_{T}^{#bar{t}}", nbins, 0, 7000);
+    h_pTtbar = new TH1D("pT_tbar", "p_{T}^{#bar{t}}", nbins, 0, 7000);
     h_pTtbar->Sumw2();
-    h_etatbar = new TH1D("etatbar", "#eta_{#bar{t}}", nbins, 0, 10);
+    h_etatbar = new TH1D("eta_tbar", "#eta_{#bar{t}}", nbins, 0, 10);
     h_etatbar->Sumw2();
-    h_phitbar = new TH1D("phitbar", "#phi_{#bar{t}}", nbins, -1, 1);
+    h_phitbar = new TH1D("phi_tbar", "#phi_{#bar{t}}", nbins, -1, 1);
     h_phitbar->Sumw2();
-    h_mtbar = new TH1D("mtbar", "m_{#bar{t}}", nbins, 0, 350);
+    h_mtbar = new TH1D("m_tbar", "m_{#bar{t}}", nbins, 100, 300);
     h_mtbar->Sumw2();
 
     h_mtt_F = new TH1D("mtt_F", "m_{tt}^{forward}", nbins, Emin, Emax);
     h_mtt_F->Sumw2();
     h_mtt_B = new TH1D("mtt_B", "m_{tt}^{backward}", nbins, Emin, Emax);
     h_mtt_B->Sumw2();
-    h_cosTheta = new TH1D("costheta", "cos#theta", nbins, -1.0, 1.0);
+    h_cosTheta = new TH1D("cos_theta", "cos#theta", nbins, -1.0, 1.0);
     h_cosTheta->Sumw2();
-    h_cosThetaStar = new TH1D("costhetastar", "cos#theta^{*}", nbins, -1.0, 1.0);
+    h_cosThetaStar = new TH1D("cos_theta_star", "cos#theta^{*}", nbins, -1.0, 1.0);
     h_cosThetaStar->Sumw2();
 
     h_HT = new TH1D("HT", "H_{T}", 40, 0, 4);
@@ -526,7 +535,7 @@ void Analysis::MakeHistograms()
     h_KT = new TH1D("KT", "K_{T}", 40, 0, 4);
     h_KT->Sumw2();
 
-    h_deltaPhi = new TH1D("deltaphi", "#Delta#phi", 10, 0, 1);
+    h_deltaPhi = new TH1D("delta_phi", "#Delta#phi", 10, 0, 1);
     h_deltaPhi->Sumw2();
     h_pv1x = new TH1D("pv1x", "p_{x}^{#nu_{1}}", nbins, -500.0, 500.0);
     h_pv1x->Sumw2();
@@ -608,26 +617,29 @@ void Analysis::MakeHistograms()
     std::vector<string> particles2 = {"b", "#bar{b}", "l+", "#nu", "q", "#bar{q}'"};
 
     for (int i = 0; i < 6; i++ ) {
-        n_eta.push_back("eta" + particles1[i]);
+        n_eta.push_back("eta_" + particles1[i]);
         t_eta.push_back("#eta_{" + particles2[i] + "}");
     }
 
     for (int i = 0; i < 6; i++ ) {
-        n_pt.push_back("pt" + particles1[i]);
+        n_pt.push_back("pT_" + particles1[i]);
         t_pt.push_back("#p_{T}^{" + particles2[i] + "}");
     }
 
     for (int i = 0; i < 6; i++ ) {
         for (int j = i + 1; j < 6; j++) {
-            deltaRnames.push_back("deltaR" + particles1[i] + particles1[j]);
-            deltaRtitles.push_back("#Delta R (" + particles2[i] + ", " + particles2[j] + ")");
+            deltaRnames.push_back("deltaR_" + particles1[i] + particles1[j]);
+            deltaRtitles.push_back("#Delta R(" + particles2[i] + "," + particles2[j] + ")");
         }
     }
 
-    h_deltaRbW = new TH1D("deltaRbW", "#Delta#R(bW)", 100, 0, 5);
-    h_deltaRbW->Sumw2();
-    h_deltaRmax = new TH1D("deltaRmax", "#Delta#R(max)", 100, 0, 5);
-    h_deltaRmax->Sumw2();
+    h_deltaR_tt = new TH1D("deltaR_tt", "#Delta R(t,#bar{t})", 100, 0, 5);
+    h_deltaR_tt->Sumw2();
+
+    h_deltaR_bW = new TH1D("deltaR_bW", "#Delta R(b,W)", 100, 0, 5);
+    h_deltaR_bW->Sumw2();
+    h_deltaR_max = new TH1D("deltaR_max", "#Delta R_{max}", 100, 0, 5);
+    h_deltaR_max->Sumw2();
 
     for (int i = 0; i < (int) deltaRnames.size(); i++)
         h_deltaRs.push_back(new TH1D(deltaRnames[i].c_str(), deltaRtitles[i].c_str(), 100, 0, 5));
@@ -638,44 +650,44 @@ void Analysis::MakeHistograms()
     }
 
     if (m_reco > 0) {
-        h_mtt_R = new TH1D("mtt_R", "m_{tt}^{reco}", nbins, Emin, Emax);
+        h_mtt_R = new TH1D("m_tt_R", "m_{tt}^{reco}", nbins, Emin, Emax);
         h_mtt_R->Sumw2();
 
-        h_pxt_R = new TH1D("pxt_R", "p_{x}_{t} (reco)", nbins, 0, 7000);
+        h_pxt_R = new TH1D("px_t_R", "p_{x}_{t} (reco)", nbins, 0, 7000);
         h_pxt_R->Sumw2();
-        h_pyt_R = new TH1D("pyt_R", "p_{y}_{t} (reco)", nbins, 0, 7000);
+        h_pyt_R = new TH1D("py_t_R", "p_{y}_{t} (reco)", nbins, 0, 7000);
         h_pyt_R->Sumw2();
-        h_pzt_R = new TH1D("pzt_R", "p_{z}^{t} (reco)", nbins, 0, 7000);
+        h_pzt_R = new TH1D("pz_t_R", "p_{z}^{t} (reco)", nbins, 0, 7000);
         h_pzt_R->Sumw2();
-        h_Et_R = new TH1D("Et_R", "E_{t} (reco)", nbins, 0, 7000);
+        h_Et_R = new TH1D("E__t_R", "E_{t} (reco)", nbins, 0, 7000);
         h_Et_R->Sumw2();
-        h_pTt_R = new TH1D("pTt_R", "p_{T}^{t} (reco)", nbins, 0, 7000);
+        h_pTt_R = new TH1D("pT_t_R", "p_{T}^{t} (reco)", nbins, 0, 7000);
         h_pTt_R->Sumw2();
-        h_etat_R = new TH1D("etat_R", "#eta_{t} (reco)", nbins, 0, 10);
+        h_etat_R = new TH1D("eta_t_R", "#eta_{t} (reco)", nbins, 0, 10);
         h_etat_R->Sumw2();
-        h_phit_R = new TH1D("phit_R", "#phi_{t} (reco)", nbins, -1, 1);
+        h_phit_R = new TH1D("phi_t_R", "#phi_{t} (reco)", nbins, -1, 1);
         h_phit_R->Sumw2();
         h_mt_R = new TH1D("mt_R", "m_{t} (reco)", nbins, 0, 350);
         h_mt_R->Sumw2();
 
-        h_pxtbar_R = new TH1D("pxtbar_R", "p_{x}_{#bar{t}} (reco)", nbins, 0, 7000);
+        h_pxtbar_R = new TH1D("px_tbar_R", "p_{x}_{#bar{t}} (reco)", nbins, 0, 7000);
         h_pxtbar_R->Sumw2();
-        h_pytbar_R = new TH1D("pytbar_R", "p_{y}_{#bar{t}} (reco)", nbins, 0, 7000);
+        h_pytbar_R = new TH1D("py_tbar_R", "p_{y}_{#bar{t}} (reco)", nbins, 0, 7000);
         h_pytbar_R->Sumw2();
-        h_pztbar_R = new TH1D("pztbar_R", "p_{z}^{#bar{t}} (reco)", nbins, 0, 7000);
+        h_pztbar_R = new TH1D("pz_tbar_R", "p_{z}^{#bar{t}} (reco)", nbins, 0, 7000);
         h_pztbar_R->Sumw2();
-        h_Etbar_R = new TH1D("Etbar_R", "E_{#bar{t}} (reco)", nbins, 0, 7000);
+        h_Etbar_R = new TH1D("E_tbar_R", "E_{#bar{t}} (reco)", nbins, 0, 7000);
         h_Etbar_R->Sumw2();
-        h_pTtbar_R = new TH1D("pTtbar_R", "p_{T}^{#bar{t}} (reco)", nbins, 0, 7000);
+        h_pTtbar_R = new TH1D("pT_tbar_R", "p_{T}^{#bar{t}} (reco)", nbins, 0, 7000);
         h_pTtbar_R->Sumw2();
-        h_etatbar_R = new TH1D("etatbar_R", "#eta_{#bar{t}} (reco)", nbins, 0, 10);
+        h_etatbar_R = new TH1D("eta_tbar_R", "#eta_{#bar{t}} (reco)", nbins, 0, 10);
         h_etatbar_R->Sumw2();
-        h_phitbar_R = new TH1D("phitbar_R", "#phi_{#bar{t}} (reco)", nbins, -1, 1);
+        h_phitbar_R = new TH1D("phi_tbar_R", "#phi_{#bar{t}} (reco)", nbins, -1, 1);
         h_phitbar_R->Sumw2();
-        h_mtbar_R = new TH1D("mtbar_R", "m_{#bar{t}} (reco)", nbins, 0, 350);
+        h_mtbar_R = new TH1D("m_tbar_R", "m_{#bar{t}} (reco)", nbins, 0, 350);
         h_mtbar_R->Sumw2();
 
-        h_costhetatt_R = new TH1D("costhetatt_R", "cos#theta_{t,#bar{t}} (reco)", 20, -1.0, 1.0);
+        h_costhetatt_R = new TH1D("costheta_tt_R", "cos#theta_{t,#bar{t}} (reco)", 20, -1.0, 1.0);
         h_mtt_FR = new TH1D("mtt_FR", "m_{tt}^{forward} (reco)", nbins, Emin, Emax);
         h_mtt_FR->Sumw2();
         h_mtt_BR = new TH1D("mtt_BR", "m_{tt}^{backward} (reco)", nbins, Emin, Emax);
@@ -686,9 +698,9 @@ void Analysis::MakeHistograms()
         h_mtt_BD->Sumw2();
         h_ytt_R = new TH1D("ytt_R", "y_{tt}^{reco}", 50, -2.5, 2.5);
         h_ytt_R->Sumw2();
-        h_cosTheta_R = new TH1D("cosTheta_R", "cos#theta_{reco}", nbins, -1.0, 1.0);
+        h_cosTheta_R = new TH1D("costheta_R", "cos#theta_{reco}", nbins, -1.0, 1.0);
         h_cosTheta_R->Sumw2();
-        h_cosThetaStar_R = new TH1D("cosThetaStar_R", "cos#theta_{reco}^{*}", nbins, -1.0, 1.0);
+        h_cosThetaStar_R = new TH1D("costhetastar_R", "cos#theta_{reco}^{*}", nbins, -1.0, 1.0);
         h_cosThetaStar_R->Sumw2();
         h_pv1x_R = new TH1D("pv1x_R", "p_{x}^{#nu_{1}} (reco", nbins, -500.0, 500.0);
         h_pv1x_R->Sumw2();
@@ -750,8 +762,9 @@ void Analysis::MakeDistributions()
 
     this->MakeDistribution1D(h_HT, "TeV");
     this->MakeDistribution1D(h_KT, "TeV");
-    this->MakeDistribution1D(h_deltaRbW, "");
-    this->MakeDistribution1D(h_deltaRmax, "");
+    this->MakeDistribution1D(h_deltaR_bW, "");
+    this->MakeDistribution1D(h_deltaR_max, "");
+    this->MakeDistribution1D(h_deltaR_tt, "");
     this->MakeDistribution1D(h_KT, "TeV");
 
     this->MakeDistribution1D(h_costhetatt, "");
@@ -1210,13 +1223,14 @@ void Analysis::GetIterationWeights(TString log)
     if (!logstream.is_open()) printf("Error: failed to open %s!\n", log.Data());
     string line;
     string target = " Iteration weighting";
+    string target2 = " iteration weighting";
     std::vector<string> parts;
     bool found = false;
     while(getline(logstream, line)) {
         trim(line);
         split(parts, line, boost::is_any_of(":"));
         for (auto& part : parts) trim(part);
-        if (parts[0] == target) {
+        if (parts[0] == target or parts[0] == target2) {
             iteration_weights.push_back(stod(parts[2]));
             found = true;
         }
@@ -1237,7 +1251,7 @@ void Analysis::Loop()
         this->SetupTreesForNewFile((*i));
         this->GetCrossSection(*i);
         this->GetIterationWeights(*i);
-        this->GetChannelFactors();
+        // this->GetChannelFactors();
         Long64_t nEntries;
         nEntries = this->TotalEvents();
         printf("Processing %lld entries...\n", nEntries);
@@ -1709,6 +1723,7 @@ std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::vector<TLor
 
 void Analysis::GetChannelFactors()
 {
+    ;
     // scale dilepton to other classifications
     // fac_ee = 1
     // fac_emu = 2

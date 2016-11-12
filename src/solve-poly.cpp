@@ -8,7 +8,7 @@
 
 #define	TwoPi  6.28318530717958648
 // const double eps=1e-14;
-const double eps=1e-10;
+const double eps = 10e-10;
 
 
 int SolveP2(double *x, double a, double b)
