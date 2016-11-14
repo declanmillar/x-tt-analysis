@@ -254,7 +254,7 @@ void Analysis::EachEvent()
     }
 
     if (m_reco > 0) {
-        // if (this->PassCuts("R1")) {
+        if (true) {//(this->PassCuts(p_R1, P_R1)) {
 
             h_mtt_R->Fill(mtt_R1, weight_R);
             h_ytt_R->Fill(ytt_R1, weight_R);
@@ -290,10 +290,10 @@ void Analysis::EachEvent()
             if (cosThetaStar_R1 < 0) h_mtt_BR->Fill(mtt_R1, weight_R);
             h2_mtt_cosThetaStar_R->Fill(mtt_R1, cosThetaStar_R1, weight_R);
             h2_mtt_cosThetal_R->Fill(mtt_R1, cosTheta1_R1, weight_R);
-        // }
+        }
     }
     if (m_reco == 2) {
-        // if (this->PassCuts("R2")) {
+        if (true) {//(this->PassCuts(p_R2, P_R2)) {
             h_mtt_R->Fill(mtt_R2, weight_R);
             h_ytt_R->Fill(ytt_R2, weight_R);
             h_mt_R->Fill(pcm_t_R2.M(), weight_R);
@@ -304,7 +304,7 @@ void Analysis::EachEvent()
             if (cosThetaStar_R2 < 0) h_mtt_BR->Fill(mtt_R2, weight_R);
             h2_mtt_cosThetaStar_R->Fill(mtt_R2, cosThetaStar_R2, weight_R);
             h2_mtt_cosThetal_R->Fill(mtt_R2, cosTheta2_R2, weight_R);
-        // }
+        }
     }
 }
 
@@ -979,9 +979,7 @@ bool Analysis::PassCuts(const std::vector<TLorentzVector>& p, const TLorentzVect
 
 bool Analysis::PassCutsMET(const std::vector<TLorentzVector>& p, const TLorentzVector& P)
 {
-    bool pass;
-    pass = true;
-
+    bool pass = true;
     this->UpdateCutflow(c_MET, pass);
     return pass;
 }
@@ -1032,6 +1030,8 @@ bool Analysis::PassCutsET(const std::vector<TLorentzVector>& p, const TLorentzVe
 
 bool Analysis::PassCutsYtt(const std::vector<TLorentzVector>& p, const TLorentzVector& P)
 {
+    if (m_ytt < 0) return true;
+
     double ytt = std::abs(P.Rapidity());
 
     if (ytt > m_ytt) {
