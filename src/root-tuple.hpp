@@ -45,7 +45,6 @@ class RootTuple{
     inline vector<double>*  Py() const {b_Py->GetEntry(m_currentEvent);return m_Py;}
     inline vector<double>*  Pz() const {b_Pz->GetEntry(m_currentEvent);return m_Pz;}
     inline vector<int>*  barcode() const {b_barcode->GetEntry(m_currentEvent);return m_barcode;}
-    inline Int_t  iteration() const {b_iteration->GetEntry(m_currentEvent);return m_iteration;}
     inline Double_t  weight() const {b_weight->GetEntry(m_currentEvent);return m_weight;}
 
     inline Long64_t currentEvent() const {return m_currentEvent;}
@@ -72,7 +71,6 @@ class RootTuple{
     vector<double>*  m_Py;
     vector<double>*  m_Pz;
     vector<int>*  m_barcode;
-    Int_t  m_iteration;
     Double_t  m_weight;
 
     TBranch*  b_E;
@@ -80,7 +78,6 @@ class RootTuple{
     TBranch*  b_Py;
     TBranch*  b_Pz;
     TBranch*  b_barcode;
-    TBranch*  b_iteration;
     TBranch*  b_weight;
 };
 #endif

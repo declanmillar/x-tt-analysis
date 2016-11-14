@@ -21,19 +21,13 @@ class Analysis{
     typedef std::vector<TString>::const_iterator Itr_s;
 
     TString m_model;
-    TString m_initial_state;
-    TString m_intermediates;
-    TString m_channel;
-    int m_energy;
+    TString m_process;
     TString m_options;
-    int m_vegasIterations;
-    std::string m_vegasPoints;
-    int m_add_gg;
-    int m_add_qq;
+    bool m_gg;
+    int m_qq;
+    int m_energy;
     int m_luminosity;
-    double m_efficiency;
-    const int m_btags;
-    const TString m_tag;
+    TString m_tag;
 
     bool m_xsec;
     const int m_reco;
@@ -78,6 +72,8 @@ class Analysis{
     const double m_pi = 3.14159265358979323846;
     // const double m_bmass = 4.18, m_Wmass = 80.23, m_tmass = 173.0;
     const double m_bmass = 4.18, m_Wmass = 80.4, m_tmass = 172.5;
+    const int m_btags = 2;
+    const double m_efficiency = 1.0;
 
     // Histograms
     TH1D* h_mtt;
@@ -213,24 +209,19 @@ class Analysis{
     void InitialiseCutflow();
     void PrintCutflow();
     void UpdateCutflow(int, bool);
-    bool PassCuts(const string&);
-    bool PassCutsMET(const string&);
-    bool PassCutsMtt(const string&);
-    bool PassCutsEta(const string&);
-    bool PassCutsYtt(const string&);
-    bool PassCutsET(const string&);
+    bool PassCuts(const std::vector<TLorentzVector>&, const TLorentzVector&);
+    bool PassCutsMET(const std::vector<TLorentzVector>&, const TLorentzVector&);
+    bool PassCutsMtt(const std::vector<TLorentzVector>&, const TLorentzVector&);
+    bool PassCutsEta(const std::vector<TLorentzVector>&, const TLorentzVector&);
+    bool PassCutsYtt(const std::vector<TLorentzVector>&, const TLorentzVector&);
+    bool PassCutsET(const std::vector<TLorentzVector>&, const TLorentzVector&);
 
     TH1D* Asymmetry(const TString&, const TString&, TH1D*, TH1D*);
     std::vector<TLorentzVector> ReconstructSemilepton(const std::vector<TLorentzVector>&, const int);
     std::vector<TLorentzVector> ReconstructDilepton(const std::vector<TLorentzVector>&);
   public:
-    Analysis(const TString&, const TString&, const TString&, const TString&, const int, const TString&, const int, const string, const bool, const bool, const int, const int, const TString&);
+    Analysis(const TString& model, const TString& process, const TString& options, const bool gg, const bool qq, const int energy, const int luminosity, const TString& tag);
     virtual ~Analysis();
     TString GetOutputFilename();
-    void SetEnergyRange(double, double);
-    void SetYttCut(const double);
-    void SetXsec(const bool);
-    void SetFiducial(const bool);
-    void Run();
 };
 #endif

@@ -70,7 +70,6 @@ void RootTuple::Init(TTree* tree){
   m_Py = 0;
   m_Pz = 0;
   m_barcode = 0;
-  m_iteration = 0;
   m_weight = 0;
 
   if (!tree) return;
@@ -83,6 +82,5 @@ void RootTuple::Init(TTree* tree){
   fChain->SetBranchAddress("Py", &m_Py, &b_Py);
   fChain->SetBranchAddress("Pz", &m_Pz, &b_Pz);
   fChain->SetBranchAddress("barcode", &m_barcode, &b_barcode);
-  fChain->SetBranchAddress("iteration", &m_iteration, &b_iteration);
   fChain->SetBranchAddress("weight", &m_weight, &b_weight);
 }

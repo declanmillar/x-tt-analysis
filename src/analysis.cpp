@@ -3,20 +3,14 @@
 #include "progress-bar.hpp"
 #include "bool-to-string.hpp"
 
-Analysis::Analysis(const TString& model, const TString& initial_state, const TString& intermediates, const TString& final_state,  const int energy, const TString& options, const int vegasIterations, const string vegasPoints, const bool add_gg, const bool add_qq, const int luminosity, const int btags, const TString& tag):
+Analysis::Analysis(const TString& model, const TString& process, const TString& options, const bool gg, const bool qq, const int energy, const int luminosity, const TString& tag):
     m_model(model),
-    m_initial_state(initial_state),
-    m_intermediates(intermediates),
-    m_channel(final_state),
-    m_energy(energy),
+    m_process(process),
     m_options(options),
-    m_vegasIterations(vegasIterations),
-    m_vegasPoints(vegasPoints),
-    m_add_gg(add_gg),
-    m_add_qq(add_qq),
+    m_gg(gg),
+    m_qq(qq),
+    m_energy(energy),
     m_luminosity(luminosity),
-    m_efficiency(1.0),
-    m_btags(btags),
     m_tag(tag),
     m_reco(1), 
     m_outputFile(nullptr),
@@ -25,12 +19,6 @@ Analysis::Analysis(const TString& model, const TString& initial_state, const TSt
     m_chainNtup(nullptr),
     m_ntup(nullptr)
 { 
-    ;
-}
-
-
-void Analysis::Run()
-{
     this->PreLoop();
     this->Loop();
     this->PostLoop();
@@ -39,7 +27,7 @@ void Analysis::Run()
 
 void Analysis::EachEvent()
 {
-    // UpdateCutflow(c_entries, true);
+    UpdateCutflow(c_entries, true);
 
     std::vector<TLorentzVector> p(6);
     for (int i = 0; i < 6; i++)
@@ -66,14 +54,14 @@ void Analysis::EachEvent()
     if (m_reco == 1) {
         p_R1 = this->ReconstructDilepton(p); // both decay leptonically
 
-        // int i = 0;
-        // for (auto& l : p_R1) {
-        //     if (l != l) {
-        //         printf("p[%i] has a NaN!\n", i);
-        //         l.Print();
-        //     }
-        //     i++;
-        // }
+        int i = 0;
+        for (auto& l : p_R1) {
+            if (l != l) {
+                printf("p[%i] has a NaN!\n", i);
+                l.Print();
+            }
+            i++;
+        }
 
         P_R1.SetPxPyPzE(0, 0, 0, 0);
         for (auto& l : p_R1) P_R1 += l;
@@ -198,16 +186,11 @@ void Analysis::EachEvent()
         cosTheta2_R2 = cos(patop_R2[4].Angle(pcm_tb_R2.Vect()));
     }
 
-    double weight = 1, weight_R = 1;
-    if (m_xsec) {
-        double it = m_ntup->iteration();
-        weight = m_ntup->weight();
-        weight = 1000 * weight * m_sigma/iteration_weights[it - 1];
-        if (m_reco == 2) weight_R = weight / 2;
-        else weight_R = weight;
-    }
+    double weight = 1, weight_R;
+    if (m_reco == 2) weight_R = weight / 2;
+    else weight_R = weight;
 
-    // if (this->PassCuts("truth")) {
+    if (this->PassCuts(p, P)) {
         h_pxt->Fill(p_t.Px(), weight);
         h_pyt->Fill(p_t.Py(), weight);
         h_pzt->Fill(p_t.Pz(), weight);
@@ -268,7 +251,7 @@ void Analysis::EachEvent()
         h2_mtt_cos1cos2->Fill(mtt, cos1cos2, weight);
         h2_HT_deltaPhi->Fill(HT, deltaPhi, weight);
         h2_KT_deltaPhi->Fill(KT, deltaPhi, weight);
-    // }
+    }
 
     if (m_reco > 0) {
         // if (this->PassCuts("R1")) {
@@ -335,35 +318,26 @@ void Analysis::SetupInputFiles()
     string E = "";
     if (m_energy != 13) "_" + std::to_string(m_energy);
 
-    bool add_02 = true;
-
-    if (add_02) {
-        filename = m_dataDirectory + "/" + m_model + "_" + "uudd-AZX-" + m_channel + E + "_0-2_" + std::to_string(m_vegasIterations) + "x" + m_vegasPoints;
+    if (m_gg) {
+        filename = m_dataDirectory + "/SM_" + "gg-tt-bbllvv" + E;
         m_inputFiles->push_back(filename + ".root");
         m_weightFiles->push_back(filename + ".log");
     }
 
-    if (m_add_gg) {
-        filename = m_dataDirectory + "/SM_" + "gg-" + m_channel + E + "_2-4_" + std::to_string(m_vegasIterations) + "x" + m_vegasPoints;
+    if (m_qq) {
+        filename = m_dataDirectory + "/SM_" + "qq-tt-bbllvv" + E;
         m_inputFiles->push_back(filename + ".root");
         m_weightFiles->push_back(filename + ".log");
     }
 
-    if (m_add_qq) {
-        filename = m_dataDirectory + "/SM_" + "qq-" + m_channel + E + "_2-4_" + std::to_string(m_vegasIterations) + "x" + m_vegasPoints;
-        m_inputFiles->push_back(filename + ".root");
-        m_weightFiles->push_back(filename + ".log");
-    }
-
-    filename = m_dataDirectory + "/" + m_model + "_" + m_initial_state + "-" + m_intermediates + m_channel + E + m_options + std::to_string(m_vegasIterations) + "x" + m_vegasPoints;
+    filename = m_dataDirectory + "/" + m_model + "_" + m_process + E + m_options;
     m_inputFiles->push_back(filename + ".root");
     m_weightFiles->push_back(filename + ".log");
 
-    // Check all input files exist
+    // check all input files exist
     for (auto inputFile : *m_inputFiles) {
-        bool exists = false;
         struct stat buffer;
-        exists = stat(inputFile.Data(), &buffer) == 0;
+        bool exists = stat(inputFile.Data(), &buffer) == 0;
         if (exists == false) {
             printf("Error: %s does not exist.\n", inputFile.Data());
             exit(exists);
@@ -374,16 +348,14 @@ void Analysis::SetupInputFiles()
 
 void Analysis::SetupOutputFiles()
 {
-    TString outfilename;
-    TString initial_state = m_initial_state;
-    TString intermediates = m_intermediates;
     string E = "";
     if (m_energy != 13) "_" + std::to_string(m_energy);
 
-    if (m_add_gg || m_add_qq) intermediates = "G" + intermediates;
-    if (m_add_gg) initial_state = "gg" + initial_state;
-    outfilename = m_dataDirectory + "/" + m_model + "_" + initial_state + "-" + intermediates + m_channel + E + m_options + std::to_string(m_vegasIterations) + "x" + m_vegasPoints;
-    m_outputFilename = outfilename + ".a";
+    m_outputFilename = m_dataDirectory + "/" + m_model + "_" + m_process + E + m_options;
+    m_outputFilename = m_outputFilename + ".a";
+
+    if (m_qq) m_outputFilename + ".q";
+    if (m_gg) m_outputFilename + ".g";
 
     if (m_reco == 2 && m_btags != 2) m_outputFilename += ".b" + std::to_string(m_btags);
     string ytt = std::to_string(m_ytt);
@@ -392,12 +364,9 @@ void Analysis::SetupOutputFiles()
     string eff = std::to_string(m_efficiency);
     if (m_efficiency < 1.0) m_outputFilename += ".e" + eff.erase(eff.find_last_not_of('0') + 1, string::npos);
     if (m_luminosity > 0) m_outputFilename += ".L" + std::to_string(m_luminosity);
-    if (m_fid == true) m_outputFilename += ".fid";
     m_outputFilename += m_tag;
     m_outputFilename += ".root";
-
-    printf("-- Output --\n");
-    printf("%s\n", m_outputFilename.Data());
+    std::cout << "output: " << m_outputFilename.Data() << std::endl;
     m_outputFile = new TFile(m_outputFilename, "RECREATE");
 }
 
@@ -406,17 +375,15 @@ void Analysis::PostLoop()
     this->CheckResults();
     if (m_reco == 2) this->CheckPerformance();
     this->MakeDistributions();
-    // this->PrintCutflow();
+    this->PrintCutflow();
     this->WriteHistograms();
 }
 
 
 void Analysis::CheckResults()
 {
-    printf("-- Results --\n");
     double sigma = h_mtt->Integral("width");
-    printf("Analysis Cross Section = %.15le [pb]\n", sigma);
-    printf("\n");
+    std::cout << "cross section: " <<sigma << " [pb]" << std::endl;
 }
 
 
@@ -478,8 +445,9 @@ void Analysis::MakeHistograms()
 {
     double binWidth = 0.05;
     double Emin = 0.025;
-    double Emax = 3.975;
+    double Emax = 12.975;
     double nbins = (Emax - Emin) / binWidth;
+    std:: cout << "energy range: " << Emin << " to " << Emax << " [TeV]" << std::endl;
 
     h_mtt = new TH1D("m_tt", "m_{tt}", nbins, Emin, Emax);
     h_mtt->Sumw2();
@@ -993,151 +961,86 @@ void Analysis::WriteHistograms()
 }
 
 
-// bool Analysis::PassCuts(string& type) 
-// {
-//     if(!(type == "truth" or type == "R1" or type == "R2")) return false;
-//     if(this->PassCutsET(type)) {
-//         if(this->PassCutsEta(type)) {
-//             if(this->PassCutsMET(type)) {
-//                 if(this->PassCutsMtt(type)) {
-//                     if(this->PassCutsYtt(type)) {
-//                         return true;
-//                     }
-//                 }
-//             }
-//         }
-//     }
-//     return false;
-// }
+bool Analysis::PassCuts(const std::vector<TLorentzVector>& p, const TLorentzVector& P) 
+{
+    if (this->PassCutsET(p, P)) {
+        if (this->PassCutsEta(p,P)) {
+            if (this->PassCutsMET(p, P)) {
+                if (this->PassCutsMtt(p, P)) {
+                    if (this->PassCutsYtt(p,P)) {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    return false;
+}
 
-// bool Analysis::PassCutsMET(string& type)
-// {
-//     bool pass;
-//     pass = true;
+bool Analysis::PassCutsMET(const std::vector<TLorentzVector>& p, const TLorentzVector& P)
+{
+    bool pass;
+    pass = true;
 
-//     this->UpdateCutflow(c_MET, pass);
-//     return pass;
-// }
+    this->UpdateCutflow(c_MET, pass);
+    return pass;
+}
 
-// bool Analysis::PassCutsMtt(string& type)
-// {
-//     double mtt;
-//     if (type == "truth") mtt = P.M()/1000;
-//     else if (type == "R1") mtt = P_R1.M()/1000;
-//     else if (type == "R2") mtt = P_R2.M()/1000;
-//     else return false;
+bool Analysis::PassCutsMtt(const std::vector<TLorentzVector>& p, const TLorentzVector& P)
+{
+    if (m_Emin < 0 and m_Emax < 0) return true;
 
-//     if (m_Emin < 0 and m_Emax < 0) return true;
+    double mtt = P.M() / 1000;
 
-//     if (mtt > m_Emin) {
-//         if (mtt < m_Emax) {
-//             UpdateCutflow(c_mtt, true);
-//             return true;
-//         }
-//     }
-//     UpdateCutflow(c_mtt, false);
-//     return false;
-// }
+    if (mtt > m_Emin) {
+        if (mtt < m_Emax) {
+            UpdateCutflow(c_mtt, true);
+            return true;
+        }
+    }
+    UpdateCutflow(c_mtt, false);
+    return false;
+}
 
-// bool Analysis::PassCutsEta(string& type)
-// {
-//     if (m_fid == false) {
-//         UpdateCutflow(c_eta, true);
-//         return true;
-//     }
-//     if (type == "truth") {
-//         for (unsigned int i = 0; i < p.size(); i++) {
-//             // bool outsideCrack = abs(p[i].PseudoRapidity()) <= 1.37 || abs(p[i].PseudoRapidity()) >= 1.52;
-//             bool central = std::abs(p[i].PseudoRapidity()) <= 2.5;
-//             // bool passesEtaCuts = outsideCrack && central;
-//             if (central == false) {
-//                 UpdateCutflow(c_eta, false);
-//                 return false;
-//             }
-//             else continue;
-//         }
-//     }
-//     else if (type == "R1") {
-//         for (unsigned int i = 0; i < p_R1.size(); i++) {
-//             // bool outsideCrack = p_R1[i].PseudoRapidity() <= 1.37 || p_R1[i].PseudoRapidity() >= 1.52;
-//             bool central = p_R1[i].PseudoRapidity() <= 2.5;
-//             // bool passesEtaCuts = outsideCrack && central;
-//             if (central == false) {
-//                 UpdateCutflow(c_eta, false);
-//                 return false;
-//             }
-//             else continue;
-//         }
-//     }
-//     else if (type == "R2") {
-//         for (unsigned int i = 0; i < p_R2.size(); i++) {
-//             // bool outsideCrack = p_R2[i].PseudoRapidity() <= 1.37 || p_R2[i].PseudoRapidity() >= 1.52;
-//             bool central = p_R2[i].PseudoRapidity() <= 2.5;
-//             // bool passesEtaCuts = outsideCrack && central;
-//             if (central == false) {
-//                 UpdateCutflow(c_eta, false);
-//                 return false;
-//             }
-//             else continue;
-//         }
-//     }
-//     else return false;
-//     UpdateCutflow(c_eta, true);
-//     return true;
-// }
+bool Analysis::PassCutsEta(const std::vector<TLorentzVector>& p, const TLorentzVector& P)
+{
+    for (unsigned int i = 0; i < p.size(); i++) {
+        // bool outsideCrack = abs(p[i].PseudoRapidity()) <= 1.37 || abs(p[i].PseudoRapidity()) >= 1.52;
+        bool central = std::abs(p[i].PseudoRapidity()) <= 2.5;
+        // bool passesEtaCuts = outsideCrack && central;
+        if (central == false) {
+            UpdateCutflow(c_eta, false);
+            return false;
+        }
+    }
+    UpdateCutflow(c_eta, true);
+    return true;
+}
 
-// bool Analysis::PassCutsET(string& type)
-// {
-//     if (m_fid == false) {
-//         UpdateCutflow(c_Et, true);
-//         return true;
-//     }
-//     if (type == "truth") {
-//         for (unsigned int i = 0; i < p.size(); i++) {
-//             if(p[i].Et() <= 25) {
-//                 UpdateCutflow(c_Et, false);
-//                 return false;
-//             }
-//             else continue;
-//         }
-//     }
-//     else if (type == "R1") {
-//         for (unsigned int i = 0; i < p_R1.size(); i++) {
-//             if(p_R1[i].Et() <= 25) {
-//                 UpdateCutflow(c_Et, false);
-//                 return false;
-//             }
-//             else continue;
-//         }
-//     }
-//     else if (type == "R2") {
-//         for (unsigned int i = 0; i < p_R2.size(); i++) {
-//             if(p_R2[i].Et() <= 25) {
-//                 UpdateCutflow(c_Et, false);
-//                 return false;
-//             }
-//             else continue;
-//         }
-//     }
-//     else return false;
-//     UpdateCutflow(c_Et, true);
-//     return true;
-// }
+bool Analysis::PassCutsET(const std::vector<TLorentzVector>& p, const TLorentzVector& P)
+{
+    for (unsigned int i = 0; i < p.size(); i++) {
+        if(p[i].Et() <= 25) {
+            UpdateCutflow(c_Et, false);
+            return false;
+        }
+        else continue;
+    }
+    UpdateCutflow(c_Et, true);
+    return true;
+}
 
-// bool Analysis::PassCutsYtt(string& type)
-// {
-//     double ytt;
-//     if (type == "truth") ytt = std::abs(P.Rapidity());
-//     else if (type == "R1") ytt = std::abs(P_R1.Rapidity());
-//     else if (type == "R2") ytt = std::abs(P_R2.Rapidity());
-//     else return false;
-//     if (ytt > m_ytt) {
-//         UpdateCutflow(c_ytt, true);
-//         return true;
-//     }
-//     UpdateCutflow(c_ytt, false);
-//     return false;
-// }
+bool Analysis::PassCutsYtt(const std::vector<TLorentzVector>& p, const TLorentzVector& P)
+{
+    double ytt = std::abs(P.Rapidity());
+
+    if (ytt > m_ytt) {
+        UpdateCutflow(c_ytt, true);
+        return true;
+    }
+    UpdateCutflow(c_ytt, false);
+    return false;
+}
 
 
 void Analysis::PreLoop()
@@ -1246,24 +1149,24 @@ void Analysis::GetIterationWeights(TString log)
 void Analysis::Loop()
 {
     for (Itr_s i = m_inputFiles->begin(); i != m_inputFiles->end(); ++i) {
-        printf("\n-- Input %li --\n", i - m_inputFiles->begin() + 1);
-        cout << (*i) << endl;
+        printf("input %li: ", i - m_inputFiles->begin() + 1);
+        std::cout << (*i) << std::endl;
         this->SetupTreesForNewFile((*i));
-        this->GetCrossSection(*i);
-        this->GetIterationWeights(*i);
+        // this->GetCrossSection(*i);
+        // this->GetIterationWeights(*i);
         // this->GetChannelFactors();
-        Long64_t nEntries;
-        nEntries = this->TotalEvents();
-        printf("Processing %lld entries...\n", nEntries);
-        for (Long64_t jentry = 0; jentry < nEntries; ++jentry) {
-            Long64_t ientry = this->IncrementEvent(jentry);
-            if (ientry < 0) break;
+        Long64_t nevents;
+        nevents = this->TotalEvents();
+        std::cout << "events: " << nevents << std::endl;
+        for (Long64_t jevent = 0; jevent < nevents; ++jevent) {
+            Long64_t ievent = this->IncrementEvent(jevent);
+            if (ievent < 0) break;
             this->EachEvent();
-            ProgressBar(jentry, nEntries - 1, 50);
+            ProgressPercentage(jevent, nevents - 1, 50);
         }
         this->CleanUp();
     }
-    cout << endl;
+    std::cout << endl;
 }
 
 
@@ -1723,7 +1626,6 @@ std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::vector<TLor
 
 void Analysis::GetChannelFactors()
 {
-    ;
     // scale dilepton to other classifications
     // fac_ee = 1
     // fac_emu = 2
@@ -1743,24 +1645,24 @@ void Analysis::InitialiseCutflow()
 {
     m_cutflow = std::vector<int>(m_cuts, -999);
     m_cutNames = std::vector<TString>(m_cuts, "no name");
-    m_cutNames[c_entries]       = "Entries         ";
-    m_cutNames[c_topDecays]     = "t->be#nu        ";
-    m_cutNames[c_antitopDecays] = "#bar{t}->be#nu  ";
-    m_cutNames[c_events]        = "Events          ";
-    m_cutNames[c_realSolutions] = "p^{#nu}_{z} real";
+    m_cutNames[c_entries]       = "entries         ";
+    m_cutNames[c_topDecays]     = "t->bev          ";
+    m_cutNames[c_antitopDecays] = "tbar->bev       ";
+    m_cutNames[c_events]        = "events          ";
+    m_cutNames[c_realSolutions] = "pvz real        ";
     m_cutNames[c_MET]           = "MET             ";
     m_cutNames[c_mtt]           = "mtt             ";
     m_cutNames[c_ytt]           = "ytt             ";
-    m_cutNames[c_eta]           = "#eta            ";
-    m_cutNames[c_Et]            = "E_{T}           ";
+    m_cutNames[c_eta]           = "eta             ";
+    m_cutNames[c_Et]            = "ET              ";
 
-    h_cutflow = new TH1D("Cutflow", "Cutflow", m_cuts, 0, m_cuts);
+    h_cutflow = new TH1D("cutflow", "cutflow", m_cuts, 0, m_cuts);
 }
 
 
 void Analysis::PrintCutflow()
 {
-    printf("-- Cutflow --\n");
+    std::cout << "cutflow: " << std::endl;
     for (int cut = 0; cut < m_cuts; cut++) {
         if (m_cutflow[cut] == -999) continue;
 
@@ -1770,29 +1672,4 @@ void Analysis::PrintCutflow()
         printf("%s %i pass\n", m_cutNames[cut].Data(), m_cutflow[cut]);
     }
     h_cutflow->Write();
-}
-
-
-void Analysis::SetYttCut(const double ytt)
-{
-    m_ytt = ytt;
-}
-
-
-void Analysis::SetXsec(const bool xsec)
-{
-    m_xsec = xsec;
-}
-
-
-void Analysis::SetFiducial(const bool fid)
-{
-    m_fid = fid;
-}
-
-
-void Analysis::SetEnergyRange(double Emin = -1, double Emax = -1)
-{
-    m_Emin = Emin;
-    m_Emax = Emax;
 }
