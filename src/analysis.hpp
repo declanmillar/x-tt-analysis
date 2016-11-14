@@ -222,6 +222,5 @@ class Analysis{
   public:
     Analysis(const TString& model, const TString& process, const TString& options, const bool gg, const bool qq, const int energy, const int luminosity, const TString& tag);
     virtual ~Analysis();
-    TString GetOutputFilename();
 };
 #endif

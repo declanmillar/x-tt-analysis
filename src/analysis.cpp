@@ -383,7 +383,7 @@ void Analysis::PostLoop()
 void Analysis::CheckResults()
 {
     double sigma = h_mtt->Integral("width");
-    std::cout << "cross section: " <<sigma << " [pb]" << std::endl;
+    std::cout << "cross section: " << sigma << " [pb]" << std::endl;
 }
 
 
@@ -528,9 +528,9 @@ void Analysis::MakeHistograms()
     h_cos1cos2 = new TH1D("cos1cos2", "cos#theta_{l+}cos#theta_{l-}", 20, -1.0, 1.0);
     h_cos1cos2->Sumw2();
 
-    h_mtt_Fl = new TH1D("mtt_Fl", "m_{tt}^{F,l}", 19, 2.05, 3.95);
+    h_mtt_Fl = new TH1D("mtt_Fl", "m_{tt}^{F,l}", nbins, Emin, Emax);
     h_mtt_Fl->Sumw2();
-    h_mtt_Bl = new TH1D("mtt_Bl", "m_{tt}^{B,l}", 19, 2.05, 3.95);
+    h_mtt_Bl = new TH1D("mtt_Bl", "m_{tt}^{B,l}", nbins, Emin, Emax);
     h_mtt_Bl->Sumw2();
 
     h2_mtt_cosThetaStar = new TH2D("mtt_costhetastar", "m_{tt} cos#theta^{*}", nbins, Emin, Emax, 2, -1.0, 1.0);
@@ -596,7 +596,7 @@ void Analysis::MakeHistograms()
 
     for (int i = 0; i < 6; i++ ) {
         for (int j = i + 1; j < 6; j++) {
-            deltaRnames.push_back("deltaR_" + particles1[i] + particles1[j]);
+            deltaRnames.push_back("delta_R" + particles1[i] + particles1[j]);
             deltaRtitles.push_back("#Delta R(" + particles2[i] + "," + particles2[j] + ")");
         }
     }
@@ -627,7 +627,7 @@ void Analysis::MakeHistograms()
         h_pyt_R->Sumw2();
         h_pzt_R = new TH1D("pz_t_R", "p_{z}^{t} (reco)", nbins, 0, 7000);
         h_pzt_R->Sumw2();
-        h_Et_R = new TH1D("E__t_R", "E_{t} (reco)", nbins, 0, 7000);
+        h_Et_R = new TH1D("E_t_R", "E_{t} (reco)", nbins, 0, 7000);
         h_Et_R->Sumw2();
         h_pTt_R = new TH1D("pT_t_R", "p_{T}^{t} (reco)", nbins, 0, 7000);
         h_pTt_R->Sumw2();
@@ -807,9 +807,9 @@ void Analysis::MakeDistributions()
         h_mtt_BRn = (TH1D*) h_mtt_BR->Clone("h_mtt_BRn");
         h_mtt_BRn->Divide(h_mtt_R);
 
-        h_AFB_R = this->Asymmetry("AFB_R", "A_{FB}^{reco}", h_mtt_FR, h_mtt_BR);
+        h_AFB_R = this->Asymmetry("AFB_R", "A_{FB}^{*} (reco)", h_mtt_FR, h_mtt_BR);
         h_AFB_R->GetYaxis()->SetTitle(h_AFB_R->GetTitle());
-        h_AFB_R->GetXaxis()->SetTitle("m_{tt}^{reco} [TeV]");
+        h_AFB_R->GetXaxis()->SetTitle("m_{tt} (reco) [TeV]");
     }
 }
 
@@ -1056,6 +1056,8 @@ void Analysis::PreLoop()
 
 void Analysis::SetDataDirectory()
 {
+    // sets directory based on hostname
+
     char hostname[1024];
     hostname[1023] = '\0';
     gethostname(hostname, 1023);
@@ -1069,12 +1071,6 @@ void Analysis::SetDataDirectory()
         m_dataDirectory = "/scratch/dam1g09/zprime";
     else
         printf("Hostname %s not recognised.\n", Hostname.c_str());
-}
-
-
-TString Analysis::GetOutputFilename()
-{
-    return m_outputFilename;
 }
 
 
