@@ -29,7 +29,7 @@ class Analysis{
     int m_luminosity;
     TString m_tag;
 
-    bool m_xsec;
+    bool m_xsec = false;
     const int m_reco;
     bool m_fid;
     double m_ytt = 0;
@@ -43,6 +43,7 @@ class Analysis{
     unsigned int m_nRealRoots;
     unsigned int m_nComplexRoots;
     double m_sigma;
+    Long64_t m_nevents;
 
     std::vector<double> iteration_weights;
     TString m_dataDirectory;
@@ -191,18 +192,17 @@ class Analysis{
     void MakeHistograms();
     void MakeDistributions();
     void MakeDistribution1D(TH1D*, const TString&);
-    void MakeDistribution2D(TH2D*);
+    void MakeDistribution2D(TH2D*, TString, TString);
     void NormalizeSliceY(TH2D*);
     void WriteHistograms();
     void CheckResults();
     void CheckPerformance();
     void CreateFilenames();
     void CheckFiles();
-    void GetCrossSection(TString);
-    void GetIterationWeights(TString);
+    void GetGenerationCrossSection(TString);
+    // void GetIterationWeights(TString);
     void SetDataDirectory();
     void GetChannelFactors();
-    void ApplyLuminosity(TH1D*);
     void AsymmetryUncertainty(TH1D*, TH1D*, TH1D*);
     void ResetCounters();
 

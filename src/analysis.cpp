@@ -383,7 +383,7 @@ void Analysis::PostLoop()
 void Analysis::CheckResults()
 {
     double sigma = h_mtt->Integral("width");
-    std::cout << "cross section: " << sigma << " [pb]" << std::endl;
+    std::cout << "analysis cross section: " << sigma << " [fb]" << std::endl;
 }
 
 
@@ -398,20 +398,6 @@ void Analysis::CheckPerformance()
 }
 
 
-void Analysis::ApplyLuminosity(TH1D* h) 
-{
-    double sigma, N, dN;
-    for (int i = 1; i < h->GetNbinsX() + 1; i++) {
-        sigma = h->GetBinContent(i);
-        N = m_luminosity * m_efficiency * sigma;
-        h->SetBinContent(i, N);
-        dN = sqrt(N);
-        h->SetBinError(i, dN);
-    }
-    h->GetYaxis()->SetTitle("Expected events");
-}
-
-
 TH1D* Analysis::Asymmetry(const TString& name, const TString& title, TH1D* h1, TH1D* h2)
 {
     TH1D* h_numerator = (TH1D*) h1->Clone(name);
@@ -421,7 +407,7 @@ TH1D* Analysis::Asymmetry(const TString& name, const TString& title, TH1D* h1, T
     h_denominator->Add(h2, 1);
     h_numerator->Divide(h_denominator);
     delete h_denominator;
-    if (m_luminosity > -1) this->AsymmetryUncertainty(h_numerator, h1, h2);
+    // if (m_luminosity > -1) this->AsymmetryUncertainty(h_numerator, h1, h2);
     return h_numerator;
 }
 
@@ -444,8 +430,8 @@ void Analysis::AsymmetryUncertainty(TH1D* hA, TH1D* h1, TH1D* h2)
 void Analysis::MakeHistograms()
 {
     double binWidth = 0.05;
-    double Emin = 0.025;
-    double Emax = 12.975;
+    double Emin = 2.025;
+    double Emax = 3.975;
     double nbins = (Emax - Emin) / binWidth;
     std:: cout << "energy range: " << Emin << " to " << Emax << " [TeV]" << std::endl;
 
@@ -818,49 +804,72 @@ void Analysis::MakeDistribution1D(TH1D* h, const TString& units)
 {
     TString ytitle, yunits, xunits;
     if (m_xsec) {
-        ytitle = "d#sigma / d"; //pp->t#bar{t}->b#bar{b}l^{+}l^{-}#nu#bar{#nu}
+        h->Scale(m_sigma / m_nevents, "width");
+        ytitle = "d#sigma / d" + (TString) h->GetTitle();
         if (units != "") {
             yunits = " [fb/" + units + "]";
             xunits = " [" + units + "]";
         }
-        else{
+        else {
             yunits = "";
             xunits = "";
         }
     }
     else {
-        ytitle = "Generated events";
-        xunits = " [" + units + "]";
+        if (m_useLumi) {
+            double N_analysis = m_luminosity * m_sigma;
+            h->Scale(N_analysis / m_nevents);
+            ytitle = "Expected events";
+        }
+        else ytitle = "Generated events";
         if (units != "") xunits = " [" + units + "]";
         else xunits = "";
     }
-    h->GetYaxis()->SetTitle(ytitle + h->GetTitle() + yunits);
+    h->GetYaxis()->SetTitle(ytitle + yunits);
     h->GetXaxis()->SetTitle(h->GetTitle() + xunits);
-    if (m_xsec && m_useLumi) this->ApplyLuminosity(h);
-    else h->Scale(1,"width");
     m_outputFile->cd();
     m_outputFile->cd("/");
     h->Write();
 }
 
 
-void Analysis::MakeDistribution2D(TH2D* h) {
-    double sigma, N, dN;
-    int k;
-    if (m_xsec && m_useLumi) {
-        for (int i = 1; i < h->GetNbinsX() + 1; i++) {
-            for (int j = 1; j < h->GetNbinsY() + 1; j++) {
-                k = h->GetBin(i, j);
-                sigma = h->GetBinContent(k);
-                N = sigma*m_luminosity*m_efficiency;
-                h->SetBinContent(k, N);
-                dN = sqrt(N);
-                h->SetBinError(k, dN);
-            }
+void Analysis::MakeDistribution2D(TH2D* h,  TString xunits,  TString yunits) {
+    TString ztitle, zunits;
+    if (m_xsec) {
+        h->Scale(m_sigma / m_nevents, "width");
+        ztitle = "d#sigma / d";
+        if (xunits != "" and yunits != "") {
+            zunits = " [fb/" + xunits + "/" + yunits + "]";
+            xunits = " [" + xunits + "]";
+            yunits = " [" + yunits + "]";
         }
-        h->GetZaxis()->SetTitle("Expected events");
+        else if (xunits != "" and yunits == "") {
+            zunits = " [fb/" + xunits + "]";
+            xunits = " [" + xunits + "]";
+        }
+        else if (xunits == "" and yunits != "") {
+            zunits = " [fb/" + yunits + "]";
+            yunits = " [" + yunits + "]";
+        }
+        else {
+            zunits = "";
+        }
     }
-    else h->Scale(1, "width");
+    else {
+        if (m_useLumi) {
+            int N_analysis = m_luminosity * m_sigma;
+            h->Scale(N_analysis / m_nevents);
+            ztitle = "Expected events";
+        }
+        else {
+            ztitle = "Generated events";
+        }
+        if (xunits != "") xunits = " [" + xunits + "]";
+        if (yunits != "") yunits = " [" + yunits + "]";
+    }
+    h->GetZaxis()->SetTitle(ztitle + h->GetTitle() + zunits);
+    h->GetYaxis()->SetTitle(h->GetTitle() + yunits);
+    h->GetXaxis()->SetTitle(h->GetTitle() + xunits);
     m_outputFile->cd();
     m_outputFile->cd("/");
     h->Write();
@@ -907,15 +916,15 @@ void Analysis::WriteHistograms()
         h_AFB_R->Write();
     }
 
-    this->MakeDistribution2D(h2_mtt_deltaPhi);
-    this->MakeDistribution2D(h2_mtt_cos1cos2);
-    this->MakeDistribution2D(h2_HT_deltaPhi);
-    this->MakeDistribution2D(h2_KT_deltaPhi);
-    this->MakeDistribution2D(h2_mtt_cosThetaStar);
-    this->MakeDistribution2D(h2_mtt_cosThetaStar_R);
-    this->MakeDistribution2D(h2_mtt_cosTheta1);
-    this->MakeDistribution2D(h2_mtt_cosTheta2);
-    this->MakeDistribution2D(h2_mtt_cosThetal_R);
+    this->MakeDistribution2D(h2_mtt_deltaPhi, "GeV", "");
+    this->MakeDistribution2D(h2_mtt_cos1cos2, "GeV", "");
+    this->MakeDistribution2D(h2_HT_deltaPhi, "GeV", "");
+    this->MakeDistribution2D(h2_KT_deltaPhi, "GeV", "");
+    this->MakeDistribution2D(h2_mtt_cosThetaStar, "GeV", "");
+    this->MakeDistribution2D(h2_mtt_cosThetaStar_R, "GeV", "");
+    this->MakeDistribution2D(h2_mtt_cosTheta1, "GeV", "");
+    this->MakeDistribution2D(h2_mtt_cosTheta2, "GeV", "");
+    this->MakeDistribution2D(h2_mtt_cosThetal_R, "GeV", "");
 
     TF1 *func = new TF1("func1", "[0]*x + [1]", -1, 1);
     TObjArray slices1;
@@ -963,18 +972,18 @@ void Analysis::WriteHistograms()
 
 bool Analysis::PassCuts(const std::vector<TLorentzVector>& p, const TLorentzVector& P) 
 {
-    if (this->PassCutsET(p, P)) {
-        if (this->PassCutsEta(p,P)) {
-            if (this->PassCutsMET(p, P)) {
-                if (this->PassCutsMtt(p, P)) {
-                    if (this->PassCutsYtt(p,P)) {
+    // if (this->PassCutsET(p, P)) {
+    //     if (this->PassCutsEta(p,P)) {
+    //         if (this->PassCutsMET(p, P)) {
+    //             if (this->PassCutsMtt(p, P)) {
+    //                 if (this->PassCutsYtt(p,P)) {
                         return true;
-                    }
-                }
-            }
-        }
-    }
-    return false;
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+    // return false;
 }
 
 bool Analysis::PassCutsMET(const std::vector<TLorentzVector>& p, const TLorentzVector& P)
@@ -1086,14 +1095,14 @@ void Analysis::ResetCounters()
 }
 
 
-void Analysis::GetCrossSection(TString filename)
+void Analysis::GetGenerationCrossSection(TString filename)
 {
     filename.Replace(filename.Last('.'), 5, ".log");
     printf("%s\n", filename.Data());
     std::ifstream logstream(filename.Data());
     if (!logstream.is_open()) printf("Error: failed to open %s!\n", filename.Data());
     string line;
-    string target = " Cross section";
+    string target = " cross section";
     std::vector<string> parts;
     bool found = false;
     while(getline(logstream, line)) {
@@ -1101,45 +1110,45 @@ void Analysis::GetCrossSection(TString filename)
         boost::split(parts, line, boost::is_any_of(":"));
         for (auto& part : parts) trim(part);
         if (parts[0] == target) {
-            m_sigma = std::stod(parts[1]);
+            m_sigma = 1000 * std::stod(parts[1]);
             found = true;
         }
     }
     logstream.close();
     if (!found) {
-        printf("Error: Failed to read generation cross section. Check target log file: %s", filename.Data());
+        printf("error: failed to read generation cross section from: %s", filename.Data());
         exit(1);
     }
-    else printf("Generation Cross section = %.15le [pb]\n", m_sigma);
+    else printf("Generation Cross section = %.15le [fb]\n", m_sigma);
 }
 
 
-void Analysis::GetIterationWeights(TString log)
-{
-    iteration_weights.clear();
-    log.Replace(log.Last('.'), 5, ".log");
-    std::ifstream logstream(log.Data());
-    if (!logstream.is_open()) printf("Error: failed to open %s!\n", log.Data());
-    string line;
-    string target = " Iteration weighting";
-    string target2 = " iteration weighting";
-    std::vector<string> parts;
-    bool found = false;
-    while(getline(logstream, line)) {
-        trim(line);
-        split(parts, line, boost::is_any_of(":"));
-        for (auto& part : parts) trim(part);
-        if (parts[0] == target or parts[0] == target2) {
-            iteration_weights.push_back(stod(parts[2]));
-            found = true;
-        }
-    }
-    logstream.close();
-    if (!found) {
-        printf("Error: Failed to read Vegas iteration weights. Check %s", log.Data());
-        exit(1);
-    }
-}
+// void Analysis::GetIterationWeights(TString log)
+// {
+//     iteration_weights.clear();
+//     log.Replace(log.Last('.'), 5, ".log");
+//     std::ifstream logstream(log.Data());
+//     if (!logstream.is_open()) printf("Error: failed to open %s!\n", log.Data());
+//     string line;
+//     string target = " Iteration weighting";
+//     string target2 = " iteration weighting";
+//     std::vector<string> parts;
+//     bool found = false;
+//     while(getline(logstream, line)) {
+//         trim(line);
+//         split(parts, line, boost::is_any_of(":"));
+//         for (auto& part : parts) trim(part);
+//         if (parts[0] == target or parts[0] == target2) {
+//             iteration_weights.push_back(stod(parts[2]));
+//             found = true;
+//         }
+//     }
+//     logstream.close();
+//     if (!found) {
+//         printf("Error: Failed to read Vegas iteration weights. Check %s", log.Data());
+//         exit(1);
+//     }
+// }
 
 
 void Analysis::Loop()
@@ -1148,17 +1157,16 @@ void Analysis::Loop()
         printf("input %li: ", i - m_inputFiles->begin() + 1);
         std::cout << (*i) << std::endl;
         this->SetupTreesForNewFile((*i));
-        // this->GetCrossSection(*i);
+        this->GetGenerationCrossSection(*i);
         // this->GetIterationWeights(*i);
         // this->GetChannelFactors();
-        Long64_t nevents;
-        nevents = this->TotalEvents();
-        std::cout << "events: " << nevents << std::endl;
-        for (Long64_t jevent = 0; jevent < nevents; ++jevent) {
+        m_nevents = this->TotalEvents();
+        std::cout << "events: " << m_nevents << std::endl;
+        for (Long64_t jevent = 0; jevent < m_nevents; ++jevent) {
             Long64_t ievent = this->IncrementEvent(jevent);
             if (ievent < 0) break;
             this->EachEvent();
-            ProgressPercentage(jevent, nevents - 1, 50);
+            ProgressPercentage(jevent, m_nevents - 1, 50);
         }
         this->CleanUp();
     }
@@ -1538,9 +1546,9 @@ std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::vector<TLor
     double x[4];
     int nRealRoots = SolveP4(x, a[0], a[1], a[2], a[3]);
 
-    if (x[0] != x[0] && x[1] != x[1] && x[2] != x[2]) printf("ERROR! Three NaNs in quartic solutions.\n");
+    if (x[0] != x[0] && x[1] != x[1] && x[2] != x[2]) printf("error: Three NaNs in quartic solutions.\n");
 
-    // if (x[0] != x[0] || x[1] != x[1] || x[2] != x[2] || x[3] != x[3]) printf("ERROR! NaN in quartic solutions.\n");
+    // if (x[0] != x[0] || x[1] != x[1] || x[2] != x[2] || x[3] != x[3]) printf("error: NaN in quartic solutions.\n");
 
     int nSolutions;
     std::vector<double> pv1x_Rs;

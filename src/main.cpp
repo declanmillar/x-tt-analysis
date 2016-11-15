@@ -8,10 +8,13 @@ int main(int argc, char* argv[])
     po::options_description desc("options");
     desc.add_options()
     ("model,m",          po::value<string>()->default_value("SM"))
-    ("initial_state,i",  po::value<string>()->default_value("qq"))
-    ("final_state,f",    po::value<string>()->default_value("tt-bbllvv"))
     ("gg,g",             po::value<bool>()->default_value(false)->implicit_value(true))
     ("qq,q",             po::value<bool>()->default_value(false)->implicit_value(true))
+    ("uu,u",             po::value<bool>()->default_value(false)->implicit_value(true))
+    ("dd,d",             po::value<bool>()->default_value(false)->implicit_value(true))
+    ("final_state,f",    po::value<string>()->default_value("tt-bbllvv"))
+    ("addgg,g",          po::value<bool>()->default_value(false)->implicit_value(true))
+    ("addqq,q",          po::value<bool>()->default_value(false)->implicit_value(true))
     ("energy,E",         po::value<int>()->default_value(13))
     ("luminosity,L",     po::value<double>()->default_value(-1))
     ("options,o",        po::value<string>()->default_value(""))
@@ -21,13 +24,21 @@ int main(int argc, char* argv[])
     po::store(po::parse_command_line(argc, argv, desc), opt);
 
     std::string model = opt["model"].as<string>();
-    std::string initial_state = opt["initial_state"].as<string>();
+    std::string initial_state;
+    bool gg = opt["gg"].as<bool>();
+    bool qq = opt["qq"].as<bool>();
+    bool dd = opt["dd"].as<bool>();
+    bool uu = opt["uu"].as<bool>();
+    if (gg) initial_state += "gg";
+    if (qq) initial_state += "qq";
+    if (dd) initial_state += "dd";
+    if (uu) initial_state += "uu";
     std::string final_state = opt["final_state"].as<string>();
     std::string options = opt["options"].as<string>();
     int energy = opt["energy"].as<int>();
     int luminosity = opt["luminosity"].as<double>();
-    bool gg = opt["gg"].as<bool>();
-    bool qq = opt["qq"].as<bool>();
+    bool addgg = opt["addgg"].as<bool>();
+    bool addqq = opt["addqq"].as<bool>();
     std::string tag = opt["tag"].as<string>();
 
     AtlasROOTStyle atlasStyle;
@@ -35,8 +46,8 @@ int main(int argc, char* argv[])
 
     std::string intermediates;
     if (boost::contains(initial_state,"uu") or boost::contains(initial_state,"dd")) {
-        if (model == "SM") intermediates = "AZ-";
-        else intermediates = "AZX-";
+        if (model == "SM") intermediates = "-AZ-";
+        else intermediates = "-AZX-";
     }
     else {
         intermediates = "-";
@@ -50,5 +61,5 @@ int main(int argc, char* argv[])
     std::cout << "luminosity: " << luminosity << std::endl;
     std::cout << "tag: " << tag << std::endl;
 
-    Analysis* analysis = new Analysis(model, process, options, gg, qq, energy, luminosity, tag);
+    Analysis* analysis = new Analysis(model, process, options, addgg, addqq, energy, luminosity, tag);
 }
