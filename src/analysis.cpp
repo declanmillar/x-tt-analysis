@@ -3,12 +3,12 @@
 #include "progress-bar.hpp"
 #include "bool-to-string.hpp"
 
-Analysis::Analysis(const TString& model, const TString& process, const TString& options, const bool gg, const bool qq, const int energy, const int luminosity, const TString& tag):
+Analysis::Analysis(const TString& model, const TString& process, const TString& options, const bool add_gg, const bool add_qq, const int energy, const int luminosity, const TString& tag):
     m_model(model),
     m_process(process),
     m_options(options),
-    m_gg(gg),
-    m_qq(qq),
+    m_add_gg(add_gg),
+    m_add_qq(add_qq),
     m_energy(energy),
     m_luminosity(luminosity),
     m_tag(tag),
@@ -109,26 +109,25 @@ void Analysis::EachEvent()
     TLorentzVector p_t = p[0] + p[2] + p[3];
     TLorentzVector p_tbar = p[1] + p[4] + p[5];
     TLorentzVector pcm_t = pcm[0] + pcm[2] + pcm[3];
-    TLorentzVector pcm_tb = pcm[1] + pcm[4] + pcm[5];
+    TLorentzVector pcm_tbar = pcm[1] + pcm[4] + pcm[5];
     TLorentzVector p_W = p[2] + p[3];
     TLorentzVector p_t_R1;
     TLorentzVector p_tbar_R1;
     TLorentzVector pcm_t_R1;
-    TLorentzVector pcm_tb_R1;
+    TLorentzVector pcm_tbar_R1;
     TLorentzVector pcm_t_R2;
-    TLorentzVector pcm_tb_R2;
+    TLorentzVector pcm_tbar_R2;
 
     if (m_reco > 0) {
         p_t_R1 = p_R1[0] + p_R1[2] + p_R1[3];
         p_tbar_R1 = p_R1[1] + p_R1[4] + p_R1[5];
         pcm_t_R1 = pcm_R1[0] + pcm_R1[2] + pcm_R1[3];
-        pcm_tb_R1 = pcm_R1[1] + pcm_R1[4] + pcm_R1[5];
+        pcm_tbar_R1 = pcm_R1[1] + pcm_R1[4] + pcm_R1[5];
     }
     if (m_reco == 2) {
         pcm_t_R2 = pcm_R2[0] + pcm_R2[2] + pcm_R2[3];
-        pcm_tb_R2 = pcm_R2[1] + pcm_R2[4] + pcm_R2[5];
+        pcm_tbar_R2 = pcm_R2[1] + pcm_R2[4] + pcm_R2[5];
     }
-
 
     double mtt = P.M() / 1000;
     double mtt_R1 = P_R1.M() / 1000;
@@ -144,7 +143,7 @@ void Analysis::EachEvent()
     KT = KT / 1000;
 
     double costhetatt = cos(p_t.Angle(p_tbar.Vect()));
-
+    double delta_abs_yt = std::abs(p_t.Rapidity()) - std::abs(p_tbar.Rapidity());
     double ytt = P.Rapidity();
     double cosTheta = pcm_t.CosTheta();
     double cosThetaStar = int(ytt / std::abs(ytt)) * cosTheta;
@@ -154,9 +153,9 @@ void Analysis::EachEvent()
         for (int j = i + 1; j < 6; j++)
             deltaRs.push_back(p[i].DeltaR(p[j]));
 
-    double cosTheta1 = cos(ptop[2].Angle(pcm_t.Vect()));
-    double cosTheta2 = cos(patop[4].Angle(pcm_tb.Vect()));
-    double cos1cos2 = cosTheta1 * cosTheta2;
+    double costheta_tl1 = cos(ptop[2].Angle(pcm_t.Vect()));
+    double costheta_tl2 = cos(patop[4].Angle(pcm_tbar.Vect()));
+    double cos1cos2 = costheta_tl1 * costheta_tl2;
     double deltaPhi = p[2].DeltaPhi(p[4]) / m_pi;
 
     double deltaR_bW = p_W.DeltaR(p[0]);
@@ -166,27 +165,44 @@ void Analysis::EachEvent()
     deltaR_ts.push_back(p_t.DeltaR(p[3]));
     auto deltaR_max = max_element(std::begin(deltaR_ts), std::end(deltaR_ts));
 
+    double phil = p[2].Phi();
+    double El = p[2].E();
     double ytt_R1, ytt_R2;
     double cosTheta_R1, cosTheta_R2;
     double cosThetaStar_R1, cosThetaStar_R2;
     double cosTheta1_R1, cosTheta2_R2;
     double costhetatt_R1;
+    double delta_abs_yt_R1;
+
+    double pTperf, costhetattperf;
 
     if (m_reco > 0) {
+        pTperf = (p_t.Pt() - p_t_R1.Pt()) / p_t.Pt();
+        delta_abs_yt_R1 = std::abs(p_t_R1.Rapidity()) - std::abs(p_tbar_R1.Rapidity());
         ytt_R1 = P_R1.Rapidity();
         cosTheta_R1 = pcm_t_R1.CosTheta();
         cosThetaStar_R1 = int(ytt_R1 / std::abs(ytt_R1)) * cosTheta_R1;
         cosTheta1_R1 = cos(ptop_R1[2].Angle(pcm_t_R1.Vect()));
         costhetatt_R1 = cos(p_t_R1.Angle(p_tbar_R1.Vect()));
+        costhetattperf = (costhetatt - costhetatt_R1) / costhetatt;
     }
     if (m_reco == 2) {
         ytt_R2 = P_R2.Rapidity();
         cosTheta_R2 = pcm_t_R2.CosTheta();
         cosThetaStar_R2 = int(ytt_R2 / std::abs(ytt_R2)) * cosTheta_R2;
-        cosTheta2_R2 = cos(patop_R2[4].Angle(pcm_tb_R2.Vect()));
+        cosTheta2_R2 = cos(patop_R2[4].Angle(pcm_tbar_R2.Vect()));
     }
 
     double weight = 1, weight_R;
+
+    if (m_useLumi) {
+        int N_analysis = m_luminosity * m_sigma;
+        weight = weight * N_analysis / m_nevents;
+    } 
+    else {
+        weight = m_sigma / m_nevents;
+    }
+
     if (m_reco == 2) weight_R = weight / 2;
     else weight_R = weight;
 
@@ -212,6 +228,7 @@ void Analysis::EachEvent()
         h_mtt->Fill(mtt, weight);
         h_ytt->Fill(ytt, weight);
         h_costhetatt->Fill(costhetatt, weight_R);
+        h_costhetattperf->Fill(costhetattperf, weight);
         h_cosTheta->Fill(cosTheta, weight);
         h_cosThetaStar->Fill(cosThetaStar, weight);
         h_HT->Fill(HT, weight);
@@ -223,8 +240,8 @@ void Analysis::EachEvent()
         h_pv2y->Fill(p[5].Py(), weight);
         h_pv2z->Fill(p[5].Pz(), weight);
         h_deltaPhi->Fill(deltaPhi, weight);
-        h_cosTheta1->Fill(cosTheta1, weight);
-        h_cosTheta2->Fill(cosTheta2, weight);
+        h_cosTheta1->Fill(costheta_tl1, weight);
+        h_cosTheta2->Fill(costheta_tl2, weight);
         h_cos1cos2->Fill(cos1cos2, weight);
         h_deltaR_bW->Fill(deltaR_bW, weight);
         h_deltaR_max->Fill(*deltaR_max, weight);
@@ -238,16 +255,29 @@ void Analysis::EachEvent()
             h_pt[i]->Fill(p[i].Pt(), weight);
         }
 
-        if (cosThetaStar > 0) h_mtt_F->Fill(mtt, weight);
-        if (cosThetaStar < 0) h_mtt_B->Fill(mtt, weight);
+        double phi0 = 0.7, E0 = 80;
+        if (cosThetaStar > 0) h_mtt_tF->Fill(mtt, weight);
+        if (cosThetaStar < 0) h_mtt_tB->Fill(mtt, weight);
 
-        if (cosTheta1 > 0) h_mtt_Fl->Fill(mtt, weight);
-        if (cosTheta1 < 0) h_mtt_Bl->Fill(mtt, weight);
+        if (delta_abs_yt > 0) h_mtt_tCF->Fill(mtt, weight);
+        if (delta_abs_yt < 0) h_mtt_tCB->Fill(mtt, weight);
+
+        if (costheta_tl1 > 0) h_mtt_tlF->Fill(mtt, weight);
+        if (costheta_tl2 < 0) h_mtt_tlB->Fill(mtt, weight);
+
+        if (costheta_tl1 > 0) h_mtt_lF->Fill(mtt, weight);
+        if (costheta_tl1 < 0) h_mtt_lB->Fill(mtt, weight);
+
+        if (phil < m_pi and phil > phi0) h_mtt_philF->Fill(mtt, weight);
+        if (phil < phi0) h_mtt_philB->Fill(mtt, weight);
+
+        if (El > E0) h_mtt_ElF->Fill(mtt, weight);
+        if (El < E0) h_mtt_ElB->Fill(mtt, weight);
 
         h2_mtt_cosThetaStar->Fill(mtt, cosThetaStar, weight);
         h2_mtt_deltaPhi->Fill(mtt, deltaPhi, weight);
-        h2_mtt_cosTheta1->Fill(mtt, cosTheta1, weight);
-        h2_mtt_cosTheta2->Fill(mtt, cosTheta2, weight);
+        h2_mtt_cosTheta1->Fill(mtt, costheta_tl1, weight);
+        h2_mtt_cosTheta2->Fill(mtt, costheta_tl2, weight);
         h2_mtt_cos1cos2->Fill(mtt, cos1cos2, weight);
         h2_HT_deltaPhi->Fill(HT, deltaPhi, weight);
         h2_KT_deltaPhi->Fill(KT, deltaPhi, weight);
@@ -267,6 +297,7 @@ void Analysis::EachEvent()
             h_etat_R->Fill(p_t_R1.Eta(), weight_R);
             h_phit_R->Fill(p_t_R1.Phi() / m_pi, weight_R);
             h_mt_R->Fill(p_t_R1.M(), weight_R);
+            h_pTperf->Fill(pTperf, weight_R);
 
             h_pxtbar_R->Fill(p_tbar_R1.Px(), weight_R);
             h_pytbar_R->Fill(p_tbar_R1.Py(), weight_R);
@@ -286,8 +317,19 @@ void Analysis::EachEvent()
             h_pv2x_R->Fill(p_R1[5].Px(), weight_R);
             h_pv2y_R->Fill(p_R1[5].Py(), weight_R);
             h_pv2z_R->Fill(p_R1[5].Pz(), weight_R);
-            if (cosThetaStar_R1 > 0) h_mtt_FR->Fill(mtt_R1, weight_R);
-            if (cosThetaStar_R1 < 0) h_mtt_BR->Fill(mtt_R1, weight_R);
+
+            if (cosThetaStar_R1 > 0) h_mtt_tF_R->Fill(mtt_R1, weight_R);
+            if (cosThetaStar_R1 < 0) h_mtt_tB_R->Fill(mtt_R1, weight_R);
+
+            if (delta_abs_yt > 0) h_mtt_tCF->Fill(mtt_R1, weight);
+            if (delta_abs_yt < 0) h_mtt_tCB->Fill(mtt_R1, weight);
+
+            if (costheta_tl1 > 0) h_mtt_tlF->Fill(mtt_R1, weight);
+            if (costheta_tl2 < 0) h_mtt_tlB->Fill(mtt_R1, weight);
+
+            if (costheta_tl1 > 0) h_mtt_lF->Fill(mtt_R1, weight);
+            if (costheta_tl1 < 0) h_mtt_lB->Fill(mtt_R1, weight);
+
             h2_mtt_cosThetaStar_R->Fill(mtt_R1, cosThetaStar_R1, weight_R);
             h2_mtt_cosThetal_R->Fill(mtt_R1, cosTheta1_R1, weight_R);
         }
@@ -297,11 +339,11 @@ void Analysis::EachEvent()
             h_mtt_R->Fill(mtt_R2, weight_R);
             h_ytt_R->Fill(ytt_R2, weight_R);
             h_mt_R->Fill(pcm_t_R2.M(), weight_R);
-            h_mtbar_R->Fill(pcm_tb_R2.M(), weight_R);
+            h_mtbar_R->Fill(pcm_tbar_R2.M(), weight_R);
             h_cosTheta_R->Fill(cosTheta_R2, weight_R);
             h_cosThetaStar_R->Fill(cosThetaStar_R2, weight_R);
-            if (cosThetaStar_R2 > 0) h_mtt_FR->Fill(mtt_R2, weight_R);
-            if (cosThetaStar_R2 < 0) h_mtt_BR->Fill(mtt_R2, weight_R);
+            if (cosThetaStar_R2 > 0) h_mtt_tF_R->Fill(mtt_R2, weight_R);
+            if (cosThetaStar_R2 < 0) h_mtt_tB_R->Fill(mtt_R2, weight_R);
             h2_mtt_cosThetaStar_R->Fill(mtt_R2, cosThetaStar_R2, weight_R);
             h2_mtt_cosThetal_R->Fill(mtt_R2, cosTheta2_R2, weight_R);
         }
@@ -318,19 +360,29 @@ void Analysis::SetupInputFiles()
     string E = "";
     if (m_energy != 13) "_" + std::to_string(m_energy);
 
-    if (m_gg) {
-        filename = m_dataDirectory + "/SM_" + "gg-tt-bbllvv" + E;
+    if (m_add_gg) {
+        // filename = m_dataDirectory + "/SM_" + "gg-tt-bbllvv" + E + "_0-2";
+        // m_inputFiles->push_back(filename + ".root");
+        // m_weightFiles->push_back(filename + ".log");
+        filename = m_dataDirectory + "/SM_" + "gg-tt-bbllvv" + E + "_2-4";
+        m_inputFiles->push_back(filename + ".root");
+        m_weightFiles->push_back(filename + ".log");
+        // filename = m_dataDirectory + "/SM_" + "gg-tt-bbllvv" + E + "_4-13";
+        // m_inputFiles->push_back(filename + ".root");
+        // m_weightFiles->push_back(filename + ".log");
+    }
+
+    if (m_add_qq) {
+        filename = m_dataDirectory + "/SM_" + "qq-tt-bbllvv" + E + m_options;
         m_inputFiles->push_back(filename + ".root");
         m_weightFiles->push_back(filename + ".log");
     }
 
-    if (m_qq) {
-        filename = m_dataDirectory + "/SM_" + "qq-tt-bbllvv" + E;
-        m_inputFiles->push_back(filename + ".root");
-        m_weightFiles->push_back(filename + ".log");
-    }
+    filename = m_dataDirectory + "/" + m_model + "_" + m_process + E + "_2-4";
+    m_inputFiles->push_back(filename + ".root");
+    m_weightFiles->push_back(filename + ".log");
 
-    filename = m_dataDirectory + "/" + m_model + "_" + m_process + E + m_options;
+    filename = m_dataDirectory + "/" + m_model + "_" + m_process + E + "_4-13";
     m_inputFiles->push_back(filename + ".root");
     m_weightFiles->push_back(filename + ".log");
 
@@ -354,8 +406,8 @@ void Analysis::SetupOutputFiles()
     m_outputFilename = m_dataDirectory + "/" + m_model + "_" + m_process + E + m_options;
     m_outputFilename = m_outputFilename + ".a";
 
-    if (m_qq) m_outputFilename + ".q";
-    if (m_gg) m_outputFilename + ".g";
+    if (m_add_qq) m_outputFilename += ".q";
+    if (m_add_gg) m_outputFilename += ".g";
 
     if (m_reco == 2 && m_btags != 2) m_outputFilename += ".b" + std::to_string(m_btags);
     string ytt = std::to_string(m_ytt);
@@ -430,8 +482,8 @@ void Analysis::AsymmetryUncertainty(TH1D* hA, TH1D* h1, TH1D* h2)
 void Analysis::MakeHistograms()
 {
     double binWidth = 0.05;
-    double Emin = 2.025;
-    double Emax = 3.975;
+    double Emin = 0.025;
+    double Emax = 12.975;
     double nbins = (Emax - Emin) / binWidth;
     std:: cout << "energy range: " << Emin << " to " << Emax << " [TeV]" << std::endl;
 
@@ -456,6 +508,10 @@ void Analysis::MakeHistograms()
     h_phit->Sumw2();
     h_mt = new TH1D("m_t", "m_{t}", nbins, 100, 300);
     h_mt->Sumw2();
+    h_pTperf = new TH1D("pTperf", "p_{T}^{t} performance", nbins, -5, 5);
+    h_pTperf->Sumw2();
+    h_costhetattperf = new TH1D("costhetattperf", "cos#theta_{t#bar{t}} performance", nbins, -5, 5);
+    h_costhetattperf->Sumw2();
 
     h_pxtbar = new TH1D("px_tbar", "p_{x}^{#bar{t}}", nbins, 0, 7000);
     h_pxtbar->Sumw2();
@@ -474,10 +530,36 @@ void Analysis::MakeHistograms()
     h_mtbar = new TH1D("m_tbar", "m_{#bar{t}}", nbins, 100, 300);
     h_mtbar->Sumw2();
 
-    h_mtt_F = new TH1D("mtt_F", "m_{tt}^{forward}", nbins, Emin, Emax);
-    h_mtt_F->Sumw2();
-    h_mtt_B = new TH1D("mtt_B", "m_{tt}^{backward}", nbins, Emin, Emax);
-    h_mtt_B->Sumw2();
+    // AtFB
+    h_mtt_tF = new TH1D("mtt_tF", "m_{tt}^{tF}", nbins, Emin, Emax);
+    h_mtt_tF->Sumw2();
+    h_mtt_tB = new TH1D("mtt_tB", "m_{tt}^{tB}", nbins, Emin, Emax);
+    h_mtt_tB->Sumw2();
+
+    // AtC
+    h_mtt_tCF = new TH1D("mtt_tCF", "m_{tt}^{tCF}", nbins, Emin, Emax);
+    h_mtt_tCF->Sumw2();
+    h_mtt_tCB = new TH1D("mtt_tCB", "m_{tt}^{tCB}", nbins, Emin, Emax);
+    h_mtt_tCB->Sumw2();
+
+    // AtlFB
+    h_mtt_tlF = new TH1D("mtt_tlF", "m_{tt}^{tlF}", nbins, Emin, Emax);
+    h_mtt_tlF->Sumw2();
+    h_mtt_tlB = new TH1D("mtt_tlB", "m_{tt}^{tlB}", nbins, Emin, Emax);
+    h_mtt_tlB->Sumw2();
+
+    // Aphil
+    h_mtt_philF = new TH1D("mtt_philF", "m_{tt}^{philF}", nbins, Emin, Emax);
+    h_mtt_philF->Sumw2();
+    h_mtt_philB = new TH1D("mtt_philB", "m_{tt}^{philB}", nbins, Emin, Emax);
+    h_mtt_philB->Sumw2();
+
+    // AlEl
+    h_mtt_ElF = new TH1D("mtt_ElF", "m_{tt}^{ElF}", nbins, Emin, Emax);
+    h_mtt_ElF->Sumw2();
+    h_mtt_ElB = new TH1D("mtt_ElB", "m_{tt}^{ElB}", nbins, Emin, Emax);
+    h_mtt_ElB->Sumw2();
+
     h_cosTheta = new TH1D("cos_theta", "cos#theta", nbins, -1.0, 1.0);
     h_cosTheta->Sumw2();
     h_cosThetaStar = new TH1D("cos_theta_star", "cos#theta^{*}", nbins, -1.0, 1.0);
@@ -507,17 +589,17 @@ void Analysis::MakeHistograms()
     h_costhetatt = new TH1D("costhetatt", "cos#theta_{t,#bar{t}}", 20, -1.0, 1.0);
     h_costhetatt->Sumw2();
 
-    h_cosTheta1 = new TH1D("costheta1", "cos#theta_{l+}", 10, -1.0, 1.0);
+    h_cosTheta1 = new TH1D("costheta_tl1", "cos#theta_{l+}", 10, -1.0, 1.0);
     h_cosTheta1->Sumw2();
-    h_cosTheta2 = new TH1D("costheta2", "cos#theta_{l-}", 10, -1.0, 1.0);
+    h_cosTheta2 = new TH1D("costheta_tl2", "cos#theta_{l-}", 10, -1.0, 1.0);
     h_cosTheta2->Sumw2();
     h_cos1cos2 = new TH1D("cos1cos2", "cos#theta_{l+}cos#theta_{l-}", 20, -1.0, 1.0);
     h_cos1cos2->Sumw2();
 
-    h_mtt_Fl = new TH1D("mtt_Fl", "m_{tt}^{F,l}", nbins, Emin, Emax);
-    h_mtt_Fl->Sumw2();
-    h_mtt_Bl = new TH1D("mtt_Bl", "m_{tt}^{B,l}", nbins, Emin, Emax);
-    h_mtt_Bl->Sumw2();
+    h_mtt_lF = new TH1D("mtt_lF", "m_{tt}^{F,l}", nbins, Emin, Emax);
+    h_mtt_lF->Sumw2();
+    h_mtt_lB = new TH1D("mtt_lB", "m_{tt}^{B,l}", nbins, Emin, Emax);
+    h_mtt_lB->Sumw2();
 
     h2_mtt_cosThetaStar = new TH2D("mtt_costhetastar", "m_{tt} cos#theta^{*}", nbins, Emin, Emax, 2, -1.0, 1.0);
     h2_mtt_cosThetaStar->GetXaxis()->SetTitle("m_{tt}");
@@ -642,14 +724,10 @@ void Analysis::MakeHistograms()
         h_mtbar_R->Sumw2();
 
         h_costhetatt_R = new TH1D("costheta_tt_R", "cos#theta_{t,#bar{t}} (reco)", 20, -1.0, 1.0);
-        h_mtt_FR = new TH1D("mtt_FR", "m_{tt}^{forward} (reco)", nbins, Emin, Emax);
-        h_mtt_FR->Sumw2();
-        h_mtt_BR = new TH1D("mtt_BR", "m_{tt}^{backward} (reco)", nbins, Emin, Emax);
-        h_mtt_BR->Sumw2();
-        h_mtt_FD = new TH1D("mtt_FD", "m_{tt}^{forward} (reco)", nbins, Emin, Emax);
-        h_mtt_FD->Sumw2();
-        h_mtt_BD  = new TH1D("mtt_BD", "m_{tt}^{backward} (reco)", nbins, Emin, Emax);
-        h_mtt_BD->Sumw2();
+        h_mtt_tF_R = new TH1D("mtt_FR", "m_{tt}^{forward} (reco)", nbins, Emin, Emax);
+        h_mtt_tF_R->Sumw2();
+        h_mtt_tB_R = new TH1D("mtt_BR", "m_{tt}^{backward} (reco)", nbins, Emin, Emax);
+        h_mtt_tB_R->Sumw2();
         h_ytt_R = new TH1D("ytt_R", "y_{tt}^{reco}", 50, -2.5, 2.5);
         h_ytt_R->Sumw2();
         h_cosTheta_R = new TH1D("costheta_R", "cos#theta_{reco}", nbins, -1.0, 1.0);
@@ -675,10 +753,12 @@ void Analysis::MakeHistograms()
 void Analysis::MakeDistributions()
 {
     this->MakeDistribution1D(h_mtt, "TeV");
-    this->MakeDistribution1D(h_mtt_F, "TeV");
-    this->MakeDistribution1D(h_mtt_B, "TeV");
-    this->MakeDistribution1D(h_mtt_Fl, "TeV");
-    this->MakeDistribution1D(h_mtt_Bl, "TeV");
+    this->MakeDistribution1D(h_mtt_tF, "TeV");
+    this->MakeDistribution1D(h_mtt_tB, "TeV");
+    this->MakeDistribution1D(h_mtt_tlF, "TeV");
+    this->MakeDistribution1D(h_mtt_tlB, "TeV");
+    this->MakeDistribution1D(h_mtt_lF, "TeV");
+    this->MakeDistribution1D(h_mtt_lB, "TeV");
     this->MakeDistribution1D(h_ytt, "");
 
     this->MakeDistribution1D(h_pxt, "GeV");
@@ -689,6 +769,8 @@ void Analysis::MakeDistributions()
     this->MakeDistribution1D(h_etat, "");
     this->MakeDistribution1D(h_phit, "");
     this->MakeDistribution1D(h_mt, "GeV");
+    this->MakeDistribution1D(h_pTperf, "");
+    this->MakeDistribution1D(h_costhetattperf, "");
 
     this->MakeDistribution1D(h_pxtbar, "GeV");
     this->MakeDistribution1D(h_pytbar, "GeV");
@@ -719,21 +801,34 @@ void Analysis::MakeDistributions()
     this->MakeDistribution1D(h_deltaR_bW, "");
     this->MakeDistribution1D(h_deltaR_max, "");
     this->MakeDistribution1D(h_deltaR_tt, "");
-    this->MakeDistribution1D(h_KT, "TeV");
 
     this->MakeDistribution1D(h_costhetatt, "");
 
-    h_mtt_Fn = (TH1D*) h_mtt_F->Clone("h_mtt_Fn");
-    h_mtt_Fn->Divide(h_mtt);
+    h_AtFB = this->Asymmetry("AtFB", "A^{t}_{FB^*}", h_mtt_tF, h_mtt_tB);
+    h_AtFB->GetYaxis()->SetTitle(h_AtFB->GetTitle());
+    h_AtFB->GetXaxis()->SetTitle("m_{tt} [TeV]");
 
-    h_mtt_Bn = (TH1D*) h_mtt_B->Clone("h_mtt_Bn");
-    h_mtt_Bn->Divide(h_mtt);
+    h_AtlFB = this->Asymmetry("AtlFB", "A^{tl}_{FB^*}", h_mtt_tlF, h_mtt_tlB);
+    h_AtlFB->GetYaxis()->SetTitle(h_AtlFB->GetTitle());
+    h_AtlFB->GetXaxis()->SetTitle("m_{tt} [TeV]");
 
-    h_AFB = this->Asymmetry("AFB", "A_{FB}*", h_mtt_F, h_mtt_B);
-    h_AFB->GetYaxis()->SetTitle(h_AFB->GetTitle());
-    h_AFB->GetXaxis()->SetTitle("m_{tt} [TeV]");
+    h_AtC = this->Asymmetry("AtC", "A^{t}_{C}", h_mtt_tCF, h_mtt_tCB);
+    h_AtC->GetYaxis()->SetTitle(h_AtC->GetTitle());
+    h_AtC->GetXaxis()->SetTitle("m_{tt} [TeV]");
 
-    h_Ap = this->Asymmetry("Ap", "A_{P}", h_mtt_Fl, h_mtt_Bl);
+    h_Ap = this->Asymmetry("Ap", "A_{P}", h_mtt_lF, h_mtt_lB);
+    h_Ap->GetYaxis()->SetTitle(h_Ap->GetTitle());
+    h_Ap->GetXaxis()->SetTitle("m_{tt} [TeV]");
+
+    h_AlEl = this->Asymmetry("AlEl", "A^{l}_{E_l}", h_mtt_ElF, h_mtt_ElB);
+    h_AlEl->GetYaxis()->SetTitle(h_AlEl->GetTitle());
+    h_AlEl->GetXaxis()->SetTitle("m_{tt} [TeV]");
+
+    h_Aphil = this->Asymmetry("Aphil", "A^{l}_{#phi}", h_mtt_philF, h_mtt_philB);
+    h_Aphil->GetYaxis()->SetTitle(h_Aphil->GetTitle());
+    h_Aphil->GetXaxis()->SetTitle("m_{tt} [TeV]");
+
+    h_Ap = this->Asymmetry("Ap", "A_{P}", h_mtt_lF, h_mtt_lB);
     h_Ap->GetYaxis()->SetTitle(h_Ap->GetTitle());
     h_Ap->GetXaxis()->SetTitle("m_{tt} [TeV]");
 
@@ -754,8 +849,8 @@ void Analysis::MakeDistributions()
 
     if (m_reco > 0) {
         this->MakeDistribution1D(h_mtt_R, "TeV");
-        this->MakeDistribution1D(h_mtt_FR, "TeV");
-        this->MakeDistribution1D(h_mtt_BR, "TeV");
+        this->MakeDistribution1D(h_mtt_tF_R, "TeV");
+        this->MakeDistribution1D(h_mtt_tB_R, "TeV");
         this->MakeDistribution1D(h_ytt_R, "TeV");
         this->MakeDistribution1D(h_costhetatt_R, "");
 
@@ -787,15 +882,9 @@ void Analysis::MakeDistributions()
         this->MakeDistribution1D(h_pv2y_R, "GeV");
         this->MakeDistribution1D(h_pv2z_R, "GeV");
 
-        h_mtt_FRn = (TH1D*) h_mtt_FR->Clone("h_mtt_FRn");
-        h_mtt_FRn->Divide(h_mtt_R);
-
-        h_mtt_BRn = (TH1D*) h_mtt_BR->Clone("h_mtt_BRn");
-        h_mtt_BRn->Divide(h_mtt_R);
-
-        h_AFB_R = this->Asymmetry("AFB_R", "A_{FB}^{*} (reco)", h_mtt_FR, h_mtt_BR);
-        h_AFB_R->GetYaxis()->SetTitle(h_AFB_R->GetTitle());
-        h_AFB_R->GetXaxis()->SetTitle("m_{tt} (reco) [TeV]");
+        h_AtFB_R = this->Asymmetry("AtFB_R", "A_{FB^*}^{t} (reco)", h_mtt_tF_R, h_mtt_tB_R);
+        h_AtFB_R->GetYaxis()->SetTitle(h_AtFB_R->GetTitle());
+        h_AtFB_R->GetXaxis()->SetTitle("m_{tt} (reco) [TeV]");
     }
 }
 
@@ -804,7 +893,7 @@ void Analysis::MakeDistribution1D(TH1D* h, const TString& units)
 {
     TString ytitle, yunits, xunits;
     if (m_xsec) {
-        h->Scale(m_sigma / m_nevents, "width");
+        // h->Scale(m_sigma / m_nevents, "width");
         ytitle = "d#sigma / d" + (TString) h->GetTitle();
         if (units != "") {
             yunits = " [fb/" + units + "]";
@@ -817,8 +906,8 @@ void Analysis::MakeDistribution1D(TH1D* h, const TString& units)
     }
     else {
         if (m_useLumi) {
-            double N_analysis = m_luminosity * m_sigma;
-            h->Scale(N_analysis / m_nevents);
+            // double N_analysis = m_luminosity * m_sigma;
+            // h->Scale(N_analysis / m_nevents);
             ytitle = "Expected events";
         }
         else ytitle = "Generated events";
@@ -857,8 +946,8 @@ void Analysis::MakeDistribution2D(TH2D* h,  TString xunits,  TString yunits) {
     }
     else {
         if (m_useLumi) {
-            int N_analysis = m_luminosity * m_sigma;
-            h->Scale(N_analysis / m_nevents);
+            // int N_analysis = m_luminosity * m_sigma;
+            // h->Scale(N_analysis / m_nevents);
             ztitle = "Expected events";
         }
         else {
@@ -896,9 +985,11 @@ void Analysis::WriteHistograms()
     m_outputFile->cd();
     m_outputFile->cd("/");
 
-    h_mtt_Fn->Write();
-    h_mtt_Bn->Write();
-    h_AFB->Write();
+    h_AtFB->Write();
+    h_AtC->Write();
+    h_AtlFB->Write();
+    h_Aphil->Write();
+    h_AlEl->Write();
     h_Ap->Write();
 
     for (int i = 0; i < (int) h_deltaRs.size(); i++)
@@ -911,9 +1002,7 @@ void Analysis::WriteHistograms()
         h_pt[i]->Write();
 
     if (m_reco > 0) {
-        h_mtt_FRn->Write();
-        h_mtt_BRn->Write();
-        h_AFB_R->Write();
+        h_AtFB_R->Write();
     }
 
     this->MakeDistribution2D(h2_mtt_deltaPhi, "GeV", "");

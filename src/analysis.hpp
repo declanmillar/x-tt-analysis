@@ -23,8 +23,8 @@ class Analysis{
     TString m_model;
     TString m_process;
     TString m_options;
-    bool m_gg;
-    int m_qq;
+    bool m_add_gg;
+    int m_add_qq;
     int m_energy;
     int m_luminosity;
     TString m_tag;
@@ -78,20 +78,33 @@ class Analysis{
 
     // Histograms
     TH1D* h_mtt;
-    TH1D* h_mtt_F;
-    TH1D* h_mtt_B;
-    TH1D* h_mtt_Fn;
-    TH1D* h_mtt_Bn;
     TH1D* h_mtt_R;
-    TH1D* h_mtt_FR;
-    TH1D* h_mtt_BR;
-    TH1D* h_mtt_FRn;
-    TH1D* h_mtt_BRn;
-    TH1D* h_mtt_FD;
-    TH1D* h_mtt_BD;
-    TH1D* h_mtt_Fl;
-    TH1D* h_mtt_Bl;
 
+    TH1D* h_mtt_tF;
+    TH1D* h_mtt_tF_R;
+    TH1D* h_mtt_tB;
+    TH1D* h_mtt_tB_R;
+
+    TH1D* h_mtt_tlF;
+    TH1D* h_mtt_tlF_R;
+    TH1D* h_mtt_tlB;
+    TH1D* h_mtt_tlB_R;
+
+    TH1D* h_mtt_tCF;
+    TH1D* h_mtt_tCF_R;
+    TH1D* h_mtt_tCB;
+    TH1D* h_mtt_tCB_R;
+
+    TH1D* h_mtt_lF;
+    TH1D* h_mtt_lB;
+
+    TH1D* h_mtt_philF;
+    TH1D* h_mtt_philB;
+
+    TH1D* h_mtt_ElF;
+    TH1D* h_mtt_ElB;
+
+    // t
     TH1D* h_pxt;
     TH1D* h_pxt_R;
     TH1D* h_pyt;
@@ -109,6 +122,7 @@ class Analysis{
     TH1D* h_mt;
     TH1D* h_mt_R;
 
+    // tbar
     TH1D* h_pxtbar;
     TH1D* h_pxtbar_R;
     TH1D* h_pytbar;
@@ -151,14 +165,26 @@ class Analysis{
     TH1D* h_costhetatt;
     TH1D* h_costhetatt_R;
     TH1D* h_cutflow;
-    TH1D* h_AFB;
-    TH1D* h_AFB_R;
+    TH1D* h_HT;
+    TH1D* h_KT;
+
+    // asymmetries
+    TH1D* h_AtFB;
+    TH1D* h_AtFB_R;
+    TH1D* h_AtC;
+    TH1D* h_AtC_R;
     TH1D* h_Ap;
     TH1D* h_AL1;
     TH1D* h_AL2;
     TH1D* h_AL_R;
-    TH1D* h_HT;
-    TH1D* h_KT;
+    TH1D* h_AtlFB;
+    TH1D* h_AtlFB_R;
+    TH1D* h_Aphil;
+    TH1D* h_AlEl;
+
+    // performance
+    TH1D* h_pTperf;
+    TH1D* h_costhetattperf;
 
     TH1D* h_deltaR_max;
     TH1D* h_deltaR_bW;
