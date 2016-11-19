@@ -24,7 +24,7 @@ endif
 
 BOOSTLIBS = $(BOOSTLIB) -lboost_system -lboost_program_options
 
-C = clang++
+C = c++
 CFLAGS = $(ROOTCFLAGS) $(BOOSTCFLAGS)
 LIBS = $(ROOTLIBS) $(BOOSTLIBS)
 
