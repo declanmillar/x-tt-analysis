@@ -367,13 +367,16 @@ void Analysis::SetupInputFiles()
         filename = m_dataDirectory + "/SM_" + "gg-tt-bbllvv" + E + "_2-4";
         m_inputFiles->push_back(filename + ".root");
         m_weightFiles->push_back(filename + ".log");
-        // filename = m_dataDirectory + "/SM_" + "gg-tt-bbllvv" + E + "_4-13";
-        // m_inputFiles->push_back(filename + ".root");
-        // m_weightFiles->push_back(filename + ".log");
+        filename = m_dataDirectory + "/SM_" + "gg-tt-bbllvv" + E + "_4-13";
+        m_inputFiles->push_back(filename + ".root");
+        m_weightFiles->push_back(filename + ".log");
     }
 
     if (m_add_qq) {
-        filename = m_dataDirectory + "/SM_" + "qq-tt-bbllvv" + E + m_options;
+        filename = m_dataDirectory + "/SM_" + "qq-tt-bbllvv" + E + "_2-4";
+        m_inputFiles->push_back(filename + ".root");
+        m_weightFiles->push_back(filename + ".log");
+        filename = m_dataDirectory + "/SM_" + "qq-tt-bbllvv" + E + "_4-13";
         m_inputFiles->push_back(filename + ".root");
         m_weightFiles->push_back(filename + ".log");
     }
@@ -382,9 +385,9 @@ void Analysis::SetupInputFiles()
     m_inputFiles->push_back(filename + ".root");
     m_weightFiles->push_back(filename + ".log");
 
-    filename = m_dataDirectory + "/" + m_model + "_" + m_process + E + "_4-13";
-    m_inputFiles->push_back(filename + ".root");
-    m_weightFiles->push_back(filename + ".log");
+    // filename = m_dataDirectory + "/" + m_model + "_" + m_process + E + "_4-13";
+    // m_inputFiles->push_back(filename + ".root");
+    // m_weightFiles->push_back(filename + ".log");
 
     // check all input files exist
     for (auto inputFile : *m_inputFiles) {
