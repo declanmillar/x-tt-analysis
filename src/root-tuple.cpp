@@ -83,4 +83,8 @@ void RootTuple::Init(TTree* tree){
   fChain->SetBranchAddress("Pz", &m_Pz, &b_Pz);
   fChain->SetBranchAddress("barcode", &m_barcode, &b_barcode);
   fChain->SetBranchAddress("weight", &m_weight, &b_weight);
+  fChain->SetBranchAddress("weightLL", &m_weightLL, &b_weightLL);
+  fChain->SetBranchAddress("weightLR", &m_weightLR, &b_weightLR);
+  fChain->SetBranchAddress("weightRL", &m_weightRL, &b_weightRL);
+  fChain->SetBranchAddress("weightRR", &m_weightRR, &b_weightRR);
 }

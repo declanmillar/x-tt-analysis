@@ -13,6 +13,8 @@ class HistPainter():
         self.members = []
         self.histograms = []
         self.setlogy = False
+        self.setlogz = False
+        self.is_th2d = False
         self.ymin = -99.9
         self.ymax = -99.9
         self.xmin = -99.9
@@ -77,30 +79,61 @@ class HistPainter():
         hist.SetLineStyle(style)
 
         # 2D
-        # hist.SetLineStyle(30)
-        # hist.SetLineWidth(1)
-        # hist.GetXaxis().CenterTitle()
-        # hist.GetYaxis().CenterTitle()
-        # hist.GetYaxis().SetNdivisions(4)
-        # hist.GetXaxis().SetTitleSize(0.06)
-        # hist.GetYaxis().SetTitleSize(0.06)
-        # hist.GetZaxis().SetTitleSize(0.06)
-        # hist.GetXaxis().SetTitleOffset(1.2)
-        # hist.GetYaxis().SetTitleOffset(1.2)
-        # hist.GetZaxis().SetTitleOffset(0.8)
-        # hist.SetMinimum(hist.GetBinContent(hist.GetMinimumBin()))
-        # hist.Draw("lego2 same fb")
+        if self.is_th2d:
+            hist.SetLineStyle(30)
+            hist.SetLineWidth(1)
+            hist.GetXaxis().CenterTitle()
+            hist.GetYaxis().CenterTitle()
+            hist.GetZaxis().CenterTitle()
+            hist.GetYaxis().SetNdivisions(4)
+            hist.GetXaxis().SetTitleSize(0.06)
+            hist.GetYaxis().SetTitleSize(0.06)
+            hist.GetZaxis().SetTitleSize(0.06)
+            hist.GetXaxis().SetTitleOffset(1.2)
+            # hist.GetYaxis().SetTitleOffset(1.2)
+            hist.GetYaxis().SetTitleOffset(0.7)
+            hist.GetZaxis().SetTitleOffset(0.8)
+            hist.SetMinimum(hist.GetBinContent(hist.GetMinimumBin()))
+            # hist.Draw("lego2 same fb")
+            hist.Draw("colz fb")
+        else:
+            hist.Draw("hist same")
 
-        hist.Draw("hist same")
+            # clone to draw errors
+            clone = hist.Clone("")
+            self.members.append(clone)
 
-        # clone to draw errors
-        clone = hist.Clone("")
-        self.members.append(clone)
+            # Uncertainty style
+            clone.SetFillColorAlpha(color, 0.2)
+            clone.SetFillStyle(1001)
+            clone.DrawCopy("e2 same")
 
-        # Uncertainty style
-        clone.SetFillColorAlpha(color, 0.2)
-        clone.SetFillStyle(1001)
-        clone.DrawCopy("e2 same")
+
+        f.Close()
+
+
+    def GetHistType(self, histname, filename):
+
+        # check file exists
+        if os.path.isfile("%s" % filename) is False:
+          sys.exit("%s does not exist." % filename)
+
+        # open file
+        f = ROOT.TFile(filename, "read")
+        if not f.IsOpen():
+            sys.exit("failed to open %s\n" % filename)
+
+        # get histogram
+        try:
+            hist = f.Get(histname)
+            if "TH2D" in type(hist).__name__:
+                self.is_th2d = True
+            hist.SetDirectory(0) # "detach" the histogram from the file
+        except:
+            sys.exit("Error: check %s contains %s" % (filename, histname))
+
+        if "TH2D" in type(hist).__name__:
+            self.is_th2d = True
 
         f.Close()
 
@@ -139,27 +172,36 @@ class HistPainter():
 
     def AddPads(self):
         upper_pad = ROOT.TPad("upper_pad", "upper_pad", 0, 0, 1, 1)
-        top_margin = 0.05
-        right_margin = 0.05
-        left_margin = 0.12
-        bottom_margin = 0.15
 
-        # 2D
-        # right_margin = 0.03
-        # bottom_margin = 0.08
+        if (self.is_th2d):
+            top_margin = 0.05
+            left_margin = 0.09
+            right_margin = 0.15
+            bottom_margin = 0.15
+        else:
+            top_margin = 0.05
+            right_margin = 0.05
+            left_margin = 0.12
+            bottom_margin = 0.15
 
         upper_pad.SetMargin(left_margin, right_margin, bottom_margin, top_margin)
         upper_pad.Draw()
         upper_pad.cd()
 
-        # if True:#"TH2D" in type(hist).__name__:
-            # upper_pad.SetTheta(20) # default: 30
-            # # upper_pad.SetPhi(-30) # default: 30
-            # upper_pad.SetPhi(-150)
-            # upper_pad.Update()
+        # print "hist type = ", type(h).__name__
+
+        # if "TH2D" in type(h).__name__:
+        #     upper_pad.SetTheta(20) # default: 30
+        #     # upper_pad.SetPhi(-30) # default: 30
+        #     upper_pad.SetPhi(-150)
+        #     upper_pad.Update()
 
         if (self.setlogy):
-          upper_pad.SetLogy()
+            upper_pad.SetLogy()
+            print "Setting log y"
+        if (self.setlogz):
+            upper_pad.SetLogz()
+            print "Setting log z"
         self.members.append(upper_pad)
 
 
@@ -191,6 +233,8 @@ class HistPainter():
 
     def SetLogy(self):
         self.setlogy = True
+    def SetLogz(self):
+        self.setlogz = True
 
 
     def Save(self, name):
@@ -207,12 +251,21 @@ green = ROOT.TColor.GetColor(0.0 / 255.0, 130.0 / 255.0, 90.0 / 255.0)
 grey = ROOT.TColor.GetColor(64.0 / 255.0, 64.0 / 255.0, 64.0 / 255.0)
 black = ROOT.TColor.GetColor(1.0, 1.0, 1.0)
 
-hs = ["m_t", "mt_bar", "m_tt", "pT_t", "pT_tbar", "E_t", "Et_bar"]#, "deltaR_tt"]
-hs2 = ["mt", "mtbar", "mtt", "pTt", "pTtbar", "Et", "Etbar"]#, "deltaRtt"]
+hs = ["m_t", "m_tbar", "m_tt", "m_tt_perf", "pT_t", "pT_tbar", "pT_t_perf", "pT_tbar_perf", "E_t", "E_tbar", "costheta_tt", "costheta_tt_perf", "m_tt_pT_t_perf", "m_tt_costheta_tt_perf"]#, "deltaR_tt"]
+
+f = "GLR-R-3_uu-AZX-tt-bbllvv.a.root"
 
 i = 0
 for h in hs:
     art = HistPainter(1920, 1080)
+    # if (h == "m_tt" or h == "E_t"):
+
+    art.GetHistType(h, f)
+    
+    if ("m_tt_costheta_tt" in h or "m_tt_pT_t" in h):
+        art.SetLogz()
+    else:
+        art.SetLogy()
     art.SetStyle()
     art.AddPads()
     # art.SetXtitle("#it{m_{tt}} [TeV]")
@@ -220,15 +273,28 @@ for h in hs:
     # art.SetYtitle("A^{*}_{FB}")
     # art.SetZtitle("#it{cos#theta_{l}}")
 
-    art.AddHistogram(h, "GLR-R-3_qq-AZX-tt-bbllvv_0-4_5x10M.a.root", "#bf{SM}", blue)
-    art.AddHistogram(hs2[i] + "_R", "GLR-R-3_qq-AZX-tt-bbllvv_0-4_5x10M.a.root", "#bf{SM}", red, 2)
+    art.AddHistogram(h, f, "#bf{SM}", blue)
+    if not ("perf" in h): art.AddHistogram(h + "_R", f, "#bf{SM}", red, 2)
 
-    art.AddInfoBox("GLR-R", 0.75, 0.85)
+    if ("m_tt_" in h): 
+        pass
+    elif ("perf" in h):
+        art.AddInfoBox("SM", 0.2, 0.85)
+    else:
+        if ("costheta" in h): 
+            art.AddInfoBox("SM", 0.45, 0.85)
+        else:
+            art.AddInfoBox("SM", 0.75, 0.85)
 
     art.SetHistTitle(0, "generated")
-    art.SetHistTitle(1, "reconstructed")
-    # art.AddLegend(0.13, 0.7, 0.35, 0.9)
-    art.AddLegend(0.76, 0.45, 0.92, 0.65)
+    if not ("perf" in h): 
+        art.SetHistTitle(1, "reconstructed")
+        if ("costheta" in h): 
+            art.AddLegend(0.46, 0.45, 0.62, 0.65)
+        elif (h == "m_t" or h == "m_tbar"):
+            art.AddLegend(0.5, 0.7, 0.7, 0.9)
+        else:
+            art.AddLegend(0.76, 0.45, 0.92, 0.65)
 
-    art.Save("~/Website/dilepton-plots/" + h +"_GLR-R-3_uudd_0-4.pdf")
+    art.Save("~/Website/figures/dilepton/" + h + "-uu-AZX.pdf")
     i += 1

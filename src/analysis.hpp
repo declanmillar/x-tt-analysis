@@ -30,13 +30,14 @@ class Analysis{
     TString m_tag;
 
     bool m_xsec = false;
-    const int m_reco;
+    int m_reco;
     bool m_fid;
     double m_ytt = 0;
     double m_Emin = -1;
     double m_Emax = -1;
     bool m_useLumi;
 
+    int n;
     unsigned int m_nReco;
     unsigned int m_nQuarksMatched;
     unsigned int m_nNeutrinoMatched;
@@ -104,6 +105,11 @@ class Analysis{
     TH1D* h_mtt_ElF;
     TH1D* h_mtt_ElB;
 
+    TH1D* h_mtt_LL;
+    TH1D* h_mtt_LR;
+    TH1D* h_mtt_RL;
+    TH1D* h_mtt_RR;
+
     // t
     TH1D* h_pxt;
     TH1D* h_pxt_R;
@@ -162,8 +168,8 @@ class Analysis{
     TH1D* h_cosThetaStar;
     TH1D* h_cosTheta_R;
     TH1D* h_cosThetaStar_R;
-    TH1D* h_costhetatt;
-    TH1D* h_costhetatt_R;
+    TH1D* h_costheta_tt;
+    TH1D* h_costheta_tt_R;
     TH1D* h_cutflow;
     TH1D* h_HT;
     TH1D* h_KT;
@@ -181,10 +187,16 @@ class Analysis{
     TH1D* h_AtlFB_R;
     TH1D* h_Aphil;
     TH1D* h_AlEl;
+    TH1D* h_AL;
+    TH1D* h_ALL;
 
     // performance
-    TH1D* h_pTperf;
-    TH1D* h_costhetattperf;
+    TH1D* h_pT_t_perf;
+    TH1D* h_pT_tbar_perf;
+    TH1D* h_costheta_tt_perf;
+    TH1D* h_m_tt_perf;
+    TH2D* h2_m_tt_pT_t_perf;
+    TH2D* h2_m_tt_costheta_tt_perf;
 
     TH1D* h_deltaR_max;
     TH1D* h_deltaR_bW;
@@ -218,7 +230,7 @@ class Analysis{
     void MakeHistograms();
     void MakeDistributions();
     void MakeDistribution1D(TH1D*, const TString&);
-    void MakeDistribution2D(TH2D*, TString, TString);
+    void MakeDistribution2D(TH2D*, TString, TString, TString, TString);
     void NormalizeSliceY(TH2D*);
     void WriteHistograms();
     void CheckResults();
@@ -226,11 +238,15 @@ class Analysis{
     void CreateFilenames();
     void CheckFiles();
     void GetGenerationCrossSection(TString);
-    // void GetIterationWeights(TString);
     void SetDataDirectory();
     void GetChannelFactors();
     void AsymmetryUncertainty(TH1D*, TH1D*, TH1D*);
     void ResetCounters();
+
+    TH1D* MakeALL();
+    TH1D* MakeAL();
+    void TotalSpinAsymmetries();
+    double TotalAsymmetry(TH1D* h_A, TH1D* h_B);
 
     void InitialiseCutflow();
     void PrintCutflow();
