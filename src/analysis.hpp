@@ -260,7 +260,7 @@ class Analysis{
     std::vector<TLorentzVector> ReconstructSemilepton(const std::vector<TLorentzVector>&, const int);
     std::vector<TLorentzVector> ReconstructDilepton(const std::vector<TLorentzVector>&);
   public:
-    Analysis(const TString& model, const TString& process, const TString& options, const int energy, const int luminosity, const TString& tag);
+    Analysis(const TString& model, const TString& process, const TString& options, const int energy, const int luminosity, const int reco);
     virtual ~Analysis();
 };
 #endif

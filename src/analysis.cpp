@@ -3,14 +3,13 @@
 #include "progress-bar.hpp"
 #include "bool-to-string.hpp"
 
-Analysis::Analysis(const TString& model, const TString& process, const TString& options, const int energy, const int luminosity, const TString& tag):
+Analysis::Analysis(const TString& model, const TString& process, const TString& options, const int energy, const int luminosity, const int reco):
     m_model(model),
     m_process(process),
     m_options(options),
     m_energy(energy),
     m_luminosity(luminosity),
-    m_tag(tag),
-    m_reco(1), 
+    m_reco(reco), 
     m_outputFile(nullptr),
     m_inputFiles(nullptr),
     m_weightFiles(nullptr),
@@ -427,7 +426,6 @@ void Analysis::SetupOutputFiles()
     string eff = std::to_string(m_efficiency);
     if (m_efficiency < 1.0) m_outputFilename += ".e" + eff.erase(eff.find_last_not_of('0') + 1, string::npos);
     if (m_luminosity > 0) m_outputFilename += ".L" + std::to_string(m_luminosity);
-    m_outputFilename += m_tag;
     m_outputFilename += ".root";
     std::cout << "output: " << m_outputFilename.Data() << std::endl;
     m_outputFile = new TFile(m_outputFilename, "RECREATE");
