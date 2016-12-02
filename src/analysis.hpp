@@ -21,10 +21,8 @@ class Analysis{
     typedef std::vector<TString>::const_iterator Itr_s;
 
     TString m_model;
-    TString m_process;
+    std::string m_process;
     TString m_options;
-    bool m_add_gg;
-    int m_add_qq;
     int m_energy;
     int m_luminosity;
     TString m_tag;
@@ -262,7 +260,7 @@ class Analysis{
     std::vector<TLorentzVector> ReconstructSemilepton(const std::vector<TLorentzVector>&, const int);
     std::vector<TLorentzVector> ReconstructDilepton(const std::vector<TLorentzVector>&);
   public:
-    Analysis(const TString& model, const TString& process, const TString& options, const bool gg, const bool qq, const int energy, const int luminosity, const TString& tag);
+    Analysis(const TString& model, const TString& process, const TString& options, const int energy, const int luminosity, const TString& tag);
     virtual ~Analysis();
 };
 #endif

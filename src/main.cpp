@@ -61,5 +61,5 @@ int main(int argc, char* argv[])
     std::cout << "luminosity: " << luminosity << std::endl;
     std::cout << "tag: " << tag << std::endl;
 
-    Analysis* analysis = new Analysis(model, process, options, add_gg, add_qq, energy, luminosity, tag);
+    Analysis* analysis = new Analysis(model, process, options, energy, luminosity, tag);
 }

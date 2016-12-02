@@ -196,6 +196,10 @@ class HistPainter():
         #     upper_pad.SetPhi(-150)
         #     upper_pad.Update()
 
+        upper_pad.SetGridx()
+        upper_pad.SetGridy()
+
+
         if (self.setlogy):
             upper_pad.SetLogy()
             print "Setting log y"
@@ -253,7 +257,7 @@ black = ROOT.TColor.GetColor(1.0, 1.0, 1.0)
 
 hs = ["m_t", "m_tbar", "m_tt", "m_tt_perf", "pT_t", "pT_tbar", "pT_t_perf", "pT_tbar_perf", "E_t", "E_tbar", "costheta_tt", "costheta_tt_perf", "m_tt_pT_t_perf", "m_tt_costheta_tt_perf"]#, "deltaR_tt"]
 
-f = "GLR-R-3_uu-AZX-tt-bbllvv.a.root"
+f = "GLR-R-3_dd-AZX-tt-bbllvv.a.root"
 
 i = 0
 for h in hs:
@@ -296,5 +300,5 @@ for h in hs:
         else:
             art.AddLegend(0.76, 0.45, 0.92, 0.65)
 
-    art.Save("~/Website/figures/dilepton/" + h + "-uu-AZX.pdf")
+    art.Save("~/Website/figures/dilepton/" + h + "-dd-AZX.pdf")
     i += 1

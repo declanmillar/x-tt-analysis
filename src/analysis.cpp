@@ -3,12 +3,10 @@
 #include "progress-bar.hpp"
 #include "bool-to-string.hpp"
 
-Analysis::Analysis(const TString& model, const TString& process, const TString& options, const bool add_gg, const bool add_qq, const int energy, const int luminosity, const TString& tag):
+Analysis::Analysis(const TString& model, const TString& process, const TString& options, const int energy, const int luminosity, const TString& tag):
     m_model(model),
     m_process(process),
     m_options(options),
-    m_add_gg(add_gg),
-    m_add_qq(add_qq),
     m_energy(energy),
     m_luminosity(luminosity),
     m_tag(tag),
@@ -390,40 +388,25 @@ void Analysis::SetupInputFiles()
 
     std::string E = std::to_string(m_energy);
 
-    // if (m_add_gg) {
-        // filename = m_dataDirectory + "/SM_" + "gg-tt-bbllvv" + E + "_0-2";
-        // m_inputFiles->push_back(filename + ".root");
-        // m_weightFiles->push_back(filename + ".log");
+    std::size_t pos = m_process.find("-");
+    std::string final = m_process.substr(pos);
 
-    // for (int i = 0; i < 13; i++) {
-    //     filename = m_dataDirectory + "/SM_gg-tt-bbllvv" + E + "_pdf11_" + std::to_string(i) + "-" + std::to_string(i + 1);
-    //     m_inputFiles->push_back(filename + ".root");
-    //     m_weightFiles->push_back(filename + ".log");
-    // }
+    std::vector<std::string> initials = {"gg", "qq", "dd", "uu"};
 
-    // if (m_add_qq) {
-    //     filename = m_dataDirectory + "/SM_" + "qq-tt-bbllvv" + E + "_2-4";
-    //     m_inputFiles->push_back(filename + ".root");
-    //     m_weightFiles->push_back(filename + ".log");
-    //     filename = m_dataDirectory + "/SM_" + "qq-tt-bbllvv" + E + "_4-13";
-    //     m_inputFiles->push_back(filename + ".root");
-    //     m_weightFiles->push_back(filename + ".log");
-    // }
-
-    filename = m_dataDirectory + "/" + m_process + "." + m_model + "." + E + "TeV" + ".CT14LL";
-    m_inputFiles->push_back(filename + ".root");
-    m_weightFiles->push_back(filename + ".log");
-
-    // filename = m_dataDirectory + "/" + m_model + "_" + m_process + E + "_4-13";
-    // m_inputFiles->push_back(filename + ".root");
-    // m_weightFiles->push_back(filename + ".log");
+    for (auto initial : initials) {
+        if (boost::contains(m_process, initial)) {
+            filename = m_dataDirectory + "/" + initial + final + "." + m_model + "." + E + "TeV" + ".CT14LL" + m_options;
+            m_inputFiles->push_back(filename + ".root");
+            m_weightFiles->push_back(filename + ".log");
+        }
+    }
 
     // check all input files exist
     for (auto inputFile : *m_inputFiles) {
         struct stat buffer;
         bool exists = stat(inputFile.Data(), &buffer) == 0;
         if (exists == false) {
-            printf("Error: %s does not exist.\n", inputFile.Data());
+            std::cout << "Error: no" << inputFile.Data() << std::endl;
             exit(exists);
         }
     }
@@ -432,14 +415,10 @@ void Analysis::SetupInputFiles()
 
 void Analysis::SetupOutputFiles()
 {
-    string E = "";
-    if (m_energy != 13) "_" + std::to_string(m_energy);
+    std::string E = std::to_string(m_energy);
 
-    m_outputFilename = m_dataDirectory + "/" + m_model + "_" + m_process + E + m_options;
+    m_outputFilename = m_dataDirectory + "/" + m_process + "." + m_model + "." + E + "TeV" + ".CT14LL" + m_options;
     m_outputFilename = m_outputFilename + ".a";
-
-    if (m_add_qq) m_outputFilename += ".q";
-    if (m_add_gg) m_outputFilename += ".g";
 
     if (m_reco == 2 && m_btags != 2) m_outputFilename += ".b" + std::to_string(m_btags);
     string ytt = std::to_string(m_ytt);
@@ -516,7 +495,7 @@ void Analysis::MakeHistograms()
 {
     double binWidth = 0.05;
     double Emin = 0.025;
-    double Emax = 3.975;
+    double Emax = 4.025;
     double nbins = (Emax - Emin) / binWidth;
     std:: cout << "energy range: " << Emin << " to " << Emax << " [TeV]" << std::endl;
 
@@ -1140,15 +1119,15 @@ bool Analysis::PassCuts(const std::vector<TLorentzVector>& p, const TLorentzVect
     // if (this->PassCutsET(p, P)) {
     //     if (this->PassCutsEta(p,P)) {
     //         if (this->PassCutsMET(p, P)) {
-    //             if (this->PassCutsMtt(p, P)) {
+                if (this->PassCutsMtt(p, P)) {
     //                 if (this->PassCutsYtt(p,P)) {
                         return true;
     //                 }
-    //             }
+                }
     //         }
     //     }
     // }
-    // return false;
+    return false;
 }
 
 bool Analysis::PassCutsMET(const std::vector<TLorentzVector>& p, const TLorentzVector& P)
