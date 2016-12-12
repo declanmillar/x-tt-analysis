@@ -27,11 +27,13 @@ void Analysis::EachEvent()
     UpdateCutflow(c_entries, true);
 
     // set event weight
-    double weight = 1, weight_R = weight;
+    double weight = 1;
     if (m_xsec) {
         weight = weight * m_sigma / m_nevents;
         if (m_useLumi) weight = weight * m_luminosity;
     }
+    double weight_R = weight;
+    if (m_reco == 2) weight_R = weight_R / 2;
 
     // get number of particles in final state
     n = m_ntup->barcode()->size();
@@ -79,7 +81,7 @@ void Analysis::EachEvent()
     std::vector<TLorentzVector> p_R1(n), pcm_R1(n), ptop_R1(n), patop_R1(n);
     std::vector<TLorentzVector> p_R2(n), pcm_R2(n), ptop_R2(n), patop_R2(n);
 
-    if (this->PassCuts(p, P)) {
+    if (this->PassCuts(p, P) && this->PassFiducialCuts(p, P)) {
 
         h_pxt->Fill(p_t.Px(), weight);
         h_pyt->Fill(p_t.Py(), weight);
@@ -113,10 +115,10 @@ void Analysis::EachEvent()
     }
 
     if (n < 6) {
-        h_mtt_LL->Fill(mtt, m_ntup->weightLL());
-        h_mtt_LR->Fill(mtt, m_ntup->weightLR());
-        h_mtt_RL->Fill(mtt, m_ntup->weightRL());
-        h_mtt_RR->Fill(mtt, m_ntup->weightRR());
+        // h_mtt_LL->Fill(mtt, m_ntup->weightLL());
+        // h_mtt_LR->Fill(mtt, m_ntup->weightLR());
+        // h_mtt_RL->Fill(mtt, m_ntup->weightRL());
+        // h_mtt_RR->Fill(mtt, m_ntup->weightRR());
     }
 
     if (n == 6) {
@@ -387,14 +389,23 @@ void Analysis::SetupInputFiles()
 
     std::string E = std::to_string(m_energy);
 
-    std::size_t pos = m_process.find("-");
-    std::string final = m_process.substr(pos);
-
     std::vector<std::string> initials = {"gg", "qq", "dd", "uu"};
 
     for (auto initial : initials) {
+        std::size_t pos = m_process.find("-tt");
+        std::string final = m_process.substr(pos);
         if (boost::contains(m_process, initial)) {
-            filename = m_dataDirectory + "/" + initial + final + "." + m_model + "." + E + "TeV" + ".CT14LL" + m_options;
+            std::string model = "";
+            if (initial == "gg" || initial == "qq") model = "SM";
+            else model = m_model;
+            std::string options = "";
+            options = m_options;
+            std::string intermediates = "";
+            if (initial == "uu" || initial == "dd") {
+                intermediates = intermediates + "-AZ";
+                if (m_model != "SM") intermediates = intermediates + "X";
+            }
+            filename = m_dataDirectory + "/" + initial + intermediates + final + "." + model + "." + E + "TeV" + ".CT14LL" + options;
             m_inputFiles->push_back(filename + ".root");
             m_weightFiles->push_back(filename + ".log");
         }
@@ -417,7 +428,7 @@ void Analysis::SetupOutputFiles()
     std::string E = std::to_string(m_energy);
 
     m_outputFilename = m_dataDirectory + "/" + m_process + "." + m_model + "." + E + "TeV" + ".CT14LL" + m_options;
-    m_outputFilename = m_outputFilename + ".a";
+    m_outputFilename = m_outputFilename + ".r" + std::to_string(m_reco);
 
     if (m_reco == 2 && m_btags != 2) m_outputFilename += ".b" + std::to_string(m_btags);
     string ytt = std::to_string(m_ytt);
@@ -492,8 +503,8 @@ void Analysis::AsymmetryUncertainty(TH1D* hA, TH1D* h1, TH1D* h2)
 void Analysis::MakeHistograms()
 {
     double binWidth = 0.05;
-    double Emin = 0.025;
-    double Emax = 4.025;
+    double Emin = 2.025;
+    double Emax = 3.975;
     double nbins = (Emax - Emin) / binWidth;
     std:: cout << "energy range: " << Emin << " to " << Emax << " [TeV]" << std::endl;
 
@@ -634,22 +645,22 @@ void Analysis::MakeHistograms()
         h2_mtt_deltaPhi->GetYaxis()->SetTitle("#Delta#phi_{l}");
         h2_mtt_deltaPhi->Sumw2();
 
-        h2_mtt_cosTheta1 = new TH2D("mtt_costheta1", "m_{tt} cos#theta_{l+}", nbins, Emin, Emax, 10, -1.0, 1.0);
+        h2_mtt_cosTheta1 = new TH2D("mtt_costheta1", "m_{tt} cos#theta_{l+}", nbins / 2, Emin, Emax, 20, -1.0, 1.0);
         h2_mtt_cosTheta1->GetXaxis()->SetTitle("m_{tt} [TeV]");
         h2_mtt_cosTheta1->GetYaxis()->SetTitle("cos#theta_{l+}");
         h2_mtt_cosTheta1->Sumw2();
 
-        h2_mtt_cosTheta2 = new TH2D("mtt_costheta2", "m_{tt} cos#theta_{l-}", nbins, Emin, Emax, 10, -1.0, 1.0);
+        h2_mtt_cosTheta2 = new TH2D("mtt_costheta2", "m_{tt} cos#theta_{l-}", nbins / 2, Emin, Emax, 20, -1.0, 1.0);
         h2_mtt_cosTheta2->GetXaxis()->SetTitle("m_{tt} [TeV]");
         h2_mtt_cosTheta2->GetYaxis()->SetTitle("cos#theta_{l-}");
         h2_mtt_cosTheta2->Sumw2();
 
-        h2_mtt_cosThetal_R = new TH2D("mtt_costhetal_R", "m_{tt} cos#theta_{l} (reco)", nbins, Emin, Emax, 10, -1.0, 1.0);
+        h2_mtt_cosThetal_R = new TH2D("mtt_costhetal_R", "m_{tt} cos#theta_{l} (reco)", nbins / 2, Emin, Emax, 20, -1.0, 1.0);
         h2_mtt_cosThetal_R->GetXaxis()->SetTitle("m_{tt} (reco) [TeV]");
         h2_mtt_cosThetal_R->GetYaxis()->SetTitle("cos#theta_{l}");
         h2_mtt_cosThetal_R->Sumw2();
 
-        h2_mtt_cos1cos2 = new TH2D("mtt_cos1cos2", "m_{tt} cos#theta_{l+}cos#theta_{l-}", nbins, Emin, Emax, 10, -1.0, 1.0);
+        h2_mtt_cos1cos2 = new TH2D("mtt_cos1cos2", "m_{tt} cos#theta_{l+}cos#theta_{l-}", nbins, Emin, Emax, 20, -1.0, 1.0);
         h2_mtt_cos1cos2->GetXaxis()->SetTitle("m_{tt}");
         h2_mtt_cos1cos2->GetYaxis()->SetTitle("cos#theta_{l+}cos#theta_{l-}");
         h2_mtt_cos1cos2->Sumw2();
@@ -968,22 +979,25 @@ void Analysis::MakeDistribution1D(TH1D* h, const TString& units)
 {
     TString ytitle, yunits, xunits;
     if (m_xsec) {
-        ytitle = "d#sigma / d" + (TString) h->GetTitle();
-        if (units != "") {
-            yunits = " [fb/" + units + "]";
-            xunits = " [" + units + "]";
-        }
+        if (m_useLumi) ytitle = "Expected events";
         else {
-            yunits = "";
-            xunits = "";
+            ytitle = "d#sigma / d" + (TString) h->GetTitle();
+            if (units != "") {
+                yunits = " [fb/" + units + "]";
+                xunits = " [" + units + "]";
+            }
+            else {
+                yunits = "";
+                xunits = "";
+            }
         }
     }
     else {
         if (m_useLumi) ytitle = "Expected events";
-        else ytitle = "Generated events";
-        if (units != "") xunits = " [" + units + "]";
-        else xunits = "";
+        ytitle = "Generated events";
     }
+    if (units != "") xunits = " [" + units + "]";
+    else xunits = "";
     h->GetYaxis()->SetTitle(ytitle + yunits);
     h->GetXaxis()->SetTitle(h->GetTitle() + xunits);
     m_outputFile->cd();
@@ -995,7 +1009,7 @@ void Analysis::MakeDistribution1D(TH1D* h, const TString& units)
 void Analysis::MakeDistribution2D(TH2D* h, TString xtitle,  TString xunits, TString ytitle, TString yunits) {
     TString ztitle, zunits;
     if (m_xsec) {
-        h->Scale(m_sigma / m_nevents, "width");
+        // h->Scale(m_sigma / m_nevents, "width");
         ztitle = "d#sigma / d";
         if (xunits != "" and yunits != "") {
             zunits = " [fb/" + xunits + "/" + yunits + "]";
@@ -1079,7 +1093,7 @@ void Analysis::WriteHistograms()
         for (auto slice : slices1) slice->Write();
         TH1D* h_AL1 = (TH1D*) slices1[0]->Clone("AL1");
         slices1.Clear();
-        h_AL1->Scale(2/h2_mtt_cosTheta1->GetYaxis()->GetBinWidth(1));
+        h_AL1->Scale(2 / h2_mtt_cosTheta1->GetYaxis()->GetBinWidth(1));
         h_AL1->SetTitle("A_{L}");
         h_AL1->GetXaxis()->SetTitle("m_{tt} [TeV]");
         h_AL1->GetYaxis()->SetTitle("A_{L}");
@@ -1091,7 +1105,7 @@ void Analysis::WriteHistograms()
         for (auto slice : slices2) slice->Write();
         TH1D* h_AL2 = (TH1D*) slices2[0]->Clone("AL2");
         slices2.Clear();
-        h_AL2->Scale(2/h2_mtt_cosTheta2->GetYaxis()->GetBinWidth(1));
+        h_AL2->Scale(2 / h2_mtt_cosTheta2->GetYaxis()->GetBinWidth(1));
         h_AL2->SetTitle("A_{L}");
         h_AL2->GetXaxis()->SetTitle("m_{tt} [TeV]");
         h_AL2->GetYaxis()->SetTitle("A_{L}");
@@ -1103,12 +1117,23 @@ void Analysis::WriteHistograms()
         for (auto slice : slicesR) slice->Write();
         TH1D* h_AL_R = (TH1D*) slicesR[0]->Clone("AL_R");
         slicesR.Clear();
-        h_AL_R->Scale(2/h2_mtt_cosThetal_R->GetYaxis()->GetBinWidth(1));
+        h_AL_R->Scale(2 / h2_mtt_cosThetal_R->GetYaxis()->GetBinWidth(1));
         h_AL_R->SetTitle("A_{L} (reco)");
         h_AL_R->GetXaxis()->SetTitle("m_{tt} (reco) [TeV]");
         h_AL_R->GetYaxis()->SetTitle("A_{L} (reco)");
         h_AL_R->Write();
     }
+}
+
+
+bool Analysis::PassFiducialCuts(const std::vector<TLorentzVector>& p, const TLorentzVector& P) 
+{
+    if (this->PassCutsET(p, P)) {
+        if (this->PassCutsEta(p, P)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 
@@ -1118,9 +1143,9 @@ bool Analysis::PassCuts(const std::vector<TLorentzVector>& p, const TLorentzVect
     //     if (this->PassCutsEta(p,P)) {
     //         if (this->PassCutsMET(p, P)) {
                 if (this->PassCutsMtt(p, P)) {
-    //                 if (this->PassCutsYtt(p,P)) {
+                    // if (this->PassCutsYtt(p,P)) {
                         return true;
-    //                 }
+                    // }
                 }
     //         }
     //     }
@@ -1239,29 +1264,31 @@ void Analysis::ResetCounters()
 
 void Analysis::GetGenerationCrossSection(TString filename)
 {
-    filename.Replace(filename.Last('.'), 5, ".log");
-    printf("%s\n", filename.Data());
-    std::ifstream logstream(filename.Data());
-    if (!logstream.is_open()) printf("Error: failed to open %s!\n", filename.Data());
-    string line;
-    string target = " cross section";
-    std::vector<string> parts;
-    bool found = false;
-    while(getline(logstream, line)) {
-        trim(line);
-        boost::split(parts, line, boost::is_any_of(":"));
-        for (auto& part : parts) trim(part);
-        if (parts[0] == target) {
-            m_sigma = 1000 * std::stod(parts[1]);
-            found = true;
-        }
-    }
-    logstream.close();
-    if (!found) {
-        printf("error: failed to read generation cross section from: %s", filename.Data());
-        exit(1);
-    }
-    else printf("Generation Cross section = %.15le [fb]\n", m_sigma);
+    m_sigma = 1000 * m_ptup->cross_section();
+    // filename.Replace(filename.Last('.'), 5, ".log");
+    // printf("%s\n", filename.Data());
+    // std::ifstream logstream(filename.Data());
+    // if (!logstream.is_open()) printf("Error: failed to open %s!\n", filename.Data());
+    // string line;
+    // string target = " cross section";
+    // std::vector<string> parts;
+    // bool found = false;
+    // while(getline(logstream, line)) {
+    //     trim(line);
+    //     boost::split(parts, line, boost::is_any_of(":"));
+    //     for (auto& part : parts) trim(part);
+    //     if (parts[0] == target) {
+    //         m_sigma = 1000 * std::stod(parts[1]);
+    //         found = true;
+    //     }
+    // }
+    // logstream.close();
+    // if (!found) {
+    //     printf("error: failed to read generation cross section from: %s", filename.Data());
+    //     exit(1);
+    // }
+    // else 
+    printf("Generation Cross section = %.15le [fb]\n", m_sigma);
 }
 
 
@@ -1272,8 +1299,7 @@ void Analysis::Loop()
         std::cout << (*i) << std::endl;
         this->SetupTreesForNewFile((*i));
         this->GetGenerationCrossSection(*i);
-        // this->GetIterationWeights(*i);
-        // this->GetChannelFactors();
+        this->GetChannelFactors();
         m_nevents = this->TotalEvents();
         std::cout << "events: " << m_nevents << std::endl;
         for (Long64_t jevent = 0; jevent < m_nevents; ++jevent) {
@@ -1311,12 +1337,18 @@ Long64_t Analysis::IncrementEvent(Long64_t i)
 
 void Analysis::SetupTreesForNewFile(const TString& s)
 {
-    TString treeToUse = "RootTuple";
+    TString treeToUse = "process";
+    m_chainPtup = new TChain(treeToUse,"");
+    TString TStringPtuple = s + "/" + treeToUse;
+    m_chainPtup->Add(TStringPtuple,0);
+    m_ptup = new process(m_chainPtup);
+    m_ptup->LoadTree(0);
 
+    treeToUse = "events";
     m_chainNtup = new TChain(treeToUse,"");
     TString TStringNtuple = s + "/" + treeToUse;
     m_chainNtup->Add(TStringNtuple,0);
-    m_ntup = new RootTuple(m_chainNtup);
+    m_ntup = new events(m_chainNtup);
 }
 
 
@@ -1747,7 +1779,7 @@ void Analysis::GetChannelFactors()
     // scale dilepton to other classifications
     // fac_ee = 1
     // fac_emu = 2
-    // if (m_reco) m_sigma = m_sigma*24; // 2 [e+ + e-] x 2 [e + mu] x 6 [3 x 2]
+    if (m_reco == 2) m_sigma = m_sigma * 24; // 2 [e+ + e-] x 2 [e + mu] x 6 [3 x 2]
     // fac_qq = 36
 }
 

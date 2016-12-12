@@ -196,8 +196,8 @@ class HistPainter():
         #     upper_pad.SetPhi(-150)
         #     upper_pad.Update()
 
-        upper_pad.SetGridx()
-        upper_pad.SetGridy()
+        # upper_pad.SetGridx()
+        # upper_pad.SetGridy()
 
 
         if (self.setlogy):
@@ -255,9 +255,12 @@ green = ROOT.TColor.GetColor(0.0 / 255.0, 130.0 / 255.0, 90.0 / 255.0)
 grey = ROOT.TColor.GetColor(64.0 / 255.0, 64.0 / 255.0, 64.0 / 255.0)
 black = ROOT.TColor.GetColor(1.0, 1.0, 1.0)
 
-hs = ["m_t", "m_tbar", "m_tt", "m_tt_perf", "pT_t", "pT_tbar", "pT_t_perf", "pT_tbar_perf", "E_t", "E_tbar", "costheta_tt", "costheta_tt_perf", "m_tt_pT_t_perf", "m_tt_costheta_tt_perf"]#, "deltaR_tt"]
+# hs = ["m_t", "m_tbar", "m_tt", "m_tt_perf", "pT_t", "pT_tbar", "pT_t_perf", "pT_tbar_perf", "E_t", "E_tbar", "costheta_tt", "costheta_tt_perf", "m_tt_pT_t_perf", "m_tt_costheta_tt_perf"]#, "deltaR_tt"]
 
-f = "GLR-R-3_dd-AZX-tt-bbllvv.a.root"
+hs = ["m_tt"]
+
+f = "qq-tt-bbllvv.SM.13TeV.CT14LL.2-4.r2.root"
+f2 = "qq-tt-bbllvv.SM.13TeV.CT14LL.2-4.r2.cut.root"
 
 i = 0
 for h in hs:
@@ -278,7 +281,7 @@ for h in hs:
     # art.SetZtitle("#it{cos#theta_{l}}")
 
     art.AddHistogram(h, f, "#bf{SM}", blue)
-    if not ("perf" in h): art.AddHistogram(h + "_R", f, "#bf{SM}", red, 2)
+    if not ("perf" in h): art.AddHistogram(h, f2, "#bf{SM}", red, 2)
 
     if ("m_tt_" in h): 
         pass
@@ -300,5 +303,6 @@ for h in hs:
         else:
             art.AddLegend(0.76, 0.45, 0.92, 0.65)
 
-    art.Save("~/Website/figures/dilepton/" + h + "-dd-AZX.pdf")
+    # art.Save("~/Website/figures/dilepton/" + h + "-dd-AZX.pdf")
+    art.Save("~/Desktop/" + h + "-qq.pdf")
     i += 1

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from ROOT import gROOT,TFile,TBranch,TLeaf,TLeafObject,TObjArray,TTree,gDirectory
 import os, sys
 from datetime import datetime
@@ -17,8 +18,8 @@ class genNtupleCode(object):
     trees=[]
     for i in keys:
       # if str(i.GetName()).find('physics') != -1  and str(i.GetName()).find('Meta') == -1:
-      if str(i.GetName()).find('RootTuple') != -1:
-        trees.append(self.inputFile.Get(i.GetName()))
+      # if str(i.GetName()).find('RootTuple') != -1:
+      trees.append(self.inputFile.Get(i.GetName()))
     return trees
 
   def allVariables(self):

@@ -1,7 +1,7 @@
 # Makefile for zprime-top-analysis
 # declan.millar@cern.ch
 
-OBJ = solve-poly.o main.o atlas-style.o root-tuple.o trim.o progress-bar.o bool-to-string.o analysis.o
+OBJ = solve-poly.o main.o atlas-style.o root-tuple.o events.o process.o trim.o progress-bar.o bool-to-string.o analysis.o
 BIN = analysis
 LIB = lib
 SRC = src

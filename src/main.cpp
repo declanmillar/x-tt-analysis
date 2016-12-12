@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
     ("energy,E",         po::value<int>()->default_value(13))
     ("luminosity,L",     po::value<double>()->default_value(-1))
     ("options,o",        po::value<std::string>()->default_value(""))
-    ("reco,t",           po::value<int>()->default_value(1))
+    ("reco,r",           po::value<int>()->default_value(1))
     ;
     po::variables_map opt;
     po::store(po::parse_command_line(argc, argv, desc), opt);

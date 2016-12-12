@@ -9,6 +9,8 @@
 #include "boost/algorithm/string.hpp"
 #include "boost/asio.hpp"
 #include "root-tuple.hpp"
+#include "events.hpp"
+#include "process.hpp"
 #include "atlas-style.hpp"
 #include "solve-poly.hpp"
 
@@ -27,7 +29,7 @@ class Analysis{
     int m_luminosity;
     TString m_tag;
 
-    bool m_xsec = false;
+    bool m_xsec = true;
     int m_reco;
     bool m_fid;
     double m_ytt = 0;
@@ -51,7 +53,9 @@ class Analysis{
     std::vector<TString>* m_inputFiles;
     std::vector<TString>* m_weightFiles;
     TChain* m_chainNtup;
-    RootTuple* m_ntup;
+    events* m_ntup;
+    TChain* m_chainPtup;
+    process* m_ptup;
 
     std::vector<int> m_cutflow;
     std::vector<TString> m_cutNames;
@@ -249,6 +253,7 @@ class Analysis{
     void InitialiseCutflow();
     void PrintCutflow();
     void UpdateCutflow(int, bool);
+    bool PassFiducialCuts(const std::vector<TLorentzVector>&, const TLorentzVector&);
     bool PassCuts(const std::vector<TLorentzVector>&, const TLorentzVector&);
     bool PassCutsMET(const std::vector<TLorentzVector>&, const TLorentzVector&);
     bool PassCutsMtt(const std::vector<TLorentzVector>&, const TLorentzVector&);
