@@ -521,9 +521,9 @@ void Analysis::AsymmetryUncertainty(TH1D* hA, TH1D* h1, TH1D* h2)
 
 void Analysis::MakeHistograms()
 {
-    double binWidth = 0.1;
-    double Emin = 2.05;
-    double Emax = 3.95;
+    double binWidth = 0.05;
+    double Emin = 2.025;
+    double Emax = 3.975;
     double nbins = (Emax - Emin) / binWidth;
     std:: cout << "energy range: " << Emin << " to " << Emax << " [TeV]" << std::endl;
 
@@ -869,10 +869,14 @@ void Analysis::MakeDistributions()
         h_ALL = this->MakeALL();
         h_ALL->GetYaxis()->SetTitle(h_ALL->GetTitle());
         h_ALL->GetXaxis()->SetTitle("m_{tt} [TeV]");
+        h_ALL->GetYaxis()->SetTitleOffset(0.9);
+        h_ALL->GetXaxis()->SetTitleOffset(0.95);
 
         h_AL = this->MakeAL();
         h_AL->GetYaxis()->SetTitle(h_AL->GetTitle());
         h_AL->GetXaxis()->SetTitle("m_{tt} [TeV]");
+        h_AL->GetYaxis()->SetTitleOffset(0.9);
+        h_AL->GetXaxis()->SetTitleOffset(0.95);
     }
 
     if (n == 6) {
@@ -891,6 +895,8 @@ void Analysis::MakeDistributions()
         h_AtlFB = this->Asymmetry("AtlFB", "A^{tl}_{FB^*}", h_mtt_tlF, h_mtt_tlB);
         h_AtlFB->GetYaxis()->SetTitle(h_AtlFB->GetTitle());
         h_AtlFB->GetXaxis()->SetTitle("m_{tt} [TeV]");
+        h_AtlFB->GetYaxis()->SetTitleOffset(0.9);
+        h_AtlFB->GetXaxis()->SetTitleOffset(0.95);
         h_AtlFB->Write();
 
         this->MakeDistribution1D(h_mtt_lF, "TeV");
@@ -899,16 +905,22 @@ void Analysis::MakeDistributions()
         h_Ap = this->Asymmetry("Ap", "A_{P}", h_mtt_lF, h_mtt_lB);
         h_Ap->GetYaxis()->SetTitle(h_Ap->GetTitle());
         h_Ap->GetXaxis()->SetTitle("m_{tt} [TeV]");
+        h_Ap->GetYaxis()->SetTitleOffset(0.9);
+        h_Ap->GetXaxis()->SetTitleOffset(0.95);
         h_Ap->Write();
 
         h_AlEl = this->Asymmetry("AlEl", "A^{l}_{E_l}", h_mtt_ElF, h_mtt_ElB);
         h_AlEl->GetYaxis()->SetTitle(h_AlEl->GetTitle());
         h_AlEl->GetXaxis()->SetTitle("m_{tt} [TeV]");
+        h_AlEl->GetYaxis()->SetTitleOffset(0.9);
+        h_AlEl->GetXaxis()->SetTitleOffset(0.95);
         h_AlEl->Write();
 
         h_Aphil = this->Asymmetry("Aphil", "A^{l}_{#phi}", h_mtt_philF, h_mtt_philB);
         h_Aphil->GetYaxis()->SetTitle(h_Aphil->GetTitle());
         h_Aphil->GetXaxis()->SetTitle("m_{tt} [TeV]");
+        h_Aphil->GetYaxis()->SetTitleOffset(0.9);
+        h_Aphil->GetXaxis()->SetTitleOffset(0.95);
         h_Aphil->Write();
 
         this->MakeDistribution1D(h_pv1x, "GeV");
@@ -995,6 +1007,8 @@ void Analysis::MakeDistributions()
             h_AtFB_R = this->Asymmetry("AtFB_R", "A^{t}_{FB^{*}} (reco)", h_mtt_tF_R, h_mtt_tB_R);
             h_AtFB_R->GetYaxis()->SetTitle(h_AtFB_R->GetTitle());
             h_AtFB_R->GetXaxis()->SetTitle("m_{tt} (reco) [TeV]");
+            h_AtFB_R->GetYaxis()->SetTitleOffset(0.9);
+            h_AtFB_R->GetXaxis()->SetTitleOffset(0.95);
             h_AtFB_R->Write();
         }
     }
@@ -1008,8 +1022,8 @@ void Analysis::MakeDistribution1D(TH1D* h, const TString& units)
         if (m_useLumi) {
             for (int i = 1; i < h->GetNbinsX() + 1; i++) {
                 h->SetBinError(i, sqrt(h->GetBinContent(i)));
-                std::cout << "N  = " << "" << h->GetBinContent(i) << std::endl;
-                std::cout << "dN = " << "" << h->GetBinError(i) << std::endl;
+                // std::cout << "N  = " << "" << h->GetBinContent(i) << std::endl;
+                // std::cout << "dN = " << "" << h->GetBinError(i) << std::endl;
             }
             ytitle = "Expected events";
         }
@@ -1032,6 +1046,8 @@ void Analysis::MakeDistribution1D(TH1D* h, const TString& units)
     else xunits = "";
     h->GetYaxis()->SetTitle(ytitle + yunits);
     h->GetXaxis()->SetTitle(h->GetTitle() + xunits);
+    h->GetYaxis()->SetTitleOffset(0.9);
+    h->GetXaxis()->SetTitleOffset(0.95);
     m_outputFile->cd();
     m_outputFile->cd("/");
     h->Write();
@@ -1310,13 +1326,19 @@ void Analysis::ResetCounters()
 
 void Analysis::GetGenerationCrossSection(TString filename)
 {   
+    std::string Filename = filename.Data();
+    std::string weighted = ".weighted.";
     std::cout << "filename = " << filename << std::endl;
+    printf("Generation Cross section = %.15le [fb]\n", 1000 * m_ptup->cross_section());
+
     if (filename == "/Users/declan/Data/zprime/dd-AZ-tt-bbllvv.SM.13TeV.CT14LL.2-4.unweighted.root" || filename == "/Users/declan/Data/zprime/dd-AZX-tt-bbllvv.GLR-R-3.13TeV.CT14LL.2-4.unweighted.root") {
         m_sigma = 1000 * m_ptup->cross_section() / 100000; // temporary! Remove me
         std::cout << "bork" << std::endl;
     }
+    else if (boost::contains(Filename, weighted)) {
+        m_sigma = 1000;
+    }
     else m_sigma = 1000 * m_ptup->cross_section();
-    printf("Generation Cross section = %.15le [fb]\n", m_sigma);
 }
 
 
@@ -1696,7 +1718,7 @@ std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::vector<TLor
 
     double h4 = c00 * c00 * d22 * d22 
                     + c11 * d22 * (c11 * d00 - c00 * d11)
-                    + c00 * c22 * (d11 * d11 - 2 * d00 * d22) 
+                    + c00 * c23 (d11 * d11 - 2 * d00 * d22) 
                     + c22 * d00 * (c22 * d00 - c11 * d11);
 
     double h3 = c00 * d21 * (2 * c00 * d22 - c11 * d11) 

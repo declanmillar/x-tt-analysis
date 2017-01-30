@@ -78,7 +78,7 @@ class HistPainter():
         hist.SetMarkerStyle(0)
         hist.SetLineStyle(style)
 
-        hist.SetMinimum(0.3)
+        # hist.SetMinimum(0.3)
         # hist.Scale(1 / hist.Integral())
 
 
@@ -278,15 +278,11 @@ grey = ROOT.TColor.GetColor(64.0 / 255.0, 64.0 / 255.0, 64.0 / 255.0)
 black = ROOT.TColor.GetColor(0.0, 0.0, 0.0)
 
 # hs = ["m_t", "m_tbar", "m_tt", "m_tt_perf", "pT_t", "pT_tbar", "pT_t_perf", "pT_tbar_perf", "E_t", "E_tbar", "costheta_tt", "costheta_tt_perf", "m_tt_pT_t_perf", "m_tt_costheta_tt_perf"]#, "deltaR_tt"]
-
 # hs = ["m_tt", "m_tt_R", "pT_b1", "eta_b1", "AtFB", "AtFB_R", "AL1", "AL_R", "m_tt_perf", "costheta_tt_perf", "costhetastar_perf", "costhetatl_perf"]
+hs = ["m_tt"]
 
-hs = ["m_tt", "AtFB", "AL1"]
-
-f  = "uu-AZ-tt-bbllvv.SM.13TeV.CT14LL.multi.r1.root"
-f2 = "uu-AZ-tt-bbllvv.SM.13TeV.CT14LL.02.r1.root"
-# f3 = "ggqqdduu-AZX-tt-bbllvv.GLR-R-3.13TeV.CT14LL.r2.resolved.L300.root"
-# f4 = "ggqqdduu-AZX-tt-bbllvv.GLR-R-3.13TeV.CT14LL.r2.resolved.L300.fid.root"
+f  = "uu-AZX-tt-bbllvv.GLR-R-3.13TeV.CT14LL.2-4.unweighted.r2.root"
+f2 = "uu-AZX-tt-bbllvv.GLR-R-3.13TeV.CT14LL.multi.2-4.unweighted.r2.root"
 
 i = 0
 for h in hs:
@@ -294,17 +290,13 @@ for h in hs:
 
     art.GetHistType(h, f)
     
-    if ("m_tt_costheta" in h or "m_tt" in h):
-        art.SetLogy()
+    # if ("m_tt_costheta" in h or "m_tt" in h): art.SetLogy()
     art.SetStyle()
     art.AddPads()
 
-    if "AtFB" in h:
-        art.SetRange(-0.3, 0.3)
+    if "AtFB" in h: art.SetRange(-0.3, 0.3)
         
-    if "AL" in h: 
-        art.SetRange(-0.6, 0.9)
-
+    if "AL" in h: art.SetRange(-0.6, 0.9)
 
     art.SetXtitle("#it{m_{tt}} [TeV]")
     if "AtFB" in h:
@@ -314,23 +306,14 @@ for h in hs:
     else: 
         art.SetYtitle("d#it{#sigma} / d#it{m_{tt}} [pb/TeV]")
 
-    art.AddHistogram(h, f,  "#bf{Full}", black)
-    art.AddHistogram(h, f2, "#bf{#eta < 2.5, p_{T} > 25 GeV}", blue, 2)
-    # art.AddHistogram(h, f3, "#bf{#Delta R > 0.4}", red, 3)
-    # art.AddHistogram(h, f4, "#bf{#eta < 2.5, p_{T} > 25 GeV, #Delta R > 0.4} ", green, 4)
+    art.AddHistogram(h, f,  "", black)
+    art.AddHistogram(h, f2, "", blue, 2)
 
-    # if ("m_tt_" in h): 
-    #     pass
-    # elif ("perf" in h):
-    #     art.AddInfoBox("SM", 0.2, 0.85)
-    # else:
-    #     if ("costheta" in h): 
-    #         art.AddInfoBox("SM", 0.45, 0.85)
-    #     else:
-    # if ("m_tt_costheta" in h or "m_tt" in h):
     art.AddInfoBox("GLR-R", 3, 2.5, 13, 100, 0.6, 0.75, 0.875)
-    # else:
-    # art.AddInfoBox("GLR-R", 3, 2.5, 13, 100, 0.6, 0.17, 0.875)
+    art.AddLegend(0.75, 0.4, 0.9, 0.6)
+
+    art.Save("~/Desktop/" + h + "_uu-AZ_GLR-R-3.pdf")
+    i += 1
 
     # art.SetHistTitle(0, "no cut")
     # if not ("perf" in h): 
@@ -344,7 +327,3 @@ for h in hs:
     #     art.AddLegend(0.15, 0.67, 0.5, 0.93)
     # else:
     #     art.AddLegend(0.15, 0.17, 0.5, 0.43)
-
-    # art.Save("~/Website/figures/dilepton/" + h + "-dd-AZX.pdf")
-    art.Save("~/Desktop/" + h + "AZ.pdf")
-    i += 1

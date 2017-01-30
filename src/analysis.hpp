@@ -28,8 +28,8 @@ class Analysis{
     int m_energy;
     int m_luminosity;
     TString m_tag;
-    // std::string m_pdf = "CTEQ6l1";
-    std::string m_pdf = "CT14LL";
+    std::string m_pdf = "CTEQ6l1";
+    // std::string m_pdf = "CT14LL";
 
     bool m_xsec = true;
     bool m_fid = false;
