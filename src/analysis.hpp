@@ -28,14 +28,17 @@ class Analysis{
     int m_energy;
     int m_luminosity;
     TString m_tag;
+    // std::string m_pdf = "CTEQ6l1";
+    std::string m_pdf = "CT14LL";
 
     bool m_xsec = true;
+    bool m_fid = false;
     int m_reco;
-    bool m_fid;
     double m_ytt = 0;
     double m_Emin = -1;
     double m_Emax = -1;
     bool m_useLumi;
+    bool verbose = false;
 
     int n;
     unsigned int m_nReco;
@@ -67,6 +70,7 @@ class Analysis{
       c_realSolutions,
       c_Et,
       c_eta,
+      c_deltaR,
       c_MET,
       c_mtt,
       c_ytt,
@@ -77,6 +81,7 @@ class Analysis{
     // const double m_bmass = 4.18, m_Wmass = 80.23, m_tmass = 173.0;
     const double m_bmass = 4.18, m_Wmass = 80.4, m_tmass = 172.5;
     const int m_btags = 2;
+    // const double m_efficiency = 0.6;
     const double m_efficiency = 1.0;
 
     // Histograms
@@ -195,7 +200,9 @@ class Analysis{
     // performance
     TH1D* h_pT_t_perf;
     TH1D* h_pT_tbar_perf;
-    TH1D* h_costheta_tt_perf;
+    TH1D* h_costhetatt_perf;
+    TH1D* h_costhetatl_perf;
+    TH1D* h_costhetastar_perf;
     TH1D* h_m_tt_perf;
     TH2D* h2_m_tt_pT_t_perf;
     TH2D* h2_m_tt_costheta_tt_perf;
@@ -260,12 +267,13 @@ class Analysis{
     bool PassCutsEta(const std::vector<TLorentzVector>&, const TLorentzVector&);
     bool PassCutsYtt(const std::vector<TLorentzVector>&, const TLorentzVector&);
     bool PassCutsET(const std::vector<TLorentzVector>&, const TLorentzVector&);
+    bool PassCutsDeltaR(const std::vector<TLorentzVector>&, const TLorentzVector&);
 
     TH1D* Asymmetry(const TString&, const TString&, TH1D*, TH1D*);
     std::vector<TLorentzVector> ReconstructSemilepton(const std::vector<TLorentzVector>&, const int);
     std::vector<TLorentzVector> ReconstructDilepton(const std::vector<TLorentzVector>&);
   public:
-    Analysis(const TString& model, const TString& process, const TString& options, const int energy, const int luminosity, const int reco);
+    Analysis(const TString& model, const TString& process, const TString& options, const int energy, const int luminosity, const int reco, const TString tag);
     virtual ~Analysis();
 };
 #endif

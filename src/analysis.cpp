@@ -3,13 +3,14 @@
 #include "progress-bar.hpp"
 #include "bool-to-string.hpp"
 
-Analysis::Analysis(const TString& model, const TString& process, const TString& options, const int energy, const int luminosity, const int reco):
+Analysis::Analysis(const TString& model, const TString& process, const TString& options, const int energy, const int luminosity, const int reco, const TString tag):
     m_model(model),
     m_process(process),
     m_options(options),
     m_energy(energy),
     m_luminosity(luminosity),
     m_reco(reco), 
+    m_tag(tag), 
     m_outputFile(nullptr),
     m_inputFiles(nullptr),
     m_weightFiles(nullptr),
@@ -27,10 +28,11 @@ void Analysis::EachEvent()
     UpdateCutflow(c_entries, true);
 
     // set event weight
-    double weight = 1;
+    double weight = m_ntup->weight();
+    if (weight == 0) return;
     if (m_xsec) {
         weight = weight * m_sigma / m_nevents;
-        if (m_useLumi) weight = weight * m_luminosity;
+        if (m_useLumi) weight = weight * m_efficiency * m_luminosity;
     }
     double weight_R = weight;
     if (m_reco == 2) weight_R = weight_R / 2;
@@ -48,333 +50,343 @@ void Analysis::EachEvent()
     TLorentzVector P(0, 0, 0, 0);
     for (auto& l : p) P += l;
 
-    std::vector<TLorentzVector> pcm = p;
-    TVector3 v = -1 * P.BoostVector();
-    for (auto& l : pcm) l.Boost(v);
+    if (this->PassFiducialCuts(p, P)) {
 
-    double mtt = P.M() / 1000;
-    double ytt = P.Rapidity();
+        std::vector<TLorentzVector> pcm = p;
+        TVector3 v = -1 * P.BoostVector();
+        for (auto& l : pcm) l.Boost(v);
 
-    // top and antitop
-    TLorentzVector p_t;
-    TLorentzVector p_tbar;
-    TLorentzVector pcm_t;
-    TLorentzVector pcm_tbar;
+        double mtt = P.M() / 1000;
+        double ytt = P.Rapidity();
 
-    if (n < 6) {
-        p_t = p[0];
-        p_tbar = p[1];
-        pcm_t = pcm[0];
-        pcm_tbar = pcm[1];
-    }
-    else {
-        p_t = p[0] + p[2] + p[3];
-        p_tbar = p[1] + p[4] + p[5];
-        pcm_t = pcm[0] + pcm[2] + pcm[3];
-        pcm_tbar = pcm[1] + pcm[4] + pcm[5];
-    }
+        // top and antitop
+        TLorentzVector p_t;
+        TLorentzVector p_tbar;
+        TLorentzVector pcm_t;
+        TLorentzVector pcm_tbar;
 
-    double costheta_tt = cos(p_t.Angle(p_tbar.Vect()));
-    double delta_abs_yt = std::abs(p_t.Rapidity()) - std::abs(p_tbar.Rapidity());
-    double cosTheta = pcm_t.CosTheta();
-    double cosThetaStar = int(ytt / std::abs(ytt)) * cosTheta;
-    std::vector<TLorentzVector> p_R1(n), pcm_R1(n), ptop_R1(n), patop_R1(n);
-    std::vector<TLorentzVector> p_R2(n), pcm_R2(n), ptop_R2(n), patop_R2(n);
-
-    if (this->PassCuts(p, P) && this->PassFiducialCuts(p, P)) {
-
-        h_pxt->Fill(p_t.Px(), weight);
-        h_pyt->Fill(p_t.Py(), weight);
-        h_pzt->Fill(p_t.Pz(), weight);
-        h_Et->Fill(p_t.E(), weight);
-        h_pTt->Fill(p_t.Pt(), weight);
-        h_etat->Fill(p_t.Eta(), weight);
-        h_phit->Fill(p_t.Phi() / m_pi, weight);
-        h_mt->Fill(p_t.M(), weight);
-
-        h_pxtbar->Fill(p_tbar.Px(), weight);
-        h_pytbar->Fill(p_tbar.Py(), weight);
-        h_pztbar->Fill(p_tbar.Pz(), weight);
-        h_Etbar->Fill(p_tbar.E(), weight);
-        h_pTtbar->Fill(p_tbar.Pt(), weight);
-        h_etatbar->Fill(p_tbar.Eta(), weight);
-        h_phitbar->Fill(p_tbar.Phi() / m_pi, weight);
-        h_mtbar->Fill(p_tbar.M(), weight);
-
-        h_mtt->Fill(mtt, weight);
-        h_ytt->Fill(ytt, weight);
-        h_costheta_tt->Fill(costheta_tt, weight_R);
-        h_cosTheta->Fill(cosTheta, weight);
-        h_cosThetaStar->Fill(cosThetaStar, weight);
-
-        if (cosThetaStar > 0) h_mtt_tF->Fill(mtt, weight);
-        if (cosThetaStar < 0) h_mtt_tB->Fill(mtt, weight);
-
-        if (delta_abs_yt > 0) h_mtt_tCF->Fill(mtt, weight);
-        if (delta_abs_yt < 0) h_mtt_tCB->Fill(mtt, weight);
-    }
-
-    if (n < 6) {
-        // h_mtt_LL->Fill(mtt, m_ntup->weightLL());
-        // h_mtt_LR->Fill(mtt, m_ntup->weightLR());
-        // h_mtt_RL->Fill(mtt, m_ntup->weightRL());
-        // h_mtt_RR->Fill(mtt, m_ntup->weightRR());
-    }
-
-    if (n == 6) {
-
-        std::vector<TLorentzVector> ptop = p;
-        v = -1 * (p[0] + p[2] + p[3]).BoostVector();
-        for (auto& l : ptop) l.Boost(v);
-
-        std::vector<TLorentzVector> patop = p;
-        v = -1 * (p[1] + p[4] + p[5]).BoostVector();
-        for (auto& l : patop) l.Boost(v);
-
-        double HT = 0;
-        for (auto& l : p) HT += l.Pt();
-        HT = HT / 1000;
-        TLorentzVector pvis = p[0] + p[1] + p[2] + p[4];
-        double mvis = pvis.M();
-        double pTvis = pvis.Pt();
-        double KT = sqrt(mvis * mvis + pTvis * pTvis) + (p[3] + p[5]).Pt();
-        KT = KT / 1000;
-
-        std::vector<double> deltaRs;
-        for (int i = 0; i < 6; i++)
-            for (int j = i + 1; j < 6; j++)
-                deltaRs.push_back(p[i].DeltaR(p[j]));
-
-        double costheta_tl1 = cos(ptop[2].Angle(pcm_t.Vect()));
-        double costheta_tl2 = cos(patop[4].Angle(pcm_tbar.Vect()));
-        double cos1cos2 = costheta_tl1 * costheta_tl2;
-        double deltaPhi = p[2].DeltaPhi(p[4]) / m_pi;
-
-        TLorentzVector p_W = p[2] + p[3];
-        double deltaR_bW = p_W.DeltaR(p[0]);
-        std::vector<double> deltaR_ts;
-        deltaR_ts.push_back(p_t.DeltaR(p[0]));
-        deltaR_ts.push_back(p_t.DeltaR(p[2]));
-        deltaR_ts.push_back(p_t.DeltaR(p[3]));
-        auto deltaR_max = max_element(std::begin(deltaR_ts), std::end(deltaR_ts));
-
-        double phil = p[2].Phi();
-        double El = p[2].E();
-
-        double phi0 = 0.7, E0 = 80;
-
-        h_HT->Fill(HT, weight);
-        h_KT->Fill(KT, weight);
-        h_pv1x->Fill(p[3].Px(), weight);
-        h_pv1y->Fill(p[3].Py(), weight);
-        h_pv1z->Fill(p[3].Pz(), weight);
-        h_pv2x->Fill(p[5].Px(), weight);
-        h_pv2y->Fill(p[5].Py(), weight);
-        h_pv2z->Fill(p[5].Pz(), weight);
-        h_deltaPhi->Fill(deltaPhi, weight);
-        h_cosTheta1->Fill(costheta_tl1, weight);
-        h_cosTheta2->Fill(costheta_tl2, weight);
-        h_cos1cos2->Fill(cos1cos2, weight);
-        h_deltaR_bW->Fill(deltaR_bW, weight);
-        h_deltaR_max->Fill(*deltaR_max, weight);
-
-        for (int i = 0; i < (int) deltaRs.size(); i++)
-            h_deltaRs[i]->Fill(deltaRs[i], weight);
-
-        for (int i = 0; i < (int) p.size(); i++) {
-            h_eta[i]->Fill(p[i].Eta(), weight);
-            h_pt[i]->Fill(p[i].Pt(), weight);
+        if (n < 6) {
+            p_t = p[0];
+            p_tbar = p[1];
+            pcm_t = pcm[0];
+            pcm_tbar = pcm[1];
+        }
+        else {
+            p_t = p[0] + p[2] + p[3];
+            p_tbar = p[1] + p[4] + p[5];
+            pcm_t = pcm[0] + pcm[2] + pcm[3];
+            pcm_tbar = pcm[1] + pcm[4] + pcm[5];
         }
 
-        if (costheta_tl1 > 0) h_mtt_tlF->Fill(mtt, weight);
-        if (costheta_tl2 < 0) h_mtt_tlB->Fill(mtt, weight);
+        double costheta_tt = cos(p_t.Angle(p_tbar.Vect()));
+        double delta_abs_yt = std::abs(p_t.Rapidity()) - std::abs(p_tbar.Rapidity());
+        double costheta = pcm_t.CosTheta();
+        double costhetastar = int(ytt / std::abs(ytt)) * costheta;
+        std::vector<TLorentzVector> p_R1(n), pcm_R1(n), ptop_R1(n), patop_R1(n);
+        std::vector<TLorentzVector> p_R2(n), pcm_R2(n), ptop_R2(n), patop_R2(n);
 
-        if (costheta_tl1 > 0) h_mtt_lF->Fill(mtt, weight);
-        if (costheta_tl1 < 0) h_mtt_lB->Fill(mtt, weight);
 
-        if (phil < m_pi and phil > phi0) h_mtt_philF->Fill(mtt, weight);
-        if (phil < phi0) h_mtt_philB->Fill(mtt, weight);
+        if (this->PassCuts(p, P)) {
 
-        if (El > E0) h_mtt_ElF->Fill(mtt, weight);
-        if (El < E0) h_mtt_ElB->Fill(mtt, weight);
+            h_pxt->Fill(p_t.Px(), weight);
+            h_pyt->Fill(p_t.Py(), weight);
+            h_pzt->Fill(p_t.Pz(), weight);
+            h_Et->Fill(p_t.E(), weight);
+            h_pTt->Fill(p_t.Pt(), weight);
+            h_etat->Fill(p_t.Eta(), weight);
+            h_phit->Fill(p_t.Phi() / m_pi, weight);
+            h_mt->Fill(p_t.M(), weight);
 
-        h2_mtt_cosThetaStar->Fill(mtt, cosThetaStar, weight);
-        h2_mtt_deltaPhi->Fill(mtt, deltaPhi, weight);
-        h2_mtt_cosTheta1->Fill(mtt, costheta_tl1, weight);
-        h2_mtt_cosTheta2->Fill(mtt, costheta_tl2, weight);
-        h2_mtt_cos1cos2->Fill(mtt, cos1cos2, weight);
-        h2_HT_deltaPhi->Fill(HT, deltaPhi, weight);
-        h2_KT_deltaPhi->Fill(KT, deltaPhi, weight);
+            h_pxtbar->Fill(p_tbar.Px(), weight);
+            h_pytbar->Fill(p_tbar.Py(), weight);
+            h_pztbar->Fill(p_tbar.Pz(), weight);
+            h_Etbar->Fill(p_tbar.E(), weight);
+            h_pTtbar->Fill(p_tbar.Pt(), weight);
+            h_etatbar->Fill(p_tbar.Eta(), weight);
+            h_phitbar->Fill(p_tbar.Phi() / m_pi, weight);
+            h_mtbar->Fill(p_tbar.M(), weight);
 
-        TLorentzVector P_R1, P_R2;
-        if (m_reco == 1) {
-            p_R1 = this->ReconstructDilepton(p); // both decay leptonically
+            h_mtt->Fill(mtt, weight);
+            h_ytt->Fill(ytt, weight);
+            h_costheta_tt->Fill(costheta_tt, weight_R);
+            h_cosTheta->Fill(costheta, weight);
+            h_cosThetaStar->Fill(costhetastar, weight);
 
-            int i = 0;
-            for (auto& l : p_R1) {
-                if (l != l) {
-                    printf("p[%i] has a NaN!\n", i);
-                    l.Print();
+            if (costhetastar > 0) h_mtt_tF->Fill(mtt, weight);
+            if (costhetastar < 0) h_mtt_tB->Fill(mtt, weight);
+
+            if (delta_abs_yt > 0) h_mtt_tCF->Fill(mtt, weight);
+            if (delta_abs_yt < 0) h_mtt_tCB->Fill(mtt, weight);
+
+            // if (n < 6) {
+                // h_mtt_LL->Fill(mtt, m_ntup->weightLL());
+                // h_mtt_LR->Fill(mtt, m_ntup->weightLR());
+                // h_mtt_RL->Fill(mtt, m_ntup->weightRL());
+                // h_mtt_RR->Fill(mtt, m_ntup->weightRR());
+            // }
+
+            if (n == 6) {
+
+                std::vector<TLorentzVector> ptop = p;
+                v = -1 * (p[0] + p[2] + p[3]).BoostVector();
+                for (auto& l : ptop) l.Boost(v);
+
+                std::vector<TLorentzVector> patop = p;
+                v = -1 * (p[1] + p[4] + p[5]).BoostVector();
+                for (auto& l : patop) l.Boost(v);
+
+                double HT = 0;
+                for (auto& l : p) HT += l.Pt();
+                HT = HT / 1000;
+                TLorentzVector pvis = p[0] + p[1] + p[2] + p[4];
+                double mvis = pvis.M();
+                double pTvis = pvis.Pt();
+                double KT = sqrt(mvis * mvis + pTvis * pTvis) + (p[3] + p[5]).Pt();
+                KT = KT / 1000;
+
+                std::vector<double> deltaRs;
+                for (int i = 0; i < 6; i++)
+                    for (int j = i + 1; j < 6; j++)
+                        deltaRs.push_back(p[i].DeltaR(p[j]));
+
+                double costheta_tl1 = cos(ptop[2].Angle(pcm_t.Vect()));
+                double costheta_tl2 = cos(patop[4].Angle(pcm_tbar.Vect()));
+                double cos1cos2 = costheta_tl1 * costheta_tl2;
+                double deltaPhi = p[2].DeltaPhi(p[4]) / m_pi;
+
+                TLorentzVector p_W = p[2] + p[3];
+                double deltaR_bW = p_W.DeltaR(p[0]);
+                std::vector<double> deltaR_ts;
+                deltaR_ts.push_back(p_t.DeltaR(p[0]));
+                deltaR_ts.push_back(p_t.DeltaR(p[2]));
+                deltaR_ts.push_back(p_t.DeltaR(p[3]));
+                auto deltaR_max = max_element(std::begin(deltaR_ts), std::end(deltaR_ts));
+
+                double phil = p[2].Phi();
+                double El = p[2].E();
+
+                double phi0 = 0.7, E0 = 80;
+
+
+                h_HT->Fill(HT, weight);
+                h_KT->Fill(KT, weight);
+                h_pv1x->Fill(p[3].Px(), weight);
+                h_pv1y->Fill(p[3].Py(), weight);
+                h_pv1z->Fill(p[3].Pz(), weight);
+                h_pv2x->Fill(p[5].Px(), weight);
+                h_pv2y->Fill(p[5].Py(), weight);
+                h_pv2z->Fill(p[5].Pz(), weight);
+                h_deltaPhi->Fill(deltaPhi, weight);
+                h_cosTheta1->Fill(costheta_tl1, weight);
+                h_cosTheta2->Fill(costheta_tl2, weight);
+                h_cos1cos2->Fill(cos1cos2, weight);
+                h_deltaR_bW->Fill(deltaR_bW, weight);
+                h_deltaR_max->Fill(*deltaR_max, weight);
+
+                for (int i = 0; i < (int) deltaRs.size(); i++)
+                    h_deltaRs[i]->Fill(deltaRs[i], weight);
+
+                for (int i = 0; i < (int) p.size(); i++) {
+                    h_eta[i]->Fill(p[i].Eta(), weight);
+                    h_pt[i]->Fill(p[i].Pt(), weight);
                 }
-                i++;
-            }
 
-            P_R1.SetPxPyPzE(0, 0, 0, 0);
-            for (auto& l : p_R1) P_R1 += l;
+                if (costheta_tl1 > 0) h_mtt_tlF->Fill(mtt, weight);
+                if (costheta_tl2 < 0) h_mtt_tlB->Fill(mtt, weight);
 
-            pcm_R1 = p_R1;
-            v = -1 * P_R1.BoostVector();
-            for (auto& l : pcm_R1) l.Boost(v);
+                if (costheta_tl1 > 0) h_mtt_lF->Fill(mtt, weight);
+                if (costheta_tl1 < 0) h_mtt_lB->Fill(mtt, weight);
 
-            ptop_R1 = p_R1;
-            v = -1 * (p_R1[0] + p_R1[2] + p_R1[3]).BoostVector();
-            for (auto& l : ptop_R1) l.Boost(v);
+                if (phil < m_pi and phil > phi0) h_mtt_philF->Fill(mtt, weight);
+                if (phil < phi0) h_mtt_philB->Fill(mtt, weight);
 
-            patop_R2 = p_R1;
-            v = -1 * (p_R1[1] + p_R1[4] + p_R1[5]).BoostVector();
-            for (auto& l : patop_R2) l.Boost(v);
-        }
-        else if (m_reco == 2) {
-            p_R1 = this->ReconstructSemilepton(p, +1); // top decays leptonically
-            p_R2 = this->ReconstructSemilepton(p, -1); // antitop decays leptonically
+                if (El > E0) h_mtt_ElF->Fill(mtt, weight);
+                if (El < E0) h_mtt_ElB->Fill(mtt, weight);
 
-            P_R1.SetPxPyPzE(0, 0, 0, 0);
-            for (auto& l : p_R1) P_R1 += l;
-
-            P_R2.SetPxPyPzE(0, 0, 0, 0);
-            for (auto& l : p_R2) P_R2 += l;
-
-            pcm_R1 = p_R1;
-            v = -1 * P_R1.BoostVector();
-            for (auto& l : pcm_R1) l.Boost(v);
-
-            pcm_R2 = p_R2;
-            v = -1 * P_R2.BoostVector();
-            for (auto& l : pcm_R2) l.Boost(v);
-
-            ptop_R1 = p_R1;
-            v = -1 * (p_R1[0] + p_R1[2] + p_R1[3]).BoostVector();
-            for (auto& l : ptop_R1) l.Boost(v);
-
-            patop_R2 = p_R2;
-            v = -1 * (p_R2[1] + p_R2[4] + p_R2[5]).BoostVector();
-            for (auto& l : patop_R2) l.Boost(v);
-        }
-        
-        TLorentzVector p_t_R1, p_tbar_R1, p_t_R2, p_tbar_R2;
-        TLorentzVector pcm_t_R1, pcm_tbar_R1, pcm_t_R2, pcm_tbar_R2;
-        if (m_reco > 0) {
-            p_t_R1 = p_R1[0] + p_R1[2] + p_R1[3];
-            p_tbar_R1 = p_R1[1] + p_R1[4] + p_R1[5];
-            pcm_t_R1 = pcm_R1[0] + pcm_R1[2] + pcm_R1[3];
-            pcm_tbar_R1 = pcm_R1[1] + pcm_R1[4] + pcm_R1[5];
-        }
-        if (m_reco == 2) {
-            pcm_t_R2 = pcm_R2[0] + pcm_R2[2] + pcm_R2[3];
-            pcm_tbar_R2 = pcm_R2[1] + pcm_R2[4] + pcm_R2[5];
-        }
-    
-        double mtt_R1 = P_R1.M() / 1000;
-        double mtt_R2 = P_R2.M() / 1000;
-
-        double ytt_R1, ytt_R2;
-        double cosTheta_R1, cosTheta_R2;
-        double cosThetaStar_R1, cosThetaStar_R2;
-        double cosTheta1_R1, cosTheta2_R2;
-        double costhetatt_R1;
-        double delta_abs_yt_R1;
-
-        double pT_t_perf, pT_tbar_perf, costhetattperf, mttperf;
-
-        if (m_reco > 0) {
-            pT_t_perf = (p_t.Pt() - p_t_R1.Pt()) / p_t.Pt();
-            pT_tbar_perf = (p_tbar.Pt() - p_tbar_R1.Pt()) / p_tbar.Pt();
-            delta_abs_yt_R1 = std::abs(p_t_R1.Rapidity()) - std::abs(p_tbar_R1.Rapidity());
-            ytt_R1 = P_R1.Rapidity();
-            cosTheta_R1 = pcm_t_R1.CosTheta();
-            cosThetaStar_R1 = int(ytt_R1 / std::abs(ytt_R1)) * cosTheta_R1;
-            cosTheta1_R1 = cos(ptop_R1[2].Angle(pcm_t_R1.Vect()));
-            costhetatt_R1 = cos(p_t_R1.Angle(p_tbar_R1.Vect()));
-            costhetattperf = (costheta_tt - costhetatt_R1) / costheta_tt;
-            mttperf = (mtt - mtt_R1) / mtt;
-        }
-        if (m_reco == 2) {
-            ytt_R2 = P_R2.Rapidity();
-            cosTheta_R2 = pcm_t_R2.CosTheta();
-            cosThetaStar_R2 = int(ytt_R2 / std::abs(ytt_R2)) * cosTheta_R2;
-            cosTheta2_R2 = cos(patop_R2[4].Angle(pcm_tbar_R2.Vect()));
-        }
+                h2_mtt_cosThetaStar->Fill(mtt, costhetastar, weight);
+                h2_mtt_deltaPhi->Fill(mtt, deltaPhi, weight);
+                h2_mtt_cosTheta1->Fill(mtt, costheta_tl1, weight);
+                h2_mtt_cosTheta2->Fill(mtt, costheta_tl2, weight);
+                h2_mtt_cos1cos2->Fill(mtt, cos1cos2, weight);
+                h2_HT_deltaPhi->Fill(HT, deltaPhi, weight);
+                h2_KT_deltaPhi->Fill(KT, deltaPhi, weight);
 
 
-        if (m_reco > 0) {
-            if (true) {//(this->PassCuts(p_R1, P_R1)) {
+                TLorentzVector P_R1, P_R2;
+                if (m_reco == 1) {
+                    p_R1 = this->ReconstructDilepton(p); // both decay leptonically
 
-                h_mtt_R->Fill(mtt_R1, weight_R);
-                h_ytt_R->Fill(ytt_R1, weight_R);
+                    int i = 0;
+                    for (auto& l : p_R1) {
+                        if (l != l) {
+                            printf("p[%i] has a NaN!\n", i);
+                            l.Print();
+                        }
+                        i++;
+                    }
 
-                h_pxt_R->Fill(p_t_R1.Px(), weight_R);
-                h_pyt_R->Fill(p_t_R1.Py(), weight_R);
-                h_pzt_R->Fill(p_t_R1.Pz(), weight_R);
-                h_Et_R->Fill(p_t_R1.E(), weight_R);
-                h_pTt_R->Fill(p_t_R1.Pt(), weight_R);
-                h_etat_R->Fill(p_t_R1.Eta(), weight_R);
-                h_phit_R->Fill(p_t_R1.Phi() / m_pi, weight_R);
-                h_mt_R->Fill(p_t_R1.M(), weight_R);
-                h_costheta_tt_perf->Fill(costhetattperf, weight);
-                h_m_tt_perf->Fill(mttperf, weight);
-                h_pT_t_perf->Fill(pT_t_perf, weight_R);
-                h_pT_tbar_perf->Fill(pT_tbar_perf, weight_R);
-                h2_m_tt_pT_t_perf->Fill(mttperf, pT_t_perf, weight_R);
-                h2_m_tt_costheta_tt_perf->Fill(mttperf, costhetattperf, weight);
+                    P_R1.SetPxPyPzE(0, 0, 0, 0);
+                    for (auto& l : p_R1) P_R1 += l;
+
+                    pcm_R1 = p_R1;
+                    v = -1 * P_R1.BoostVector();
+                    for (auto& l : pcm_R1) l.Boost(v);
+
+                    ptop_R1 = p_R1;
+                    v = -1 * (p_R1[0] + p_R1[2] + p_R1[3]).BoostVector();
+                    for (auto& l : ptop_R1) l.Boost(v);
+
+                    patop_R2 = p_R1;
+                    v = -1 * (p_R1[1] + p_R1[4] + p_R1[5]).BoostVector();
+                    for (auto& l : patop_R2) l.Boost(v);
+                }
+                else if (m_reco == 2) {
+                    p_R1 = this->ReconstructSemilepton(p, +1); // top decays leptonically
+                    p_R2 = this->ReconstructSemilepton(p, -1); // antitop decays leptonically
+
+                    P_R1.SetPxPyPzE(0, 0, 0, 0);
+                    for (auto& l : p_R1) P_R1 += l;
+
+                    P_R2.SetPxPyPzE(0, 0, 0, 0);
+                    for (auto& l : p_R2) P_R2 += l;
+
+                    pcm_R1 = p_R1;
+                    v = -1 * P_R1.BoostVector();
+                    for (auto& l : pcm_R1) l.Boost(v);
+
+                    pcm_R2 = p_R2;
+                    v = -1 * P_R2.BoostVector();
+                    for (auto& l : pcm_R2) l.Boost(v);
+
+                    ptop_R1 = p_R1;
+                    v = -1 * (p_R1[0] + p_R1[2] + p_R1[3]).BoostVector();
+                    for (auto& l : ptop_R1) l.Boost(v);
+
+                    patop_R2 = p_R2;
+                    v = -1 * (p_R2[1] + p_R2[4] + p_R2[5]).BoostVector();
+                    for (auto& l : patop_R2) l.Boost(v);
+                }
+                
+                TLorentzVector p_t_R1, p_tbar_R1, p_t_R2, p_tbar_R2;
+                TLorentzVector pcm_t_R1, pcm_tbar_R1, pcm_t_R2, pcm_tbar_R2;
+                if (m_reco > 0) {
+                    p_t_R1 = p_R1[0] + p_R1[2] + p_R1[3];
+                    p_tbar_R1 = p_R1[1] + p_R1[4] + p_R1[5];
+                    pcm_t_R1 = pcm_R1[0] + pcm_R1[2] + pcm_R1[3];
+                    pcm_tbar_R1 = pcm_R1[1] + pcm_R1[4] + pcm_R1[5];
+                }
+                if (m_reco == 2) {
+                    pcm_t_R2 = pcm_R2[0] + pcm_R2[2] + pcm_R2[3];
+                    pcm_tbar_R2 = pcm_R2[1] + pcm_R2[4] + pcm_R2[5];
+                }
+            
+                double mtt_R1 = P_R1.M() / 1000;
+                double mtt_R2 = P_R2.M() / 1000;
+
+                double ytt_R1, ytt_R2;
+                double costheta_R1, costheta_R2;
+                double costhetastar_R1, costhetastar_R2;
+                double costheta_tl_R1, costheta_tl_R2;
+                double costheta_tt_R1;
+                double delta_abs_yt_R1;
+
+                double pT_t_perf, pT_tbar_perf, mttperf, costhetatt_perf, costhetastar_perf, costhetatl_perf;
+
+                if (m_reco > 0) {
+                    pT_t_perf = (p_t.Pt() - p_t_R1.Pt()) / p_t.Pt();
+                    pT_tbar_perf = (p_tbar.Pt() - p_tbar_R1.Pt()) / p_tbar.Pt();
+                    delta_abs_yt_R1 = std::abs(p_t_R1.Rapidity()) - std::abs(p_tbar_R1.Rapidity());
+                    ytt_R1 = P_R1.Rapidity();
+                    costheta_R1 = pcm_t_R1.CosTheta();
+                    costhetastar_R1 = int(ytt_R1 / std::abs(ytt_R1)) * costheta_R1;
+                    costheta_tl_R1 = cos(ptop_R1[2].Angle(pcm_t_R1.Vect()));
+                    costheta_tt_R1 = cos(p_t_R1.Angle(p_tbar_R1.Vect()));
+                    costhetatt_perf = (costheta_tt - costheta_tt_R1) / costheta_tt;
+                    costhetastar_perf = (costhetastar - costhetastar_R1) / costhetastar;
+                    costhetatl_perf = (costheta_tl1 - costheta_tl_R1) / costheta_tl1;
+                    mttperf = (mtt - mtt_R1) / mtt;
+                }
+                if (m_reco == 2) {
+                    ytt_R2 = P_R2.Rapidity();
+                    costheta_R2 = pcm_t_R2.CosTheta();
+                    costhetastar_R2 = int(ytt_R2 / std::abs(ytt_R2)) * costheta_R2;
+                    costheta_tl_R2 = cos(patop_R2[4].Angle(pcm_tbar_R2.Vect()));
+                }
 
 
-                h_pxtbar_R->Fill(p_tbar_R1.Px(), weight_R);
-                h_pytbar_R->Fill(p_tbar_R1.Py(), weight_R);
-                h_pztbar_R->Fill(p_tbar_R1.Pz(), weight_R);
-                h_Etbar_R->Fill(p_tbar_R1.E(), weight_R);
-                h_pTtbar_R->Fill(p_tbar_R1.Pt(), weight_R);
-                h_etatbar_R->Fill(p_tbar_R1.Eta(), weight_R);
-                h_phitbar_R->Fill(p_tbar_R1.Phi() / m_pi, weight_R);
-                h_mtbar_R->Fill(p_tbar_R1.M(), weight_R);
+                if (m_reco > 0) {
+                    if (true) {//(this->PassCuts(p_R1, P_R1)) {
 
-                h_costheta_tt_R->Fill(costhetatt_R1, weight_R);
-                h_cosTheta_R->Fill(cosTheta_R1, weight_R);
-                h_cosThetaStar_R->Fill(cosThetaStar_R1, weight_R);
-                h_pv1x_R->Fill(p_R1[3].Px(), weight_R);
-                h_pv1y_R->Fill(p_R1[3].Py(), weight_R);
-                h_pv1z_R->Fill(p_R1[3].Pz(), weight_R);
-                h_pv2x_R->Fill(p_R1[5].Px(), weight_R);
-                h_pv2y_R->Fill(p_R1[5].Py(), weight_R);
-                h_pv2z_R->Fill(p_R1[5].Pz(), weight_R);
+                        h_mtt_R->Fill(mtt_R1, weight_R);
+                        h_ytt_R->Fill(ytt_R1, weight_R);
 
-                if (cosThetaStar_R1 > 0) h_mtt_tF_R->Fill(mtt_R1, weight_R);
-                if (cosThetaStar_R1 < 0) h_mtt_tB_R->Fill(mtt_R1, weight_R);
+                        h_pxt_R->Fill(p_t_R1.Px(), weight_R);
+                        h_pyt_R->Fill(p_t_R1.Py(), weight_R);
+                        h_pzt_R->Fill(p_t_R1.Pz(), weight_R);
+                        h_Et_R->Fill(p_t_R1.E(), weight_R);
+                        h_pTt_R->Fill(p_t_R1.Pt(), weight_R);
+                        h_etat_R->Fill(p_t_R1.Eta(), weight_R);
+                        h_phit_R->Fill(p_t_R1.Phi() / m_pi, weight_R);
+                        h_mt_R->Fill(p_t_R1.M(), weight_R);
+                        h_costhetatt_perf->Fill(costhetatt_perf, weight);
+                        h_costhetastar_perf->Fill(costhetastar_perf, weight);
+                        h_costhetatl_perf->Fill(costhetatl_perf, weight);
+                        h_m_tt_perf->Fill(mttperf, weight);
+                        h_pT_t_perf->Fill(pT_t_perf, weight_R);
+                        h_pT_tbar_perf->Fill(pT_tbar_perf, weight_R);
+                        h2_m_tt_pT_t_perf->Fill(mttperf, pT_t_perf, weight_R);
+                        h2_m_tt_costheta_tt_perf->Fill(mttperf, costhetatt_perf, weight);
 
-                if (delta_abs_yt > 0) h_mtt_tCF->Fill(mtt_R1, weight);
-                if (delta_abs_yt < 0) h_mtt_tCB->Fill(mtt_R1, weight);
 
-                if (costheta_tl1 > 0) h_mtt_tlF->Fill(mtt_R1, weight);
-                if (costheta_tl2 < 0) h_mtt_tlB->Fill(mtt_R1, weight);
+                        h_pxtbar_R->Fill(p_tbar_R1.Px(), weight_R);
+                        h_pytbar_R->Fill(p_tbar_R1.Py(), weight_R);
+                        h_pztbar_R->Fill(p_tbar_R1.Pz(), weight_R);
+                        h_Etbar_R->Fill(p_tbar_R1.E(), weight_R);
+                        h_pTtbar_R->Fill(p_tbar_R1.Pt(), weight_R);
+                        h_etatbar_R->Fill(p_tbar_R1.Eta(), weight_R);
+                        h_phitbar_R->Fill(p_tbar_R1.Phi() / m_pi, weight_R);
+                        h_mtbar_R->Fill(p_tbar_R1.M(), weight_R);
 
-                if (costheta_tl1 > 0) h_mtt_lF->Fill(mtt_R1, weight);
-                if (costheta_tl1 < 0) h_mtt_lB->Fill(mtt_R1, weight);
+                        h_costheta_tt_R->Fill(costheta_tt_R1, weight_R);
+                        h_cosTheta_R->Fill(costheta_R1, weight_R);
+                        h_cosThetaStar_R->Fill(costhetastar_R1, weight_R);
+                        h_pv1x_R->Fill(p_R1[3].Px(), weight_R);
+                        h_pv1y_R->Fill(p_R1[3].Py(), weight_R);
+                        h_pv1z_R->Fill(p_R1[3].Pz(), weight_R);
+                        h_pv2x_R->Fill(p_R1[5].Px(), weight_R);
+                        h_pv2y_R->Fill(p_R1[5].Py(), weight_R);
+                        h_pv2z_R->Fill(p_R1[5].Pz(), weight_R);
 
-                h2_mtt_cosThetaStar_R->Fill(mtt_R1, cosThetaStar_R1, weight_R);
-                h2_mtt_cosThetal_R->Fill(mtt_R1, cosTheta1_R1, weight_R);
-            }
-        }
-        if (m_reco == 2) {
-            if (true) {//(this->PassCuts(p_R2, P_R2)) {
-                h_mtt_R->Fill(mtt_R2, weight_R);
-                h_ytt_R->Fill(ytt_R2, weight_R);
-                h_mt_R->Fill(pcm_t_R2.M(), weight_R);
-                h_mtbar_R->Fill(pcm_tbar_R2.M(), weight_R);
-                h_cosTheta_R ->Fill(cosTheta_R2, weight_R);
-                h_cosThetaStar_R->Fill(cosThetaStar_R2, weight_R);
-                if (cosThetaStar_R2 > 0) h_mtt_tF_R->Fill(mtt_R2, weight_R);
-                if (cosThetaStar_R2 < 0) h_mtt_tB_R->Fill(mtt_R2, weight_R);
-                h2_mtt_cosThetaStar_R->Fill(mtt_R2, cosThetaStar_R2, weight_R);
-                h2_mtt_cosThetal_R->Fill(mtt_R2, cosTheta2_R2, weight_R);
+                        if (costhetastar_R1 > 0) h_mtt_tF_R->Fill(mtt_R1, weight_R);
+                        if (costhetastar_R1 < 0) h_mtt_tB_R->Fill(mtt_R1, weight_R);
+
+                        if (delta_abs_yt > 0) h_mtt_tCF->Fill(mtt_R1, weight);
+                        if (delta_abs_yt < 0) h_mtt_tCB->Fill(mtt_R1, weight);
+
+                        if (costheta_tl1 > 0) h_mtt_tlF->Fill(mtt_R1, weight);
+                        if (costheta_tl2 < 0) h_mtt_tlB->Fill(mtt_R1, weight);
+
+                        if (costheta_tl1 > 0) h_mtt_lF->Fill(mtt_R1, weight);
+                        if (costheta_tl1 < 0) h_mtt_lB->Fill(mtt_R1, weight);
+
+                        h2_mtt_cosThetaStar_R->Fill(mtt_R1, costhetastar_R1, weight_R);
+                        h2_mtt_cosThetal_R->Fill(mtt_R1, costheta_tl_R1, weight_R);
+                    }
+                }
+                if (m_reco == 2) {
+                    if (true) {//(this->PassCuts(p_R2, P_R2)) {
+                        h_mtt_R->Fill(mtt_R2, weight_R);
+                        h_ytt_R->Fill(ytt_R2, weight_R);
+                        h_mt_R->Fill(pcm_t_R2.M(), weight_R);
+                        h_mtbar_R->Fill(pcm_tbar_R2.M(), weight_R);
+                        h_cosTheta_R ->Fill(costheta_R2, weight_R);
+                        h_cosThetaStar_R->Fill(costhetastar_R2, weight_R);
+                        if (costhetastar_R2 > 0) h_mtt_tF_R->Fill(mtt_R2, weight_R);
+                        if (costhetastar_R2 < 0) h_mtt_tB_R->Fill(mtt_R2, weight_R);
+                        h2_mtt_cosThetaStar_R->Fill(mtt_R2, costhetastar_R2, weight_R);
+                        h2_mtt_cosThetal_R->Fill(mtt_R2, costheta_tl_R2, weight_R);
+                    }
+                }
             }
         }
     }
@@ -399,17 +411,23 @@ void Analysis::SetupInputFiles()
             if (initial == "gg" || initial == "qq") model = "SM";
             else model = m_model;
             std::string options = "";
+            // if (false);
+            // if (initial == "gg") options = ".2-4";
+            // else if (initial == "qq") options = ".2-4";
             options = m_options;
             std::string intermediates = "";
             if (initial == "uu" || initial == "dd") {
                 intermediates = intermediates + "-AZ";
                 if (m_model != "SM") intermediates = intermediates + "X";
             }
-            filename = m_dataDirectory + "/" + initial + intermediates + final + "." + model + "." + E + "TeV" + ".CT14LL" + options;
+            filename = m_dataDirectory + "/" + initial + intermediates + final + "." + model + "." + E + "TeV" + "." + m_pdf + options;
             m_inputFiles->push_back(filename + ".root");
             m_weightFiles->push_back(filename + ".log");
         }
     }
+
+    // m_inputFiles->push_back(m_dataDirectory + "/" + "dduu-AZ-tt-bbllvv.SM.13TeV.CT14LL.2-4.root");
+    // m_weightFiles->push_back(m_dataDirectory + "/" + "dduu-AZ-tt-bbllvv.SM.13TeV.CT14LL.2-4.log");
 
     // check all input files exist
     for (auto inputFile : *m_inputFiles) {
@@ -427,8 +445,8 @@ void Analysis::SetupOutputFiles()
 {
     std::string E = std::to_string(m_energy);
 
-    m_outputFilename = m_dataDirectory + "/" + m_process + "." + m_model + "." + E + "TeV" + ".CT14LL" + m_options;
-    m_outputFilename = m_outputFilename + ".r" + std::to_string(m_reco);
+    m_outputFilename = m_dataDirectory + "/" + m_process + "." + m_model + "." + E + "TeV" + "." + m_pdf + m_options;
+    m_outputFilename = m_outputFilename + ".r" + std::to_string(m_reco) + m_tag;
 
     if (m_reco == 2 && m_btags != 2) m_outputFilename += ".b" + std::to_string(m_btags);
     string ytt = std::to_string(m_ytt);
@@ -437,6 +455,7 @@ void Analysis::SetupOutputFiles()
     string eff = std::to_string(m_efficiency);
     if (m_efficiency < 1.0) m_outputFilename += ".e" + eff.erase(eff.find_last_not_of('0') + 1, string::npos);
     if (m_luminosity > 0) m_outputFilename += ".L" + std::to_string(m_luminosity);
+    if (m_fid) m_outputFilename += ".fid";
     m_outputFilename += ".root";
     std::cout << "output: " << m_outputFilename.Data() << std::endl;
     m_outputFile = new TFile(m_outputFilename, "RECREATE");
@@ -462,8 +481,8 @@ void Analysis::CheckResults()
 
 void Analysis::CheckPerformance()
 {
-    double quarkRecoRatio = m_nQuarksMatched/(double)m_nReco;
-    double neutrinoRecoRatio = m_nNeutrinoMatched/(double)m_nReco;
+    double quarkRecoRatio = m_nQuarksMatched / (double) m_nReco;
+    double neutrinoRecoRatio = m_nNeutrinoMatched / (double) m_nReco;
     printf("-- Performance --\n");
     printf("Quark assignment: %.1f%% correct\n", quarkRecoRatio * 100);
     printf("pzNu assignment: %.1f%% correct\n", neutrinoRecoRatio * 100);
@@ -480,7 +499,7 @@ TH1D* Analysis::Asymmetry(const TString& name, const TString& title, TH1D* h1, T
     h_denominator->Add(h2, 1);
     h_numerator->Divide(h_denominator);
     delete h_denominator;
-    // if (m_luminosity > -1) this->AsymmetryUncertainty(h_numerator, h1, h2);
+    if (m_useLumi) this->AsymmetryUncertainty(h_numerator, h1, h2);
     return h_numerator;
 }
 
@@ -493,7 +512,7 @@ void Analysis::AsymmetryUncertainty(TH1D* hA, TH1D* h1, TH1D* h2)
         N1 = h1->GetBinContent(i);
         N2 = h2->GetBinContent(i);
         N = N1 + N2;
-        if (N > 0) dA = sqrt((1.0 - A * A) / N);
+        if (N > 0) dA = sqrt( (1.0 - A * A) / N);
         else dA = 0;
         hA->SetBinError(i, dA);
     }
@@ -502,9 +521,9 @@ void Analysis::AsymmetryUncertainty(TH1D* hA, TH1D* h1, TH1D* h2)
 
 void Analysis::MakeHistograms()
 {
-    double binWidth = 0.05;
-    double Emin = 2.025;
-    double Emax = 3.975;
+    double binWidth = 0.1;
+    double Emin = 2.05;
+    double Emax = 3.95;
     double nbins = (Emax - Emin) / binWidth;
     std:: cout << "energy range: " << Emin << " to " << Emax << " [TeV]" << std::endl;
 
@@ -628,11 +647,11 @@ void Analysis::MakeHistograms()
         h_pv2z->Sumw2();
 
 
-        h_cosTheta1 = new TH1D("costheta_tl1", "cos#theta_{l+}", 10, -1.0, 1.0);
+        h_cosTheta1 = new TH1D("costheta_tl1", "cos#theta_{t,l+}", 10, -1.0, 1.0);
         h_cosTheta1->Sumw2();
-        h_cosTheta2 = new TH1D("costheta_tl2", "cos#theta_{l-}", 10, -1.0, 1.0);
+        h_cosTheta2 = new TH1D("costheta_tl2", "cos#theta_{t,l-}", 10, -1.0, 1.0);
         h_cosTheta2->Sumw2();
-        h_cos1cos2 = new TH1D("cos1cos2", "cos#theta_{l+}cos#theta_{l-}", 20, -1.0, 1.0);
+        h_cos1cos2 = new TH1D("cos1cos2", "cos#theta_{t,l+}cos#theta_{t,l-}", 20, -1.0, 1.0);
         h_cos1cos2->Sumw2();
 
         h_mtt_lF = new TH1D("mtt_lF", "m_{tt}^{F,l}", nbins, Emin, Emax);
@@ -645,17 +664,17 @@ void Analysis::MakeHistograms()
         h2_mtt_deltaPhi->GetYaxis()->SetTitle("#Delta#phi_{l}");
         h2_mtt_deltaPhi->Sumw2();
 
-        h2_mtt_cosTheta1 = new TH2D("mtt_costheta1", "m_{tt} cos#theta_{l+}", nbins / 2, Emin, Emax, 20, -1.0, 1.0);
+        h2_mtt_cosTheta1 = new TH2D("mtt_costheta_tl1", "m_{tt} cos#theta_{t,l+}", nbins, Emin, Emax, 20, -1.0, 1.0);
         h2_mtt_cosTheta1->GetXaxis()->SetTitle("m_{tt} [TeV]");
         h2_mtt_cosTheta1->GetYaxis()->SetTitle("cos#theta_{l+}");
         h2_mtt_cosTheta1->Sumw2();
 
-        h2_mtt_cosTheta2 = new TH2D("mtt_costheta2", "m_{tt} cos#theta_{l-}", nbins / 2, Emin, Emax, 20, -1.0, 1.0);
+        h2_mtt_cosTheta2 = new TH2D("mtt_costheta_tl2", "m_{tt} cos#theta_{t,l-}", nbins, Emin, Emax, 20, -1.0, 1.0);
         h2_mtt_cosTheta2->GetXaxis()->SetTitle("m_{tt} [TeV]");
         h2_mtt_cosTheta2->GetYaxis()->SetTitle("cos#theta_{l-}");
         h2_mtt_cosTheta2->Sumw2();
 
-        h2_mtt_cosThetal_R = new TH2D("mtt_costhetal_R", "m_{tt} cos#theta_{l} (reco)", nbins / 2, Emin, Emax, 20, -1.0, 1.0);
+        h2_mtt_cosThetal_R = new TH2D("mtt_costhetal_R", "m_{tt} cos#theta_{t,l} (reco)", nbins, Emin, Emax, 20, -1.0, 1.0);
         h2_mtt_cosThetal_R->GetXaxis()->SetTitle("m_{tt} (reco) [TeV]");
         h2_mtt_cosThetal_R->GetYaxis()->SetTitle("cos#theta_{l}");
         h2_mtt_cosThetal_R->Sumw2();
@@ -688,7 +707,7 @@ void Analysis::MakeHistograms()
 
         for (int i = 0; i < 6; i++ ) {
             n_pt.push_back("pT_" + particles1[i]);
-            t_pt.push_back("#p_{T}^{" + particles2[i] + "}");
+            t_pt.push_back("p_{T}^{" + particles2[i] + "}");
         }
 
         for (int i = 0; i < 6; i++ ) {
@@ -711,7 +730,7 @@ void Analysis::MakeHistograms()
 
         for (int i = 0; i < (int) n_eta.size(); i++) {
             h_eta.push_back(new TH1D(n_eta[i].c_str(), t_eta[i].c_str(), 100, 0, 5));
-            h_pt.push_back(new TH1D(n_pt[i].c_str(), t_pt[i].c_str(), 400, 0, 100));
+            h_pt.push_back(new TH1D(n_pt[i].c_str(), t_pt[i].c_str(), 80, 0, 2000));
         }
 
         if (m_reco > 0) {
@@ -780,9 +799,14 @@ void Analysis::MakeHistograms()
             h_pT_t_perf->Sumw2();
             h_pT_tbar_perf = new TH1D("pT_tbar_perf", "p_{T}^{#bar{t}} performance", 111, -10.05, 1.05);
             h_pT_tbar_perf->Sumw2();
-            h_costheta_tt_perf = new TH1D("costheta_tt_perf", "cos#theta_{t#bar{t}} performance", 101, -5.05, 5.05);
-            h_costheta_tt_perf->Sumw2();
-            h_m_tt_perf = new TH1D("m_tt_perf", "m_{t#bar{t}} performance", 111, -10.05, 1.05);
+            h_costhetastar_perf = new TH1D("costhetastar_perf", "cos#theta^{*} performance", 101, -5.05, 5.05);
+            h_costhetastar_perf->Sumw2();
+            h_costhetatl_perf = new TH1D("costhetatl_perf", "cos#theta_{t,l} performance", 101, -5.05, 5.05);
+            h_costhetatl_perf->Sumw2();
+            h_costhetatt_perf = new TH1D("costheta_tt_perf", "cos#theta_{t#bar{t}} performance", 101, -5.05, 5.05);
+            h_costhetatt_perf->Sumw2();
+            // h_m_tt_perf = new TH1D("m_tt_perf", "m_{t#bar{t}} performance", 111, -10.05, 1.05);
+            h_m_tt_perf = new TH1D("m_tt_perf", "m_{t#bar{t}} performance", 21, -1.05, 1.05);
             h_m_tt_perf->Sumw2();
             h2_m_tt_costheta_tt_perf = new TH2D("m_tt_costheta_tt_perf", "m_{t#bar{t}} cos#theta_{t#bar{t}} performance", 111, -10.05, 1.05, 101, -5.05, 5.05);
             h2_m_tt_costheta_tt_perf->Sumw2();
@@ -961,12 +985,14 @@ void Analysis::MakeDistributions()
 
             this->MakeDistribution1D(h_pT_t_perf, "");
             this->MakeDistribution1D(h_pT_tbar_perf, "");
-            this->MakeDistribution1D(h_costheta_tt_perf, "");
+            this->MakeDistribution1D(h_costhetatt_perf, "");
+            this->MakeDistribution1D(h_costhetastar_perf, "");
+            this->MakeDistribution1D(h_costhetatl_perf, "");
             this->MakeDistribution1D(h_m_tt_perf, "");
             this->MakeDistribution2D(h2_m_tt_pT_t_perf, "m_{tt} performance", "", "p_{T}^{t} performance", "");
             this->MakeDistribution2D(h2_m_tt_costheta_tt_perf, "m_{tt} performance", "", "cos#theta_{tt} performance", "");
 
-            h_AtFB_R = this->Asymmetry("AtFB_R", "A_{FB^*}^{t} (reco)", h_mtt_tF_R, h_mtt_tB_R);
+            h_AtFB_R = this->Asymmetry("AtFB_R", "A^{t}_{FB^{*}} (reco)", h_mtt_tF_R, h_mtt_tB_R);
             h_AtFB_R->GetYaxis()->SetTitle(h_AtFB_R->GetTitle());
             h_AtFB_R->GetXaxis()->SetTitle("m_{tt} (reco) [TeV]");
             h_AtFB_R->Write();
@@ -979,7 +1005,14 @@ void Analysis::MakeDistribution1D(TH1D* h, const TString& units)
 {
     TString ytitle, yunits, xunits;
     if (m_xsec) {
-        if (m_useLumi) ytitle = "Expected events";
+        if (m_useLumi) {
+            for (int i = 1; i < h->GetNbinsX() + 1; i++) {
+                h->SetBinError(i, sqrt(h->GetBinContent(i)));
+                std::cout << "N  = " << "" << h->GetBinContent(i) << std::endl;
+                std::cout << "dN = " << "" << h->GetBinError(i) << std::endl;
+            }
+            ytitle = "Expected events";
+        }
         else {
             ytitle = "d#sigma / d" + (TString) h->GetTitle();
             if (units != "") {
@@ -993,7 +1026,6 @@ void Analysis::MakeDistribution1D(TH1D* h, const TString& units)
         }
     }
     else {
-        if (m_useLumi) ytitle = "Expected events";
         ytitle = "Generated events";
     }
     if (units != "") xunits = " [" + units + "]";
@@ -1128,9 +1160,12 @@ void Analysis::WriteHistograms()
 
 bool Analysis::PassFiducialCuts(const std::vector<TLorentzVector>& p, const TLorentzVector& P) 
 {
+    if (!m_fid) return true;
     if (this->PassCutsET(p, P)) {
         if (this->PassCutsEta(p, P)) {
-            return true;
+            // if (this->PassCutsDeltaR(p, P)) {
+                return true;
+            // }
         }
     }
     return false;
@@ -1143,9 +1178,7 @@ bool Analysis::PassCuts(const std::vector<TLorentzVector>& p, const TLorentzVect
     //     if (this->PassCutsEta(p,P)) {
     //         if (this->PassCutsMET(p, P)) {
                 if (this->PassCutsMtt(p, P)) {
-                    // if (this->PassCutsYtt(p,P)) {
-                        return true;
-                    // }
+                    return true;
                 }
     //         }
     //     }
@@ -1174,6 +1207,19 @@ bool Analysis::PassCutsMtt(const std::vector<TLorentzVector>& p, const TLorentzV
     }
     UpdateCutflow(c_mtt, false);
     return false;
+}
+
+bool Analysis::PassCutsDeltaR(const std::vector<TLorentzVector>& p, const TLorentzVector& P)
+{
+    std::vector<double> deltaRs;
+    for (int i = 0; i < 6; i++)
+        for (int j = i + 1; j < 6; j++)
+            if (p[i].DeltaR(p[j]) < 0.4) {
+                UpdateCutflow(c_deltaR, false);
+                return false;
+            }
+    UpdateCutflow(c_deltaR, true);
+    return true;
 }
 
 bool Analysis::PassCutsEta(const std::vector<TLorentzVector>& p, const TLorentzVector& P)
@@ -1263,31 +1309,13 @@ void Analysis::ResetCounters()
 
 
 void Analysis::GetGenerationCrossSection(TString filename)
-{
-    m_sigma = 1000 * m_ptup->cross_section();
-    // filename.Replace(filename.Last('.'), 5, ".log");
-    // printf("%s\n", filename.Data());
-    // std::ifstream logstream(filename.Data());
-    // if (!logstream.is_open()) printf("Error: failed to open %s!\n", filename.Data());
-    // string line;
-    // string target = " cross section";
-    // std::vector<string> parts;
-    // bool found = false;
-    // while(getline(logstream, line)) {
-    //     trim(line);
-    //     boost::split(parts, line, boost::is_any_of(":"));
-    //     for (auto& part : parts) trim(part);
-    //     if (parts[0] == target) {
-    //         m_sigma = 1000 * std::stod(parts[1]);
-    //         found = true;
-    //     }
-    // }
-    // logstream.close();
-    // if (!found) {
-    //     printf("error: failed to read generation cross section from: %s", filename.Data());
-    //     exit(1);
-    // }
-    // else 
+{   
+    std::cout << "filename = " << filename << std::endl;
+    if (filename == "/Users/declan/Data/zprime/dd-AZ-tt-bbllvv.SM.13TeV.CT14LL.2-4.unweighted.root" || filename == "/Users/declan/Data/zprime/dd-AZX-tt-bbllvv.GLR-R-3.13TeV.CT14LL.2-4.unweighted.root") {
+        m_sigma = 1000 * m_ptup->cross_section() / 100000; // temporary! Remove me
+        std::cout << "bork" << std::endl;
+    }
+    else m_sigma = 1000 * m_ptup->cross_section();
     printf("Generation Cross section = %.15le [fb]\n", m_sigma);
 }
 
@@ -1485,31 +1513,49 @@ std::vector<TLorentzVector> Analysis::ReconstructSemilepton(const std::vector<TL
     }
 
     // Assess b-matching performance
-    // unsigned int b_lep;
-    // if (Q_l == 1) b_lep = 0;
-    // if (Q_l == -1) b_lep = 1;
-    // if (b_lep == jmin) m_nQuarksMatched++;
+    unsigned int b_lep;
+    if (Q_l == 1) b_lep = 0;
+    if (Q_l == -1) b_lep = 1;
+    if (b_lep == jmin) m_nQuarksMatched++;
 
     // Assess neutrino reconstruction performance.
-    // double pz_nu_truth = p_nu.Pz();
-    // double Root0MinusTruth = std::abs(roots[0].real() - pz_nu_truth);
-    // double Root1MinusTruth = std::abs(roots[1].real() - pz_nu_truth);
-    // unsigned int bestRoot;
-    // if (Root0MinusTruth < Root1MinusTruth) bestRoot = 0;
-    // else if (Root1MinusTruth < Root0MinusTruth) bestRoot = 1;
-    // else bestRoot = 0;
-    // if (imin == bestRoot) m_nNeutrinoMatched++;
-    // Print reconstruction performance.
-    // printf("True pz_nu = %f\n", p_nu.Pz());
-    // printf("Possible neutrino solutions:\n");
-    // printf("                             %f + %fi\n", roots[0].real(), roots[0].imag());
-    // printf("                             %f + %fi\n", roots[1].real(), roots[1].imag());
-    // printf("Chosen solution:             %f + %fi\n", roots[imin].real(), roots[imin].imag());
-    // if (imin == bestRoot) printf("Neutrino solution: correct. \n");
-    // else printf("Neutrino solution: incorrect. \n");
-    // if (b_lep == jmin) printf("b-assignment: correct. \n");
-    // else printf("b-assignment: incorrect. \n");
-    // printf("--\n");
+    double pz_nu_truth = p_nu.Pz();
+    double Root0MinusTruth;
+    double Root1MinusTruth;
+    if (nRealRoots == 2) {
+        Root0MinusTruth = std::abs(roots[0] - pz_nu_truth);
+        Root1MinusTruth = std::abs(roots[1] - pz_nu_truth);
+    }
+    else if (nRealRoots == 0) {
+        Root0MinusTruth = std::abs(roots[0] - pz_nu_truth);
+        Root1MinusTruth = std::abs(roots[0] - pz_nu_truth);
+    }
+    unsigned int bestRoot;
+    if (Root0MinusTruth < Root1MinusTruth) bestRoot = 0;
+    else if (Root1MinusTruth < Root0MinusTruth) bestRoot = 1;
+    else bestRoot = 0;
+    if (imin == bestRoot) m_nNeutrinoMatched++;
+
+    if (verbose) {
+        // Print reconstruction performance.
+        printf("True pz_nu = %f\n", p_nu.Pz());
+        printf("Possible neutrino solutions:\n");
+        if (nRealRoots == 2) {
+            printf("                             %f\n", roots[0]);
+            printf("                             %f\n", roots[1]);
+            printf("Chosen solution:             %f\n", roots[imin]);
+        }
+        else if (nRealRoots == 0) {
+            printf("                             %f + %fi\n", roots[0], roots[1]);
+            printf("                             %f - %fi\n", roots[0], roots[1]);
+            printf("Chosen solution:             %f\n", roots[imin]);
+        }
+        if (imin == bestRoot) printf("Neutrino solution: correct. \n");
+        else printf("Neutrino solution: incorrect. \n");
+        if (b_lep == jmin) printf("b-assignment: correct. \n");
+        else printf("b-assignment: incorrect. \n");
+        printf("--\n");
+    }
     return p_R;
 }
 
@@ -1519,8 +1565,6 @@ std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::vector<TLor
     // Uses the Sonnenschein method algebraically solve tt dilepton equations. 
     // http://arxiv.org/abs/hep-ph/0510100
     // selects solution that minimises mtt
-
-    // this->UpdateCutflow(c_events, true);
 
     m_nReco++;
 
@@ -1794,7 +1838,8 @@ void Analysis::UpdateCutflow(const int cut, const bool passed)
 void Analysis::InitialiseCutflow()
 {
     m_cutflow = std::vector<int>(m_cuts, -999);
-    m_cutNames = std::vector<TString>(m_cuts, "no name");
+    m_cutNames = std::vector<TString>(
+    m_cuts,                       "no name         ");
     m_cutNames[c_entries]       = "entries         ";
     m_cutNames[c_topDecays]     = "t->bev          ";
     m_cutNames[c_antitopDecays] = "tbar->bev       ";
@@ -1805,6 +1850,7 @@ void Analysis::InitialiseCutflow()
     m_cutNames[c_ytt]           = "ytt             ";
     m_cutNames[c_eta]           = "eta             ";
     m_cutNames[c_Et]            = "ET              ";
+    m_cutNames[c_deltaR]        = "deltaR          ";
 
     h_cutflow = new TH1D("cutflow", "cutflow", m_cuts, 0, m_cuts);
 }

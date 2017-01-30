@@ -19,6 +19,7 @@ int main(int argc, char* argv[])
     ("luminosity,L",     po::value<double>()->default_value(-1))
     ("options,o",        po::value<std::string>()->default_value(""))
     ("reco,r",           po::value<int>()->default_value(1))
+    ("tag,t",            po::value<std::string>()->default_value(""))
     ;
     po::variables_map opt;
     po::store(po::parse_command_line(argc, argv, desc), opt);
@@ -40,6 +41,7 @@ int main(int argc, char* argv[])
     bool add_gg = opt["add_gg"].as<bool>();
     bool add_qq = opt["add_qq"].as<bool>();
     int reco = opt["reco"].as<int>();
+    std::string tag = opt["tag"].as<std::string>();
 
     AtlasROOTStyle atlasStyle;
     atlasStyle.SetStyle();
@@ -61,5 +63,5 @@ int main(int argc, char* argv[])
     std::cout << "luminosity: " << luminosity << std::endl;
     std::cout << "reco: " << reco << std::endl;
 
-    Analysis* analysis = new Analysis(model, process, options, energy, luminosity, reco);
+    Analysis* analysis = new Analysis(model, process, options, energy, luminosity, reco, tag);
 }

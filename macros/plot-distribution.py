@@ -78,6 +78,10 @@ class HistPainter():
         hist.SetMarkerStyle(0)
         hist.SetLineStyle(style)
 
+        hist.SetMinimum(0.3)
+        # hist.Scale(1 / hist.Integral())
+
+
         # 2D
         if self.is_th2d:
             hist.SetLineStyle(30)
@@ -106,7 +110,7 @@ class HistPainter():
             # Uncertainty style
             clone.SetFillColorAlpha(color, 0.2)
             clone.SetFillStyle(1001)
-            clone.DrawCopy("e2 same")
+            # clone.DrawCopy("e2 same")
 
 
         f.Close()
@@ -138,27 +142,45 @@ class HistPainter():
         f.Close()
 
 
-    def AddInfoBox(self, model, x, y):
+    def AddInfoBox(self, model, xmass, xratio, energy, luminosity, efficiency, x, y):
 
-        t1 = ROOT.TLatex(x + 0.02, y - 0.075, "#bf{#it{m_{Z'}} = 3 TeV}")
-        t1.SetTextAlign(11)
-        t1.SetTextSize(0.04)
-        t1.SetNDC(True)
-        t1.Draw("same")
-        self.members.append(t1)
+        t = ROOT.TLatex(x, y, "#bf{Model: %s}" % model)
+        t.SetNDC(True)
+        t.SetTextSize(0.04)
+        t.Draw("same")
+        self.members.append(t)
 
-        # t2 = ROOT.TLatex(x, y, "#bf{#int #it{L dt} = 100 fb^{-1}}, #bf{#it{#sqrt{s}} = 13 TeV}")
-        t2 = ROOT.TLatex(x + 0.02, y, "#bf{#it{#sqrt{s}} = 13 TeV}")
-        t2.SetNDC(True)
-        t2.SetTextSize(0.04)
-        t2.Draw("same")
-        self.members.append(t2)
+        t = ROOT.TLatex(x, y - 0.075, "#bf{#it{m_{Z'}}  =  %i TeV}" % xmass)
+        t.SetTextAlign(11)
+        t.SetTextSize(0.04)
+        t.SetNDC(True)
+        t.Draw("same")
+        self.members.append(t)
 
-        t3 = ROOT.TLatex(x + 0.02, y - 0.15, "#bf{Model: %s}" % model)
-        t3.SetNDC(True)
-        t3.SetTextSize(0.04)
-        t3.Draw("same")
-        self.members.append(t3)
+        t = ROOT.TLatex(x, y - 0.15, "#bf{#it{#Gamma_{Z'} / m_{Z'}}  =  %.1f %%}" % xratio)
+        t.SetTextAlign(11)
+        t.SetTextSize(0.04)
+        t.SetNDC(True)
+        t.Draw("same")
+        self.members.append(t)
+
+        t = ROOT.TLatex(x, y - 0.225, "#bf{#it{#sqrt{s}}  =  %i TeV}" % energy)
+        t.SetNDC(True)
+        t.SetTextSize(0.04)
+        t.Draw("same")
+        self.members.append(t)
+
+        # t = ROOT.TLatex(x, y - 0.3, "#bf{#int #it{L dt}  =  %i fb^{-1}}" % luminosity)
+        # t.SetNDC(True)
+        # t.SetTextSize(0.04)
+        # t.Draw("same")
+        # self.members.append(t)
+
+        # t = ROOT.TLatex(x, y - 0.375, "#bf{\it{#epsilon}  =  %.1f}" % efficiency)
+        # t.SetNDC(True)
+        # t.SetTextSize(0.04)
+        # t.Draw("same")
+        # self.members.append(t)
 
 
     def AddLegend(self, xlow, ylow, xup, yup):
@@ -253,56 +275,76 @@ red = ROOT.TColor.GetColor(250.0 / 255.0, 0.0 / 255.0, 0.0 / 255.0)
 blue = ROOT.TColor.GetColor(0.0 / 255.0, 90.0 / 255.0, 130.0 / 255.0)
 green = ROOT.TColor.GetColor(0.0 / 255.0, 130.0 / 255.0, 90.0 / 255.0)
 grey = ROOT.TColor.GetColor(64.0 / 255.0, 64.0 / 255.0, 64.0 / 255.0)
-black = ROOT.TColor.GetColor(1.0, 1.0, 1.0)
+black = ROOT.TColor.GetColor(0.0, 0.0, 0.0)
 
 # hs = ["m_t", "m_tbar", "m_tt", "m_tt_perf", "pT_t", "pT_tbar", "pT_t_perf", "pT_tbar_perf", "E_t", "E_tbar", "costheta_tt", "costheta_tt_perf", "m_tt_pT_t_perf", "m_tt_costheta_tt_perf"]#, "deltaR_tt"]
 
-hs = ["m_tt"]
+# hs = ["m_tt", "m_tt_R", "pT_b1", "eta_b1", "AtFB", "AtFB_R", "AL1", "AL_R", "m_tt_perf", "costheta_tt_perf", "costhetastar_perf", "costhetatl_perf"]
 
-f = "qq-tt-bbllvv.SM.13TeV.CT14LL.2-4.r2.root"
-f2 = "qq-tt-bbllvv.SM.13TeV.CT14LL.2-4.r2.cut.root"
+hs = ["m_tt", "AtFB", "AL1"]
+
+f  = "uu-AZ-tt-bbllvv.SM.13TeV.CT14LL.multi.r1.root"
+f2 = "uu-AZ-tt-bbllvv.SM.13TeV.CT14LL.02.r1.root"
+# f3 = "ggqqdduu-AZX-tt-bbllvv.GLR-R-3.13TeV.CT14LL.r2.resolved.L300.root"
+# f4 = "ggqqdduu-AZX-tt-bbllvv.GLR-R-3.13TeV.CT14LL.r2.resolved.L300.fid.root"
 
 i = 0
 for h in hs:
     art = HistPainter(1920, 1080)
-    # if (h == "m_tt" or h == "E_t"):
 
     art.GetHistType(h, f)
     
-    if ("m_tt_costheta_tt" in h or "m_tt_pT_t" in h):
-        art.SetLogz()
-    else:
+    if ("m_tt_costheta" in h or "m_tt" in h):
         art.SetLogy()
     art.SetStyle()
     art.AddPads()
-    # art.SetXtitle("#it{m_{tt}} [TeV]")
-    # art.SetYtitle("d#it{#sigma} / d#it{m_{tt}} [pb/TeV]")
-    # art.SetYtitle("A^{*}_{FB}")
-    # art.SetZtitle("#it{cos#theta_{l}}")
 
-    art.AddHistogram(h, f, "#bf{SM}", blue)
-    if not ("perf" in h): art.AddHistogram(h, f2, "#bf{SM}", red, 2)
+    if "AtFB" in h:
+        art.SetRange(-0.3, 0.3)
+        
+    if "AL" in h: 
+        art.SetRange(-0.6, 0.9)
 
-    if ("m_tt_" in h): 
-        pass
-    elif ("perf" in h):
-        art.AddInfoBox("SM", 0.2, 0.85)
-    else:
-        if ("costheta" in h): 
-            art.AddInfoBox("SM", 0.45, 0.85)
-        else:
-            art.AddInfoBox("SM", 0.75, 0.85)
 
-    art.SetHistTitle(0, "generated")
-    if not ("perf" in h): 
-        art.SetHistTitle(1, "reconstructed")
-        if ("costheta" in h): 
-            art.AddLegend(0.46, 0.45, 0.62, 0.65)
-        elif (h == "m_t" or h == "m_tbar"):
-            art.AddLegend(0.5, 0.7, 0.7, 0.9)
-        else:
-            art.AddLegend(0.76, 0.45, 0.92, 0.65)
+    art.SetXtitle("#it{m_{tt}} [TeV]")
+    if "AtFB" in h:
+        art.SetYtitle("#it{A^{t}_{FB^{*}}}")
+    elif "AL" in h:
+        art.SetYtitle("#it{A_{L}}")
+    else: 
+        art.SetYtitle("d#it{#sigma} / d#it{m_{tt}} [pb/TeV]")
+
+    art.AddHistogram(h, f,  "#bf{Full}", black)
+    art.AddHistogram(h, f2, "#bf{#eta < 2.5, p_{T} > 25 GeV}", blue, 2)
+    # art.AddHistogram(h, f3, "#bf{#Delta R > 0.4}", red, 3)
+    # art.AddHistogram(h, f4, "#bf{#eta < 2.5, p_{T} > 25 GeV, #Delta R > 0.4} ", green, 4)
+
+    # if ("m_tt_" in h): 
+    #     pass
+    # elif ("perf" in h):
+    #     art.AddInfoBox("SM", 0.2, 0.85)
+    # else:
+    #     if ("costheta" in h): 
+    #         art.AddInfoBox("SM", 0.45, 0.85)
+    #     else:
+    # if ("m_tt_costheta" in h or "m_tt" in h):
+    art.AddInfoBox("GLR-R", 3, 2.5, 13, 100, 0.6, 0.75, 0.875)
+    # else:
+    # art.AddInfoBox("GLR-R", 3, 2.5, 13, 100, 0.6, 0.17, 0.875)
+
+    # art.SetHistTitle(0, "no cut")
+    # if not ("perf" in h): 
+    #     # art.SetHistTitle(1, "cut")
+    #     if ("costheta" in h): 
+    #         art.AddLegend(0.46, 0.45, 0.62, 0.65)
+    #     elif (h == "m_t" or h == "m_tbar"):
+    #         art.AddLegend(0.5, 0.7, 0.7, 0.9)
+        # else:
+    # if "AL" in h:
+    #     art.AddLegend(0.15, 0.67, 0.5, 0.93)
+    # else:
+    #     art.AddLegend(0.15, 0.17, 0.5, 0.43)
 
     # art.Save("~/Website/figures/dilepton/" + h + "-dd-AZX.pdf")
-    art.Save("~/Desktop/" + h + "-qq.pdf")
+    art.Save("~/Desktop/" + h + "AZ.pdf")
     i += 1

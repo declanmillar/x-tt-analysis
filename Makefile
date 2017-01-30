@@ -12,8 +12,8 @@ ROOTLIBS = $(shell root-config --libs)
 
 HOSTNAME := $(shell hostname)
 ifeq ($(HOSTNAME), Sunder)
-	BOOSTCFLAGS = -isystem /usr/local/Cellar/boost/1.62.0/include
-	BOOSTLIB = -L /usr/local/Cellar/boost/1.62.0/lib
+	BOOSTCFLAGS = -isystem /usr/local/Cellar/boost/1.63.0/include
+	BOOSTLIB = -L /usr/local/Cellar/boost/1.63.0/lib
 else ifeq ($(HOSTNAME), cyan03)
 	BOOSTCFLAGS = -I /local/software/boost/1.60.0/include
 	BOOSTLIB = -L /local/software/boost/1.60.0/lib
