@@ -1718,7 +1718,7 @@ std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::vector<TLor
 
     double h4 = c00 * c00 * d22 * d22 
                     + c11 * d22 * (c11 * d00 - c00 * d11)
-                    + c00 * c23 (d11 * d11 - 2 * d00 * d22) 
+                    + c00 * c22 * (d11 * d11 - 2 * d00 * d22) 
                     + c22 * d00 * (c22 * d00 - c11 * d11);
 
     double h3 = c00 * d21 * (2 * c00 * d22 - c11 * d11) 
