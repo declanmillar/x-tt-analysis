@@ -14,11 +14,11 @@
 #include "solve-poly.hpp"
 
 #include "classes/DelphesClasses.h"
-#include "external/ExRootAnalysis/ExRootTreeReader.h"
-#include "external/ExRootAnalysis/ExRootTreeWriter.h"
-#include "external/ExRootAnalysis/ExRootTreeBranch.h"
-#include "external/ExRootAnalysis/ExRootResult.h"
-#include "external/ExRootAnalysis/ExRootUtilities.h"
+#include "ExRootAnalysis/ExRootTreeReader.h"
+#include "ExRootAnalysis/ExRootTreeWriter.h"
+#include "ExRootAnalysis/ExRootTreeBranch.h"
+#include "ExRootAnalysis/ExRootResult.h"
+#include "ExRootAnalysis/ExRootUtilities.h"
 
 class Analysis{
     Analysis();
