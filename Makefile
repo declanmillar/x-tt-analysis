@@ -14,23 +14,24 @@ HOSTNAME := $(shell hostname)
 ifeq ($(HOSTNAME), Sunder)
 	BOOSTCFLAGS = -isystem /usr/local/Cellar/boost/1.63.0/include
 	BOOSTLIB = -L /usr/local/Cellar/boost/1.63.0/lib
-	DELPHES = -isystem /afs/cern.ch/user/d/demillar/Delphes-3.4.0
-	# -isystem /usr/local/Cellar/madgraph5_amcatnlo/2.5.2/Delphes/external
-	DELPHESLIBS = -L /afs/cern.ch/user/d/demillar/Delphes-3.4.0 -L /usr/local/Cellar/madgraph5_amcatnlo/2.5.2/ExRootAnalysis
+	DELPHESCFLAGS = -isystem /Users/declan/Code/delphes/install/include
+	DELPHESLIBS = -L /Users/declan/Code/delphes/install/lib
+	# DELPHESCFLAGS = -isystem /usr/local/Cellar/madgraph5_amcatnlo/2.5.2/Delphes/external
+	# DELPHESLIBS = -L /usr/local/Cellar/madgraph5_amcatnlo/2.5.2/ExRootAnalysis
 else ifeq ($(HOSTNAME), cyan03)
 	BOOSTCFLAGS = -I /local/software/boost/1.60.0/include
 	BOOSTLIB = -L /local/software/boost/1.60.0/lib
 else
 	BOOSTCFLAGS = -I /cvmfs/sft.cern.ch/lcg/releases/LCG_87/Boost/1.62.0/x86_64-slc6-gcc49-opt/include
 	BOOSTLIB = -L /cvmfs/sft.cern.ch/lcg/releases/LCG_87/Boost/1.62.0/x86_64-slc6-gcc49-optlib
-	DELPHES = -isystem /afs/cern.ch/user/d/demillar/delphes/install/include
+	DELPHESCFLAGS = -I /afs/cern.ch/user/d/demillar/delphes/install/include
 	DELPHESLIBS = -L /afs/cern.ch/user/d/demillar/delphes/install/lib
 endif
 
 BOOSTLIBS = $(BOOSTLIB) -lboost_system -lboost_program_options
 
 C = c++
-CFLAGS = $(ROOTCFLAGS) $(BOOSTCFLAGS) $(DELPHES)
+CFLAGS = $(ROOTCFLAGS) $(BOOSTCFLAGS) $(DELPHESCFLAGS)
 LIBS = $(ROOTLIBS) $(BOOSTLIBS) $(DELPHESLIBS)
 
 # Compile all files ending in .cpp in SRC
