@@ -7,6 +7,7 @@
 #include "TSystem.h"
 #include "TLorentzVector.h"
 #include "TVector2.h"
+#include "sys/stat.h"
 #include "boost/algorithm/string.hpp"
 #include "boost/asio.hpp"
 #include "root-tuple.hpp"
