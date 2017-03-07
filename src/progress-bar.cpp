@@ -10,8 +10,8 @@ void ProgressBar(unsigned int x, unsigned int n, unsigned int w)
     unsigned int c = ratio * w;
 
     std::cout << "progress: " << std::setw(3) << (int)(ratio * 100) << '%' << '[';
-    for (unsigned int i = 0; i < c; i++) std::cout << '=';
-    for (unsigned int i = c; i < w; i++) std::cout << ' ';
+    for (unsigned int i = 0; i < c; i++) std::cout << '#';
+    for (unsigned int i = c; i < w; i++) std::cout << '-';
     if (x == n) std::cout << '\n' << std::flush;
     else std::cout << ']' << '\r' << std::flush;
 }

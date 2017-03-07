@@ -19,7 +19,8 @@ class genNtupleCode(object):
     for i in keys:
       # if str(i.GetName()).find('physics') != -1  and str(i.GetName()).find('Meta') == -1:
       # if str(i.GetName()).find('RootTuple') != -1:
-      trees.append(self.inputFile.Get(i.GetName()))
+      if str(i.GetName()).find('Delphes') != -1:
+        trees.append(self.inputFile.Get(i.GetName()))
     return trees
 
   def allVariables(self):

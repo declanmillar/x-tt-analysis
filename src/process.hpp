@@ -50,7 +50,6 @@ class process{
     inline Double_t  pdfg2() const {b_pdfg2->GetEntry(m_currentEvent);return m_pdfg2;} 
     inline Double_t  pdfs1() const {b_pdfs1->GetEntry(m_currentEvent);return m_pdfs1;} 
     inline Double_t  pdfs2() const {b_pdfs2->GetEntry(m_currentEvent);return m_pdfs2;} 
-    inline Double_t  vamp_chi2() const {b_vamp_chi2->GetEntry(m_currentEvent);return m_vamp_chi2;} 
 
     inline Long64_t currentEvent() const {return m_currentEvent;} 
 
@@ -81,7 +80,6 @@ class process{
     Double_t  m_pdfg2; 
     Double_t  m_pdfs1; 
     Double_t  m_pdfs2; 
-    Double_t  m_vamp_chi2; 
 
     TBranch*  b_cross_section; 
     TBranch*  b_cross_section_uncertainty; 
@@ -93,7 +91,6 @@ class process{
     TBranch*  b_pdfg2; 
     TBranch*  b_pdfs1; 
     TBranch*  b_pdfs2; 
-    TBranch*  b_vamp_chi2; 
 }; 
 #endif 
 

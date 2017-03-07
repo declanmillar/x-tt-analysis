@@ -56,12 +56,12 @@ int main(int argc, char* argv[])
     }
 
     std::string process = initial_state + intermediates + final_state;
-
     std::cout << "energy: " << energy << " [TeV]" << std::endl;
     std::cout << "process: " << process << std::endl;
     std::cout << "options: " << options << std::endl;
     std::cout << "luminosity: " << luminosity << std::endl;
     std::cout << "reco: " << reco << std::endl;
+    std::cout << std::endl;
 
     Analysis* analysis = new Analysis(model, process, options, energy, luminosity, reco, tag);
 }

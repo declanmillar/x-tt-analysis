@@ -49,9 +49,12 @@ class HistPainter():
         except:
             sys.exit("Error: check %s contains %s" % (filename, histname))
 
+        # hist.GetZaxis().SetRangeUser(0, 11)
+
         # set range
         if self.ymin != -99.9 and self.ymax != -99.9:
             hist.GetYaxis().SetRangeUser(self.ymin, self.ymax)
+
 
         if self.xmin != -99.9 and self.xmax != -99.9:
             hist.GetXaxis().SetRangeUser(self.xmin, self.xmax)
@@ -78,7 +81,7 @@ class HistPainter():
         hist.SetMarkerStyle(0)
         hist.SetLineStyle(style)
 
-        # hist.SetMinimum(0.09)
+        # hist.SetMinimum(0.3)
         # hist.Scale(1 / hist.Integral())
 
 
@@ -108,10 +111,9 @@ class HistPainter():
             self.members.append(clone)
 
             # Uncertainty style
-            clone.SetFillColorAlpha(color, 0.3)
-            # clone.SetFillStyle(1001)
-            clone.SetFillStyle(3554)
-            if not ".SM." in filename: clone.DrawCopy("e2 same")
+            clone.SetFillColorAlpha(color, 0.2)
+            clone.SetFillStyle(1001)
+            # clone.DrawCopy("e2 same")
 
 
         f.Close()
@@ -145,18 +147,25 @@ class HistPainter():
 
     def AddInfoBox(self, model, xmass, xratio, energy, luminosity, efficiency, x, y):
 
-        # if model == "SM":
-        #     t = ROOT.TLatex(0.85, y, "#bf{Model: %s} " % model)
-        #     t.SetNDC(True)
-        #     t.SetTextSize(0.04)
-        #     t.Draw("same")
-        #     self.members.append(t)
-        # else:
-        #     t = ROOT.TLatex(x, y, "#bf{Model: %s, #it{m_{Z'}} = %i TeV, #it{#Gamma_{Z'} / m_{Z'}} = %.1f %%}" % (model, xmass, xratio))
-        #     t.SetNDC(True)
-        #     t.SetTextSize(0.04)
-        #     t.Draw("same")
-        #     self.members.append(t)
+        if model == "SM":
+            t = ROOT.TLatex(0.85, y + 0.01, "#bf{Model: %s}" % model)
+            t.SetNDC(True)
+            t.SetTextSize(0.04)
+            t.Draw("same")
+            self.members.append(t)
+        else:
+
+            t = ROOT.TLatex(0.85, y + 0.01, "#bf{Model: %s}" % model)
+            t.SetNDC(True)
+            t.SetTextSize(0.04)
+            t.Draw("same")
+            self.members.append(t)
+
+            t = ROOT.TLatex(0.85, y - 0.05, "#bf{#it{m_{Z'}} = %i TeV}" % xmass)
+            t.SetNDC(True)
+            t.SetTextSize(0.04)
+            t.Draw("same")
+            self.members.append(t)
 
         #bf{#it{m_{Z'}}  =  %i TeV, #it{#Gamma_{Z'} / m_{Z'}}  =  %.1f %%}
 
@@ -174,25 +183,13 @@ class HistPainter():
         # t.Draw("same")
         # self.members.append(t)
 
-        # t = ROOT.TLatex(x - 0.5, y, "#bf{#it{#sqrt{s}}  =  %i TeV, #int #it{L dt}  =  %i fb^{-1}}" % (energy, luminosity))
-        # t.SetNDC(True)
-        # t.SetTextSize(0.04)
-        # t.Draw("same")
-        # self.members.append(t)
-
-        t = ROOT.TLatex(x - 0.0395, y, "#bf{#int #it{L dt}  =  %i fb^{-1}}" % luminosity)
+        t = ROOT.TLatex(x - 0.489, y - 0.07, "#bf{#it{#sqrt{s}}  =  %i TeV}" % energy)
         t.SetNDC(True)
         t.SetTextSize(0.04)
         t.Draw("same")
         self.members.append(t)
 
-        t = ROOT.TLatex(x - 0.002, y - 0.07, "#bf{#it{#sqrt{s}}  =  %i TeV}" % (energy))
-        t.SetNDC(True)
-        t.SetTextSize(0.04)
-        t.Draw("same")
-        self.members.append(t)
-
-        t = ROOT.TLatex(x - 0.011, y - 0.14, "#bf{#it{m_{Z'}}  =   %i TeV}" % 4)
+        t = ROOT.TLatex(x - 0.526, y, "#bf{#int #it{L dt}  =  %i fb^{-1}}" % luminosity)
         t.SetNDC(True)
         t.SetTextSize(0.04)
         t.Draw("same")
@@ -208,7 +205,6 @@ class HistPainter():
     def AddLegend(self, xlow, ylow, xup, yup):
         legend = ROOT.TLegend(xlow, ylow, xup, yup, "")
         legend.SetBorderSize(0)
-        legend.SetFillStyle(0)
         for h in self.histograms:
             legend.AddEntry(h, h.GetTitle(), "lf")
         legend.Draw()
@@ -294,34 +290,26 @@ class HistPainter():
         import atlas_style
 
 
-#############################################################################
-
-
 red = ROOT.TColor.GetColor(250.0 / 255.0, 0.0 / 255.0, 0.0 / 255.0)
-orange = ROOT.TColor.GetColor(255.0 / 255.0, 165.0 / 255.0, 0.0 / 255.0)
 blue = ROOT.TColor.GetColor(0.0 / 255.0, 90.0 / 255.0, 130.0 / 255.0)
 green = ROOT.TColor.GetColor(0.0 / 255.0, 130.0 / 255.0, 90.0 / 255.0)
 grey = ROOT.TColor.GetColor(64.0 / 255.0, 64.0 / 255.0, 64.0 / 255.0)
 black = ROOT.TColor.GetColor(0.0, 0.0, 0.0)
 
-# hs = []
-# hs = ["mtt_R"]
-hs = ["mtt_R", "AtFB_R", "AL_R"]
-
-# models = ["SM"]
-models = []
-models.append("GLR-R-4")
-# models = ["GSM-Q-4", "GLR-BL-4"]
-# models = ["E6-S-4", "E6-I-4", "E6-N-4"]
-# models = ["E6-chi-4", "E6-eta-4", "E6-psi-4"]
-# models = ["GSM-T3L-4", "GSM-SM-4"]
-widths = [2.5, 2.4, 2.1, 4.7]
-
-# fs = ["ggqqdduu-AZ-tt-bbllvv.SM.13TeV.CT14LL.3-5.20x2M.weighted.r2.L300.fid.root"]
-
-fs = []
+h2s = ["mtt_costhetastar", "mtt_costheta_tl1"]
+hs = ["mtt_costhetastar_R", "mtt_costhetal_R"]
 
 f2 = "ggqqdduu-AZX-tt-bbllvv.GLR-R-4.13TeV.CT14LL.2-5.weighted.r2.y0.5.L300.fid.root"
+
+# hs = ["m_tt"]
+
+# models  = ["GLR-R-4", "GLR-Y-4", "GLR-LR-4", "GSM-T3L-4", "GSM-SM-4"]
+# models2 = ["U(1)_{R}", "U(1)_{Y}", "U(1)_{LR}", "U(1)_{T^{3}_{L}}", "U(1)_{SM}"]
+models  = ["GLR-R-4"]
+models2 = ["U(1)_{R}"]
+widths = [2.5, 2.4, 2.1, 4.7, 3.2]
+
+fs = []
 
 for model in models:
     fs.append("ggqqdduu-AZX-tt-bbllvv." + model + ".13TeV.CT14LL.2-5.weighted.r2.L300.fid.root")
@@ -329,71 +317,49 @@ for model in models:
 # models.append("SM")
 # fs.append("ggqqdduu-AZ-tt-bbllvv.SM.13TeV.CT14LL.3-5.20x2M.weighted.r2.L300.fid.root")
 
-# j = 0
-# for f in fs:
-i = 0
-for h in hs:
-    art = HistPainter(1920, 1080)
+# f2s  = ["dduu-AZX-tt-bbllvv.GLR-LR-4.13TeV.CT14LL.3-5.20x2M.weighted.r2.L300.fid.root"]
+# fs = ["dduu-AZX-tt-bbllvv.GLR-LR-4.13TeV.CT14LL.2-5.weighted.r2.L300.fid.root"]
 
-    art.SetHistType(h, fs[0])
-    
-    if ("mtt_R" in h): art.SetLogy()
-    # art.SetLogz()
-    art.SetStyle()
-    art.AddPads()
+j = 0
+for f in fs:
+    i = 0
+    for h in hs:
+        art = HistPainter(1920, 1080)
 
-    # art.SetDomain(3.025, 4.975)
-    if "AtFB" in h: art.SetRange(-1.0, 1.0)
-    if "AL" in h: art.SetRange(-1.0, 1.0)
+        art.SetHistType(h, f)
+        
+        # if ("m_tt" in h): art.SetLogy()
+        # art.SetLogz()
+        art.SetStyle()
+        art.AddPads()
 
-    art.SetXtitle("#it{m_{tt}} [TeV]")
-    if "AtFB" in h:
-        art.SetYtitle("#it{A^{t}_{FB^{*}}}")
-    elif "AL" in h:
-        art.SetYtitle("#it{A_{L}}")
-    elif "mtt_costhetastar_R" in h:
-        art.SetYtitle("#it{cos#theta*}")
-        art.SetZtitle("Expected events")
-    elif "mtt_costhetal_R" in h:
-        art.SetYtitle("#it{cos#theta_{l}}")
-        art.SetZtitle("Expected events")   
-    else: 
-        # art.SetYtitle("d#it{#sigma} / d#it{m_{tt}} [pb/TeV]")
-        art.SetYtitle("Expected events")
+        # art.SetDomain(3.025, 4.975)
+        if "AtFB" in h: art.SetRange(-0.3, 0.3)
+        if "AL" in h: art.SetRange(-0.6, 0.9)
 
-    # art.AddHistogram(h, fs[0], " #bf{GSM-#it{T^{3}_{L}}}", red, 1)
-    # art.AddHistogram(h, fs[0], " #bf{U(1)_{#chi}}", red, 1)
-    # art.AddHistogram(h, fs[1], " #bf{U(1)_{#eta}}", green, 1)
-    # art.AddHistogram(h, fs[2], " #bf{U(1)_{#psi}}", blue, 1)
-    # art.AddHistogram(h, fs[0], " #bf{U(1)_{S}}", red, 1)
-    # art.AddHistogram(h, fs[1], " #bf{U(1)_{I}}", green, 1)
-    # art.AddHistogram(h, fs[2], " #bf{U(1)_{N}}", blue, 1)
-    # art.AddHistogram(h, fs[1], " #bf{U(1)_{R}}", red, 1)
-    # art.AddHistogram(h, fs[2], " #bf{U(1)_{Y}}", green, 1)
-    # art.AddHistogram(h, fs[3], " #bf{U(1)_{LR}}", blue, 1)
-    # art.AddHistogram(h, fs[0], " #bf{U(1)_{Q}}", red, 1)
-    # art.AddHistogram(h, fs[1], " #bf{U(1)_{B-L}}", blue, 1)
-    # art.AddHistogram(h, fs[0], " #bf{U(1)_{T^{3}_{L}}}", red, 1)
-    # art.AddHistogram(h, fs[1], " #bf{U(1)_{SM}}", blue, 1)
-    # art.AddHistogram(h, fs[0], " #bf{SM}", black, 1)
+        art.SetXtitle("#it{m_{tt}} [TeV]")
+        if "AtFB" in h:
+            art.SetYtitle("#it{A^{t}_{FB^{*}}}")
+        elif "AL" in h:
+            art.SetYtitle("#it{A_{L}}")
+        elif "mtt_costhetastar" in h:
+            art.SetYtitle("#it{cos#theta*}")
+            art.SetZtitle("Expected events")
+        elif "mtt_costhetal" in h or "mtt_costheta_tl" in h:
+            art.SetYtitle("#it{cos#theta_{l}}")
+            art.SetZtitle("Expected events")
+        else: 
+            # art.SetYtitle("d#it{#sigma} / d#it{m_{tt}} [pb/TeV]")
+            art.SetYtitle("Expected events")
 
-    art.AddHistogram(h, fs[0], " #bf{|y_{tt}| #geq 0.0}", black, 1)
-    art.AddHistogram(h, f2, " #bf{|y_{tt}| > 0.5}", red, 1)
+        art.AddHistogram(h, f2,  "#bf{truth}", black)
+        # art.AddHistogram(h, f2, "#bf{reconstruction}", red)
 
-    if ("mtt_costhetastar_R" in h or "mtt_costhetal_R" in h): 
         if models[j] == "SM": art.AddInfoBox("SM", 0, 0, 13, 300, 0.6, 0.55, 0.95)
-        else: art.AddInfoBox(models[0].rsplit('-',1)[0], 4, 0, 13, 300, 0.6, 0.55, 0.95)
-    else:
-        if "mtt_R" in h: art.AddInfoBox(models[0].rsplit('-',1)[0], 4, 0, 13, 300, 0.6, 0.77, 0.87)
-        else: art.AddInfoBox(models[0].rsplit('-',1)[0], 4, 0, 13, 300, 0.6, 0.2, 0.87)
-        # art.AddLegend(0.14, 0.16, 0.27, 0.36)
-        # art.AddLegend(0.14, 0.16, 0.27, 0.31)
-        art.AddLegend(0.15, 0.2, 0.3, 0.4)
+        else: art.AddInfoBox(models2[j], 4, widths[j], 13, 300, 0.6, 0.55, 0.95)
+        # art.AddLegend(0.0, 0.0, 0.29, 0.15)
 
-    art.Save("~/Desktop/" + h + "-" + models[0].rsplit("-",2)[0] + ".pdf")
-    # art.Save("~/Desktop/" + h + "-" + "GSM-Q-GLR-BL.pdf")
-    # art.Save("~/Desktop/" + h + "-" + "GLR.pdf")
-    # art.Save("~/Desktop/" + h + "-" + "E62.pdf")
-    # art.Save("~/Desktop/" + h + "-" + models[j] + ".3-5.pdf")
-    i += 1
-    # j += 1
+        art.Save("~/Desktop/" + h + "-" + models[j] + ".pdf")
+        # art.Save("~/Desktop/" + h + "-" + models[j] + ".3-5.pdf")
+        i += 1
+    j += 1

@@ -70,7 +70,6 @@ void process::Init(TTree* tree){
   m_pdfg2 = 0; 
   m_pdfs1 = 0; 
   m_pdfs2 = 0; 
-  m_vamp_chi2 = 0; 
 
   if (!tree) return; 
   fChain = tree; 
@@ -87,6 +86,5 @@ void process::Init(TTree* tree){
   fChain->SetBranchAddress("pdfg2", &m_pdfg2, &b_pdfg2); 
   fChain->SetBranchAddress("pdfs1", &m_pdfs1, &b_pdfs1); 
   fChain->SetBranchAddress("pdfs2", &m_pdfs2, &b_pdfs2); 
-  fChain->SetBranchAddress("vamp_chi2", &m_vamp_chi2, &b_vamp_chi2); 
 } 
 

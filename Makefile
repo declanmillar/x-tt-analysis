@@ -1,7 +1,7 @@
 # Makefile for zprime-top-analysis
 # declan.millar@cern.ch
 
-OBJ = solve-poly.o main.o atlas-style.o root-tuple.o events.o process.o trim.o progress-bar.o bool-to-string.o analysis.o
+OBJ = solve-poly.o main.o atlas-style.o root-tuple.o trim.o progress-bar.o bool-to-string.o analysis.o
 BIN = analysis
 LIB = lib
 SRC = src
@@ -14,6 +14,9 @@ HOSTNAME := $(shell hostname)
 ifeq ($(HOSTNAME), Sunder)
 	BOOSTCFLAGS = -isystem /usr/local/Cellar/boost/1.63.0/include
 	BOOSTLIB = -L /usr/local/Cellar/boost/1.63.0/lib
+	DELPHES = -isystem /usr/local/Cellar/madgraph5_amcatnlo/2.5.2/Delphes
+	# -isystem /usr/local/Cellar/madgraph5_amcatnlo/2.5.2/Delphes/external
+	DELPHESLIBS = -L /usr/local/Cellar/madgraph5_amcatnlo/2.5.2/Delphes -L /usr/local/Cellar/madgraph5_amcatnlo/2.5.2/ExRootAnalysis
 else ifeq ($(HOSTNAME), cyan03)
 	BOOSTCFLAGS = -I /local/software/boost/1.60.0/include
 	BOOSTLIB = -L /local/software/boost/1.60.0/lib
@@ -25,8 +28,8 @@ endif
 BOOSTLIBS = $(BOOSTLIB) -lboost_system -lboost_program_options
 
 C = c++
-CFLAGS = $(ROOTCFLAGS) $(BOOSTCFLAGS)
-LIBS = $(ROOTLIBS) $(BOOSTLIBS)
+CFLAGS = $(ROOTCFLAGS) $(BOOSTCFLAGS) $(DELPHES)
+LIBS = $(ROOTLIBS) $(BOOSTLIBS) $(DELPHESLIBS)
 
 # Compile all files ending in .cpp in SRC
 $(LIB)/%.o: $(SRC)/%.cpp

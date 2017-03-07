@@ -4,16 +4,21 @@
 #include <fstream>
 #include "TH2.h"
 #include "TF1.h"
+#include "TSystem.h"
 #include "TLorentzVector.h"
 #include "TVector2.h"
 #include "boost/algorithm/string.hpp"
 #include "boost/asio.hpp"
 #include "root-tuple.hpp"
-#include "events.hpp"
-#include "process.hpp"
 #include "atlas-style.hpp"
 #include "solve-poly.hpp"
 
+#include "classes/DelphesClasses.h"
+#include "external/ExRootAnalysis/ExRootTreeReader.h"
+#include "external/ExRootAnalysis/ExRootTreeWriter.h"
+#include "external/ExRootAnalysis/ExRootTreeBranch.h"
+#include "external/ExRootAnalysis/ExRootResult.h"
+#include "external/ExRootAnalysis/ExRootUtilities.h"
 
 class Analysis{
     Analysis();
@@ -28,13 +33,13 @@ class Analysis{
     int m_energy;
     int m_luminosity;
     TString m_tag;
-    std::string m_pdf = "CTEQ6l1";
-    // std::string m_pdf = "CT14LL";
+    std::string m_pdf = "CT14LL";
 
     bool m_xsec = true;
     bool m_fid = false;
+    bool m_iso = false;
     int m_reco;
-    double m_ytt = 0;
+    double m_ytt = 0.0;
     double m_Emin = -1;
     double m_Emax = -1;
     bool m_useLumi;
@@ -55,10 +60,8 @@ class Analysis{
     TFile* m_outputFile;
     std::vector<TString>* m_inputFiles;
     std::vector<TString>* m_weightFiles;
-    TChain* m_chainNtup;
-    events* m_ntup;
-    TChain* m_chainPtup;
-    process* m_ptup;
+    TChain* m_chain;
+    ExRootTreeReader* m_tree;
 
     std::vector<int> m_cutflow;
     std::vector<TString> m_cutNames;
@@ -78,10 +81,8 @@ class Analysis{
     };
 
     const double m_pi = 3.14159265358979323846;
-    // const double m_bmass = 4.18, m_Wmass = 80.23, m_tmass = 173.0;
     const double m_bmass = 4.18, m_Wmass = 80.4, m_tmass = 172.5;
     const int m_btags = 2;
-    // const double m_efficiency = 0.6;
     const double m_efficiency = 1.0;
 
     // Histograms
