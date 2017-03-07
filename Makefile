@@ -14,15 +14,17 @@ HOSTNAME := $(shell hostname)
 ifeq ($(HOSTNAME), Sunder)
 	BOOSTCFLAGS = -isystem /usr/local/Cellar/boost/1.63.0/include
 	BOOSTLIB = -L /usr/local/Cellar/boost/1.63.0/lib
-	DELPHES = -isystem /usr/local/Cellar/madgraph5_amcatnlo/2.5.2/Delphes
+	DELPHES = -isystem /afs/cern.ch/user/d/demillar/Delphes-3.4.0
 	# -isystem /usr/local/Cellar/madgraph5_amcatnlo/2.5.2/Delphes/external
-	DELPHESLIBS = -L /usr/local/Cellar/madgraph5_amcatnlo/2.5.2/Delphes -L /usr/local/Cellar/madgraph5_amcatnlo/2.5.2/ExRootAnalysis
+	DELPHESLIBS = -L /afs/cern.ch/user/d/demillar/Delphes-3.4.0 -L /usr/local/Cellar/madgraph5_amcatnlo/2.5.2/ExRootAnalysis
 else ifeq ($(HOSTNAME), cyan03)
 	BOOSTCFLAGS = -I /local/software/boost/1.60.0/include
 	BOOSTLIB = -L /local/software/boost/1.60.0/lib
 else
 	BOOSTCFLAGS = -I /afs/cern.ch/sw/lcg/external/Boost/1.60.0/include
 	BOOSTLIB = -L /afs/cern.ch/sw/lcg/external/Boost/1.60.0/lib
+	DELPHES = -isystem /afs/cern.ch/user/d/demillar/delphes/install/include
+	DELPHESLIBS = -L /afs/cern.ch/user/d/demillar/delphes/install/lib
 endif
 
 BOOSTLIBS = $(BOOSTLIB) -lboost_system -lboost_program_options
