@@ -7,6 +7,7 @@
 #include "TSystem.h"
 #include "TLorentzVector.h"
 #include "TVector2.h"
+#include "TClonesArray.h"
 #include "sys/stat.h"
 #include "boost/algorithm/string.hpp"
 #include "boost/asio.hpp"
@@ -15,11 +16,11 @@
 #include "solve-poly.hpp"
 
 #include "classes/DelphesClasses.h"
-#include "ExRootAnalysis/ExRootTreeReader.h"
-#include "ExRootAnalysis/ExRootTreeWriter.h"
-#include "ExRootAnalysis/ExRootTreeBranch.h"
-#include "ExRootAnalysis/ExRootResult.h"
-#include "ExRootAnalysis/ExRootUtilities.h"
+#include "external/ExRootAnalysis/ExRootTreeReader.h"
+#include "external/ExRootAnalysis/ExRootTreeWriter.h"
+#include "external/ExRootAnalysis/ExRootTreeBranch.h"
+#include "external/ExRootAnalysis/ExRootResult.h"
+#include "external/ExRootAnalysis/ExRootUtilities.h"
 
 class Analysis{
     Analysis();
@@ -76,6 +77,9 @@ class Analysis{
       c_eta,
       c_deltaR,
       c_MET,
+      c_twoElectrons,
+      c_oppositeCharge,
+      c_sufficientBtags,
       c_mtt,
       c_ytt,
       m_cuts // Keep as last entry
@@ -253,6 +257,8 @@ class Analysis{
     void GetChannelFactors();
     void AsymmetryUncertainty(TH1D*, TH1D*, TH1D*);
     void ResetCounters();
+    void GetBranches();
+    void EachFile(TString);
 
     TH1D* MakeALL();
     TH1D* MakeAL();
@@ -264,12 +270,19 @@ class Analysis{
     void UpdateCutflow(int, bool);
     bool PassFiducialCuts(const std::vector<TLorentzVector>&, const TLorentzVector&);
     bool PassCuts(const std::vector<TLorentzVector>&, const TLorentzVector&);
+    bool TwoElectrons();
+    bool OppositeCharge();
+    bool SufficientBtags(int);
     bool PassCutsMET(const std::vector<TLorentzVector>&, const TLorentzVector&);
     bool PassCutsMtt(const std::vector<TLorentzVector>&, const TLorentzVector&);
     bool PassCutsEta(const std::vector<TLorentzVector>&, const TLorentzVector&);
     bool PassCutsYtt(const std::vector<TLorentzVector>&, const TLorentzVector&);
     bool PassCutsET(const std::vector<TLorentzVector>&, const TLorentzVector&);
     bool PassCutsDeltaR(const std::vector<TLorentzVector>&, const TLorentzVector&);
+
+    TClonesArray* b_Jet;
+    TClonesArray* b_Electron;
+    TClonesArray* b_MET;
 
     TH1D* Asymmetry(const TString&, const TString&, TH1D*, TH1D*);
     std::vector<TLorentzVector> ReconstructSemilepton(const std::vector<TLorentzVector>&, const int);
