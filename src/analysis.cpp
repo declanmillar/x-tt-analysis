@@ -721,7 +721,6 @@ void Analysis::MakeHistograms()
     h2_mvis_deltaPhi->GetYaxis()->SetTitle("#Delta#phi_{l} [rad] / #pi");
     h2_mvis_deltaPhi->Sumw2();
 
-
     h2_KT_deltaPhi = new TH2D("KT_deltaphi", "K_{T} #Delta#phi_{l}", 40, 0, 4, 10, 0, 1);
     h2_KT_deltaPhi->GetXaxis()->SetTitle("K_{T} [TeV]");
     h2_KT_deltaPhi->GetYaxis()->SetTitle("#Delta#phi_{l} [rad] / #pi");
