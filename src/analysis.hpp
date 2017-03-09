@@ -37,7 +37,7 @@ class Analysis{
     TString m_tag;
     std::string m_pdf = "CT14LL";
 
-    bool m_xsec = true;
+    bool m_xsec = false;
     bool m_fid = false;
     bool m_iso = false;
     int m_reco;
@@ -47,7 +47,6 @@ class Analysis{
     bool m_useLumi;
     bool verbose = false;
 
-    int n;
     unsigned int m_nReco;
     unsigned int m_nQuarksMatched;
     unsigned int m_nNeutrinoMatched;
@@ -68,21 +67,18 @@ class Analysis{
     std::vector<int> m_cutflow;
     std::vector<TString> m_cutNames;
     enum m_cutlist{
-      c_entries,
-      c_topDecays,
-      c_antitopDecays,
-      c_events,
-      c_realSolutions,
-      c_Et,
-      c_eta,
-      c_deltaR,
-      c_MET,
-      c_twoElectrons,
-      c_oppositeCharge,
-      c_sufficientBtags,
-      c_mtt,
-      c_ytt,
-      m_cuts // Keep as last entry
+          c_events,
+          c_Et,
+          c_eta,
+          c_twoElectrons,
+          c_oppositeCharge,
+          c_sufficientBtags,
+          c_realSolutions,
+          c_MET,
+          c_mtt,
+          c_ytt,
+          c_deltaR,
+          m_cuts // Keep as last entry
     };
 
     const double m_pi = 3.14159265358979323846;
@@ -91,144 +87,98 @@ class Analysis{
     const double m_efficiency = 1.0;
 
     // Histograms
-    TH1D* h_mtt;
-    TH1D* h_mtt_R;
+    TH1D* h_pt_l1;
+    TH1D* h_eta_l1;
+    TH1D* h_pt_l2;
+    TH1D* h_eta_l2;
 
-    TH1D* h_mtt_tF;
-    TH1D* h_mtt_tF_R;
-    TH1D* h_mtt_tB;
-    TH1D* h_mtt_tB_R;
+    TH1D* h_pt_jets;
+    TH1D* h_eta_jets;
+    TH1D* h_pt_bjets;
+    TH1D* h_eta_bjets;
+    TH1D* h_pt_qjets;
+    TH1D* h_eta_qjets;
 
-    TH1D* h_mtt_tlF;
-    TH1D* h_mtt_tlF_R;
-    TH1D* h_mtt_tlB;
-    TH1D* h_mtt_tlB_R;
+    TH1D* h_HT;
+    TH1D* h_KT;
+    TH1D* h_mvis;
 
-    TH1D* h_mtt_tCF;
-    TH1D* h_mtt_tCF_R;
-    TH1D* h_mtt_tCB;
-    TH1D* h_mtt_tCB_R;
-
-    TH1D* h_mtt_lF;
-    TH1D* h_mtt_lB;
-
-    TH1D* h_mtt_philF;
-    TH1D* h_mtt_philB;
-
-    TH1D* h_mtt_ElF;
-    TH1D* h_mtt_ElB;
-
-    TH1D* h_mtt_LL;
-    TH1D* h_mtt_LR;
-    TH1D* h_mtt_RL;
-    TH1D* h_mtt_RR;
+    TH1D* h_deltaPhi;
 
     // t
     TH1D* h_pxt;
-    TH1D* h_pxt_R;
     TH1D* h_pyt;
-    TH1D* h_pyt_R;
     TH1D* h_pzt;
-    TH1D* h_pzt_R;
     TH1D* h_Et;
-    TH1D* h_Et_R;
     TH1D* h_pTt;
-    TH1D* h_pTt_R;
     TH1D* h_etat;
-    TH1D* h_etat_R;
     TH1D* h_phit;
-    TH1D* h_phit_R;
     TH1D* h_mt;
-    TH1D* h_mt_R;
 
     // tbar
     TH1D* h_pxtbar;
-    TH1D* h_pxtbar_R;
     TH1D* h_pytbar;
-    TH1D* h_pytbar_R;
     TH1D* h_pztbar;
-    TH1D* h_pztbar_R;
     TH1D* h_Etbar;
-    TH1D* h_Etbar_R;
     TH1D* h_pTtbar;
-    TH1D* h_pTtbar_R;
     TH1D* h_etatbar;
-    TH1D* h_etatbar_R;
     TH1D* h_phitbar;
-    TH1D* h_phitbar_R;
     TH1D* h_mtbar;
-    TH1D* h_mtbar_R;
+
+    // mtt
+    TH1D* h_mtt;
+    TH1D* h_mtt_tF;
+    TH1D* h_mtt_tB;
+    TH1D* h_mtt_tlF;
+    TH1D* h_mtt_tlB;
+    TH1D* h_mtt_tCF;
+    TH1D* h_mtt_tCB;
+    TH1D* h_mtt_lF;
+    TH1D* h_mtt_lB;
+    TH1D* h_mtt_philF;
+    TH1D* h_mtt_philB;
+    TH1D* h_mtt_ElF;
+    TH1D* h_mtt_ElB;
+
+    TH1D* h_ytt;
 
     TH1D* h_pv1x;
-    TH1D* h_pv1x_R;
     TH1D* h_pv1y;
-    TH1D* h_pv1y_R;
     TH1D* h_pv1z;
-    TH1D* h_pv1z_R;
     TH1D* h_pv2x;
-    TH1D* h_pv2x_R;
     TH1D* h_pv2y;
-    TH1D* h_pv2y_R;
     TH1D* h_pv2z;
-    TH1D* h_pv2z_R;
-    TH1D* h_ytt;
-    TH1D* h_ytt_R;
-    TH1D* h_deltaPhi;
     TH1D* h_cosTheta;
     TH1D* h_cosTheta1;
     TH1D* h_cosTheta2;
     TH1D* h_cos1cos2;
     TH1D* h_cosThetaStar;
-    TH1D* h_cosTheta_R;
-    TH1D* h_cosThetaStar_R;
     TH1D* h_costheta_tt;
-    TH1D* h_costheta_tt_R;
     TH1D* h_cutflow;
-    TH1D* h_HT;
-    TH1D* h_KT;
 
     // asymmetries
     TH1D* h_AtFB;
-    TH1D* h_AtFB_R;
     TH1D* h_AtC;
-    TH1D* h_AtC_R;
     TH1D* h_Ap;
     TH1D* h_AL1;
     TH1D* h_AL2;
-    TH1D* h_AL_R;
     TH1D* h_AtlFB;
-    TH1D* h_AtlFB_R;
     TH1D* h_Aphil;
     TH1D* h_AlEl;
     TH1D* h_AL;
     TH1D* h_ALL;
 
-    // performance
-    TH1D* h_pT_t_perf;
-    TH1D* h_pT_tbar_perf;
-    TH1D* h_costhetatt_perf;
-    TH1D* h_costhetatl_perf;
-    TH1D* h_costhetastar_perf;
-    TH1D* h_m_tt_perf;
-    TH2D* h2_m_tt_pT_t_perf;
-    TH2D* h2_m_tt_costheta_tt_perf;
-
     TH1D* h_deltaR_max;
     TH1D* h_deltaR_bW;
     TH1D* h_deltaR_tt;
 
-    std::vector<TH1D*> h_eta;
-    std::vector<TH1D*> h_pt;
-    std::vector<TH1D*> h_deltaRs;
-
     TH2D* h2_mtt_cosThetaStar;
-    TH2D* h2_mtt_cosThetaStar_R;
     TH2D* h2_mtt_deltaPhi;
     TH2D* h2_mtt_cosTheta1;
     TH2D* h2_mtt_cosTheta2;
-    TH2D* h2_mtt_cosThetal_R;
     TH2D* h2_mtt_cos1cos2;
     TH2D* h2_HT_deltaPhi;
+    TH2D* h2_mvis_deltaPhi;
     TH2D* h2_KT_deltaPhi;
     
   protected:
@@ -282,7 +232,8 @@ class Analysis{
 
     TClonesArray* b_Jet;
     TClonesArray* b_Electron;
-    TClonesArray* b_MET;
+    TClonesArray* b_MissingET;
+    TClonesArray* b_ScalarHT;
 
     TH1D* Asymmetry(const TString&, const TString&, TH1D*, TH1D*);
     std::vector<TLorentzVector> ReconstructSemilepton(const std::vector<TLorentzVector>&, const int);

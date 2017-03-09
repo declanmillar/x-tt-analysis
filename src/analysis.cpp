@@ -18,7 +18,6 @@ Analysis::Analysis(const TString& model, const TString& process, const TString& 
     m_chain(nullptr),
     m_tree(nullptr)
 { 
-    // gSystem->Load("libDelphes");
     this->PreLoop();
     this->Loop();
     this->PostLoop();
@@ -27,9 +26,7 @@ Analysis::Analysis(const TString& model, const TString& process, const TString& 
 
 void Analysis::EachEvent()
 {
-    UpdateCutflow(c_entries, true);
-
-    // If event contains at least 1 electron
+    UpdateCutflow(c_events, true);
 
     double weight = 1;
     double weight_R = 1;
@@ -38,15 +35,28 @@ void Analysis::EachEvent()
     if (!this->OppositeCharge()) return;
     if (!this->SufficientBtags(2)) return;
 
+    TLorentzVector pvis(0,0,0,0);
+
     std::vector<TLorentzVector> p_b, p_q, p_j, p_l(2);
-    for (int i; i < b_Jet->GetEntries(); i++)
+    for (int i = 0; i < b_Jet->GetEntries(); i++)
     {
       Jet *jet = (Jet*) b_Jet->At(i);
       TLorentzVector p;
       p.SetPtEtaPhiM(jet->PT, jet->Eta, jet->Phi, jet->Mass);
-      if (jet->BTag > 0) p_b.push_back(p);
-      else p_q.push_back(p);
+      if (jet->BTag > 0) {
+        p_b.push_back(p);
+        h_pt_bjets->Fill(p.Pt(), weight);
+        h_eta_bjets->Fill(p.Eta(), weight);
+      }
+      else {
+        p_q.push_back(p);
+        h_pt_qjets->Fill(p.Pt(), weight);
+        h_eta_qjets->Fill(p.Eta(), weight);
+      }
       p_j.push_back(p);
+      h_pt_jets->Fill(p.Pt(), weight);
+      h_eta_jets->Fill(p.Eta(), weight);
+      pvis += p; 
     }
 
     Electron *electron1 = (Electron*) b_Electron->At(0);
@@ -65,16 +75,25 @@ void Analysis::EachEvent()
         p_l.at(0).SetPtEtaPhiM(electron2->PT, electron2->Eta, electron2->Phi, 0);
     }
 
-    
+    MissingET *missingET = (MissingET*) b_MissingET;
+    TLorentzVector p_miss;
+    double ETmiss = missingET->MET;
+    p_miss.SetPtEtaPhiM(ETmiss, missingET->Eta, missingET->Phi, 0);
 
+    ScalarHT *scalarHT = (ScalarHT*) b_ScalarHT->At(0);
+    double HT = scalarHT->HT / 1000;
 
+    pvis = pvis + p_l.at(0) + p_l.at(1);
+    double mvis = pvis.M();
+    double pTvis = pvis.Pt();
+    double KT = sqrt(mvis * mvis + pTvis * pTvis) + ETmiss;
+    mvis = mvis / 1000;
+    KT = KT / 1000;
 
-    
-    // this->ReconstructDilepton();
- 
+    h_mvis->Fill(mvis, weight);
+    h_KT->Fill(KT, weight);
 
-
-
+    // this->ReconstructDilepton(p_b, p_l, p_miss);
 
     // double costheta_tt = cos(p_t.Angle(p_tbar.Vect()));
     // double delta_abs_yt = std::abs(p_t.Rapidity()) - std::abs(p_tbar.Rapidity());
@@ -82,6 +101,13 @@ void Analysis::EachEvent()
     // double costhetastar = int(ytt / std::abs(ytt)) * costheta;
     // std::vector<TLorentzVector> p_R1(n), pcm_R1(n), ptop_R1(n), patop_R1(n);
     // std::vector<TLorentzVector> p_R2(n), pcm_R2(n), ptop_R2(n), patop_R2(n);
+
+
+    h_pt_l1->Fill(p_l.at(0).Pt(), weight);
+    h_pt_l2->Fill(p_l.at(1).Pt(), weight);
+    h_eta_l1->Fill(p_l.at(0).Eta(), weight);
+    h_eta_l2->Fill(p_l.at(1).Eta(), weight);
+    h_HT->Fill(HT, weight);
 
 
     // if (this->PassCuts(p, P)) {
@@ -150,7 +176,7 @@ void Analysis::EachEvent()
     //         double costheta_tl1 = cos(ptop[2].Angle(pcm_t.Vect()));
     //         double costheta_tl2 = cos(patop[4].Angle(pcm_tbar.Vect()));
     //         double cos1cos2 = costheta_tl1 * costheta_tl2;
-    //         double deltaPhi = p[2].DeltaPhi(p[4]) / m_pi;
+    double deltaPhi = p_l.at(0).DeltaPhi(p_l.at(1)) / m_pi;
 
     //         TLorentzVector p_W = p[2] + p[3];
     //         double deltaR_bW = p_W.DeltaR(p[0]);
@@ -165,8 +191,6 @@ void Analysis::EachEvent()
 
     //         double phi0 = 0.7, E0 = 80;
 
-
-    //         h_HT->Fill(HT, weight);
     //         h_KT->Fill(KT, weight);
     //         h_pv1x->Fill(p[3].Px(), weight);
     //         h_pv1y->Fill(p[3].Py(), weight);
@@ -174,7 +198,7 @@ void Analysis::EachEvent()
     //         h_pv2x->Fill(p[5].Px(), weight);
     //         h_pv2y->Fill(p[5].Py(), weight);
     //         h_pv2z->Fill(p[5].Pz(), weight);
-    //         h_deltaPhi->Fill(deltaPhi, weight);
+    h_deltaPhi->Fill(deltaPhi, weight);
     //         h_cosTheta1->Fill(costheta_tl1, weight);
     //         h_cosTheta2->Fill(costheta_tl2, weight);
     //         h_cos1cos2->Fill(cos1cos2, weight);
@@ -206,8 +230,9 @@ void Analysis::EachEvent()
     //         h2_mtt_cosTheta1->Fill(mtt, costheta_tl1, weight);
     //         h2_mtt_cosTheta2->Fill(mtt, costheta_tl2, weight);
     //         h2_mtt_cos1cos2->Fill(mtt, cos1cos2, weight);
-    //         h2_HT_deltaPhi->Fill(HT, deltaPhi, weight);
-    //         h2_KT_deltaPhi->Fill(KT, deltaPhi, weight);
+    h2_HT_deltaPhi->Fill(HT, deltaPhi, weight);
+    h2_mvis_deltaPhi->Fill(mvis, deltaPhi, weight);
+    h2_KT_deltaPhi->Fill(KT, deltaPhi, weight);
 
 
     //         TLorentzVector P_R1, P_R2;
@@ -463,19 +488,18 @@ void Analysis::SetupOutputFiles()
 void Analysis::PostLoop()
 {
     this->CheckResults();
-    if (n < 6) this->TotalSpinAsymmetries();
     if (m_reco == 2) this->CheckPerformance();
     this->MakeDistributions();
-    this->WriteHistograms();
+    // this->WriteHistograms();
     this->PrintCutflow();
-    std::cout << std::endl << "output: " << m_outputFilename.Data() << std::endl;
+    std::cout << std::endl << "Output: " << m_outputFilename.Data() << std::endl;
 }
 
 
 void Analysis::CheckResults()
 {
     double sigma = h_mtt->Integral("width");
-    std::cout << "analysis cross section: " << sigma << " [fb]" << std::endl;
+    std::cout << "Analysis cross section: " << sigma << " [fb]" << std::endl;
 }
 
 
@@ -522,10 +546,32 @@ void Analysis::AsymmetryUncertainty(TH1D* hA, TH1D* h1, TH1D* h2)
 void Analysis::MakeHistograms()
 {
     double binWidth = 0.1;
-    double Emin = 3.05;
-    double Emax = 4.95;
+    double Emin = 0.05;
+    double Emax = 12.95;
     double nbins = (Emax - Emin) / binWidth;
-    std:: cout << "energy range: " << Emin << " - " << Emax << " [TeV]" << std::endl;
+    std:: cout << "Range:          " << Emin << " -- " << Emax << " [TeV]" << std::endl;
+
+    h_pt_l1 = new TH1D("pT_l1", "p^{l^{+}}_{T}", 40, 0, 1000);
+    h_pt_l1->Sumw2();
+    h_pt_l2 = new TH1D("pT_l2", "p^{l^{-}}_{T}", 40, 0, 1000);
+    h_pt_l2->Sumw2();
+    h_eta_l1 = new TH1D("eta_l1", "#eta_{l^{+}}", 60, -3, 3);
+    h_eta_l1->Sumw2();
+    h_eta_l2 = new TH1D("eta_l2", "#eta_{l^{-}}", 60, -3, 3);
+    h_eta_l2->Sumw2();
+
+    h_pt_jets = new TH1D("pT_jets", "p_{T}^{jets}", 40, 0, 5000);
+    h_pt_jets->Sumw2();
+    h_eta_jets = new TH1D("eta_jets", "#eta_{jets}", 60, -3, 3);
+    h_eta_jets->Sumw2(); 
+    h_pt_bjets = new TH1D("pT_bjets", "p_{T}^{b-jets}", 40, 0, 5000);
+    h_pt_bjets->Sumw2();
+    h_eta_bjets = new TH1D("eta_bjets", "#eta_{b-jets}", 60, -3, 3);
+    h_eta_bjets->Sumw2(); 
+    h_pt_qjets = new TH1D("pT_qjets", "p_{T}^{q-jets}", 40, 0, 5000);
+    h_pt_qjets->Sumw2();
+    h_eta_qjets = new TH1D("eta_qjets", "#eta_{q-jets}", 60, -3, 3);
+    h_eta_qjets->Sumw2();    
 
     h_mtt = new TH1D("m_tt", "m_{tt}", nbins, Emin, Emax);
     h_mtt->Sumw2();
@@ -583,434 +629,247 @@ void Analysis::MakeHistograms()
     h2_mtt_cosThetaStar->GetYaxis()->SetTitle("cos#theta^*");
     h2_mtt_cosThetaStar->Sumw2();
 
-    h2_mtt_cosThetaStar_R = new TH2D("mtt_costhetastar_R", "m_{tt} cos#theta^{*} (reco)", nbins, Emin, Emax, 10, -1.0, 1.0);
-    h2_mtt_cosThetaStar_R->GetXaxis()->SetTitle("m_{tt} (reco)");
-    h2_mtt_cosThetaStar_R->GetYaxis()->SetTitle("cos#theta^* (reco)");
-    h2_mtt_cosThetaStar_R->Sumw2();
-
     h_costheta_tt = new TH1D("costheta_tt", "cos#theta_{t,#bar{t}}", 20, -1.0, 1.0);
     h_costheta_tt->Sumw2();
 
-    h_mtt_LL = new TH1D("mtt_LL", "m_{tt}^{LL}", nbins, Emin, Emax);
-    h_mtt_LL->Sumw2();
-    h_mtt_LR = new TH1D("mtt_LR", "m_{tt}^{LR}", nbins, Emin, Emax);
-    h_mtt_LR->Sumw2();
-    h_mtt_RL = new TH1D("mtt_RL", "m_{tt}^{RL}", nbins, Emin, Emax);
-    h_mtt_RL->Sumw2();
-    h_mtt_RR = new TH1D("mtt_RR", "m_{tt}^{RR}", nbins, Emin, Emax);
-    h_mtt_RR->Sumw2();
+    // AtlFB
+    h_mtt_tlF = new TH1D("mtt_tlF", "m_{tt}^{tlF}", nbins, Emin, Emax);
+    h_mtt_tlF->Sumw2();
+    h_mtt_tlB = new TH1D("mtt_tlB", "m_{tt}^{tlB}", nbins, Emin, Emax);
+    h_mtt_tlB->Sumw2();
 
-    if (true) {
+    // Aphil
+    h_mtt_philF = new TH1D("mtt_philF", "m_{tt}^{philF}", nbins, Emin, Emax);
+    h_mtt_philF->Sumw2();
+    h_mtt_philB = new TH1D("mtt_philB", "m_{tt}^{philB}", nbins, Emin, Emax);
+    h_mtt_philB->Sumw2();
 
-        // AtlFB
-        h_mtt_tlF = new TH1D("mtt_tlF", "m_{tt}^{tlF}", nbins, Emin, Emax);
-        h_mtt_tlF->Sumw2();
-        h_mtt_tlB = new TH1D("mtt_tlB", "m_{tt}^{tlB}", nbins, Emin, Emax);
-        h_mtt_tlB->Sumw2();
+    // AlEl
+    h_mtt_ElF = new TH1D("mtt_ElF", "m_{tt}^{ElF}", nbins, Emin, Emax);
+    h_mtt_ElF->Sumw2();
+    h_mtt_ElB = new TH1D("mtt_ElB", "m_{tt}^{ElB}", nbins, Emin, Emax);
+    h_mtt_ElB->Sumw2();
 
-        // Aphil
-        h_mtt_philF = new TH1D("mtt_philF", "m_{tt}^{philF}", nbins, Emin, Emax);
-        h_mtt_philF->Sumw2();
-        h_mtt_philB = new TH1D("mtt_philB", "m_{tt}^{philB}", nbins, Emin, Emax);
-        h_mtt_philB->Sumw2();
+    h_cosTheta = new TH1D("costheta", "cos#theta", nbins, -1.0, 1.0);
+    h_cosTheta->Sumw2();
+    h_cosThetaStar = new TH1D("costheta_star", "cos#theta^{*}", nbins, -1.0, 1.0);
+    h_cosThetaStar->Sumw2();
 
-        // AlEl
-        h_mtt_ElF = new TH1D("mtt_ElF", "m_{tt}^{ElF}", nbins, Emin, Emax);
-        h_mtt_ElF->Sumw2();
-        h_mtt_ElB = new TH1D("mtt_ElB", "m_{tt}^{ElB}", nbins, Emin, Emax);
-        h_mtt_ElB->Sumw2();
+    h_HT = new TH1D("HT", "H_{T}", 40, 0, 4);
+    h_HT->Sumw2();
 
-        h_cosTheta = new TH1D("costheta", "cos#theta", nbins, -1.0, 1.0);
-        h_cosTheta->Sumw2();
-        h_cosThetaStar = new TH1D("costheta_star", "cos#theta^{*}", nbins, -1.0, 1.0);
-        h_cosThetaStar->Sumw2();
+    h_KT = new TH1D("KT", "K_{T}", 40, 0, 4);
+    h_KT->Sumw2();
 
-        h_HT = new TH1D("HT", "H_{T}", 40, 0, 4);
-        h_HT->Sumw2();
+    h_mvis = new TH1D("mvis", "m_{vis}", 40, 0, 4);
+    h_mvis->Sumw2();
 
-        h_KT = new TH1D("KT", "K_{T}", 40, 0, 4);
-        h_KT->Sumw2();
+    h_deltaPhi = new TH1D("delta_phi", "#Delta#phi", 10, 0, 1);
+    h_deltaPhi->Sumw2();
+    h_pv1x = new TH1D("pv1x", "p_{x}^{#nu_{1}}", nbins, -500.0, 500.0);
+    h_pv1x->Sumw2();
+    h_pv1y = new TH1D("pv1y", "p_{y}^{#nu_{1}}", nbins, -500.0, 500.0);
+    h_pv1y->Sumw2();
+    h_pv1z = new TH1D("pv1z", "p_{z}^{#nu_{1}}", nbins, -500.0, 500.0);
+    h_pv1z->Sumw2();
+    h_pv2x = new TH1D("pv2x", "p_{x}^{#nu_{2}}", nbins, -500.0, 500.0);
+    h_pv2x->Sumw2();
+    h_pv2y = new TH1D("pv2y", "p_{y}^{#nu_{2}}", nbins, -500.0, 500.0);
+    h_pv2y->Sumw2();
+    h_pv2z = new TH1D("pv2z", "p_{z}^{#nu_{2}}", nbins, -500.0, 500.0);
+    h_pv2z->Sumw2();
 
-        h_deltaPhi = new TH1D("delta_phi", "#Delta#phi", 10, 0, 1);
-        h_deltaPhi->Sumw2();
-        h_pv1x = new TH1D("pv1x", "p_{x}^{#nu_{1}}", nbins, -500.0, 500.0);
-        h_pv1x->Sumw2();
-        h_pv1y = new TH1D("pv1y", "p_{y}^{#nu_{1}}", nbins, -500.0, 500.0);
-        h_pv1y->Sumw2();
-        h_pv1z = new TH1D("pv1z", "p_{z}^{#nu_{1}}", nbins, -500.0, 500.0);
-        h_pv1z->Sumw2();
-        h_pv2x = new TH1D("pv2x", "p_{x}^{#nu_{2}}", nbins, -500.0, 500.0);
-        h_pv2x->Sumw2();
-        h_pv2y = new TH1D("pv2y", "p_{y}^{#nu_{2}}", nbins, -500.0, 500.0);
-        h_pv2y->Sumw2();
-        h_pv2z = new TH1D("pv2z", "p_{z}^{#nu_{2}}", nbins, -500.0, 500.0);
-        h_pv2z->Sumw2();
+    h_cosTheta1 = new TH1D("costheta_tl1", "cos#theta_{t,l+}", 10, -1.0, 1.0);
+    h_cosTheta1->Sumw2();
+    h_cosTheta2 = new TH1D("costheta_tl2", "cos#theta_{t,l-}", 10, -1.0, 1.0);
+    h_cosTheta2->Sumw2();
+    h_cos1cos2 = new TH1D("cos1cos2", "cos#theta_{t,l+}cos#theta_{t,l-}", 20, -1.0, 1.0);
+    h_cos1cos2->Sumw2();
+
+    h_mtt_lF = new TH1D("mtt_lF", "m_{tt}^{F,l}", nbins, Emin, Emax);
+    h_mtt_lF->Sumw2();
+    h_mtt_lB = new TH1D("mtt_lB", "m_{tt}^{B,l}", nbins, Emin, Emax);
+    h_mtt_lB->Sumw2();
+
+    h2_mtt_deltaPhi = new TH2D("mtt_deltaphi", "m_{tt} #Delta#phi_{l}", nbins, Emin, Emax, 10, 0, 1);
+    h2_mtt_deltaPhi->GetXaxis()->SetTitle("m_{tt}");
+    h2_mtt_deltaPhi->GetYaxis()->SetTitle("#Delta#phi_{l}");
+    h2_mtt_deltaPhi->Sumw2();
+
+    h2_mtt_cosTheta1 = new TH2D("mtt_costheta_tl1", "m_{tt} cos#theta_{t,l+}", nbins, Emin, Emax, 10, -1.0, 1.0);
+    h2_mtt_cosTheta1->GetXaxis()->SetTitle("m_{tt} [TeV]");
+    h2_mtt_cosTheta1->GetYaxis()->SetTitle("cos#theta_{l+}");
+    h2_mtt_cosTheta1->Sumw2();
+
+    h2_mtt_cosTheta2 = new TH2D("mtt_costheta_tl2", "m_{tt} cos#theta_{t,l-}", nbins, Emin, Emax, 10, -1.0, 1.0);
+    h2_mtt_cosTheta2->GetXaxis()->SetTitle("m_{tt} [TeV]");
+    h2_mtt_cosTheta2->GetYaxis()->SetTitle("cos#theta_{l-}");
+    h2_mtt_cosTheta2->Sumw2();
+
+    h2_mtt_cos1cos2 = new TH2D("mtt_cos1cos2", "m_{tt} cos#theta_{l+}cos#theta_{l-}", nbins, Emin, Emax, 20, -1.0, 1.0);
+    h2_mtt_cos1cos2->GetXaxis()->SetTitle("m_{tt}");
+    h2_mtt_cos1cos2->GetYaxis()->SetTitle("cos#theta_{l+}cos#theta_{l-}");
+    h2_mtt_cos1cos2->Sumw2();
+
+    h2_HT_deltaPhi = new TH2D("HT_deltaphi", "H_{T} #Delta#phi_{l}", 40, 0, 4, 10, 0, 1);
+    h2_HT_deltaPhi->GetXaxis()->SetTitle("H_{T} [TeV]");
+    h2_HT_deltaPhi->GetYaxis()->SetTitle("#Delta#phi_{l} [rad] / #pi");
+    h2_HT_deltaPhi->Sumw2();
+
+    h2_mvis_deltaPhi = new TH2D("mvis_deltaphi", "m_{vis} #Delta#phi_{l}", 40, 0, 4, 10, 0, 1);
+    h2_mvis_deltaPhi->GetXaxis()->SetTitle("m_{vis} [TeV]");
+    h2_mvis_deltaPhi->GetYaxis()->SetTitle("#Delta#phi_{l} [rad] / #pi");
+    h2_mvis_deltaPhi->Sumw2();
 
 
-        h_cosTheta1 = new TH1D("costheta_tl1", "cos#theta_{t,l+}", 10, -1.0, 1.0);
-        h_cosTheta1->Sumw2();
-        h_cosTheta2 = new TH1D("costheta_tl2", "cos#theta_{t,l-}", 10, -1.0, 1.0);
-        h_cosTheta2->Sumw2();
-        h_cos1cos2 = new TH1D("cos1cos2", "cos#theta_{t,l+}cos#theta_{t,l-}", 20, -1.0, 1.0);
-        h_cos1cos2->Sumw2();
+    h2_KT_deltaPhi = new TH2D("KT_deltaphi", "K_{T} #Delta#phi_{l}", 40, 0, 4, 10, 0, 1);
+    h2_KT_deltaPhi->GetXaxis()->SetTitle("K_{T} [TeV]");
+    h2_KT_deltaPhi->GetYaxis()->SetTitle("#Delta#phi_{l} [rad] / #pi");
+    h2_KT_deltaPhi->Sumw2();
 
-        h_mtt_lF = new TH1D("mtt_lF", "m_{tt}^{F,l}", nbins, Emin, Emax);
-        h_mtt_lF->Sumw2();
-        h_mtt_lB = new TH1D("mtt_lB", "m_{tt}^{B,l}", nbins, Emin, Emax);
-        h_mtt_lB->Sumw2();
+    h_deltaR_tt = new TH1D("deltaR_tt", "#Delta R(t,#bar{t})", 100, 0, 5);
+    h_deltaR_tt->Sumw2();
 
-        h2_mtt_deltaPhi = new TH2D("mtt_deltaphi", "m_{tt} #Delta#phi_{l}", nbins, Emin, Emax, 10, 0, 1);
-        h2_mtt_deltaPhi->GetXaxis()->SetTitle("m_{tt}");
-        h2_mtt_deltaPhi->GetYaxis()->SetTitle("#Delta#phi_{l}");
-        h2_mtt_deltaPhi->Sumw2();
-
-        h2_mtt_cosTheta1 = new TH2D("mtt_costheta_tl1", "m_{tt} cos#theta_{t,l+}", nbins, Emin, Emax, 10, -1.0, 1.0);
-        h2_mtt_cosTheta1->GetXaxis()->SetTitle("m_{tt} [TeV]");
-        h2_mtt_cosTheta1->GetYaxis()->SetTitle("cos#theta_{l+}");
-        h2_mtt_cosTheta1->Sumw2();
-
-        h2_mtt_cosTheta2 = new TH2D("mtt_costheta_tl2", "m_{tt} cos#theta_{t,l-}", nbins, Emin, Emax, 10, -1.0, 1.0);
-        h2_mtt_cosTheta2->GetXaxis()->SetTitle("m_{tt} [TeV]");
-        h2_mtt_cosTheta2->GetYaxis()->SetTitle("cos#theta_{l-}");
-        h2_mtt_cosTheta2->Sumw2();
-
-        h2_mtt_cosThetal_R = new TH2D("mtt_costhetal_R", "m_{tt} cos#theta_{t,l} (reco)", nbins, Emin, Emax, 10, -1.0, 1.0);
-        h2_mtt_cosThetal_R->GetXaxis()->SetTitle("m_{tt} (reco) [TeV]");
-        h2_mtt_cosThetal_R->GetYaxis()->SetTitle("cos#theta_{l}");
-        h2_mtt_cosThetal_R->Sumw2();
-
-        h2_mtt_cos1cos2 = new TH2D("mtt_cos1cos2", "m_{tt} cos#theta_{l+}cos#theta_{l-}", nbins, Emin, Emax, 20, -1.0, 1.0);
-        h2_mtt_cos1cos2->GetXaxis()->SetTitle("m_{tt}");
-        h2_mtt_cos1cos2->GetYaxis()->SetTitle("cos#theta_{l+}cos#theta_{l-}");
-        h2_mtt_cos1cos2->Sumw2();
-
-        h2_HT_deltaPhi = new TH2D("HT_deltaphi", "H_{T} #Delta#phi_{l}", 40, 0, 4, 10, 0, 1);
-        h2_HT_deltaPhi->GetXaxis()->SetTitle("H_{T} [TeV]");
-        h2_HT_deltaPhi->GetYaxis()->SetTitle("#Delta#phi_{l} [rad] / #pi");
-        h2_HT_deltaPhi->Sumw2();
-
-        h2_KT_deltaPhi = new TH2D("KT_deltaphi", "K_{T} #Delta#phi_{l}", 40, 0, 4, 10, 0, 1);
-        h2_KT_deltaPhi->GetXaxis()->SetTitle("K_{T} [TeV]");
-        h2_KT_deltaPhi->GetYaxis()->SetTitle("#Delta#phi_{l} [rad] / #pi");
-        h2_KT_deltaPhi->Sumw2();
-
-        std::vector<string> deltaRnames, deltaRtitles;
-        std::vector<string> n_eta, t_eta, n_pt, t_pt;
-
-        std::vector<string> particles1 = {"b1", "b2", "l", "v", "q1", "q2"};
-        std::vector<string> particles2 = {"b", "#bar{b}", "l+", "#nu", "q", "#bar{q}'"};
-
-        for (int i = 0; i < 6; i++ ) {
-            n_eta.push_back("eta_" + particles1[i]);
-            t_eta.push_back("#eta_{" + particles2[i] + "}");
-        }
-
-        for (int i = 0; i < 6; i++ ) {
-            n_pt.push_back("pT_" + particles1[i]);
-            t_pt.push_back("p_{T}^{" + particles2[i] + "}");
-        }
-
-        for (int i = 0; i < 6; i++ ) {
-            for (int j = i + 1; j < 6; j++) {
-                deltaRnames.push_back("delta_R" + particles1[i] + particles1[j]);
-                deltaRtitles.push_back("#Delta R(" + particles2[i] + "," + particles2[j] + ")");
-            }
-        }
-
-        h_deltaR_tt = new TH1D("deltaR_tt", "#Delta R(t,#bar{t})", 100, 0, 5);
-        h_deltaR_tt->Sumw2();
-
-        h_deltaR_bW = new TH1D("deltaR_bW", "#Delta R(b,W)", 100, 0, 5);
-        h_deltaR_bW->Sumw2();
-        h_deltaR_max = new TH1D("deltaR_max", "#Delta R_{max}", 100, 0, 5);
-        h_deltaR_max->Sumw2();
-
-        for (int i = 0; i < (int) deltaRnames.size(); i++)
-            h_deltaRs.push_back(new TH1D(deltaRnames[i].c_str(), deltaRtitles[i].c_str(), 100, 0, 5));
-
-        for (int i = 0; i < (int) n_eta.size(); i++) {
-            h_eta.push_back(new TH1D(n_eta[i].c_str(), t_eta[i].c_str(), 100, 0, 5));
-            h_pt.push_back(new TH1D(n_pt[i].c_str(), t_pt[i].c_str(), 80, 0, 2000));
-        }
-
-        if (m_reco > 0) {
-            h_mtt_R = new TH1D("mtt_R", "m_{tt}^{reco}", nbins, Emin, Emax);
-            h_mtt_R->Sumw2();
-
-            h_pxt_R = new TH1D("px_t_R", "p_{x}_{t} (reco)", 100, 0, 5000);
-            h_pxt_R->Sumw2();
-            h_pyt_R = new TH1D("py_t_R", "p_{y}_{t} (reco)", 100, 0, 5000);
-            h_pyt_R->Sumw2();
-            h_pzt_R = new TH1D("pz_t_R", "p_{z}^{t} (reco)", 100, 0, 5000);
-            h_pzt_R->Sumw2();
-            h_Et_R = new TH1D("E_t_R", "E_{t} (reco)", 100, 0, 5000);
-            h_Et_R->Sumw2();
-            h_pTt_R = new TH1D("pT_t_R", "p_{T}^{t} (reco)", 100, 0, 5000);
-            h_pTt_R->Sumw2();
-            h_etat_R = new TH1D("eta_t_R", "#eta_{t} (reco)", nbins, 0, 10);
-            h_etat_R->Sumw2();
-            h_phit_R = new TH1D("phi_t_R", "#phi_{t} (reco)", nbins, -1, 1);
-            h_phit_R->Sumw2();
-            h_mt_R = new TH1D("m_t_R", "m_{t} (reco)", 40, 100, 300);
-            h_mt_R->Sumw2();
-
-            h_pxtbar_R = new TH1D("px_tbar_R", "p_{x}_{#bar{t}} (reco)", 100, 0, 5000);
-            h_pxtbar_R->Sumw2();
-            h_pytbar_R = new TH1D("py_tbar_R", "p_{y}_{#bar{t}} (reco)", 100, 0, 5000);
-            h_pytbar_R->Sumw2();
-            h_pztbar_R = new TH1D("pz_tbar_R", "p_{z}^{#bar{t}} (reco)", 100, 0, 5000);
-            h_pztbar_R->Sumw2();
-            h_Etbar_R = new TH1D("E_tbar_R", "E_{#bar{t}} (reco)", 100, 0, 5000);
-            h_Etbar_R->Sumw2();
-            h_pTtbar_R = new TH1D("pT_tbar_R", "p_{T}^{#bar{t}} (reco)", 100, 0, 5000);
-            h_pTtbar_R->Sumw2();
-            h_etatbar_R = new TH1D("eta_tbar_R", "#eta_{#bar{t}} (reco)", nbins, 0, 10);
-            h_etatbar_R->Sumw2();
-            h_phitbar_R = new TH1D("phi_tbar_R", "#phi_{#bar{t}} (reco)", nbins, -1, 1);
-            h_phitbar_R->Sumw2();
-            h_mtbar_R = new TH1D("m_tbar_R", "m_{#bar{t}} (reco)", 40, 100, 300);
-            h_mtbar_R->Sumw2();
-
-            h_costheta_tt_R = new TH1D("costheta_tt_R", "cos#theta_{t,#bar{t}} (reco)", 20, -1.0, 1.0);
-            h_mtt_tF_R = new TH1D("mtt_FR", "m_{tt}^{forward} (reco)", nbins, Emin, Emax);
-            h_mtt_tF_R->Sumw2();
-            h_mtt_tB_R = new TH1D("mtt_BR", "m_{tt}^{backward} (reco)", nbins, Emin, Emax);
-            h_mtt_tB_R->Sumw2();
-            h_ytt_R = new TH1D("ytt_R", "y_{tt}^{reco}", 50, -2.5, 2.5);
-            h_ytt_R->Sumw2();
-            h_cosTheta_R = new TH1D("costheta_R", "cos#theta_{reco}", nbins, -1.0, 1.0);
-            h_cosTheta_R->Sumw2();
-            h_cosThetaStar_R = new TH1D("costhetastar_R", "cos#theta_{reco}^{*}", nbins, -1.0, 1.0);
-            h_cosThetaStar_R->Sumw2();
-            h_pv1x_R = new TH1D("pv1x_R", "p_{x}^{#nu_{1}} (reco", nbins, -500.0, 500.0);
-            h_pv1x_R->Sumw2();
-            h_pv1y_R = new TH1D("pv1y_R", "p_{y}^{#nu_{1}} (reco", nbins, -500.0, 500.0);
-            h_pv1y_R->Sumw2();
-            h_pv1z_R = new TH1D("pv1z_R", "p_{z}^{#nu_{1}} (reco", nbins, -500.0, 500.0);
-            h_pv1z_R->Sumw2();
-            h_pv2x_R = new TH1D("pv2x_R", "p_{x}^{#nu_{2}} (reco", nbins, -500.0, 500.0);
-            h_pv2x_R->Sumw2();
-            h_pv2y_R = new TH1D("pv2y_R", "p_{y}^{#nu_{2}} (reco", nbins, -500.0, 500.0);
-            h_pv2y_R->Sumw2();
-            h_pv2z_R = new TH1D("pv2z_R", "p_{z}^{#nu_{2}} (reco", nbins, -500.0, 500.0);
-            h_pv2z_R->Sumw2();
-
-            h_pT_t_perf = new TH1D("pT_t_perf", "p_{T}^{t} performance", 111, -10.05, 1.05);
-            h_pT_t_perf->Sumw2();
-            h_pT_tbar_perf = new TH1D("pT_tbar_perf", "p_{T}^{#bar{t}} performance", 111, -10.05, 1.05);
-            h_pT_tbar_perf->Sumw2();
-            h_costhetastar_perf = new TH1D("costhetastar_perf", "cos#theta^{*} performance", 101, -5.05, 5.05);
-            h_costhetastar_perf->Sumw2();
-            h_costhetatl_perf = new TH1D("costhetatl_perf", "cos#theta_{t,l} performance", 101, -5.05, 5.05);
-            h_costhetatl_perf->Sumw2();
-            h_costhetatt_perf = new TH1D("costheta_tt_perf", "cos#theta_{t#bar{t}} performance", 101, -5.05, 5.05);
-            h_costhetatt_perf->Sumw2();
-            // h_m_tt_perf = new TH1D("m_tt_perf", "m_{t#bar{t}} performance", 111, -10.05, 1.05);
-            h_m_tt_perf = new TH1D("m_tt_perf", "m_{t#bar{t}} performance", 21, -1.05, 1.05);
-            h_m_tt_perf->Sumw2();
-            h2_m_tt_costheta_tt_perf = new TH2D("m_tt_costheta_tt_perf", "m_{t#bar{t}} cos#theta_{t#bar{t}} performance", 111, -10.05, 1.05, 101, -5.05, 5.05);
-            h2_m_tt_costheta_tt_perf->Sumw2();
-            h2_m_tt_pT_t_perf = new TH2D("m_tt_pT_t_perf", "m_{t#bar{t}} p_{T}^{#bar{t}} performance", 111, -10.05, 1.05, 111, -10.05, 1.05);
-            h2_m_tt_pT_t_perf->Sumw2();
-        }
-    }
+    h_deltaR_bW = new TH1D("deltaR_bW", "#Delta R(b,W)", 100, 0, 5);
+    h_deltaR_bW->Sumw2();
+    h_deltaR_max = new TH1D("deltaR_max", "#Delta R_{max}", 100, 0, 5);
+    h_deltaR_max->Sumw2();
 }
 
 
 void Analysis::MakeDistributions()
 {
-    this->MakeDistribution1D(h_mtt, "TeV");
-    this->MakeDistribution1D(h_ytt, "");
+    std::cout << "Making distributions ..." << std::endl;
+    // this->MakeDistribution1D(h_mtt, "TeV");
+    // this->MakeDistribution1D(h_ytt, "");
 
-    this->MakeDistribution1D(h_pxt, "GeV");
-    this->MakeDistribution1D(h_pyt, "GeV");
-    this->MakeDistribution1D(h_pzt, "GeV");
-    this->MakeDistribution1D(h_Et, "GeV");
-    this->MakeDistribution1D(h_pTt, "GeV");
-    this->MakeDistribution1D(h_etat, "");
-    this->MakeDistribution1D(h_phit, "");
-    this->MakeDistribution1D(h_mt, "GeV");
+    // this->MakeDistribution1D(h_pxt, "GeV");
+    // this->MakeDistribution1D(h_pyt, "GeV");
+    // this->MakeDistribution1D(h_pzt, "GeV");
+    // this->MakeDistribution1D(h_Et, "GeV");
+    // this->MakeDistribution1D(h_pTt, "GeV");
+    // this->MakeDistribution1D(h_etat, "");
+    // this->MakeDistribution1D(h_phit, "");
+    // this->MakeDistribution1D(h_mt, "GeV");
 
-    this->MakeDistribution1D(h_pxtbar, "GeV");
-    this->MakeDistribution1D(h_pytbar, "GeV");
-    this->MakeDistribution1D(h_pztbar, "GeV");
-    this->MakeDistribution1D(h_Etbar, "GeV");
-    this->MakeDistribution1D(h_pTtbar, "GeV");
-    this->MakeDistribution1D(h_etatbar, "");
-    this->MakeDistribution1D(h_phitbar, "");
-    this->MakeDistribution1D(h_mtbar, "GeV");
+    // this->MakeDistribution1D(h_pxtbar, "GeV");
+    // this->MakeDistribution1D(h_pytbar, "GeV");
+    // this->MakeDistribution1D(h_pztbar, "GeV");
+    // this->MakeDistribution1D(h_Etbar, "GeV");
+    // this->MakeDistribution1D(h_pTtbar, "GeV");
+    // this->MakeDistribution1D(h_etatbar, "");
+    // this->MakeDistribution1D(h_phitbar, "");
+    // this->MakeDistribution1D(h_mtbar, "GeV");
 
-    this->MakeDistribution1D(h_cosTheta, "");
-    this->MakeDistribution1D(h_cosThetaStar, "");
-    this->MakeDistribution1D(h_costheta_tt, "");
+    // this->MakeDistribution1D(h_cosTheta, "");
+    // this->MakeDistribution1D(h_cosThetaStar, "");
+    // this->MakeDistribution1D(h_costheta_tt, "");
 
-    this->MakeDistribution1D(h_mtt_tF, "TeV");
-    this->MakeDistribution1D(h_mtt_tB, "TeV");
+    // this->MakeDistribution1D(h_mtt_tF, "TeV");
+    // this->MakeDistribution1D(h_mtt_tB, "TeV");
 
-    h_AtFB = this->Asymmetry("AtFB", "A^{t}_{FB^{*}}", h_mtt_tF, h_mtt_tB);
-    h_AtFB->GetYaxis()->SetTitle(h_AtFB->GetTitle());
-    h_AtFB->GetXaxis()->SetTitle("m_{tt} [TeV]");
-    h_AtFB->Write();
+    // h_AtFB = this->Asymmetry("AtFB", "A^{t}_{FB^{*}}", h_mtt_tF, h_mtt_tB);
+    // h_AtFB->GetYaxis()->SetTitle(h_AtFB->GetTitle());
+    // h_AtFB->GetXaxis()->SetTitle("m_{tt} [TeV]");
+    // h_AtFB->Write();
 
-    this->MakeDistribution1D(h_mtt_tCF, "TeV");
-    this->MakeDistribution1D(h_mtt_tCB, "TeV");
+    // this->MakeDistribution1D(h_mtt_tCF, "TeV");
+    // this->MakeDistribution1D(h_mtt_tCB, "TeV");
 
-    h_AtC = this->Asymmetry("AtC", "A^{t}_{C}", h_mtt_tCF, h_mtt_tCB);
-    h_AtC->GetYaxis()->SetTitle(h_AtC->GetTitle());
-    h_AtC->GetXaxis()->SetTitle("m_{tt} [TeV]");
-    h_AtC->Write();
+    // h_AtC = this->Asymmetry("AtC", "A^{t}_{C}", h_mtt_tCF, h_mtt_tCB);
+    // h_AtC->GetYaxis()->SetTitle(h_AtC->GetTitle());
+    // h_AtC->GetXaxis()->SetTitle("m_{tt} [TeV]");
+    // h_AtC->Write();
 
-    if (n < 6) {
-        this->MakeDistribution1D(h_mtt_LL, "TeV");
-        this->MakeDistribution1D(h_mtt_LR, "TeV");
-        this->MakeDistribution1D(h_mtt_RL, "TeV");
-        this->MakeDistribution1D(h_mtt_RR, "TeV");
+    this->MakeDistribution1D(h_pt_l1, "TeV");
+    this->MakeDistribution1D(h_eta_l1, "");
+    this->MakeDistribution1D(h_pt_l2, "TeV");
+    this->MakeDistribution1D(h_eta_l2, "");
+    this->MakeDistribution1D(h_pt_jets, "TeV");
+    this->MakeDistribution1D(h_eta_jets, "");
+    this->MakeDistribution1D(h_pt_bjets, "TeV");
+    this->MakeDistribution1D(h_eta_bjets, "");
+    this->MakeDistribution1D(h_pt_qjets, "TeV");
+    this->MakeDistribution1D(h_eta_qjets, "");
 
-        h_ALL = this->MakeALL();
-        h_ALL->GetYaxis()->SetTitle(h_ALL->GetTitle());
-        h_ALL->GetXaxis()->SetTitle("m_{tt} [TeV]");
-        h_ALL->GetYaxis()->SetTitleOffset(0.9);
-        h_ALL->GetXaxis()->SetTitleOffset(0.95);
-
-        h_AL = this->MakeAL();
-        h_AL->GetYaxis()->SetTitle(h_AL->GetTitle());
-        h_AL->GetXaxis()->SetTitle("m_{tt} [TeV]");
-        h_AL->GetYaxis()->SetTitleOffset(0.9);
-        h_AL->GetXaxis()->SetTitleOffset(0.95);
-    }
-
-    if (n == 6) {
  
-        this->MakeDistribution1D(h_HT, "TeV");
-        this->MakeDistribution1D(h_KT, "TeV");
+    this->MakeDistribution1D(h_HT, "TeV");
+    this->MakeDistribution1D(h_KT, "TeV");
+    this->MakeDistribution1D(h_mvis, "TeV");
 
-        this->MakeDistribution1D(h_cosTheta1, "");
-        this->MakeDistribution1D(h_cosTheta2, "");
-        this->MakeDistribution1D(h_cos1cos2, "");
-        this->MakeDistribution1D(h_deltaPhi, "rad / #pi");
+    // this->MakeDistribution1D(h_cosTheta1, "");
+    // this->MakeDistribution1D(h_cosTheta2, "");
+    // this->MakeDistribution1D(h_cos1cos2, "");
+    this->MakeDistribution1D(h_deltaPhi, "rad / #pi");
 
-        this->MakeDistribution1D(h_mtt_tlF, "TeV");
-        this->MakeDistribution1D(h_mtt_tlB, "TeV");
-        
-        h_AtlFB = this->Asymmetry("AtlFB", "A^{tl}_{FB^*}", h_mtt_tlF, h_mtt_tlB);
-        h_AtlFB->GetYaxis()->SetTitle(h_AtlFB->GetTitle());
-        h_AtlFB->GetXaxis()->SetTitle("m_{tt} [TeV]");
-        h_AtlFB->GetYaxis()->SetTitleOffset(0.9);
-        h_AtlFB->GetXaxis()->SetTitleOffset(0.95);
-        h_AtlFB->Write();
+    // this->MakeDistribution1D(h_mtt_tlF, "TeV");
+    // this->MakeDistribution1D(h_mtt_tlB, "TeV");
+    
+    // h_AtlFB = this->Asymmetry("AtlFB", "A^{tl}_{FB^*}", h_mtt_tlF, h_mtt_tlB);
+    // h_AtlFB->GetYaxis()->SetTitle(h_AtlFB->GetTitle());
+    // h_AtlFB->GetXaxis()->SetTitle("m_{tt} [TeV]");
+    // h_AtlFB->GetYaxis()->SetTitleOffset(0.9);
+    // h_AtlFB->GetXaxis()->SetTitleOffset(0.95);
+    // h_AtlFB->Write();
 
-        this->MakeDistribution1D(h_mtt_lF, "TeV");
-        this->MakeDistribution1D(h_mtt_lB, "TeV");
+    // this->MakeDistribution1D(h_mtt_lF, "TeV");
+    // this->MakeDistribution1D(h_mtt_lB, "TeV");
 
-        h_Ap = this->Asymmetry("Ap", "A_{P}", h_mtt_lF, h_mtt_lB);
-        h_Ap->GetYaxis()->SetTitle(h_Ap->GetTitle());
-        h_Ap->GetXaxis()->SetTitle("m_{tt} [TeV]");
-        h_Ap->GetYaxis()->SetTitleOffset(0.9);
-        h_Ap->GetXaxis()->SetTitleOffset(0.95);
-        h_Ap->Write();
+    // h_Ap = this->Asymmetry("Ap", "A_{P}", h_mtt_lF, h_mtt_lB);
+    // h_Ap->GetYaxis()->SetTitle(h_Ap->GetTitle());
+    // h_Ap->GetXaxis()->SetTitle("m_{tt} [TeV]");
+    // h_Ap->GetYaxis()->SetTitleOffset(0.9);
+    // h_Ap->GetXaxis()->SetTitleOffset(0.95);
+    // h_Ap->Write();
 
-        h_AlEl = this->Asymmetry("AlEl", "A^{l}_{E_l}", h_mtt_ElF, h_mtt_ElB);
-        h_AlEl->GetYaxis()->SetTitle(h_AlEl->GetTitle());
-        h_AlEl->GetXaxis()->SetTitle("m_{tt} [TeV]");
-        h_AlEl->GetYaxis()->SetTitleOffset(0.9);
-        h_AlEl->GetXaxis()->SetTitleOffset(0.95);
-        h_AlEl->Write();
+    // h_AlEl = this->Asymmetry("AlEl", "A^{l}_{E_l}", h_mtt_ElF, h_mtt_ElB);
+    // h_AlEl->GetYaxis()->SetTitle(h_AlEl->GetTitle());
+    // h_AlEl->GetXaxis()->SetTitle("m_{tt} [TeV]");
+    // h_AlEl->GetYaxis()->SetTitleOffset(0.9);
+    // h_AlEl->GetXaxis()->SetTitleOffset(0.95);
+    // h_AlEl->Write();
 
-        h_Aphil = this->Asymmetry("Aphil", "A^{l}_{#phi}", h_mtt_philF, h_mtt_philB);
-        h_Aphil->GetYaxis()->SetTitle(h_Aphil->GetTitle());
-        h_Aphil->GetXaxis()->SetTitle("m_{tt} [TeV]");
-        h_Aphil->GetYaxis()->SetTitleOffset(0.9);
-        h_Aphil->GetXaxis()->SetTitleOffset(0.95);
-        h_Aphil->Write();
+    // h_Aphil = this->Asymmetry("Aphil", "A^{l}_{#phi}", h_mtt_philF, h_mtt_philB);
+    // h_Aphil->GetYaxis()->SetTitle(h_Aphil->GetTitle());
+    // h_Aphil->GetXaxis()->SetTitle("m_{tt} [TeV]");
+    // h_Aphil->GetYaxis()->SetTitleOffset(0.9);
+    // h_Aphil->GetXaxis()->SetTitleOffset(0.95);
+    // h_Aphil->Write();
 
-        this->MakeDistribution1D(h_pv1x, "GeV");
-        this->MakeDistribution1D(h_pv1y, "GeV");
-        this->MakeDistribution1D(h_pv1z, "GeV");
-        this->MakeDistribution1D(h_pv2x, "GeV");
-        this->MakeDistribution1D(h_pv2y, "GeV");
-        this->MakeDistribution1D(h_pv2z, "GeV");
+    // this->MakeDistribution1D(h_pv1x, "GeV");
+    // this->MakeDistribution1D(h_pv1y, "GeV");
+    // this->MakeDistribution1D(h_pv1z, "GeV");
+    // this->MakeDistribution1D(h_pv2x, "GeV");
+    // this->MakeDistribution1D(h_pv2y, "GeV");
+    // this->MakeDistribution1D(h_pv2z, "GeV");
 
-        for (auto& h : h_pt) {
-            h->GetYaxis()->SetTitle("d#sigma / d p_{T}");
-            h->GetXaxis()->SetTitle("p_{T}");
-        }
+    // for (auto& h : h_pt) {
+    //     h->GetYaxis()->SetTitle("d#sigma / d p_{T}");
+    //     h->GetXaxis()->SetTitle("p_{T}");
+    // }
 
-        for (auto& h : h_eta) {
-            h->GetYaxis()->SetTitle("d#sigma / d #eta");
-            h->GetXaxis()->SetTitle("#eta");
-        }
+    // for (auto& h : h_eta) {
+    //     h->GetYaxis()->SetTitle("d#sigma / d #eta");
+    //     h->GetXaxis()->SetTitle("#eta");
+    // }
 
-        for (auto& h_deltaR : h_deltaRs) {
-            h_deltaR->GetYaxis()->SetTitle("d#sigma / d #Delta R");
-            h_deltaR->GetXaxis()->SetTitle("#Delta R");
-        }
+    // for (auto& h_deltaR : h_deltaRs) {
+    //     h_deltaR->GetYaxis()->SetTitle("d#sigma / d #Delta R");
+    //     h_deltaR->GetXaxis()->SetTitle("#Delta R");
+    // }
 
-        this->MakeDistribution1D(h_deltaR_bW, "");
-        this->MakeDistribution1D(h_deltaR_max, "");
-        this->MakeDistribution1D(h_deltaR_tt, "");
+    // this->MakeDistribution1D(h_deltaR_bW, "");
+    // this->MakeDistribution1D(h_deltaR_max, "");
+    // this->MakeDistribution1D(h_deltaR_tt, "");
 
-        if (m_reco > 0) {
-            this->MakeDistribution1D(h_mtt_R, "TeV");
-            this->MakeDistribution1D(h_mtt_tF_R, "TeV");
-            this->MakeDistribution1D(h_mtt_tB_R, "TeV");
-            this->MakeDistribution1D(h_ytt_R, "TeV");
-            this->MakeDistribution1D(h_costheta_tt_R, "");
+    this->MakeDistribution2D(h2_HT_deltaPhi, "H_{T}", "GeV", "#Delta#phi", "");
+    this->MakeDistribution2D(h2_mvis_deltaPhi, "m_{vis}", "GeV", "#Delta#phi", "");
+    this->MakeDistribution2D(h2_KT_deltaPhi, "K_{T}", "GeV", "#Delta#phi", "");
 
-            this->MakeDistribution1D(h_pxt_R, "GeV");
-            this->MakeDistribution1D(h_pyt_R, "GeV");
-            this->MakeDistribution1D(h_pzt_R, "GeV");
-            this->MakeDistribution1D(h_pTt_R, "GeV");
-            this->MakeDistribution1D(h_etat_R, "");
-            this->MakeDistribution1D(h_phit_R, "");
-            this->MakeDistribution1D(h_Et_R, "GeV");
-            this->MakeDistribution1D(h_mt_R, "GeV");
-
-            this->MakeDistribution1D(h_pxtbar_R, "GeV");
-            this->MakeDistribution1D(h_pytbar_R, "GeV");
-            this->MakeDistribution1D(h_pztbar_R, "GeV");
-            this->MakeDistribution1D(h_Etbar_R, "GeV");
-            this->MakeDistribution1D(h_pTtbar_R, "GeV");
-            this->MakeDistribution1D(h_etatbar_R, "");
-            this->MakeDistribution1D(h_phitbar_R, "");
-            this->MakeDistribution1D(h_mtbar_R, "GeV");
-
-            this->MakeDistribution1D(h_cosTheta_R, "");
-            this->MakeDistribution1D(h_cosThetaStar_R, "");
-
-            this->MakeDistribution1D(h_pv1x_R, "GeV");
-            this->MakeDistribution1D(h_pv1y_R, "GeV");
-            this->MakeDistribution1D(h_pv1z_R, "GeV");
-            this->MakeDistribution1D(h_pv2x_R, "GeV");
-            this->MakeDistribution1D(h_pv2y_R, "GeV");
-            this->MakeDistribution1D(h_pv2z_R, "GeV");
-
-            this->MakeDistribution2D(h2_HT_deltaPhi, "H_{T}", "GeV", "#Delta#phi", "");
-            this->MakeDistribution2D(h2_KT_deltaPhi, "K_{T}", "GeV", "#Delta#phi", "");
-
-            // this->MakeDistribution2D(h2_mtt_deltamakeos2, "m_{tt}", "GeV", "cos#theta cos#theta", "");
-            this->MakeDistribution2D(h2_mtt_cosThetaStar, "m_{tt}", "GeV", "cos#theta^{*}", "");
-            this->MakeDistribution2D(h2_mtt_cosThetaStar_R, "m_{tt} (reco)", "GeV", "cos#theta^{*} (reco)", "");
-            this->MakeDistribution2D(h2_mtt_cosTheta1, "m_{tt}", "GeV", "cos#theta_{l^{+}}", "");
-            this->MakeDistribution2D(h2_mtt_cosTheta2, "m_{tt}", "GeV", "cos#theta_{l^{-}}", "");
-            this->MakeDistribution2D(h2_mtt_cosThetal_R, "m_{tt}, (reco)", "GeV", "cos#theta_{l} (reco)", "");
-
-            // this->MakeDistribution1D(h_pT_t_perf, "");
-            // this->MakeDistribution1D(h_pT_tbar_perf, "");
-            // this->MakeDistribution1D(h_costhetatt_perf, "");
-            // this->MakeDistribution1D(h_costhetastar_perf, "");
-            // this->MakeDistribution1D(h_costhetatl_perf, "");
-            // this->MakeDistribution1D(h_m_tt_perf, "");
-            // this->MakeDistribution2D(h2_m_tt_pT_t_perf, "m_{tt} performance", "", "p_{T}^{t} performance", "");
-            // this->MakeDistribution2D(h2_m_tt_costheta_tt_perf, "m_{tt} performance", "", "cos#theta_{tt} performance", "");
-
-            h_AtFB_R = this->Asymmetry("AtFB_R", "A^{t}_{FB^{*}} (reco)", h_mtt_tF_R, h_mtt_tB_R);
-            h_AtFB_R->GetYaxis()->SetTitle(h_AtFB_R->GetTitle());
-            h_AtFB_R->GetXaxis()->SetTitle("m_{tt} (reco) [TeV]");
-            h_AtFB_R->GetYaxis()->SetTitleOffset(0.9);
-            h_AtFB_R->GetXaxis()->SetTitleOffset(0.95);
-            h_AtFB_R->Write();
-        }
-    }
+    //     this->MakeDistribution2D(h2_mtt_deltaPhi, "m_{tt}", "GeV", "cos#theta cos#theta", "");
+    //     this->MakeDistribution2D(h2_mtt_cosThetaStar, "m_{tt}", "GeV", "cos#theta^{*}", "");
+    //     this->MakeDistribution2D(h2_mtt_cosTheta1, "m_{tt}", "GeV", "cos#theta_{l^{+}}", "");
+    //     this->MakeDistribution2D(h2_mtt_cosTheta2, "m_{tt}", "GeV", "cos#theta_{l^{-}}", "");
 }
 
 
@@ -1123,64 +982,34 @@ void Analysis::NormalizeSliceY(TH2D* h)
 
 void Analysis::WriteHistograms()
 {
+    std::cout << "Writing histograms ..." << std::endl;
     m_outputFile->cd();
     m_outputFile->cd("/");
 
-    if (n < 6) {
-        h_AL->Write();
-        h_ALL->Write();
-    }
+    TF1 *func = new TF1("func1", "[0]*x + [1]", -1, 1);
+    TObjArray slices1;
+    this->NormalizeSliceY(h2_mtt_cosTheta1);
+    h2_mtt_cosTheta1->FitSlicesY(func, 0, -1, 0, "QRN", &slices1);
+    for (auto slice : slices1) slice->Write();
+    TH1D* h_AL1 = (TH1D*) slices1[0]->Clone("AL1");
+    slices1.Clear();
+    h_AL1->Scale(2 / h2_mtt_cosTheta1->GetYaxis()->GetBinWidth(1));
+    h_AL1->SetTitle("A_{L}");
+    h_AL1->GetXaxis()->SetTitle("m_{tt} [TeV]");
+    h_AL1->GetYaxis()->SetTitle("A_{L}");
+    h_AL1->Write();
 
-
-    if (n == 6) {
-        
-        for (int i = 0; i < (int) h_deltaRs.size(); i++)
-            h_deltaRs[i]->Write();
-
-        for (int i = 0; i < (int) h_eta.size(); i++)
-            h_eta[i]->Write();
-
-        for (int i = 0; i < (int) h_pt.size(); i++)
-            h_pt[i]->Write();
-
-
-        TF1 *func = new TF1("func1", "[0]*x + [1]", -1, 1);
-        TObjArray slices1;
-        this->NormalizeSliceY(h2_mtt_cosTheta1);
-        h2_mtt_cosTheta1->FitSlicesY(func, 0, -1, 0, "QRN", &slices1);
-        for (auto slice : slices1) slice->Write();
-        TH1D* h_AL1 = (TH1D*) slices1[0]->Clone("AL1");
-        slices1.Clear();
-        h_AL1->Scale(2 / h2_mtt_cosTheta1->GetYaxis()->GetBinWidth(1));
-        h_AL1->SetTitle("A_{L}");
-        h_AL1->GetXaxis()->SetTitle("m_{tt} [TeV]");
-        h_AL1->GetYaxis()->SetTitle("A_{L}");
-        h_AL1->Write();
-
-        TObjArray slices2;
-        this->NormalizeSliceY(h2_mtt_cosTheta2);
-        h2_mtt_cosTheta2->FitSlicesY(func, 0, -1, 0, "QRN", &slices2);
-        for (auto slice : slices2) slice->Write();
-        TH1D* h_AL2 = (TH1D*) slices2[0]->Clone("AL2");
-        slices2.Clear();
-        h_AL2->Scale(2 / h2_mtt_cosTheta2->GetYaxis()->GetBinWidth(1));
-        h_AL2->SetTitle("A_{L}");
-        h_AL2->GetXaxis()->SetTitle("m_{tt} [TeV]");
-        h_AL2->GetYaxis()->SetTitle("A_{L}");
-        h_AL2->Write();
-
-        TObjArray slicesR;
-        this->NormalizeSliceY(h2_mtt_cosThetal_R);
-        h2_mtt_cosThetal_R->FitSlicesY(func, 0, -1, 0, "QRN", &slicesR);
-        for (auto slice : slicesR) slice->Write();
-        TH1D* h_AL_R = (TH1D*) slicesR[0]->Clone("AL_R");
-        slicesR.Clear();
-        h_AL_R->Scale(2 / h2_mtt_cosThetal_R->GetYaxis()->GetBinWidth(1));
-        h_AL_R->SetTitle("A_{L} (reco)");
-        h_AL_R->GetXaxis()->SetTitle("m_{tt} (reco) [TeV]");
-        h_AL_R->GetYaxis()->SetTitle("A_{L} (reco)");
-        h_AL_R->Write();
-    }
+    TObjArray slices2;
+    this->NormalizeSliceY(h2_mtt_cosTheta2);
+    h2_mtt_cosTheta2->FitSlicesY(func, 0, -1, 0, "QRN", &slices2);
+    for (auto slice : slices2) slice->Write();
+    TH1D* h_AL2 = (TH1D*) slices2[0]->Clone("AL2");
+    slices2.Clear();
+    h_AL2->Scale(2 / h2_mtt_cosTheta2->GetYaxis()->GetBinWidth(1));
+    h_AL2->SetTitle("A_{L}");
+    h_AL2->GetXaxis()->SetTitle("m_{tt} [TeV]");
+    h_AL2->GetYaxis()->SetTitle("A_{L}");
+    h_AL2->Write();
 }
 
 
@@ -1253,12 +1082,11 @@ bool Analysis::SufficientBtags(int minBtags)
 {
     bool sufficientBtags;
     int nBtags = 0;
-    for (int i; i < b_Jet->GetEntries(); i++)
+    for (int i = 0; i < b_Jet->GetEntries(); i++)
     {
       Jet *jet = (Jet*) b_Jet->At(i);
       if (jet->BTag > 0) nBtags++;
     }
-    std::cout << "n b-tags = " << nBtags << std::endl;
     if (nBtags >= minBtags) sufficientBtags = true;
     else sufficientBtags = false;
     this->UpdateCutflow(c_sufficientBtags, sufficientBtags);
@@ -1346,7 +1174,7 @@ void Analysis::PreLoop()
     this->ResetCounters();
     this->InitialiseCutflow();
     this->MakeHistograms();
-    std::cout << endl;
+    std::cout << std::endl;
 }
 
 
@@ -1381,58 +1209,38 @@ void Analysis::ResetCounters()
     m_nComplexRoots = 0;
 }
 
-
-void Analysis::GetGenerationCrossSection(TString filename)
-{   
-//     std::string Filename = filename.Data();
-//     std::string weighted = ".weighted.";
-//     printf("Generation Cross section = %.15le [fb]\n", 1000 * m_ptup->cross_section());
-
-//     if (filename == "/Users/declan/Data/zprime/dd-AZ-tt-bbllvv.SM.13TeV.CT14LL.2-4.unweighted.root" || filename == "/Users/declan/Data/zprime/dd-AZX-tt-bbllvv.GLR-R-3.13TeV.CT14LL.2-4.unweighted.root") {
-//         m_sigma = 1000 * m_ptup->cross_section() / 100000; // temporary! Remove me
-//         std::cout << "bork" << std::endl;
-//     }
-//     else if (boost::contains(Filename, weighted)) {
-//         m_sigma = 1000;
-//     }
-//     else m_sigma = 1000 * m_ptup->cross_section();
-    ;
-}
-
 void Analysis::GetBranches()
 {
     std::cout << "Fetching branches ..." << std::endl;
-    b_Event = m_tree->UseBranch("Event");
     b_Jet = m_tree->UseBranch("Jet");
     b_Electron = m_tree->UseBranch("Electron");
+    b_MissingET = m_tree->UseBranch("MissingET");
+    b_ScalarHT = m_tree->UseBranch("ScalarHT");
 }
 
 
 void Analysis::Loop()
 {
     for (Itr_s i = m_inputFiles->begin(); i != m_inputFiles->end(); ++i) {
-        printf("input %li: ", i - m_inputFiles->begin() + 1);
+        printf("Input %li: ", i - m_inputFiles->begin() + 1);
         std::cout << (*i) << std::endl;
         this->EachFile((*i));
         m_nevents = this->TotalEvents();
-        std::cout << "events: " << m_nevents << std::endl;
+        std::cout << "Events: " << m_nevents << std::endl;
         for (Long64_t jevent = 0; jevent < m_nevents; ++jevent) {
             Long64_t ievent = this->IncrementEvent(jevent);
             if (ievent < 0) break;
             this->EachEvent();
-            ProgressPercentage(jevent, m_nevents - 1, 50);
+            ProgressBar(jevent, m_nevents - 1, 50);
         }
         this->CleanUp();
         std::cout << std::endl;
     }
-    std::cout << endl;
 }
 
 void Analysis::EachFile(TString filename)
 {
     this->SetupTreesForNewFile(filename);
-    this->GetGenerationCrossSection(filename);
-    this->GetChannelFactors();
     this->GetBranches();
 }
 
@@ -1466,7 +1274,7 @@ void Analysis::SetupTreesForNewFile(const TString& s)
     m_chain->Add(TStringNtuple,0);
     m_tree = new ExRootTreeReader(m_chain);
     Long64_t numberOfEntries = m_tree->GetEntries();
-    std::cout << "Number of entries = " << numberOfEntries << std::endl;
+    // std::cout << "Number of entries = " << numberOfEntries << std::endl;
 }
 
 
@@ -1650,278 +1458,269 @@ std::vector<TLorentzVector> Analysis::ReconstructSemilepton(const std::vector<TL
 }
 
 
-std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::vector<TLorentzVector>& p)
-{
-    // Uses the Sonnenschein method algebraically solve tt dilepton equations. 
-    // http://arxiv.org/abs/hep-ph/0510100
-    // selects solution that minimises mtt
+// std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::vector<TLorentzVector>& p)
+// {
+//     // Uses the Sonnenschein method algebraically solve tt dilepton equations. 
+//     // http://arxiv.org/abs/hep-ph/0510100
+//     // selects solution that minimises mtt
 
-    m_nReco++;
+//     m_nReco++;
 
-    std::vector<TLorentzVector> p_R(p.size());
+//     // std::vector<TLorentzVector> p_R(p.size());
 
-    TLorentzVector pb1 = p[0], pb2 = p[1], pl1 = p[2], pv1 = p[3], pl2 = p[4], pv2 = p[5];
+//     TLorentzVector pb1 = p_b[0], pb2 = p_b[1], pl1 = p_l[0], pl2 = p[1];
 
-    double pb1x = pb1.Px(), pb1y = pb1.Py(), pb1z = pb1.Pz(), Eb1 = pb1.E();
-    double pb2x = pb2.Px(), pb2y = pb2.Py(), pb2z = pb2.Pz(), Eb2 = pb2.E();
-    double pl1x = pl1.Px(), pl1y = pl1.Py(), pl1z = pl1.Pz(), El1 = pl1.E();
-    double pl2x = pl2.Px(), pl2y = pl2.Py(), pl2z = pl2.Pz(), El2 = pl2.E();
-    double pv1x = pv1.Px(), pv1y = pv1.Py(), pv1z = pv1.Pz(), Ev1 = pv1.E();
-    double pv2x = pv2.Px(), pv2y = pv2.Py(), pv2z = pv2.Pz(), Ev2 = pv2.E();
-    double Emissx = pv1x + pv2x;
-    double Emissy = pv1y + pv2y;
+//     double pb1x = pb1.Px(), pb1y = pb1.Py(), pb1z = pb1.Pz(), Eb1 = pb1.E();
+//     double pb2x = pb2.Px(), pb2y = pb2.Py(), pb2z = pb2.Pz(), Eb2 = pb2.E();
+//     double pl1x = pl1.Px(), pl1y = pl1.Py(), pl1z = pl1.Pz(), El1 = pl1.E();
+//     double pl2x = pl2.Px(), pl2y = pl2.Py(), pl2z = pl2.Pz(), El2 = pl2.E();
+//     // double pv1x = pv1.Px(), pv1y = pv1.Py(), pv1z = pv1.Pz(), Ev1 = pv1.E();
+//     // double pv2x = pv2.Px(), pv2y = pv2.Py(), pv2z = pv2.Pz(), Ev2 = pv2.E();
+//     double Emissx = p_miss.Px();
+//     double Emissy = p_miss.Py();
 
-    // Use on-shell pole masses
-    double mt1 = m_tmass, mt2 = m_tmass;
-    double mw1 = m_Wmass, mw2 = m_Wmass;
-    double mb1 = m_bmass, mb2 = m_bmass;
-    double ml1 = 0, ml2 = 0;
+//     // Use on-shell pole masses
+//     double mt1 = m_tmass, mt2 = m_tmass;
+//     double mw1 = m_Wmass, mw2 = m_Wmass;
+//     double mb1 = m_bmass, mb2 = m_bmass;
+//     double ml1 = 0, ml2 = 0;
 
-    // Use off-shell true masses
-    // double mt1 = (p[0] + p[2] + p[3]).M(), mt2 = (p[1] + p[4] + p[5]).M();
-    // double mw1 = (p[2] + p[3]).M(), mw2 = (p[4] + p[5]).M();
-    // double mb1 = p[0].M(), mb2 = p[1].M();
+//     // Use off-shell true masses
+//     // double mt1 = (p[0] + p[2] + p[3]).M(), mt2 = (p[1] + p[4] + p[5]).M();
+//     // double mw1 = (p[2] + p[3]).M(), mw2 = (p[4] + p[5]).M();
+//     // double mb1 = p[0].M(), mb2 = p[1].M();
 
-    double a1 = (Eb1 + El1) * (mw1 * mw1 - ml1 * ml1)
-              - El1 * (mt1 * mt1 - mb1 * mb1 - ml1 * ml1)
-              + 2 * Eb1 * El1 * El1 
-              - 2 * El1 * (pb1x * pl1x + pb1y * pl1y + pb1z * pl1z);
+//     double a1 = (Eb1 + El1) * (mw1 * mw1 - ml1 * ml1)
+//               - El1 * (mt1 * mt1 - mb1 * mb1 - ml1 * ml1)
+//               + 2 * Eb1 * El1 * El1 
+//               - 2 * El1 * (pb1x * pl1x + pb1y * pl1y + pb1z * pl1z);
 
-    double a2 = 2 * (Eb1 * pl1x - El1 * pb1x);
-    double a3 = 2 * (Eb1 * pl1y - El1 * pb1y);
-    double a4 = 2 * (Eb1 * pl1z - El1 * pb1z);
+//     double a2 = 2 * (Eb1 * pl1x - El1 * pb1x);
+//     double a3 = 2 * (Eb1 * pl1y - El1 * pb1y);
+//     double a4 = 2 * (Eb1 * pl1z - El1 * pb1z);
 
-    double b1 = (Eb2 + El2) * (mw2 * mw2 - ml2 * ml2)
-              - El2 * (mt2 * mt2 - mb2 * mb2 - ml2 * ml2)
-              + 2 * Eb2 * El2 * El2 
-              - 2 * El2 * (pb2x * pl2x + pb2y * pl2y + pb2z * pl2z);
+//     double b1 = (Eb2 + El2) * (mw2 * mw2 - ml2 * ml2)
+//               - El2 * (mt2 * mt2 - mb2 * mb2 - ml2 * ml2)
+//               + 2 * Eb2 * El2 * El2 
+//               - 2 * El2 * (pb2x * pl2x + pb2y * pl2y + pb2z * pl2z);
 
-    double b2 = 2 * (Eb2 * pl2x - El2 * pb2x);
-    double b3 = 2 * (Eb2 * pl2y - El2 * pb2y);
-    double b4 = 2 * (Eb2 * pl2z - El2 * pb2z);
+//     double b2 = 2 * (Eb2 * pl2x - El2 * pb2x);
+//     double b3 = 2 * (Eb2 * pl2y - El2 * pb2y);
+//     double b4 = 2 * (Eb2 * pl2z - El2 * pb2z);
 
-    double c22 = (mw1 * mw1 - ml1 * ml1) * (mw1 * mw1 - ml1 * ml1)
-               -4 * (El1 * El1 - pl1z * pl1z) * (a1 / a4) * (a1 / a4)
-               -4 * (mw1 * mw1 - ml1 * ml1) * pl1z * a1 / a4;
+//     double c22 = (mw1 * mw1 - ml1 * ml1) * (mw1 * mw1 - ml1 * ml1)
+//                -4 * (El1 * El1 - pl1z * pl1z) * (a1 / a4) * (a1 / a4)
+//                -4 * (mw1 * mw1 - ml1 * ml1) * pl1z * a1 / a4;
 
-    double c21 = 4 * (mw1 * mw1 - ml1 * ml1) * (pl1x - pl1z * a2 / a4)
-               -8 * (El1 * El1 - pl1z*pl1z) * a1 * a2 / (a4 * a4) 
-               -8 * pl1x * pl1z * a1 / a4;
+//     double c21 = 4 * (mw1 * mw1 - ml1 * ml1) * (pl1x - pl1z * a2 / a4)
+//                -8 * (El1 * El1 - pl1z*pl1z) * a1 * a2 / (a4 * a4) 
+//                -8 * pl1x * pl1z * a1 / a4;
 
-    double c20 = -4 * (El1 * El1 - pl1x * pl1x)
-               -4 * (El1 * El1 - pl1z * pl1z) * (a2 / a4) * (a2 / a4)
-               -8 * pl1x * pl1z * a2 / a4;
+//     double c20 = -4 * (El1 * El1 - pl1x * pl1x)
+//                -4 * (El1 * El1 - pl1z * pl1z) * (a2 / a4) * (a2 / a4)
+//                -8 * pl1x * pl1z * a2 / a4;
 
-    double c11 = 4 * (mw1 * mw1 - ml1 * ml1)*(pl1y - pl1z * a3 / a4)
-               -8 * (El1 * El1 - pl1z * pl1z) * a1 * a3 / (a4 * a4) 
-               -8 * pl1y * pl1z * a1 /  a4;
+//     double c11 = 4 * (mw1 * mw1 - ml1 * ml1)*(pl1y - pl1z * a3 / a4)
+//                -8 * (El1 * El1 - pl1z * pl1z) * a1 * a3 / (a4 * a4) 
+//                -8 * pl1y * pl1z * a1 /  a4;
 
-    double c10 = -8 * (El1 * El1 - pl1z * pl1z) * a2 * a3 / (a4 * a4) 
-               +8 * pl1x * pl1y
-               -8 * pl1x * pl1z * a3 / a4 
-               -8 * pl1y * pl1z * a2 / a4;
+//     double c10 = -8 * (El1 * El1 - pl1z * pl1z) * a2 * a3 / (a4 * a4) 
+//                +8 * pl1x * pl1y
+//                -8 * pl1x * pl1z * a3 / a4 
+//                -8 * pl1y * pl1z * a2 / a4;
 
-    double c00 = -4 * (El1 * El1 - pl1y * pl1y) 
-               -4 * (El1 * El1 - pl1z * pl1z) * (a3 /a4) * (a3 / a4)
-               -8 * pl1y * pl1z * a3 / a4;
+//     double c00 = -4 * (El1 * El1 - pl1y * pl1y) 
+//                -4 * (El1 * El1 - pl1z * pl1z) * (a3 /a4) * (a3 / a4)
+//                -8 * pl1y * pl1z * a3 / a4;
 
-    c22 = c22 * a4 * a4; 
-    c21 = c21 * a4 * a4; 
-    c20 = c20 * a4 * a4; 
-    c11 = c11 * a4 * a4; 
-    c10 = c10 * a4 * a4; 
-    c00 = c00 * a4 * a4;
+//     c22 = c22 * a4 * a4; 
+//     c21 = c21 * a4 * a4; 
+//     c20 = c20 * a4 * a4; 
+//     c11 = c11 * a4 * a4; 
+//     c10 = c10 * a4 * a4; 
+//     c00 = c00 * a4 * a4;
 
-    double dd22 = (mw2 * mw2 - ml2 * ml2) * (mw2 * mw2 - ml2 * ml2)
-                -4 * (El2 * El2 - pl2z * pl2z) * (b1 / b4) * (b1 / b4)
-                -4 * (mw2 * mw2 - ml2 * ml2) * pl2z * b1 / b4;
+//     double dd22 = (mw2 * mw2 - ml2 * ml2) * (mw2 * mw2 - ml2 * ml2)
+//                 -4 * (El2 * El2 - pl2z * pl2z) * (b1 / b4) * (b1 / b4)
+//                 -4 * (mw2 * mw2 - ml2 * ml2) * pl2z * b1 / b4;
 
-    double dd21 = 4 * (mw2 * mw2 - ml2 * ml2) * (pl2x - pl2z * b2 / b4)
-                -8 * (El2 * El2 - pl2z * pl2z) * b1 * b2 / (b4 * b4) 
-                -8 * pl2x * pl2z * b1 / b4;
+//     double dd21 = 4 * (mw2 * mw2 - ml2 * ml2) * (pl2x - pl2z * b2 / b4)
+//                 -8 * (El2 * El2 - pl2z * pl2z) * b1 * b2 / (b4 * b4) 
+//                 -8 * pl2x * pl2z * b1 / b4;
 
-    double dd20 = -4 * (El2 * El2 - pl2x * pl2x) 
-                -4 * (El2 * El2 - pl2z * pl2z) * (b2 / b4) * (b2 / b4) 
-                -8 * pl2x * pl2z * b2 / b4;
+//     double dd20 = -4 * (El2 * El2 - pl2x * pl2x) 
+//                 -4 * (El2 * El2 - pl2z * pl2z) * (b2 / b4) * (b2 / b4) 
+//                 -8 * pl2x * pl2z * b2 / b4;
 
-    double dd11 = 4 * (mw2 * mw2 - ml2 * ml2) * (pl2y - pl2z * b3 / b4)
-                -8 * (El2 * El2 -pl2z * pl2z) * b1 * b3 / (b4 * b4)
-                -8 * pl2y * pl2z * b1 / b4;
+//     double dd11 = 4 * (mw2 * mw2 - ml2 * ml2) * (pl2y - pl2z * b3 / b4)
+//                 -8 * (El2 * El2 -pl2z * pl2z) * b1 * b3 / (b4 * b4)
+//                 -8 * pl2y * pl2z * b1 / b4;
 
-    double dd10 = -8 * (El2 * El2 - pl2z * pl2z) * b2 * b3 / (b4 * b4) 
-                +8 * pl2x * pl2y
-                -8 * pl2x * pl2z * b3 / b4 
-                -8 * pl2y * pl2z * b2 / b4;
+//     double dd10 = -8 * (El2 * El2 - pl2z * pl2z) * b2 * b3 / (b4 * b4) 
+//                 +8 * pl2x * pl2y
+//                 -8 * pl2x * pl2z * b3 / b4 
+//                 -8 * pl2y * pl2z * b2 / b4;
 
-    double dd00 = -4 * (El2 * El2 - pl2y * pl2y) 
-                -4 * (El2 * El2 - pl2z * pl2z) * (b3 / b4) * (b3 / b4)
-                -8 * pl2y * pl2z * b3 / b4;
+//     double dd00 = -4 * (El2 * El2 - pl2y * pl2y) 
+//                 -4 * (El2 * El2 - pl2z * pl2z) * (b3 / b4) * (b3 / b4)
+//                 -8 * pl2y * pl2z * b3 / b4;
 
-    dd22 = dd22 * b4 * b4; 
-    dd21 = dd21 * b4 * b4; 
-    dd20 = dd20 * b4 * b4; 
-    dd11 = dd11 * b4 * b4; 
-    dd10 = dd10 * b4 * b4; 
-    dd00 = dd00 * b4 * b4; 
+//     dd22 = dd22 * b4 * b4; 
+//     dd21 = dd21 * b4 * b4; 
+//     dd20 = dd20 * b4 * b4; 
+//     dd11 = dd11 * b4 * b4; 
+//     dd10 = dd10 * b4 * b4; 
+//     dd00 = dd00 * b4 * b4; 
                 
-    double d22 = dd22 
-               + Emissx * Emissx * dd20 
-               + Emissy * Emissy * dd00
-               + Emissx * Emissy * dd10 
-               + Emissx * dd21 
-               + Emissy * dd11;
+//     double d22 = dd22 
+//                + Emissx * Emissx * dd20 
+//                + Emissy * Emissy * dd00
+//                + Emissx * Emissy * dd10 
+//                + Emissx * dd21 
+//                + Emissy * dd11;
 
-    double d21 = -dd21 
-               - 2 * Emissx * dd20 
-               - Emissy * dd10;
+//     double d21 = -dd21 
+//                - 2 * Emissx * dd20 
+//                - Emissy * dd10;
 
-    double d20 = dd20;
+//     double d20 = dd20;
 
-    double d11 = -dd11 
-               - 2 * Emissy * dd00 
-               - Emissx * dd10;
+//     double d11 = -dd11 
+//                - 2 * Emissy * dd00 
+//                - Emissx * dd10;
 
-    double d10 = dd10;
-    double d00 = dd00;
+//     double d10 = dd10;
+//     double d00 = dd00;
 
-    double h4 = c00 * c00 * d22 * d22 
-                    + c11 * d22 * (c11 * d00 - c00 * d11)
-                    + c00 * c22 * (d11 * d11 - 2 * d00 * d22) 
-                    + c22 * d00 * (c22 * d00 - c11 * d11);
+//     double h4 = c00 * c00 * d22 * d22 
+//                     + c11 * d22 * (c11 * d00 - c00 * d11)
+//                     + c00 * c22 * (d11 * d11 - 2 * d00 * d22) 
+//                     + c22 * d00 * (c22 * d00 - c11 * d11);
 
-    double h3 = c00 * d21 * (2 * c00 * d22 - c11 * d11) 
-                    + c00 * d11 * (2 * c22 * d10 + c21 * d11) 
-                    + c22 * d00 * (2 * c21 * d00 - c11 * d10) 
-                    - c00 * d22 * (c11 * d10 + c10 * d11)  
-                    -2 * c00 * d00 * (c22 * d21 + c21 * d22)
-                    - d00 * d11 * (c11 * c21 + c10 * c22) 
-                    + c11 * d00 * (c11 * d21 + 2 * c10 * d22);
+//     double h3 = c00 * d21 * (2 * c00 * d22 - c11 * d11) 
+//                     + c00 * d11 * (2 * c22 * d10 + c21 * d11) 
+//                     + c22 * d00 * (2 * c21 * d00 - c11 * d10) 
+//                     - c00 * d22 * (c11 * d10 + c10 * d11)  
+//                     -2 * c00 * d00 * (c22 * d21 + c21 * d22)
+//                     - d00 * d11 * (c11 * c21 + c10 * c22) 
+//                     + c11 * d00 * (c11 * d21 + 2 * c10 * d22);
 
-    double h2 = c00 * c00 * (2 * d22 * d20 + d21 * d21) 
-                    - c00 * d21 * (c11 * d10 + c10 * d11)  
-                    + c11 * d20 * (c11 * d00 - c00 * d11) 
-                    + c00 * d10 * (c22 * d10 - c10 * d22)   
-                    + c00 * d11 * (2 * c21 * d10 + c20 * d11) 
-                    + (2 * c22 * c20 + c21 * c21) * d00 * d00   
-                    - 2 * c00 * d00 * (c22 * d20 + c21 * d21 + c20 * d22)    
-                    + c10 * d00 * (2 * c11 * d21 + c10 * d22) 
-                    - d00 * d10 * (c11 * c21 + c10 * c22)   
-                    - d00 * d11 * (c11 * c20 + c10 * c21);
+//     double h2 = c00 * c00 * (2 * d22 * d20 + d21 * d21) 
+//                     - c00 * d21 * (c11 * d10 + c10 * d11)  
+//                     + c11 * d20 * (c11 * d00 - c00 * d11) 
+//                     + c00 * d10 * (c22 * d10 - c10 * d22)   
+//                     + c00 * d11 * (2 * c21 * d10 + c20 * d11) 
+//                     + (2 * c22 * c20 + c21 * c21) * d00 * d00   
+//                     - 2 * c00 * d00 * (c22 * d20 + c21 * d21 + c20 * d22)    
+//                     + c10 * d00 * (2 * c11 * d21 + c10 * d22) 
+//                     - d00 * d10 * (c11 * c21 + c10 * c22)   
+//                     - d00 * d11 * (c11 * c20 + c10 * c21);
 
-    double h1 = c00 * d21 * (2 * c00 * d20 - c10 * d10) 
-                    - c00 * d20 * (c11 * d10 + c10 * d11)  
-                    + c00 * d10 * (c21 * d10 + 2 * c20 * d11) 
-                    - 2 * c00 * d00 * (c21 * d20 + c20 * d21)  
-                    + c10 * d00 * (2 * c11 * d20 + c10 * d21) 
-                    + c20 * d00 * (2 * c21 * d00 - c10 * d11)  
-                    - d00 * d10 * (c11 * c20 + c10 * c21);
+//     double h1 = c00 * d21 * (2 * c00 * d20 - c10 * d10) 
+//                     - c00 * d20 * (c11 * d10 + c10 * d11)  
+//                     + c00 * d10 * (c21 * d10 + 2 * c20 * d11) 
+//                     - 2 * c00 * d00 * (c21 * d20 + c20 * d21)  
+//                     + c10 * d00 * (2 * c11 * d20 + c10 * d21) 
+//                     + c20 * d00 * (2 * c21 * d00 - c10 * d11)  
+//                     - d00 * d10 * (c11 * c20 + c10 * c21);
 
-    double h0 = c00 * c00 * d20 * d20 
-                    + c10 * d20 * (c10 * d00 - c00 * d10)  
-                    + c20 * d10 * (c00 * d10 - c10 * d00) 
-                    + c20 * d00 * (c20 * d00 - 2 * c00 * d20);
+//     double h0 = c00 * c00 * d20 * d20 
+//                     + c10 * d20 * (c10 * d00 - c00 * d10)  
+//                     + c20 * d10 * (c00 * d10 - c10 * d00) 
+//                     + c20 * d00 * (c20 * d00 - 2 * c00 * d20);
 
-    float a[4] = {static_cast<float>(h1 / h0), static_cast<float>(h2 / h0), static_cast<float>(h3 / h0), static_cast<float>(h4 / h0)};
+//     float a[4] = {static_cast<float>(h1 / h0), static_cast<float>(h2 / h0), static_cast<float>(h3 / h0), static_cast<float>(h4 / h0)};
 
-    double x[4];
-    int nRealRoots = SolveP4(x, a[0], a[1], a[2], a[3]);
+//     double x[4];
+//     int nRealRoots = SolveP4(x, a[0], a[1], a[2], a[3]);
 
-    if (x[0] != x[0] && x[1] != x[1] && x[2] != x[2]) printf("error: Three NaNs in quartic solutions.\n");
+//     if (x[0] != x[0] && x[1] != x[1] && x[2] != x[2]) printf("error: Three NaNs in quartic solutions.\n");
 
-    // if (x[0] != x[0] || x[1] != x[1] || x[2] != x[2] || x[3] != x[3]) printf("error: NaN in quartic solutions.\n");
+//     // if (x[0] != x[0] || x[1] != x[1] || x[2] != x[2] || x[3] != x[3]) printf("error: NaN in quartic solutions.\n");
 
-    int nSolutions;
-    std::vector<double> pv1x_Rs;
-    if (nRealRoots == 4) {
-        // they live in x[0], x[1], x[2], x[3].
-        nSolutions = 4;
-        for (int i = 0; i < nSolutions; i++) pv1x_Rs.push_back(x[i]);
-    }
-    else if (nRealRoots == 2) {
-        // x[0], x[1] are the real roots and x[2]±i*x[3] are the complex
-        nSolutions = 3;
-        for (int i = 0; i < nSolutions; i++) pv1x_Rs.push_back(x[i]); 
-    }
-    else if (nRealRoots == 0) {
-        // the equation has two pairs of pairs of complex conjugate roots in x[0]±i*x[1] and x[2]±i*x[3].
-        nSolutions = 2;
-        pv1x_Rs.push_back(x[0]);
-        pv1x_Rs.push_back(x[2]); 
-    }
+//     int nSolutions;
+//     std::vector<double> pv1x_Rs;
+//     if (nRealRoots == 4) {
+//         // they live in x[0], x[1], x[2], x[3].
+//         nSolutions = 4;
+//         for (int i = 0; i < nSolutions; i++) pv1x_Rs.push_back(x[i]);
+//     }
+//     else if (nRealRoots == 2) {
+//         // x[0], x[1] are the real roots and x[2]±i*x[3] are the complex
+//         nSolutions = 3;
+//         for (int i = 0; i < nSolutions; i++) pv1x_Rs.push_back(x[i]); 
+//     }
+//     else if (nRealRoots == 0) {
+//         // the equation has two pairs of pairs of complex conjugate roots in x[0]±i*x[1] and x[2]±i*x[3].
+//         nSolutions = 2;
+//         pv1x_Rs.push_back(x[0]);
+//         pv1x_Rs.push_back(x[2]); 
+//     }
 
-    // find root closest to true pl1x
-    // double old_diff = std::abs(pv1x - x[0]), new_diff, closest_root = x[0];
-    // for (unsigned int i = 1; i < 4; i++) {
-    //   new_diff = std::abs(pv1x - x[i]);
-    //   if (new_diff < old_diff) {
-    //     closest_root = x[i];
-    //     old_diff = new_diff;
-    //   }
-    // }
-    // std::vector<double> realRoots;
-    // for (int i = 0; i < nRealRoots; i++) realRoots.push_back(x[i]);
+//     // find root closest to true pl1x
+//     // double old_diff = std::abs(pv1x - x[0]), new_diff, closest_root = x[0];
+//     // for (unsigned int i = 1; i < 4; i++) {
+//     //   new_diff = std::abs(pv1x - x[i]);
+//     //   if (new_diff < old_diff) {
+//     //     closest_root = x[i];
+//     //     old_diff = new_diff;
+//     //   }
+//     // }
+//     // std::vector<double> realRoots;
+//     // for (int i = 0; i < nRealRoots; i++) realRoots.push_back(x[i]);
 
-    // Create pairs of neutrino momenta for each real root
-    std::vector<TLorentzVector> pv1_Rs(nSolutions), pv2_Rs(nSolutions);
-    for (int i = 0; i < nSolutions; i++) {
-        double pv1x_R = x[i];
-        double pv2x_R = Emissx - pv1x_R;
+//     // Create pairs of neutrino momenta for each real root
+//     std::vector<TLorentzVector> pv1_Rs(nSolutions), pv2_Rs(nSolutions);
+//     for (int i = 0; i < nSolutions; i++) {
+//         double pv1x_R = x[i];
+//         double pv2x_R = Emissx - pv1x_R;
 
-        double c2 = c22 + c21 * pv1x_R + c20 * pv1x_R * pv1x_R;
-        double c1 = c11 + c10 * pv1x_R;
-        double c0 = c00;
-        double d2 = d22 + d21 * pv1x_R + d20 * pv1x_R * pv1x_R;
-        double d1 = d11 + d10 * pv1x_R;
-        double d0 = d00;
+//         double c2 = c22 + c21 * pv1x_R + c20 * pv1x_R * pv1x_R;
+//         double c1 = c11 + c10 * pv1x_R;
+//         double c0 = c00;
+//         double d2 = d22 + d21 * pv1x_R + d20 * pv1x_R * pv1x_R;
+//         double d1 = d11 + d10 * pv1x_R;
+//         double d0 = d00;
 
-        double pv1y_R = (c0 * d2 - c2 * d0) / (c1 * d0 - c0 * d1);
-        double pv2y_R = Emissy - pv1y_R;
+//         double pv1y_R = (c0 * d2 - c2 * d0) / (c1 * d0 - c0 * d1);
+//         double pv2y_R = Emissy - pv1y_R;
 
-        double pv1z_R = -(a1 + a2 * pv1x_R + a3 * pv1y_R) / a4;
-        double pv2z_R = -(b1 + b2 * pv2x_R + b3 * pv2y_R) / b4;
+//         double pv1z_R = -(a1 + a2 * pv1x_R + a3 * pv1y_R) / a4;
+//         double pv2z_R = -(b1 + b2 * pv2x_R + b3 * pv2y_R) / b4;
 
-        double Ev1_R = sqrt(pv1x_R * pv1x_R + pv1y_R * pv1y_R + pv1z_R * pv1z_R);
-        double Ev2_R = sqrt(pv2x_R * pv2x_R + pv2y_R * pv2y_R + pv2z_R * pv2z_R);
+//         double Ev1_R = sqrt(pv1x_R * pv1x_R + pv1y_R * pv1y_R + pv1z_R * pv1z_R);
+//         double Ev2_R = sqrt(pv2x_R * pv2x_R + pv2y_R * pv2y_R + pv2z_R * pv2z_R);
 
-        pv1_Rs[i].SetPxPyPzE(pv1x_R, pv1y_R, pv1z_R, Ev1_R);
-        pv2_Rs[i].SetPxPyPzE(pv2x_R, pv2y_R, pv2z_R, Ev2_R);
-    }
+//         pv1_Rs[i].SetPxPyPzE(pv1x_R, pv1y_R, pv1z_R, Ev1_R);
+//         pv2_Rs[i].SetPxPyPzE(pv2x_R, pv2y_R, pv2z_R, Ev2_R);
+//     }
 
-    int I = 0;
-    double mtt_min = DBL_MAX;
-    for (int i = 0; i < nSolutions; i++) { 
-        double mtt = (p[0] + p[1] + p[2] + p[4] + pv1_Rs[i] + pv2_Rs[i]).M();
-        if (mtt < mtt_min) {
-            mtt_min = mtt;
-            I = i;
-        }
-    }
+//     int I = 0;
+//     double mtt_min = DBL_MAX;
+//     for (int i = 0; i < nSolutions; i++) { 
+//         double mtt = (p[0] + p[1] + p[2] + p[4] + pv1_Rs[i] + pv2_Rs[i]).M();
+//         if (mtt < mtt_min) {
+//             mtt_min = mtt;
+//             I = i;
+//         }
+//     }
 
-    p_R[0] = pb1;
-    p_R[1] = pb2;
-    p_R[2] = pl1;
-    p_R[3] = pv1_Rs[I];
-    p_R[4] = pl2;
-    p_R[5] = pv2_Rs[I];
+//     p_R[0] = pb1;
+//     p_R[1] = pb2;
+//     p_R[2] = pl1;
+//     p_R[3] = pv1_Rs[I];
+//     p_R[4] = pl2;
+//     p_R[5] = pv2_Rs[I];
 
-    return p_R;
-}
-
-
-void Analysis::GetChannelFactors()
-{
-    // scale dilepton to other classifications
-    // fac_ee = 1
-    // fac_emu = 2
-    if (m_reco == 2) m_sigma = m_sigma * 24; // 2 [e+ + e-] x 2 [e + mu] x 6 [3 x 2]
-    // fac_qq = 36
-}
+//     return p_R;
+// }
 
 
-void Analysis::UpdateCutflow(const int cut, const bool passed)
-{
-    if (m_cutflow[cut] == -999) m_cutflow[cut] = 0;
-    if (passed) m_cutflow[cut] += 1;
+double Analysis::TotalAsymmetry(TH1D* h_A, TH1D* h_B) {
+    double A = h_A->Integral("width");
+    double B = h_B->Integral("width");
+    double Atot = (A - B)/(A + B);
+    return Atot;
 }
 
 
@@ -1930,15 +1729,12 @@ void Analysis::InitialiseCutflow()
     m_cutflow = std::vector<int>(m_cuts, -999);
     m_cutNames = std::vector<TString>(
     m_cuts,                         "no name          ");
-    m_cutNames[c_entries]         = "entries          ";
-    m_cutNames[c_topDecays]       = "t->bev           ";
-    m_cutNames[c_antitopDecays]   = "tbar->bev        ";
-    m_cutNames[c_events]          = "events           ";
-    m_cutNames[c_realSolutions]   = "pvz real         ";
-    m_cutNames[c_MET]             = "MET              ";
+    m_cutNames[c_events]          = "Events           ";
     m_cutNames[c_twoElectrons]    = "Two electrons    ";
     m_cutNames[c_oppositeCharge]  = "Opposite Charge  ";
-    m_cutNames[c_sufficientBtags] = "sufficient b-tags";
+    m_cutNames[c_sufficientBtags] = "Sufficient b-tags";
+    m_cutNames[c_MET]             = "MET              ";
+    m_cutNames[c_realSolutions]   = "pvz real         ";
     m_cutNames[c_mtt]             = "mtt              ";
     m_cutNames[c_ytt]             = "ytt              ";
     m_cutNames[c_eta]             = "eta              ";
@@ -1949,73 +1745,25 @@ void Analysis::InitialiseCutflow()
 }
 
 
+void Analysis::UpdateCutflow(const int cut, const bool passed)
+{
+    if (m_cutflow[cut] == -999) m_cutflow[cut] = 0;
+    if (passed) m_cutflow[cut] += 1;
+}
+
+
 void Analysis::PrintCutflow()
 {
-    std::cout << "cutflow: " << std::endl;
+    std::cout << "Cutflow: " << std::endl;
     for (int cut = 0; cut < m_cuts; cut++) {
         if (m_cutflow[cut] == -999) continue;
 
         h_cutflow->SetBinContent(cut + 1, m_cutflow[cut]);
         h_cutflow->GetXaxis()->SetBinLabel(cut + 1, m_cutNames[cut]);
 
-        printf("%s %i pass\n", m_cutNames[cut].Data(), m_cutflow[cut]);
+        printf("%s %i\n", m_cutNames[cut].Data(), m_cutflow[cut]);
     }
     h_cutflow->Write();
     m_outputFile->Close();
     delete m_outputFile;
-}
-
-TH1D* Analysis::MakeALL () {
-    TH1D* h_A = (TH1D*) h_mtt_LL->Clone();
-    TH1D* h_B = (TH1D*) h_mtt_LR->Clone();
-
-    h_A->Add(h_mtt_RR);
-    h_B->Add(h_mtt_RL);
-
-    double ALL = this->TotalAsymmetry(h_A, h_B);
-    printf("ALL' = %f\n", ALL);
-
-    TH1D* h_ALL = this->Asymmetry("ALL", "A_{LL}", h_A, h_B);
-    delete h_A;
-    delete h_B;
-    return h_ALL;
-}
-
-TH1D* Analysis::MakeAL () {
-    TH1D* h_A = (TH1D*) h_mtt_LL->Clone();
-    TH1D* h_B = (TH1D*) h_mtt_RR->Clone();
-
-    h_A->Add(h_mtt_LR);
-    h_B->Add(h_mtt_RL);
-
-    double AL = this->TotalAsymmetry(h_A, h_B);
-    printf("AL' = %f\n", AL);
-
-    TH1D* h_AL = this->Asymmetry("AL", "A_{L}", h_A, h_B);
-    delete h_A;
-    delete h_B;
-    return h_AL;
-}
-
-void Analysis::TotalSpinAsymmetries () {
-    double sigmaLL = h_mtt_LL->Integral();
-    double sigmaLR = h_mtt_LR->Integral();
-    double sigmaRL = h_mtt_RL->Integral();
-    double sigmaRR = h_mtt_RR->Integral();
-
-    double ALL = (sigmaLL + sigmaRR - sigmaRL - sigmaLR)/
-                 (sigmaLL + sigmaRR + sigmaRL + sigmaLR);
-
-    double AL = (sigmaLL + sigmaLR - sigmaRL - sigmaRR)/
-                (sigmaLL + sigmaRR + sigmaRL + sigmaLR);
-
-    printf("ALL = %f\n", ALL);
-    printf("AL = %f\n", AL);
-}
-
-double Analysis::TotalAsymmetry(TH1D* h_A, TH1D* h_B) {
-    double A = h_A->Integral("width");
-    double B = h_B->Integral("width");
-    double Atot = (A - B)/(A + B);
-    return Atot;
 }
