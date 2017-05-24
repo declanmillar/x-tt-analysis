@@ -1401,6 +1401,7 @@ std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::pair<TLoren
                 std::cout << "number of real solutions for b-combo " << i << ": " << p_vsol.at(i).size() << "\n";
             }
             std::cout << "total number of solutions = " << nsols << "\n";
+            std::cout << "I = " << I << " J = " << J << " K = " << K << " L = "<<  L << "\n";
         }
         // if (std::abs(mW2 - m_Wmass) > 1.0) std::cout << "mW-   = " << mW2 << "\n";
         // if (std::abs(mt1 - m_tmass) > 0.1) std::cout << "mt    = " << mt1 << "\n";
@@ -1449,21 +1450,20 @@ std::vector<std::pair<TLorentzVector, TLorentzVector> > Analysis::KinematicRecon
     double a4 = 2 * (Eb1 * pl1z - El1 * pb1z);
 
     double b1 = (Eb2 + El2) * (mw2 * mw2 - ml2 * ml2)
-              - El2 * (mt2 * mt2 - mb2 * mb2 - ml2 * ml2)
-              + 2 * Eb2 * El2 * El2
-              - 2 * El2 * (pb2x * pl2x + pb2y * pl2y + pb2z * pl2z);
+                - El2 * (mt2 * mt2 - mb2 * mb2 - ml2 * ml2)
+                + 2 * Eb2 * El2 * El2
+                - 2 * El2 * (pb2x * pl2x + pb2y * pl2y + pb2z * pl2z);
 
     double b2 = 2 * (Eb2 * pl2x - El2 * pb2x);
     double b3 = 2 * (Eb2 * pl2y - El2 * pb2y);
     double b4 = 2 * (Eb2 * pl2z - El2 * pb2z);
 
-    double c22 = //(mw1 * mw1 - ml1 * ml1) * (mw1 * mw1 - ml1 * ml1)
-                pow(mw1 * mw1 - ml1 * ml1, 2)
-               -4 * (El1 * El1 - pl1z * pl1z) * (a1 / a4) * (a1 / a4)
-               -4 * (mw1 * mw1 - ml1 * ml1) * pl1z * a1 / a4;
+    double c22 = pow(mw1 * mw1 - ml1 * ml1, 2)
+                 -4 * (El1 * El1 - pl1z * pl1z) * (a1 / a4) * (a1 / a4)
+                 -4 * (mw1 * mw1 - ml1 * ml1) * pl1z * a1 / a4;
 
     double c21 = 4 * (mw1 * mw1 - ml1 * ml1) * (pl1x - pl1z * a2 / a4)
-               -8 * (El1 * El1 - pl1z*pl1z) * a1 * a2 / (a4 * a4)
+               -8 * (El1 * El1 - pl1z * pl1z) * a1 * a2 / (a4 * a4)
                -8 * pl1x * pl1z * a1 / a4;
 
     double c20 = -4 * (El1 * El1 - pl1x * pl1x)
@@ -1490,30 +1490,30 @@ std::vector<std::pair<TLorentzVector, TLorentzVector> > Analysis::KinematicRecon
     c10 = c10 * a4 * a4;
     c00 = c00 * a4 * a4;
 
-    double dd22 = (mw2 * mw2 - ml2 * ml2) * (mw2 * mw2 - ml2 * ml2)
-                -4 * (El2 * El2 - pl2z * pl2z) * (b1 / b4) * (b1 / b4)
-                -4 * (mw2 * mw2 - ml2 * ml2) * pl2z * b1 / b4;
+    double dd22 = pow(mw2 * mw2 - ml2 * ml2, 2)
+                  -4 * (El2 * El2 - pl2z * pl2z) * (b1 / b4) * (b1 / b4)
+                  -4 * (mw2 * mw2 - ml2 * ml2) * pl2z * b1 / b4;
 
     double dd21 = 4 * (mw2 * mw2 - ml2 * ml2) * (pl2x - pl2z * b2 / b4)
-                -8 * (El2 * El2 - pl2z * pl2z) * b1 * b2 / (b4 * b4)
-                -8 * pl2x * pl2z * b1 / b4;
+                  -8 * (El2 * El2 - pl2z * pl2z) * b1 * b2 / (b4 * b4)
+                  -8 * pl2x * pl2z * b1 / b4;
 
     double dd20 = -4 * (El2 * El2 - pl2x * pl2x)
-                -4 * (El2 * El2 - pl2z * pl2z) * (b2 / b4) * (b2 / b4)
-                -8 * pl2x * pl2z * b2 / b4;
+                  -4 * (El2 * El2 - pl2z * pl2z) * (b2 / b4) * (b2 / b4)
+                  -8 * pl2x * pl2z * b2 / b4;
 
     double dd11 = 4 * (mw2 * mw2 - ml2 * ml2) * (pl2y - pl2z * b3 / b4)
-                -8 * (El2 * El2 -pl2z * pl2z) * b1 * b3 / (b4 * b4)
-                -8 * pl2y * pl2z * b1 / b4;
+                  -8 * (El2 * El2 -pl2z * pl2z) * b1 * b3 / (b4 * b4)
+                  -8 * pl2y * pl2z * b1 / b4;
 
     double dd10 = -8 * (El2 * El2 - pl2z * pl2z) * b2 * b3 / (b4 * b4)
-                +8 * pl2x * pl2y
-                -8 * pl2x * pl2z * b3 / b4
-                -8 * pl2y * pl2z * b2 / b4;
+                  +8 * pl2x * pl2y
+                  -8 * pl2x * pl2z * b3 / b4
+                  -8 * pl2y * pl2z * b2 / b4;
 
     double dd00 = -4 * (El2 * El2 - pl2y * pl2y)
-                -4 * (El2 * El2 - pl2z * pl2z) * (b3 / b4) * (b3 / b4)
-                -8 * pl2y * pl2z * b3 / b4;
+                  -4 * (El2 * El2 - pl2z * pl2z) * (b3 / b4) * (b3 / b4)
+                  -8 * pl2y * pl2z * b3 / b4;
 
     dd22 = dd22 * b4 * b4;
     dd21 = dd21 * b4 * b4;
@@ -1523,61 +1523,61 @@ std::vector<std::pair<TLorentzVector, TLorentzVector> > Analysis::KinematicRecon
     dd00 = dd00 * b4 * b4;
 
     double d22 = dd22
-               + Emissx * Emissx * dd20
-               + Emissy * Emissy * dd00
-               + Emissx * Emissy * dd10
-               + Emissx * dd21
-               + Emissy * dd11;
+                 + Emissx * Emissx * dd20
+                 + Emissy * Emissy * dd00
+                 + Emissx * Emissy * dd10
+                 + Emissx * dd21
+                 + Emissy * dd11;
 
     double d21 = -dd21
-               - 2 * Emissx * dd20
-               - Emissy * dd10;
+                 -2 * Emissx * dd20
+                 - Emissy * dd10;
 
     double d20 = dd20;
 
     double d11 = -dd11
-               - 2 * Emissy * dd00
-               - Emissx * dd10;
+                 -2 * Emissy * dd00
+                 - Emissx * dd10;
 
     double d10 = dd10;
     double d00 = dd00;
 
     double h4 = c00 * c00 * d22 * d22
-                    + c11 * d22 * (c11 * d00 - c00 * d11)
-                    + c00 * c22 * (d11 * d11 - 2 * d00 * d22)
-                    + c22 * d00 * (c22 * d00 - c11 * d11);
+                + c11 * d22 * (c11 * d00 - c00 * d11)
+                + c00 * c22 * (d11 * d11 - 2 * d00 * d22)
+                + c22 * d00 * (c22 * d00 - c11 * d11);
 
     double h3 = c00 * d21 * (2 * c00 * d22 - c11 * d11)
-                    + c00 * d11 * (2 * c22 * d10 + c21 * d11)
-                    + c22 * d00 * (2 * c21 * d00 - c11 * d10)
-                    - c00 * d22 * (c11 * d10 + c10 * d11)
-                    -2 * c00 * d00 * (c22 * d21 + c21 * d22)
-                    - d00 * d11 * (c11 * c21 + c10 * c22)
-                    + c11 * d00 * (c11 * d21 + 2 * c10 * d22);
+                + c00 * d11 * (2 * c22 * d10 + c21 * d11)
+                + c22 * d00 * (2 * c21 * d00 - c11 * d10)
+                - c00 * d22 * (c11 * d10 + c10 * d11)
+                -2 * c00 * d00 * (c22 * d21 + c21 * d22)
+                - d00 * d11 * (c11 * c21 + c10 * c22)
+                + c11 * d00 * (c11 * d21 + 2 * c10 * d22);
 
     double h2 = c00 * c00 * (2 * d22 * d20 + d21 * d21)
-                    - c00 * d21 * (c11 * d10 + c10 * d11)
-                    + c11 * d20 * (c11 * d00 - c00 * d11)
-                    + c00 * d10 * (c22 * d10 - c10 * d22)
-                    + c00 * d11 * (2 * c21 * d10 + c20 * d11)
-                    + (2 * c22 * c20 + c21 * c21) * d00 * d00
-                    - 2 * c00 * d00 * (c22 * d20 + c21 * d21 + c20 * d22)
-                    + c10 * d00 * (2 * c11 * d21 + c10 * d22)
-                    - d00 * d10 * (c11 * c21 + c10 * c22)
-                    - d00 * d11 * (c11 * c20 + c10 * c21);
+                - c00 * d21 * (c11 * d10 + c10 * d11)
+                + c11 * d20 * (c11 * d00 - c00 * d11)
+                + c00 * d10 * (c22 * d10 - c10 * d22)
+                + c00 * d11 * (2 * c21 * d10 + c20 * d11)
+                + (2 * c22 * c20 + c21 * c21) * d00 * d00
+                - 2 * c00 * d00 * (c22 * d20 + c21 * d21 + c20 * d22)
+                + c10 * d00 * (2 * c11 * d21 + c10 * d22)
+                - d00 * d10 * (c11 * c21 + c10 * c22)
+                - d00 * d11 * (c11 * c20 + c10 * c21);
 
     double h1 = c00 * d21 * (2 * c00 * d20 - c10 * d10)
-                    - c00 * d20 * (c11 * d10 + c10 * d11)
-                    + c00 * d10 * (c21 * d10 + 2 * c20 * d11)
-                    - 2 * c00 * d00 * (c21 * d20 + c20 * d21)
-                    + c10 * d00 * (2 * c11 * d20 + c10 * d21)
-                    + c20 * d00 * (2 * c21 * d00 - c10 * d11)
-                    - d00 * d10 * (c11 * c20 + c10 * c21);
+                - c00 * d20 * (c11 * d10 + c10 * d11)
+                + c00 * d10 * (c21 * d10 + 2 * c20 * d11)
+                - 2 * c00 * d00 * (c21 * d20 + c20 * d21)
+                + c10 * d00 * (2 * c11 * d20 + c10 * d21)
+                + c20 * d00 * (2 * c21 * d00 - c10 * d11)
+                - d00 * d10 * (c11 * c20 + c10 * c21);
 
     double h0 = c00 * c00 * d20 * d20
-                    + c10 * d20 * (c10 * d00 - c00 * d10)
-                    + c20 * d10 * (c00 * d10 - c10 * d00)
-                    + c20 * d00 * (c20 * d00 - 2 * c00 * d20);
+                + c10 * d20 * (c10 * d00 - c00 * d10)
+                + c20 * d10 * (c00 * d10 - c10 * d00)
+                + c20 * d00 * (c20 * d00 - 2 * c00 * d20);
 
     float a[4] = {static_cast<float>(h1 / h0), static_cast<float>(h2 / h0), static_cast<float>(h3 / h0), static_cast<float>(h4 / h0)};
 
@@ -1589,7 +1589,7 @@ std::vector<std::pair<TLorentzVector, TLorentzVector> > Analysis::KinematicRecon
     double zero_check;
     for (int i = 0; i < nReal; i++) {
         zero_check = pow(x[i], 4) + a[0] * pow(x[i], 3) + a[1] * pow(x[i], 2) + a[2] * x[i] + a[3];
-        if (zero_check > 10e-4) std::cout << "warning expression should be zero; solution " << i << "gives:" << zero_check << "\n";
+        if (zero_check > 10e-4) std::cout << "warning expression should be zero; solution " << i << " gives: " << zero_check << "\n";
     }
 
     if (x[0] != x[0] or x[1] != x[1] or x[2] != x[2] or x[3] != x[3]) std::cout << "warning: NaNs in quartic solutions.\n";
