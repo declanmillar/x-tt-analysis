@@ -12,7 +12,7 @@ void ProgressBar(unsigned int x, unsigned int n, unsigned int w)
     std::cout << "[";
     for (unsigned int i = 0; i < c; i++) std::cout << "#";
     for (unsigned int i = c; i < w; i++) std::cout << "-";
-    std::cout << "](" << std::setw(3) << (int)(ratio * 100) << "%)";
+    std::cout << "] (" << std::setw(3) << (int)(ratio * 100) << "%)";
     if (x == n) std::cout << "\n" << std::flush;
     else std::cout << "\r" << std::flush;
 }

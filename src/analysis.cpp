@@ -2,22 +2,22 @@
 #include "trim.hpp"
 #include "progress-bar.hpp"
 #include "bool-to-string.hpp"
+// #include "delphes-branches.hpp"
 
-
-Analysis::Analysis(const TString& model, const TString& process, const TString& options, const int energy, const int luminosity, const int reco, const TString tag):
+Analysis::Analysis(const TString& model, const TString& process, const TString& options, const int energy, const int luminosity, const int reconstruction, const TString tag):
     m_model(model),
     m_process(process),
     m_options(options),
     m_energy(energy),
     m_luminosity(luminosity),
-    m_reco(reco), 
-    m_tag(tag), 
+    m_reconstruction(reconstruction),
+    m_tag(tag),
     m_outputFile(nullptr),
     m_inputFiles(nullptr),
     m_weightFiles(nullptr),
     m_chain(nullptr),
     m_tree(nullptr)
-{ 
+{
     this->PreLoop();
     this->Loop();
     this->PostLoop();
@@ -29,34 +29,32 @@ void Analysis::EachEvent()
     UpdateCutflow(c_events, true);
 
     double weight = 1;
-    double weight_R = 1;
 
     if (!this->TwoElectrons()) return;
     if (!this->OppositeCharge()) return;
-    if (!this->SufficientBtags(2)) return;
+    if (!this->SufficientBtags()) return;
 
     TLorentzVector pvis(0,0,0,0);
+    std::vector<TLorentzVector> p_b, p_q, p_j;
 
-    std::vector<TLorentzVector> p_b, p_q, p_j, p_l(2);
-    for (int i = 0; i < b_Jet->GetEntries(); i++)
-    {
-      Jet *jet = (Jet*) b_Jet->At(i);
-      TLorentzVector p;
-      p.SetPtEtaPhiM(jet->PT, jet->Eta, jet->Phi, jet->Mass);
-      if (jet->BTag > 0) {
-        p_b.push_back(p);
-        h_pt_bjets->Fill(p.Pt(), weight);
-        h_eta_bjets->Fill(p.Eta(), weight);
-      }
-      else {
-        p_q.push_back(p);
-        h_pt_qjets->Fill(p.Pt(), weight);
-        h_eta_qjets->Fill(p.Eta(), weight);
-      }
-      p_j.push_back(p);
-      h_pt_jets->Fill(p.Pt(), weight);
-      h_eta_jets->Fill(p.Eta(), weight);
-      pvis += p; 
+    for (int i = 0; i < b_Jet->GetEntries(); i++) {
+        Jet *jet = (Jet*) b_Jet->At(i);
+        TLorentzVector p;
+        p.SetPtEtaPhiM(jet->PT, jet->Eta, jet->Phi, jet->Mass);
+        if (jet->BTag > 0) {
+            p_b.push_back(p);
+            h_pt_bjets->Fill(p.Pt(), weight);
+            h_eta_bjets->Fill(p.Eta(), weight);
+        }
+        else {
+            p_q.push_back(p);
+            h_pt_qjets->Fill(p.Pt(), weight);
+            h_eta_qjets->Fill(p.Eta(), weight);
+        }
+        p_j.push_back(p);
+        h_pt_jets->Fill(p.Pt(), weight);
+        h_eta_jets->Fill(p.Eta(), weight);
+        pvis += p;
     }
 
     Electron *electron1 = (Electron*) b_Electron->At(0);
@@ -65,17 +63,17 @@ void Analysis::EachEvent()
     double charge1 = electron1->Charge;
     double charge2 = electron2->Charge;
 
-
+    std::pair<TLorentzVector, TLorentzVector> p_l;
     if (charge1 > 0) {
-        p_l.at(0).SetPtEtaPhiM(electron1->PT, electron1->Eta, electron1->Phi, 0);
-        p_l.at(1).SetPtEtaPhiM(electron2->PT, electron2->Eta, electron2->Phi, 0);
+        p_l.first.SetPtEtaPhiM(electron1->PT, electron1->Eta, electron1->Phi, 0);
+        p_l.second.SetPtEtaPhiM(electron2->PT, electron2->Eta, electron2->Phi, 0);
     }
     else {
-        p_l.at(1).SetPtEtaPhiM(electron1->PT, electron1->Eta, electron1->Phi, 0);
-        p_l.at(0).SetPtEtaPhiM(electron2->PT, electron2->Eta, electron2->Phi, 0);
+        p_l.second.SetPtEtaPhiM(electron1->PT, electron1->Eta, electron1->Phi, 0);
+        p_l.first.SetPtEtaPhiM(electron2->PT, electron2->Eta, electron2->Phi, 0);
     }
 
-    MissingET *missingET = (MissingET*) b_MissingET;
+    MissingET *missingET = (MissingET*) b_MissingET->At(0);
     TLorentzVector p_miss;
     double ETmiss = missingET->MET;
     p_miss.SetPtEtaPhiM(ETmiss, missingET->Eta, missingET->Phi, 0);
@@ -83,7 +81,9 @@ void Analysis::EachEvent()
     ScalarHT *scalarHT = (ScalarHT*) b_ScalarHT->At(0);
     double HT = scalarHT->HT / 1000;
 
-    pvis = pvis + p_l.at(0) + p_l.at(1);
+    pvis = pvis + p_l.first + p_l.second;
+    for (auto& p : p_b) pvis += p;
+    for (auto& p : p_q) pvis += p;
     double mvis = pvis.M();
     double pTvis = pvis.Pt();
     double KT = sqrt(mvis * mvis + pTvis * pTvis) + ETmiss;
@@ -93,46 +93,87 @@ void Analysis::EachEvent()
     h_mvis->Fill(mvis, weight);
     h_KT->Fill(KT, weight);
 
-    // this->ReconstructDilepton(p_b, p_l, p_miss);
+    if (verbose) {
+        std::cout << "p_l+   = "; p_l.first.Print();
+        std::cout << "p_l-   = "; p_l.second.Print();
+        for (int i = 0; i < p_b.size(); i++) {
+            std::cout << "p_b" << i << "   = ";
+            p_b.at(i).Print();
+        }
+        for (int i = 0; i < p_q.size(); i++) {
+            std::cout << "p_q" << i << "   = ";
+            p_q.at(i).Print();
+        }
+        std::cout << "p_miss = "; p_miss.Print();
+    }
 
-    // double costheta_tt = cos(p_t.Angle(p_tbar.Vect()));
-    // double delta_abs_yt = std::abs(p_t.Rapidity()) - std::abs(p_tbar.Rapidity());
+    std::vector<TLorentzVector> p_bv;
+    TLorentzVector b1, b2, v1, v2;
+
+    p_bv = this->ReconstructDilepton(p_l, p_b, p_q, p_miss);
+
+    if (verbose) std::cout << "number of solutions: " << p_bv.size() << "\n";
+    if (p_bv.size() == 0) {
+        this->UpdateCutflow(c_realSolutions, false);
+        return;
+    }
+    else
+        this->UpdateCutflow(c_realSolutions, true);
+
+    b1 = p_bv[0];
+    b2 = p_bv[1];
+    v1 = p_bv[2];
+    v2 = p_bv[3];
+
+    // NeutrinoWeighting* neutrinoWeighting = new NeutrinoWeighting;
+    // neutrinoWeighting->apply(p_l[0], p_b[0], p_l[1], p_b[1], p_miss);
+
+    TLorentzVector p_W1 = p_l.first + v1;
+    TLorentzVector p_W2 = p_l.second + v2;
+
+    TLorentzVector p_t = b1 + p_W1;
+    TLorentzVector p_tbar = b2 + p_W2;
+
+    TLorentzVector P = p_t + p_tbar;
+    double mtt = P.M();
+    double ytt = P.Rapidity();
+    double costheta_tt = cos(p_t.Angle(p_tbar.Vect()));
+    double delta_abs_yt = std::abs(p_t.Rapidity()) - std::abs(p_tbar.Rapidity());
+
     // double costheta = pcm_t.CosTheta();
     // double costhetastar = int(ytt / std::abs(ytt)) * costheta;
-    // std::vector<TLorentzVector> p_R1(n), pcm_R1(n), ptop_R1(n), patop_R1(n);
-    // std::vector<TLorentzVector> p_R2(n), pcm_R2(n), ptop_R2(n), patop_R2(n);
 
-
-    h_pt_l1->Fill(p_l.at(0).Pt(), weight);
-    h_pt_l2->Fill(p_l.at(1).Pt(), weight);
-    h_eta_l1->Fill(p_l.at(0).Eta(), weight);
-    h_eta_l2->Fill(p_l.at(1).Eta(), weight);
+    // fill histograms
+    h_pt_l1->Fill(p_l.first.Pt(), weight);
+    h_pt_l2->Fill(p_l.second.Pt(), weight);
+    h_eta_l1->Fill(p_l.first.Eta(), weight);
+    h_eta_l2->Fill(p_l.second.Eta(), weight);
     h_HT->Fill(HT, weight);
 
+    h_pxt->Fill(p_t.Px(), weight);
+    h_pyt->Fill(p_t.Py(), weight);
+    h_pzt->Fill(p_t.Pz(), weight);
+    h_Et->Fill(p_t.E(), weight);
+    h_pTt->Fill(p_t.Pt(), weight);
+    h_etat->Fill(p_t.Eta(), weight);
+    h_phit->Fill(p_t.Phi() / m_pi, weight);
+    h_mt->Fill(p_t.M(), weight);
 
-    // if (this->PassCuts(p, P)) {
+    h_pxtbar->Fill(p_tbar.Px(), weight);
+    h_pytbar->Fill(p_tbar.Py(), weight);
+    h_pztbar->Fill(p_tbar.Pz(), weight);
+    h_Etbar->Fill(p_tbar.E(), weight);
+    h_pTtbar->Fill(p_tbar.Pt(), weight);
+    h_etatbar->Fill(p_tbar.Eta(), weight);
+    h_phitbar->Fill(p_tbar.Phi() / m_pi, weight);
+    h_mtbar->Fill(p_tbar.M(), weight);
 
-    //     h_pxt->Fill(p_t.Px(), weight);
-    //     h_pyt->Fill(p_t.Py(), weight);
-    //     h_pzt->Fill(p_t.Pz(), weight);
-    //     h_Et->Fill(p_t.E(), weight);
-    //     h_pTt->Fill(p_t.Pt(), weight);
-    //     h_etat->Fill(p_t.Eta(), weight);
-    //     h_phit->Fill(p_t.Phi() / m_pi, weight);
-    //     h_mt->Fill(p_t.M(), weight);
+    h_mtt->Fill(mtt / 1000, weight);
+    h_ytt->Fill(ytt, weight);
 
-    //     h_pxtbar->Fill(p_tbar.Px(), weight);
-    //     h_pytbar->Fill(p_tbar.Py(), weight);
-    //     h_pztbar->Fill(p_tbar.Pz(), weight);
-    //     h_Etbar->Fill(p_tbar.E(), weight);
-    //     h_pTtbar->Fill(p_tbar.Pt(), weight);
-    //     h_etatbar->Fill(p_tbar.Eta(), weight);
-    //     h_phitbar->Fill(p_tbar.Phi() / m_pi, weight);
-    //     h_mtbar->Fill(p_tbar.M(), weight);
-
-    //     h_mtt->Fill(mtt, weight);
-    //     h_ytt->Fill(ytt, weight);
-    //     h_costheta_tt->Fill(costheta_tt, weight_R);
+    h_mW1->Fill(p_W1.M(), weight);
+    h_mW2->Fill(p_W2.M(), weight);
+    //     h_costheta_tt->Fill(costheta_tt, weight);
     //     h_cosTheta->Fill(costheta, weight);
     //     h_cosThetaStar->Fill(costhetastar, weight);
 
@@ -176,7 +217,7 @@ void Analysis::EachEvent()
     //         double costheta_tl1 = cos(ptop[2].Angle(pcm_t.Vect()));
     //         double costheta_tl2 = cos(patop[4].Angle(pcm_tbar.Vect()));
     //         double cos1cos2 = costheta_tl1 * costheta_tl2;
-    double deltaPhi = p_l.at(0).DeltaPhi(p_l.at(1)) / m_pi;
+    double deltaPhi = p_l.first.DeltaPhi(p_l.second) / m_pi;
 
     //         TLorentzVector p_W = p[2] + p[3];
     //         double deltaR_bW = p_W.DeltaR(p[0]);
@@ -233,185 +274,6 @@ void Analysis::EachEvent()
     h2_HT_deltaPhi->Fill(HT, deltaPhi, weight);
     h2_mvis_deltaPhi->Fill(mvis, deltaPhi, weight);
     h2_KT_deltaPhi->Fill(KT, deltaPhi, weight);
-
-
-    //         TLorentzVector P_R1, P_R2;
-    //         if (m_reco == 1) {
-    //             p_R1 = this->ReconstructDilepton(p); // both decay leptonically
-
-    //             int i = 0;
-    //             for (auto& l : p_R1) {
-    //                 if (l != l) {
-    //                     printf("p[%i] has a NaN!\n", i);
-    //                     l.Print();
-    //                 }
-    //                 i++;
-    //             }
-
-    //             P_R1.SetPxPyPzE(0, 0, 0, 0);
-    //             for (auto& l : p_R1) P_R1 += l;
-
-    //             pcm_R1 = p_R1;
-    //             v = -1 * P_R1.BoostVector();
-    //             for (auto& l : pcm_R1) l.Boost(v);
-
-    //             ptop_R1 = p_R1;
-    //             v = -1 * (p_R1[0] + p_R1[2] + p_R1[3]).BoostVector();
-    //             for (auto& l : ptop_R1) l.Boost(v);
-
-    //             patop_R2 = p_R1;
-    //             v = -1 * (p_R1[1] + p_R1[4] + p_R1[5]).BoostVector();
-    //             for (auto& l : patop_R2) l.Boost(v);
-    //         }
-    //         else if (m_reco == 2) {
-    //             p_R1 = this->ReconstructSemilepton(p, +1); // top decays leptonically
-    //             p_R2 = this->ReconstructSemilepton(p, -1); // antitop decays leptonically
-
-    //             P_R1.SetPxPyPzE(0, 0, 0, 0);
-    //             for (auto& l : p_R1) P_R1 += l;
-
-    //             P_R2.SetPxPyPzE(0, 0, 0, 0);
-    //             for (auto& l : p_R2) P_R2 += l;
-
-    //             pcm_R1 = p_R1;
-    //             v = -1 * P_R1.BoostVector();
-    //             for (auto& l : pcm_R1) l.Boost(v);
-
-    //             pcm_R2 = p_R2;
-    //             v = -1 * P_R2.BoostVector();
-    //             for (auto& l : pcm_R2) l.Boost(v);
-
-    //             ptop_R1 = p_R1;
-    //             v = -1 * (p_R1[0] + p_R1[2] + p_R1[3]).BoostVector();
-    //             for (auto& l : ptop_R1) l.Boost(v);
-
-    //             patop_R2 = p_R2;
-    //             v = -1 * (p_R2[1] + p_R2[4] + p_R2[5]).BoostVector();
-    //             for (auto& l : patop_R2) l.Boost(v);
-    //         }
-            
-    //         TLorentzVector p_t_R1, p_tbar_R1, p_t_R2, p_tbar_R2;
-    //         TLorentzVector pcm_t_R1, pcm_tbar_R1, pcm_t_R2, pcm_tbar_R2;
-    //         if (m_reco > 0) {
-    //             p_t_R1 = p_R1[0] + p_R1[2] + p_R1[3];
-    //             p_tbar_R1 = p_R1[1] + p_R1[4] + p_R1[5];
-    //             pcm_t_R1 = pcm_R1[0] + pcm_R1[2] + pcm_R1[3];
-    //             pcm_tbar_R1 = pcm_R1[1] + pcm_R1[4] + pcm_R1[5];
-    //         }
-    //         if (m_reco == 2) {
-    //             pcm_t_R2 = pcm_R2[0] + pcm_R2[2] + pcm_R2[3];
-    //             pcm_tbar_R2 = pcm_R2[1] + pcm_R2[4] + pcm_R2[5];
-    //         }
-        
-    //         double mtt_R1 = P_R1.M() / 1000;
-    //         double mtt_R2 = P_R2.M() / 1000;
-
-    //         double ytt_R1, ytt_R2;
-    //         double costheta_R1, costheta_R2;
-    //         double costhetastar_R1, costhetastar_R2;
-    //         double costheta_tl_R1, costheta_tl_R2;
-    //         double costheta_tt_R1;
-    //         double delta_abs_yt_R1;
-
-    //         double pT_t_perf, pT_tbar_perf, mttperf, costhetatt_perf, costhetastar_perf, costhetatl_perf;
-
-    //         if (m_reco > 0) {
-    //             pT_t_perf = (p_t.Pt() - p_t_R1.Pt()) / p_t.Pt();
-    //             pT_tbar_perf = (p_tbar.Pt() - p_tbar_R1.Pt()) / p_tbar.Pt();
-    //             delta_abs_yt_R1 = std::abs(p_t_R1.Rapidity()) - std::abs(p_tbar_R1.Rapidity());
-    //             ytt_R1 = P_R1.Rapidity();
-    //             costheta_R1 = pcm_t_R1.CosTheta();
-    //             costhetastar_R1 = int(ytt_R1 / std::abs(ytt_R1)) * costheta_R1;
-    //             costheta_tl_R1 = cos(ptop_R1[2].Angle(pcm_t_R1.Vect()));
-    //             costheta_tt_R1 = cos(p_t_R1.Angle(p_tbar_R1.Vect()));
-    //             costhetatt_perf = (costheta_tt - costheta_tt_R1) / costheta_tt;
-    //             costhetastar_perf = (costhetastar - costhetastar_R1) / costhetastar;
-    //             costhetatl_perf = (costheta_tl1 - costheta_tl_R1) / costheta_tl1;
-    //             mttperf = (mtt - mtt_R1) / mtt;
-    //         }
-    //         if (m_reco == 2) {
-    //             ytt_R2 = P_R2.Rapidity();
-    //             costheta_R2 = pcm_t_R2.CosTheta();
-    //             costhetastar_R2 = int(ytt_R2 / std::abs(ytt_R2)) * costheta_R2;
-    //             costheta_tl_R2 = cos(patop_R2[4].Angle(pcm_tbar_R2.Vect()));
-    //         }
-
-
-    //         if (m_reco > 0) {
-    //             if (true) {//(this->PassCuts(p_R1, P_R1)) {
-
-    //                 h_mtt_R->Fill(mtt_R1, weight_R);
-    //                 h_ytt_R->Fill(ytt_R1, weight_R);
-
-    //                 h_pxt_R->Fill(p_t_R1.Px(), weight_R);
-    //                 h_pyt_R->Fill(p_t_R1.Py(), weight_R);
-    //                 h_pzt_R->Fill(p_t_R1.Pz(), weight_R);
-    //                 h_Et_R->Fill(p_t_R1.E(), weight_R);
-    //                 h_pTt_R->Fill(p_t_R1.Pt(), weight_R);
-    //                 h_etat_R->Fill(p_t_R1.Eta(), weight_R);
-    //                 h_phit_R->Fill(p_t_R1.Phi() / m_pi, weight_R);
-    //                 h_mt_R->Fill(p_t_R1.M(), weight_R);
-    //                 h_costhetatt_perf->Fill(costhetatt_perf, weight);
-    //                 h_costhetastar_perf->Fill(costhetastar_perf, weight);
-    //                 h_costhetatl_perf->Fill(costhetatl_perf, weight);
-    //                 h_m_tt_perf->Fill(mttperf, weight);
-    //                 h_pT_t_perf->Fill(pT_t_perf, weight_R);
-    //                 h_pT_tbar_perf->Fill(pT_tbar_perf, weight_R);
-    //                 h2_m_tt_pT_t_perf->Fill(mttperf, pT_t_perf, weight_R);
-    //                 h2_m_tt_costheta_tt_perf->Fill(mttperf, costhetatt_perf, weight);
-
-
-    //                 h_pxtbar_R->Fill(p_tbar_R1.Px(), weight_R);
-    //                 h_pytbar_R->Fill(p_tbar_R1.Py(), weight_R);
-    //                 h_pztbar_R->Fill(p_tbar_R1.Pz(), weight_R);
-    //                 h_Etbar_R->Fill(p_tbar_R1.E(), weight_R);
-    //                 h_pTtbar_R->Fill(p_tbar_R1.Pt(), weight_R);
-    //                 h_etatbar_R->Fill(p_tbar_R1.Eta(), weight_R);
-    //                 h_phitbar_R->Fill(p_tbar_R1.Phi() / m_pi, weight_R);
-    //                 h_mtbar_R->Fill(p_tbar_R1.M(), weight_R);
-
-    //                 h_costheta_tt_R->Fill(costheta_tt_R1, weight_R);
-    //                 h_cosTheta_R->Fill(costheta_R1, weight_R);
-    //                 h_cosThetaStar_R->Fill(costhetastar_R1, weight_R);
-    //                 h_pv1x_R->Fill(p_R1[3].Px(), weight_R);
-    //                 h_pv1y_R->Fill(p_R1[3].Py(), weight_R);
-    //                 h_pv1z_R->Fill(p_R1[3].Pz(), weight_R);
-    //                 h_pv2x_R->Fill(p_R1[5].Px(), weight_R);
-    //                 h_pv2y_R->Fill(p_R1[5].Py(), weight_R);
-    //                 h_pv2z_R->Fill(p_R1[5].Pz(), weight_R);
-
-    //                 if (costhetastar_R1 > 0) h_mtt_tF_R->Fill(mtt_R1, weight_R);
-    //                 if (costhetastar_R1 < 0) h_mtt_tB_R->Fill(mtt_R1, weight_R);
-
-    //                 if (delta_abs_yt > 0) h_mtt_tCF->Fill(mtt_R1, weight);
-    //                 if (delta_abs_yt < 0) h_mtt_tCB->Fill(mtt_R1, weight);
-
-    //                 if (costheta_tl1 > 0) h_mtt_tlF->Fill(mtt_R1, weight);
-    //                 if (costheta_tl2 < 0) h_mtt_tlB->Fill(mtt_R1, weight);
-
-    //                 if (costheta_tl1 > 0) h_mtt_lF->Fill(mtt_R1, weight);
-    //                 if (costheta_tl1 < 0) h_mtt_lB->Fill(mtt_R1, weight);
-
-    //                 h2_mtt_cosThetaStar_R->Fill(mtt_R1, costhetastar_R1, weight_R);
-    //                 h2_mtt_cosThetal_R->Fill(mtt_R1, costheta_tl_R1, weight_R);
-    //             }
-    //         }
-    //         if (m_reco == 2) {
-    //             if (true) {//(this->PassCuts(p_R2, P_R2)) {
-    //                 h_mtt_R->Fill(mtt_R2, weight_R);
-    //                 h_ytt_R->Fill(ytt_R2, weight_R);
-    //                 h_mt_R->Fill(pcm_t_R2.M(), weight_R);
-    //                 h_mtbar_R->Fill(pcm_tbar_R2.M(), weight_R);
-    //                 h_cosTheta_R ->Fill(costheta_R2, weight_R);
-    //                 h_cosThetaStar_R->Fill(costhetastar_R2, weight_R);
-    //                 if (costhetastar_R2 > 0) h_mtt_tF_R->Fill(mtt_R2, weight_R);
-    //                 if (costhetastar_R2 < 0) h_mtt_tB_R->Fill(mtt_R2, weight_R);
-    //                 h2_mtt_cosThetaStar_R->Fill(mtt_R2, costhetastar_R2, weight_R);
-    //                 h2_mtt_cosThetal_R->Fill(mtt_R2, costheta_tl_R2, weight_R);
-    //             }
-    //         }
-    //     }
-    // }
 }
 
 
@@ -442,6 +304,7 @@ void Analysis::SetupInputFiles()
                 if (m_model != "SM") intermediates = intermediates + "X";
             }
             filename = m_dataDirectory + "/" + initial + intermediates + final + "." + model + "." + E + "TeV" + "." + m_pdf + options;
+            filename += ".pythia.delphes";
             m_inputFiles->push_back(filename + ".root");
             m_weightFiles->push_back(filename + ".log");
         }
@@ -458,7 +321,7 @@ void Analysis::SetupInputFiles()
         struct stat buffer;
         bool exists = stat(inputFile.Data(), &buffer) == 0;
         if (exists == false) {
-            std::cout << "Error: no" << inputFile.Data() << std::endl;
+            std::cout << "Error: no " << inputFile.Data() << std::endl;
             exit(exists);
         }
     }
@@ -470,14 +333,14 @@ void Analysis::SetupOutputFiles()
     std::string E = std::to_string(m_energy);
 
     m_outputFilename = m_dataDirectory + "/" + m_process + "." + m_model + "." + E + "TeV" + "." + m_pdf + m_options;
-    m_outputFilename = m_outputFilename + ".r" + std::to_string(m_reco) + m_tag;
-
-    if (m_reco == 2 && m_btags != 2) m_outputFilename += ".b" + std::to_string(m_btags);
-    string ytt = std::to_string(m_ytt);
-    if (m_ytt > 0) m_outputFilename += ".y" + ytt.erase(ytt.find_last_not_of('0') + 1, string::npos);
+    m_outputFilename += ".pythia.delphes";
+    m_outputFilename = m_outputFilename + ".r" + std::to_string(m_reconstruction) + m_tag;
+    if (m_reconstruction == 2 && m_btags != 2) m_outputFilename += ".b" + std::to_string(m_btags);
+    std::string ytt = std::to_string(m_ytt);
+    if (m_ytt > 0) m_outputFilename += ".y" + ytt.erase(ytt.find_last_not_of('0') + 1, std::string::npos);
     if (m_Emin >= 0 || m_Emax >= 0) m_outputFilename += ".E" + std::to_string(m_Emin) + "-" + std::to_string(m_Emax);
-    string eff = std::to_string(m_efficiency);
-    if (m_efficiency < 1.0) m_outputFilename += ".e" + eff.erase(eff.find_last_not_of('0') + 1, string::npos);
+    std::string eff = std::to_string(m_efficiency);
+    if (m_efficiency < 1.0) m_outputFilename += ".e" + eff.erase(eff.find_last_not_of('0') + 1, std::string::npos);
     if (m_luminosity > 0) m_outputFilename += ".L" + std::to_string(m_luminosity);
     if (m_fid) m_outputFilename += ".fid";
     if (m_iso) m_outputFilename += ".iso";
@@ -488,7 +351,7 @@ void Analysis::SetupOutputFiles()
 void Analysis::PostLoop()
 {
     this->CheckResults();
-    if (m_reco == 2) this->CheckPerformance();
+    if (m_reconstruction == 2) this->CheckPerformance();
     this->MakeDistributions();
     // this->WriteHistograms();
     this->PrintCutflow();
@@ -507,10 +370,10 @@ void Analysis::CheckPerformance()
 {
     double quarkRecoRatio = m_nQuarksMatched / (double) m_nReco;
     double neutrinoRecoRatio = m_nNeutrinoMatched / (double) m_nReco;
-    printf("-- Performance --\n");
+    std::cout << "-- Performance --\n";
     printf("Quark assignment: %.1f%% correct\n", quarkRecoRatio * 100);
     printf("pzNu assignment: %.1f%% correct\n", neutrinoRecoRatio * 100);
-    printf("\n");
+    std::cout << "\n";
 }
 
 
@@ -528,7 +391,7 @@ TH1D* Analysis::Asymmetry(const TString& name, const TString& title, TH1D* h1, T
 }
 
 
-void Analysis::AsymmetryUncertainty(TH1D* hA, TH1D* h1, TH1D* h2) 
+void Analysis::AsymmetryUncertainty(TH1D* hA, TH1D* h1, TH1D* h2)
 {
     double A, dA, N, N1, N2;
     for (int i = 1; i < hA->GetNbinsX() + 1; i++) {
@@ -563,20 +426,25 @@ void Analysis::MakeHistograms()
     h_pt_jets = new TH1D("pT_jets", "p_{T}^{jets}", 40, 0, 5000);
     h_pt_jets->Sumw2();
     h_eta_jets = new TH1D("eta_jets", "#eta_{jets}", 60, -3, 3);
-    h_eta_jets->Sumw2(); 
+    h_eta_jets->Sumw2();
     h_pt_bjets = new TH1D("pT_bjets", "p_{T}^{b-jets}", 40, 0, 5000);
     h_pt_bjets->Sumw2();
     h_eta_bjets = new TH1D("eta_bjets", "#eta_{b-jets}", 60, -3, 3);
-    h_eta_bjets->Sumw2(); 
+    h_eta_bjets->Sumw2();
     h_pt_qjets = new TH1D("pT_qjets", "p_{T}^{q-jets}", 40, 0, 5000);
     h_pt_qjets->Sumw2();
     h_eta_qjets = new TH1D("eta_qjets", "#eta_{q-jets}", 60, -3, 3);
-    h_eta_qjets->Sumw2();    
+    h_eta_qjets->Sumw2();
 
     h_mtt = new TH1D("m_tt", "m_{tt}", nbins, Emin, Emax);
     h_mtt->Sumw2();
     h_ytt = new TH1D("y_tt", "y_{tt}", 50, -2.5, 2.5);
     h_ytt->Sumw2();
+
+    h_mW1 = new TH1D("mW1", "m_{W^{+}}", 100, 0, 5000);
+    h_mW1->Sumw2();
+    h_mW2 = new TH1D("mW2", "m_{W^{-}}", 100, 0, 5000);
+    h_mW2->Sumw2();
 
     h_pxt = new TH1D("px_t", "p_{x}_{t}", 100, 0, 5000);
     h_pxt->Sumw2();
@@ -655,10 +523,10 @@ void Analysis::MakeHistograms()
     h_cosThetaStar = new TH1D("costheta_star", "cos#theta^{*}", nbins, -1.0, 1.0);
     h_cosThetaStar->Sumw2();
 
-    h_HT = new TH1D("HT", "H_{T}", 40, 0, 4);
+    h_HT = new TH1D("HT", "H_{T}", 50, 0, 6);
     h_HT->Sumw2();
 
-    h_KT = new TH1D("KT", "K_{T}", 40, 0, 4);
+    h_KT = new TH1D("KT", "K_{T}", 50, 0, 6);
     h_KT->Sumw2();
 
     h_mvis = new TH1D("mvis", "m_{vis}", 40, 0, 4);
@@ -739,26 +607,29 @@ void Analysis::MakeHistograms()
 void Analysis::MakeDistributions()
 {
     std::cout << "Making distributions ..." << std::endl;
-    // this->MakeDistribution1D(h_mtt, "TeV");
-    // this->MakeDistribution1D(h_ytt, "");
+    this->MakeDistribution1D(h_mtt, "TeV");
+    this->MakeDistribution1D(h_ytt, "");
 
-    // this->MakeDistribution1D(h_pxt, "GeV");
-    // this->MakeDistribution1D(h_pyt, "GeV");
-    // this->MakeDistribution1D(h_pzt, "GeV");
-    // this->MakeDistribution1D(h_Et, "GeV");
-    // this->MakeDistribution1D(h_pTt, "GeV");
-    // this->MakeDistribution1D(h_etat, "");
-    // this->MakeDistribution1D(h_phit, "");
-    // this->MakeDistribution1D(h_mt, "GeV");
+    this->MakeDistribution1D(h_mW1, "TeV");
+    this->MakeDistribution1D(h_mW2, "TeV");
 
-    // this->MakeDistribution1D(h_pxtbar, "GeV");
-    // this->MakeDistribution1D(h_pytbar, "GeV");
-    // this->MakeDistribution1D(h_pztbar, "GeV");
-    // this->MakeDistribution1D(h_Etbar, "GeV");
-    // this->MakeDistribution1D(h_pTtbar, "GeV");
-    // this->MakeDistribution1D(h_etatbar, "");
-    // this->MakeDistribution1D(h_phitbar, "");
-    // this->MakeDistribution1D(h_mtbar, "GeV");
+    this->MakeDistribution1D(h_pxt, "GeV");
+    this->MakeDistribution1D(h_pyt, "GeV");
+    this->MakeDistribution1D(h_pzt, "GeV");
+    this->MakeDistribution1D(h_Et, "GeV");
+    this->MakeDistribution1D(h_pTt, "GeV");
+    this->MakeDistribution1D(h_etat, "");
+    this->MakeDistribution1D(h_phit, "");
+    this->MakeDistribution1D(h_mt, "GeV");
+
+    this->MakeDistribution1D(h_pxtbar, "GeV");
+    this->MakeDistribution1D(h_pytbar, "GeV");
+    this->MakeDistribution1D(h_pztbar, "GeV");
+    this->MakeDistribution1D(h_Etbar, "GeV");
+    this->MakeDistribution1D(h_pTtbar, "GeV");
+    this->MakeDistribution1D(h_etatbar, "");
+    this->MakeDistribution1D(h_phitbar, "");
+    this->MakeDistribution1D(h_mtbar, "GeV");
 
     // this->MakeDistribution1D(h_cosTheta, "");
     // this->MakeDistribution1D(h_cosThetaStar, "");
@@ -791,7 +662,7 @@ void Analysis::MakeDistributions()
     this->MakeDistribution1D(h_pt_qjets, "TeV");
     this->MakeDistribution1D(h_eta_qjets, "");
 
- 
+
     this->MakeDistribution1D(h_HT, "TeV");
     this->MakeDistribution1D(h_KT, "TeV");
     this->MakeDistribution1D(h_mvis, "TeV");
@@ -803,7 +674,7 @@ void Analysis::MakeDistributions()
 
     // this->MakeDistribution1D(h_mtt_tlF, "TeV");
     // this->MakeDistribution1D(h_mtt_tlB, "TeV");
-    
+
     // h_AtlFB = this->Asymmetry("AtlFB", "A^{tl}_{FB^*}", h_mtt_tlF, h_mtt_tlB);
     // h_AtlFB->GetYaxis()->SetTitle(h_AtlFB->GetTitle());
     // h_AtlFB->GetXaxis()->SetTitle("m_{tt} [TeV]");
@@ -964,7 +835,7 @@ void Analysis::MakeDistribution2D(TH2D* h, TString xtitle,  TString xunits, TStr
 }
 
 
-void Analysis::NormalizeSliceY(TH2D* h) 
+void Analysis::NormalizeSliceY(TH2D* h)
 {
     double integral = 1;
     int k;
@@ -1012,7 +883,7 @@ void Analysis::WriteHistograms()
 }
 
 
-bool Analysis::PassFiducialCuts(const std::vector<TLorentzVector>& p, const TLorentzVector& P) 
+bool Analysis::PassFiducialCuts(const std::vector<TLorentzVector>& p, const TLorentzVector& P)
 {
     if (!m_fid) return true;
     if (this->PassCutsET(p, P)) {
@@ -1027,7 +898,7 @@ bool Analysis::PassFiducialCuts(const std::vector<TLorentzVector>& p, const TLor
 }
 
 
-bool Analysis::PassCuts(const std::vector<TLorentzVector>& p, const TLorentzVector& P) 
+bool Analysis::PassCuts(const std::vector<TLorentzVector>& p, const TLorentzVector& P)
 {
     // if (this->PassCutsET(p, P)) {
     //     if (this->PassCutsEta(p,P)) {
@@ -1077,16 +948,15 @@ bool Analysis::OppositeCharge()
 }
 
 
-bool Analysis::SufficientBtags(int minBtags)
+bool Analysis::SufficientBtags()
 {
     bool sufficientBtags;
     int nBtags = 0;
-    for (int i = 0; i < b_Jet->GetEntries(); i++)
-    {
+    for (int i = 0; i < b_Jet->GetEntries(); i++) {
       Jet *jet = (Jet*) b_Jet->At(i);
       if (jet->BTag > 0) nBtags++;
     }
-    if (nBtags >= minBtags) sufficientBtags = true;
+    if (nBtags >= m_btags) sufficientBtags = true;
     else sufficientBtags = false;
     this->UpdateCutflow(c_sufficientBtags, sufficientBtags);
     return sufficientBtags;
@@ -1184,7 +1054,7 @@ void Analysis::SetDataDirectory()
     char hostname[1024];
     hostname[1023] = '\0';
     gethostname(hostname, 1023);
-    string Hostname(hostname);
+    std::string Hostname(hostname);
 
     if (Hostname == "Sunder")
         m_dataDirectory = "/Users/declan/Data/zprime";
@@ -1193,7 +1063,7 @@ void Analysis::SetDataDirectory()
     else if ((Hostname.find("cyan") != std::string::npos) || (Hostname.find("blue") != std::string::npos) || (Hostname.find("green") != std::string::npos))
         m_dataDirectory = "/scratch/dam1g09/zprime";
     else
-        printf("Hostname %s not recognised.\n", Hostname.c_str());
+        std::cout << "Hostname " << Hostname.c_str() << " not recognised.\n";
 }
 
 
@@ -1221,7 +1091,7 @@ void Analysis::GetBranches()
 void Analysis::Loop()
 {
     for (Itr_s i = m_inputFiles->begin(); i != m_inputFiles->end(); ++i) {
-        printf("Input %li: ", i - m_inputFiles->begin() + 1);
+        std::cout << "Input : " << i - m_inputFiles->begin() + 1;
         std::cout << (*i) << std::endl;
         this->EachFile((*i));
         m_nevents = this->TotalEvents();
@@ -1230,7 +1100,7 @@ void Analysis::Loop()
             Long64_t ievent = this->IncrementEvent(jevent);
             if (ievent < 0) break;
             this->EachEvent();
-            ProgressBar(jevent, m_nevents - 1, 50);
+            if (!verbose) ProgressBar(jevent, m_nevents - 1, 50);
         }
         this->CleanUp();
         std::cout << std::endl;
@@ -1322,13 +1192,13 @@ std::vector<TLorentzVector> Analysis::ReconstructSemilepton(const std::vector<TL
         p_nu = p[5];
     }
     else {
-        printf("Error: Q_l must be ±1.\n");
+        std::cout << "Error: Q_l must be ±1.\n";
     }
 
     double px_l = p_l.Px(), py_l = p_l.Py(), pz_l = p_l.Pz(), E_l;
     double px_nu = p_nu.Px(), py_nu = p_nu.Py();
     E_l = sqrt(px_l * px_l + py_l * py_l + pz_l * pz_l);
-    if (std::abs(E_l - p_l.E()) > 0.00001) printf("ERROR: Lepton energy doesn't match.\n");
+    if (std::abs(E_l - p_l.E()) > 0.00001) std::cout << "ERROR: Lepton energy doesn't match.\n";
 
     k = 3218.42645 + px_l * px_nu + py_l * py_nu; // m_Wmass * m_Wmass/2 = 3218.42645
     a = px_l * px_l + py_l * py_l;
@@ -1336,9 +1206,9 @@ std::vector<TLorentzVector> Analysis::ReconstructSemilepton(const std::vector<TL
     c = (px_nu * px_nu + py_nu * py_nu) * E_l * E_l - k * k;
 
     double roots[2];
-    int nRealRoots = SolveP2(roots, b / a, c / a);
+    int nReal = SolveP2(roots, b / a, c / a);
     p_nu_R.clear();
-    if (nRealRoots == 2) {
+    if (nReal == 2) {
         // two real solutions; pick best match
         // this->UpdateCutflow(c_realSolutions, true);
         for (auto& root : roots) {
@@ -1419,11 +1289,11 @@ std::vector<TLorentzVector> Analysis::ReconstructSemilepton(const std::vector<TL
     double pz_nu_truth = p_nu.Pz();
     double Root0MinusTruth;
     double Root1MinusTruth;
-    if (nRealRoots == 2) {
+    if (nReal == 2) {
         Root0MinusTruth = std::abs(roots[0] - pz_nu_truth);
         Root1MinusTruth = std::abs(roots[1] - pz_nu_truth);
     }
-    else if (nRealRoots == 0) {
+    else if (nReal == 0) {
         Root0MinusTruth = std::abs(roots[0] - pz_nu_truth);
         Root1MinusTruth = std::abs(roots[0] - pz_nu_truth);
     }
@@ -1435,284 +1305,357 @@ std::vector<TLorentzVector> Analysis::ReconstructSemilepton(const std::vector<TL
 
     if (verbose) {
         // Print reconstruction performance.
-        printf("True pz_nu = %f\n", p_nu.Pz());
-        printf("Possible neutrino solutions:\n");
-        if (nRealRoots == 2) {
+        std::cout << "True pz_nu = " << p_nu.Pz() << "\n";
+        std::cout << "Possible neutrino solutions:\n";
+        if (nReal == 2) {
             printf("                             %f\n", roots[0]);
             printf("                             %f\n", roots[1]);
             printf("Chosen solution:             %f\n", roots[imin]);
         }
-        else if (nRealRoots == 0) {
+        else if (nReal == 0) {
             printf("                             %f + %fi\n", roots[0], roots[1]);
             printf("                             %f - %fi\n", roots[0], roots[1]);
             printf("Chosen solution:             %f\n", roots[imin]);
         }
-        if (imin == bestRoot) printf("Neutrino solution: correct. \n");
-        else printf("Neutrino solution: incorrect. \n");
-        if (b_lep == jmin) printf("b-assignment: correct. \n");
-        else printf("b-assignment: incorrect. \n");
-        printf("--\n");
+        if (imin == bestRoot) std::cout << "Neutrino solution: correct.\n";
+        else std::cout << "Neutrino solution: incorrect.\n";
+        if (b_lep == jmin) std::cout << "b-assignment: correct.\n";
+        std::cout << "b-assignment: incorrect.\n";
+        std::cout << "--\n";
     }
     return p_R;
 }
 
 
-// std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::vector<TLorentzVector>& p)
-// {
-//     // Uses the Sonnenschein method algebraically solve tt dilepton equations. 
-//     // http://arxiv.org/abs/hep-ph/0510100
-//     // selects solution that minimises mtt
+std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::pair<TLorentzVector, TLorentzVector>& p_l,
+                                                          const std::vector<TLorentzVector>& p_b, const std::vector<TLorentzVector>& p_q,
+                                                          const TLorentzVector& p_miss)
+{
+    // Uses the Sonnenschein method algebraically solve tt dilepton equations.
+    // http://arxiv.org/abs/hep-ph/0510100
+    // selects solution that minimises mtt
 
-//     m_nReco++;
+    if (verbose) std::cout << "beginning dilepton reconstruction ...\n";
+    std::vector<TLorentzVector> p_bv;
 
-//     // std::vector<TLorentzVector> p_R(p.size());
+    int n_b = p_b.size();
 
-//     TLorentzVector pb1 = p_b[0], pb2 = p_b[1], pl1 = p_l[0], pl2 = p[1];
+    if (verbose) std::cout << "number of b-tagged jets = " << n_b << "\n";
 
-//     double pb1x = pb1.Px(), pb1y = pb1.Py(), pb1z = pb1.Pz(), Eb1 = pb1.E();
-//     double pb2x = pb2.Px(), pb2y = pb2.Py(), pb2z = pb2.Pz(), Eb2 = pb2.E();
-//     double pl1x = pl1.Px(), pl1y = pl1.Py(), pl1z = pl1.Pz(), El1 = pl1.E();
-//     double pl2x = pl2.Px(), pl2y = pl2.Py(), pl2z = pl2.Pz(), El2 = pl2.E();
-//     // double pv1x = pv1.Px(), pv1y = pv1.Py(), pv1z = pv1.Pz(), Ev1 = pv1.E();
-//     // double pv2x = pv2.Px(), pv2y = pv2.Py(), pv2z = pv2.Pz(), Ev2 = pv2.E();
-//     double Emissx = p_miss.Px();
-//     double Emissy = p_miss.Py();
+    std::vector<std::vector<std::pair<TLorentzVector, TLorentzVector> > > p_vsol;
 
-//     // Use on-shell pole masses
-//     double mt1 = m_tmass, mt2 = m_tmass;
-//     double mw1 = m_Wmass, mw2 = m_Wmass;
-//     double mb1 = m_bmass, mb2 = m_bmass;
-//     double ml1 = 0, ml2 = 0;
+    // solve quartic for each possible b-jet combination
+    for (int i = 0; i < n_b; i++)
+        for (int j = 0; j < n_b; j++)
+            if (i != j) p_vsol.push_back(this->KinematicReconstruction(p_l.first, p_l.second, p_b[i], p_b[j], p_miss));
 
-//     // Use off-shell true masses
-//     // double mt1 = (p[0] + p[2] + p[3]).M(), mt2 = (p[1] + p[4] + p[5]).M();
-//     // double mw1 = (p[2] + p[3]).M(), mw2 = (p[4] + p[5]).M();
-//     // double mb1 = p[0].M(), mb2 = p[1].M();
+    if (verbose) std::cout << "selecting best solution ...\n";
+    if (verbose) std::cout << "number b-combinations: " << p_vsol.size() << "\n";
 
-//     double a1 = (Eb1 + El1) * (mw1 * mw1 - ml1 * ml1)
-//               - El1 * (mt1 * mt1 - mb1 * mb1 - ml1 * ml1)
-//               + 2 * Eb1 * El1 * El1 
-//               - 2 * El1 * (pb1x * pl1x + pb1y * pl1y + pb1z * pl1z);
+    int nsols = 0;
+    for (int i = 0; i < p_vsol.size(); i++) {
+        if (verbose) std::cout << "number of real solutions for b-combo " << i << ": " << p_vsol.at(i).size() << "\n";
+        nsols += p_vsol.at(i).size();
+    }
+    if (verbose) std::cout << "total number of solutions = " << nsols << "\n";
+    if (nsols == 0) return p_bv;
 
-//     double a2 = 2 * (Eb1 * pl1x - El1 * pb1x);
-//     double a3 = 2 * (Eb1 * pl1y - El1 * pb1y);
-//     double a4 = 2 * (Eb1 * pl1z - El1 * pb1z);
+    // allow no events with null b-combinations
+    // bool no_sols = false;
+    // for (int i = 0; i < p_vsol.size(); i++) {
+    //     if (p_vsol.at(i).size() == 0) no_sols = true;
+    // }
+    // if (no_sols) return p_bv;
 
-//     double b1 = (Eb2 + El2) * (mw2 * mw2 - ml2 * ml2)
-//               - El2 * (mt2 * mt2 - mb2 * mb2 - ml2 * ml2)
-//               + 2 * Eb2 * El2 * El2 
-//               - 2 * El2 * (pb2x * pl2x + pb2y * pl2y + pb2z * pl2z);
+    int I = 0, J = 0, K = 0, L = 0, l = 0;
+    double mtt_min = DBL_MAX;
+    for (int i = 0; i < n_b; i++) {
+        for (int j = 0; j < n_b; j++) {
+            if (i != j) {
+                for (int k = 0; k < p_vsol.at(l).size(); k++) {
+                    double mtt = (p_l.first + p_l.second + p_b[i] + p_b[j] + p_vsol.at(l).at(k).first + p_vsol.at(l).at(k).second).M();
+                    if (mtt < mtt_min) {
+                        mtt_min = mtt;
+                        I = i; J = j; K = k; L = l;
+                    }
+                }
+                l++;
+            }
+        }
+    }
 
-//     double b2 = 2 * (Eb2 * pl2x - El2 * pb2x);
-//     double b3 = 2 * (Eb2 * pl2y - El2 * pb2y);
-//     double b4 = 2 * (Eb2 * pl2z - El2 * pb2z);
+    double mW1 = (p_l.first + p_vsol.at(L).at(K).first).M();
+    double mW2 = (p_l.second + p_vsol.at(L).at(K).second).M();
+    double mt1 = (p_l.first + p_b[I] + p_vsol.at(L).at(K).first).M();
+    double mt2 = (p_l.second + p_b[J] + p_vsol.at(L).at(K).second).M();
+    double mtt = (p_l.first + p_l.second + p_b[I] + p_b[J] + p_vsol.at(L).at(K).first + p_vsol.at(L).at(K).second).M();
 
-//     double c22 = (mw1 * mw1 - ml1 * ml1) * (mw1 * mw1 - ml1 * ml1)
-//                -4 * (El1 * El1 - pl1z * pl1z) * (a1 / a4) * (a1 / a4)
-//                -4 * (mw1 * mw1 - ml1 * ml1) * pl1z * a1 / a4;
+    if (true) {
+        // std::cout << "selected a solution\n";
+        if (std::abs(mW1 - m_Wmass) > 10.0) {
+            std::cout << "mW+   = " << mW1 << "\n";
+            p_l.first.Print();
+            p_vsol.at(L).at(K).first.Print();
+            std::cout << "number b-combinations: " << p_vsol.size() << "\n";
+            for (int i = 0; i < p_vsol.size(); i++) {
+                std::cout << "number of real solutions for b-combo " << i << ": " << p_vsol.at(i).size() << "\n";
+            }
+            std::cout << "total number of solutions = " << nsols << "\n";
+        }
+        // if (std::abs(mW2 - m_Wmass) > 1.0) std::cout << "mW-   = " << mW2 << "\n";
+        // if (std::abs(mt1 - m_tmass) > 0.1) std::cout << "mt    = " << mt1 << "\n";
+        // if (std::abs(mt2 - m_tmass) > 0.1) std::cout << "mtbar = " << mt2 << "\n";
+        // std::cout << "mtt   = " << mtt << "\n";
+    }
 
-//     double c21 = 4 * (mw1 * mw1 - ml1 * ml1) * (pl1x - pl1z * a2 / a4)
-//                -8 * (El1 * El1 - pl1z*pl1z) * a1 * a2 / (a4 * a4) 
-//                -8 * pl1x * pl1z * a1 / a4;
+    p_bv.push_back(p_b.at(I));
+    p_bv.push_back(p_b.at(J));
+    p_bv.push_back(p_vsol.at(L).at(K).first);
+    p_bv.push_back(p_vsol.at(L).at(K).second);
 
-//     double c20 = -4 * (El1 * El1 - pl1x * pl1x)
-//                -4 * (El1 * El1 - pl1z * pl1z) * (a2 / a4) * (a2 / a4)
-//                -8 * pl1x * pl1z * a2 / a4;
+    if (verbose) std::cout << "completed dilepton reconstruction.\n";
 
-//     double c11 = 4 * (mw1 * mw1 - ml1 * ml1)*(pl1y - pl1z * a3 / a4)
-//                -8 * (El1 * El1 - pl1z * pl1z) * a1 * a3 / (a4 * a4) 
-//                -8 * pl1y * pl1z * a1 /  a4;
+    return p_bv;
+}
 
-//     double c10 = -8 * (El1 * El1 - pl1z * pl1z) * a2 * a3 / (a4 * a4) 
-//                +8 * pl1x * pl1y
-//                -8 * pl1x * pl1z * a3 / a4 
-//                -8 * pl1y * pl1z * a2 / a4;
+std::vector<std::pair<TLorentzVector, TLorentzVector> > Analysis::KinematicReconstruction(const TLorentzVector& p_l1, const TLorentzVector& p_l2,
+                                                                                          const TLorentzVector& p_b1, const TLorentzVector& p_b2,
+                                                                                          const TLorentzVector& p_miss)
+{
+    std::vector<std::pair<TLorentzVector, TLorentzVector> > p_v;
 
-//     double c00 = -4 * (El1 * El1 - pl1y * pl1y) 
-//                -4 * (El1 * El1 - pl1z * pl1z) * (a3 /a4) * (a3 / a4)
-//                -8 * pl1y * pl1z * a3 / a4;
+    if (verbose) std::cout << "beginning kinematic reconstruction ...\n";
 
-//     c22 = c22 * a4 * a4; 
-//     c21 = c21 * a4 * a4; 
-//     c20 = c20 * a4 * a4; 
-//     c11 = c11 * a4 * a4; 
-//     c10 = c10 * a4 * a4; 
-//     c00 = c00 * a4 * a4;
+    // store vector components
+    double pl1x = p_l1.Px(), pl1y = p_l1.Py(), pl1z = p_l1.Pz(), El1 = p_l1.E();
+    double pl2x = p_l2.Px(), pl2y = p_l2.Py(), pl2z = p_l2.Pz(), El2 = p_l2.E();
+    double pb1x = p_b1.Px(), pb1y = p_b1.Py(), pb1z = p_b1.Pz(), Eb1 = p_b1.E();
+    double pb2x = p_b2.Px(), pb2y = p_b2.Py(), pb2z = p_b2.Pz(), Eb2 = p_b2.E();
+    double Emissx = p_miss.Px(), Emissy = p_miss.Py();
 
-//     double dd22 = (mw2 * mw2 - ml2 * ml2) * (mw2 * mw2 - ml2 * ml2)
-//                 -4 * (El2 * El2 - pl2z * pl2z) * (b1 / b4) * (b1 / b4)
-//                 -4 * (mw2 * mw2 - ml2 * ml2) * pl2z * b1 / b4;
+    // store on-shell pole masses
+    double mt1 = m_tmass, mt2 = m_tmass;
+    double mw1 = m_Wmass, mw2 = m_Wmass;
+    double mb1 = m_bmass, mb2 = m_bmass;
+    double ml1 = 0.0, ml2 = 0.0;
 
-//     double dd21 = 4 * (mw2 * mw2 - ml2 * ml2) * (pl2x - pl2z * b2 / b4)
-//                 -8 * (El2 * El2 - pl2z * pl2z) * b1 * b2 / (b4 * b4) 
-//                 -8 * pl2x * pl2z * b1 / b4;
+    double a1 = (Eb1 + El1) * (mw1 * mw1 - ml1 * ml1)
+              - El1 * (mt1 * mt1 - mb1 * mb1 - ml1 * ml1)
+              + 2 * Eb1 * El1 * El1
+              - 2 * El1 * (pb1x * pl1x + pb1y * pl1y + pb1z * pl1z);
 
-//     double dd20 = -4 * (El2 * El2 - pl2x * pl2x) 
-//                 -4 * (El2 * El2 - pl2z * pl2z) * (b2 / b4) * (b2 / b4) 
-//                 -8 * pl2x * pl2z * b2 / b4;
+    double a2 = 2 * (Eb1 * pl1x - El1 * pb1x);
+    double a3 = 2 * (Eb1 * pl1y - El1 * pb1y);
+    double a4 = 2 * (Eb1 * pl1z - El1 * pb1z);
 
-//     double dd11 = 4 * (mw2 * mw2 - ml2 * ml2) * (pl2y - pl2z * b3 / b4)
-//                 -8 * (El2 * El2 -pl2z * pl2z) * b1 * b3 / (b4 * b4)
-//                 -8 * pl2y * pl2z * b1 / b4;
+    double b1 = (Eb2 + El2) * (mw2 * mw2 - ml2 * ml2)
+              - El2 * (mt2 * mt2 - mb2 * mb2 - ml2 * ml2)
+              + 2 * Eb2 * El2 * El2
+              - 2 * El2 * (pb2x * pl2x + pb2y * pl2y + pb2z * pl2z);
 
-//     double dd10 = -8 * (El2 * El2 - pl2z * pl2z) * b2 * b3 / (b4 * b4) 
-//                 +8 * pl2x * pl2y
-//                 -8 * pl2x * pl2z * b3 / b4 
-//                 -8 * pl2y * pl2z * b2 / b4;
+    double b2 = 2 * (Eb2 * pl2x - El2 * pb2x);
+    double b3 = 2 * (Eb2 * pl2y - El2 * pb2y);
+    double b4 = 2 * (Eb2 * pl2z - El2 * pb2z);
 
-//     double dd00 = -4 * (El2 * El2 - pl2y * pl2y) 
-//                 -4 * (El2 * El2 - pl2z * pl2z) * (b3 / b4) * (b3 / b4)
-//                 -8 * pl2y * pl2z * b3 / b4;
+    double c22 = //(mw1 * mw1 - ml1 * ml1) * (mw1 * mw1 - ml1 * ml1)
+                pow(mw1 * mw1 - ml1 * ml1, 2)
+               -4 * (El1 * El1 - pl1z * pl1z) * (a1 / a4) * (a1 / a4)
+               -4 * (mw1 * mw1 - ml1 * ml1) * pl1z * a1 / a4;
 
-//     dd22 = dd22 * b4 * b4; 
-//     dd21 = dd21 * b4 * b4; 
-//     dd20 = dd20 * b4 * b4; 
-//     dd11 = dd11 * b4 * b4; 
-//     dd10 = dd10 * b4 * b4; 
-//     dd00 = dd00 * b4 * b4; 
-                
-//     double d22 = dd22 
-//                + Emissx * Emissx * dd20 
-//                + Emissy * Emissy * dd00
-//                + Emissx * Emissy * dd10 
-//                + Emissx * dd21 
-//                + Emissy * dd11;
+    double c21 = 4 * (mw1 * mw1 - ml1 * ml1) * (pl1x - pl1z * a2 / a4)
+               -8 * (El1 * El1 - pl1z*pl1z) * a1 * a2 / (a4 * a4)
+               -8 * pl1x * pl1z * a1 / a4;
 
-//     double d21 = -dd21 
-//                - 2 * Emissx * dd20 
-//                - Emissy * dd10;
+    double c20 = -4 * (El1 * El1 - pl1x * pl1x)
+               -4 * (El1 * El1 - pl1z * pl1z) * (a2 / a4) * (a2 / a4)
+               -8 * pl1x * pl1z * a2 / a4;
 
-//     double d20 = dd20;
+    double c11 = 4 * (mw1 * mw1 - ml1 * ml1) * (pl1y - pl1z * a3 / a4)
+               -8 * (El1 * El1 - pl1z * pl1z) * a1 * a3 / (a4 * a4)
+               -8 * pl1y * pl1z * a1 /  a4;
 
-//     double d11 = -dd11 
-//                - 2 * Emissy * dd00 
-//                - Emissx * dd10;
+    double c10 = -8 * (El1 * El1 - pl1z * pl1z) * a2 * a3 / (a4 * a4)
+               +8 * pl1x * pl1y
+               -8 * pl1x * pl1z * a3 / a4
+               -8 * pl1y * pl1z * a2 / a4;
 
-//     double d10 = dd10;
-//     double d00 = dd00;
+    double c00 = -4 * (El1 * El1 - pl1y * pl1y)
+               -4 * (El1 * El1 - pl1z * pl1z) * (a3 /a4) * (a3 / a4)
+               -8 * pl1y * pl1z * a3 / a4;
 
-//     double h4 = c00 * c00 * d22 * d22 
-//                     + c11 * d22 * (c11 * d00 - c00 * d11)
-//                     + c00 * c22 * (d11 * d11 - 2 * d00 * d22) 
-//                     + c22 * d00 * (c22 * d00 - c11 * d11);
+    c22 = c22 * a4 * a4;
+    c21 = c21 * a4 * a4;
+    c20 = c20 * a4 * a4;
+    c11 = c11 * a4 * a4;
+    c10 = c10 * a4 * a4;
+    c00 = c00 * a4 * a4;
 
-//     double h3 = c00 * d21 * (2 * c00 * d22 - c11 * d11) 
-//                     + c00 * d11 * (2 * c22 * d10 + c21 * d11) 
-//                     + c22 * d00 * (2 * c21 * d00 - c11 * d10) 
-//                     - c00 * d22 * (c11 * d10 + c10 * d11)  
-//                     -2 * c00 * d00 * (c22 * d21 + c21 * d22)
-//                     - d00 * d11 * (c11 * c21 + c10 * c22) 
-//                     + c11 * d00 * (c11 * d21 + 2 * c10 * d22);
+    double dd22 = (mw2 * mw2 - ml2 * ml2) * (mw2 * mw2 - ml2 * ml2)
+                -4 * (El2 * El2 - pl2z * pl2z) * (b1 / b4) * (b1 / b4)
+                -4 * (mw2 * mw2 - ml2 * ml2) * pl2z * b1 / b4;
 
-//     double h2 = c00 * c00 * (2 * d22 * d20 + d21 * d21) 
-//                     - c00 * d21 * (c11 * d10 + c10 * d11)  
-//                     + c11 * d20 * (c11 * d00 - c00 * d11) 
-//                     + c00 * d10 * (c22 * d10 - c10 * d22)   
-//                     + c00 * d11 * (2 * c21 * d10 + c20 * d11) 
-//                     + (2 * c22 * c20 + c21 * c21) * d00 * d00   
-//                     - 2 * c00 * d00 * (c22 * d20 + c21 * d21 + c20 * d22)    
-//                     + c10 * d00 * (2 * c11 * d21 + c10 * d22) 
-//                     - d00 * d10 * (c11 * c21 + c10 * c22)   
-//                     - d00 * d11 * (c11 * c20 + c10 * c21);
+    double dd21 = 4 * (mw2 * mw2 - ml2 * ml2) * (pl2x - pl2z * b2 / b4)
+                -8 * (El2 * El2 - pl2z * pl2z) * b1 * b2 / (b4 * b4)
+                -8 * pl2x * pl2z * b1 / b4;
 
-//     double h1 = c00 * d21 * (2 * c00 * d20 - c10 * d10) 
-//                     - c00 * d20 * (c11 * d10 + c10 * d11)  
-//                     + c00 * d10 * (c21 * d10 + 2 * c20 * d11) 
-//                     - 2 * c00 * d00 * (c21 * d20 + c20 * d21)  
-//                     + c10 * d00 * (2 * c11 * d20 + c10 * d21) 
-//                     + c20 * d00 * (2 * c21 * d00 - c10 * d11)  
-//                     - d00 * d10 * (c11 * c20 + c10 * c21);
+    double dd20 = -4 * (El2 * El2 - pl2x * pl2x)
+                -4 * (El2 * El2 - pl2z * pl2z) * (b2 / b4) * (b2 / b4)
+                -8 * pl2x * pl2z * b2 / b4;
 
-//     double h0 = c00 * c00 * d20 * d20 
-//                     + c10 * d20 * (c10 * d00 - c00 * d10)  
-//                     + c20 * d10 * (c00 * d10 - c10 * d00) 
-//                     + c20 * d00 * (c20 * d00 - 2 * c00 * d20);
+    double dd11 = 4 * (mw2 * mw2 - ml2 * ml2) * (pl2y - pl2z * b3 / b4)
+                -8 * (El2 * El2 -pl2z * pl2z) * b1 * b3 / (b4 * b4)
+                -8 * pl2y * pl2z * b1 / b4;
 
-//     float a[4] = {static_cast<float>(h1 / h0), static_cast<float>(h2 / h0), static_cast<float>(h3 / h0), static_cast<float>(h4 / h0)};
+    double dd10 = -8 * (El2 * El2 - pl2z * pl2z) * b2 * b3 / (b4 * b4)
+                +8 * pl2x * pl2y
+                -8 * pl2x * pl2z * b3 / b4
+                -8 * pl2y * pl2z * b2 / b4;
 
-//     double x[4];
-//     int nRealRoots = SolveP4(x, a[0], a[1], a[2], a[3]);
+    double dd00 = -4 * (El2 * El2 - pl2y * pl2y)
+                -4 * (El2 * El2 - pl2z * pl2z) * (b3 / b4) * (b3 / b4)
+                -8 * pl2y * pl2z * b3 / b4;
 
-//     if (x[0] != x[0] && x[1] != x[1] && x[2] != x[2]) printf("error: Three NaNs in quartic solutions.\n");
+    dd22 = dd22 * b4 * b4;
+    dd21 = dd21 * b4 * b4;
+    dd20 = dd20 * b4 * b4;
+    dd11 = dd11 * b4 * b4;
+    dd10 = dd10 * b4 * b4;
+    dd00 = dd00 * b4 * b4;
 
-//     // if (x[0] != x[0] || x[1] != x[1] || x[2] != x[2] || x[3] != x[3]) printf("error: NaN in quartic solutions.\n");
+    double d22 = dd22
+               + Emissx * Emissx * dd20
+               + Emissy * Emissy * dd00
+               + Emissx * Emissy * dd10
+               + Emissx * dd21
+               + Emissy * dd11;
 
-//     int nSolutions;
-//     std::vector<double> pv1x_Rs;
-//     if (nRealRoots == 4) {
-//         // they live in x[0], x[1], x[2], x[3].
-//         nSolutions = 4;
-//         for (int i = 0; i < nSolutions; i++) pv1x_Rs.push_back(x[i]);
-//     }
-//     else if (nRealRoots == 2) {
-//         // x[0], x[1] are the real roots and x[2]±i*x[3] are the complex
-//         nSolutions = 3;
-//         for (int i = 0; i < nSolutions; i++) pv1x_Rs.push_back(x[i]); 
-//     }
-//     else if (nRealRoots == 0) {
-//         // the equation has two pairs of pairs of complex conjugate roots in x[0]±i*x[1] and x[2]±i*x[3].
-//         nSolutions = 2;
-//         pv1x_Rs.push_back(x[0]);
-//         pv1x_Rs.push_back(x[2]); 
-//     }
+    double d21 = -dd21
+               - 2 * Emissx * dd20
+               - Emissy * dd10;
 
-//     // find root closest to true pl1x
-//     // double old_diff = std::abs(pv1x - x[0]), new_diff, closest_root = x[0];
-//     // for (unsigned int i = 1; i < 4; i++) {
-//     //   new_diff = std::abs(pv1x - x[i]);
-//     //   if (new_diff < old_diff) {
-//     //     closest_root = x[i];
-//     //     old_diff = new_diff;
-//     //   }
-//     // }
-//     // std::vector<double> realRoots;
-//     // for (int i = 0; i < nRealRoots; i++) realRoots.push_back(x[i]);
+    double d20 = dd20;
 
-//     // Create pairs of neutrino momenta for each real root
-//     std::vector<TLorentzVector> pv1_Rs(nSolutions), pv2_Rs(nSolutions);
-//     for (int i = 0; i < nSolutions; i++) {
-//         double pv1x_R = x[i];
-//         double pv2x_R = Emissx - pv1x_R;
+    double d11 = -dd11
+               - 2 * Emissy * dd00
+               - Emissx * dd10;
 
-//         double c2 = c22 + c21 * pv1x_R + c20 * pv1x_R * pv1x_R;
-//         double c1 = c11 + c10 * pv1x_R;
-//         double c0 = c00;
-//         double d2 = d22 + d21 * pv1x_R + d20 * pv1x_R * pv1x_R;
-//         double d1 = d11 + d10 * pv1x_R;
-//         double d0 = d00;
+    double d10 = dd10;
+    double d00 = dd00;
 
-//         double pv1y_R = (c0 * d2 - c2 * d0) / (c1 * d0 - c0 * d1);
-//         double pv2y_R = Emissy - pv1y_R;
+    double h4 = c00 * c00 * d22 * d22
+                    + c11 * d22 * (c11 * d00 - c00 * d11)
+                    + c00 * c22 * (d11 * d11 - 2 * d00 * d22)
+                    + c22 * d00 * (c22 * d00 - c11 * d11);
 
-//         double pv1z_R = -(a1 + a2 * pv1x_R + a3 * pv1y_R) / a4;
-//         double pv2z_R = -(b1 + b2 * pv2x_R + b3 * pv2y_R) / b4;
+    double h3 = c00 * d21 * (2 * c00 * d22 - c11 * d11)
+                    + c00 * d11 * (2 * c22 * d10 + c21 * d11)
+                    + c22 * d00 * (2 * c21 * d00 - c11 * d10)
+                    - c00 * d22 * (c11 * d10 + c10 * d11)
+                    -2 * c00 * d00 * (c22 * d21 + c21 * d22)
+                    - d00 * d11 * (c11 * c21 + c10 * c22)
+                    + c11 * d00 * (c11 * d21 + 2 * c10 * d22);
 
-//         double Ev1_R = sqrt(pv1x_R * pv1x_R + pv1y_R * pv1y_R + pv1z_R * pv1z_R);
-//         double Ev2_R = sqrt(pv2x_R * pv2x_R + pv2y_R * pv2y_R + pv2z_R * pv2z_R);
+    double h2 = c00 * c00 * (2 * d22 * d20 + d21 * d21)
+                    - c00 * d21 * (c11 * d10 + c10 * d11)
+                    + c11 * d20 * (c11 * d00 - c00 * d11)
+                    + c00 * d10 * (c22 * d10 - c10 * d22)
+                    + c00 * d11 * (2 * c21 * d10 + c20 * d11)
+                    + (2 * c22 * c20 + c21 * c21) * d00 * d00
+                    - 2 * c00 * d00 * (c22 * d20 + c21 * d21 + c20 * d22)
+                    + c10 * d00 * (2 * c11 * d21 + c10 * d22)
+                    - d00 * d10 * (c11 * c21 + c10 * c22)
+                    - d00 * d11 * (c11 * c20 + c10 * c21);
 
-//         pv1_Rs[i].SetPxPyPzE(pv1x_R, pv1y_R, pv1z_R, Ev1_R);
-//         pv2_Rs[i].SetPxPyPzE(pv2x_R, pv2y_R, pv2z_R, Ev2_R);
-//     }
+    double h1 = c00 * d21 * (2 * c00 * d20 - c10 * d10)
+                    - c00 * d20 * (c11 * d10 + c10 * d11)
+                    + c00 * d10 * (c21 * d10 + 2 * c20 * d11)
+                    - 2 * c00 * d00 * (c21 * d20 + c20 * d21)
+                    + c10 * d00 * (2 * c11 * d20 + c10 * d21)
+                    + c20 * d00 * (2 * c21 * d00 - c10 * d11)
+                    - d00 * d10 * (c11 * c20 + c10 * c21);
 
-//     int I = 0;
-//     double mtt_min = DBL_MAX;
-//     for (int i = 0; i < nSolutions; i++) { 
-//         double mtt = (p[0] + p[1] + p[2] + p[4] + pv1_Rs[i] + pv2_Rs[i]).M();
-//         if (mtt < mtt_min) {
-//             mtt_min = mtt;
-//             I = i;
-//         }
-//     }
+    double h0 = c00 * c00 * d20 * d20
+                    + c10 * d20 * (c10 * d00 - c00 * d10)
+                    + c20 * d10 * (c00 * d10 - c10 * d00)
+                    + c20 * d00 * (c20 * d00 - 2 * c00 * d20);
 
-//     p_R[0] = pb1;
-//     p_R[1] = pb2;
-//     p_R[2] = pl1;
-//     p_R[3] = pv1_Rs[I];
-//     p_R[4] = pl2;
-//     p_R[5] = pv2_Rs[I];
+    float a[4] = {static_cast<float>(h1 / h0), static_cast<float>(h2 / h0), static_cast<float>(h3 / h0), static_cast<float>(h4 / h0)};
 
-//     return p_R;
-// }
+    if (verbose) std::cout << "solving quartic ...\n";
+    double x[4];
+    int nReal = SolveP4(x, a[0], a[1], a[2], a[3]);
+    if (verbose) std::cout << "found " << nReal << " real solutions.\n";
+
+    double zero_check;
+    for (int i = 0; i < nReal; i++) {
+        zero_check = pow(x[i], 4) + a[0] * pow(x[i], 3) + a[1] * pow(x[i], 2) + a[2] * x[i] + a[3];
+        if (zero_check > 10e-4) std::cout << "warning expression should be zero; solution " << i << "gives:" << zero_check << "\n";
+    }
+
+    if (x[0] != x[0] or x[1] != x[1] or x[2] != x[2] or x[3] != x[3]) std::cout << "warning: NaNs in quartic solutions.\n";
+
+    bool keepComplex = false;
+
+    std::vector<double> pv1xs;
+    int nSolutions;
+
+    if (keepComplex) {
+        if (nReal == 4) {
+            // they live in x[0], x[1], x[2], x[3].
+            nSolutions = 4;
+            for (int i = 0; i < nSolutions; i++) pv1xs.push_back(x[i]);
+        }
+        else if (nReal == 2) {
+            // x[0], x[1] are the real roots and x[2]±i*x[3] are the complex
+            nSolutions = 3;
+            for (int i = 0; i < nSolutions; i++) pv1xs.push_back(x[i]);
+        }
+        else if (nReal == 0) {
+            // the equation has two pairs of pairs of complex conjugate roots in x[0]±i*x[1] and x[2]±i*x[3].
+            nSolutions = 2;
+            pv1xs.push_back(x[0]);
+            pv1xs.push_back(x[2]);
+        }
+    }
+    else {
+        nSolutions = nReal;
+        for (int i = 0; i < nReal; i++) pv1xs.push_back(x[i]);
+    }
+
+    // Create pairs of neutrino momenta for each real root
+    if (verbose) std::cout << "creating neutrino 4-momenta for each real root ...\n";
+    for (int i = 0; i < nSolutions; i++) {
+        double pv1x = x[i];
+        double pv2x = Emissx - pv1x;
+
+        double c2 = c22 + c21 * pv1x + c20 * pv1x * pv1x;
+        double c1 = c11 + c10 * pv1x;
+        double c0 = c00;
+        double d2 = d22 + d21 * pv1x + d20 * pv1x * pv1x;
+        double d1 = d11 + d10 * pv1x;
+        double d0 = d00;
+
+        double pv1y = (c0 * d2 - c2 * d0) / (c1 * d0 - c0 * d1);
+        double pv2y = Emissy - pv1y;
+
+        double pv1z = -(a1 + a2 * pv1x + a3 * pv1y) / a4;
+        double pv2z = -(b1 + b2 * pv2x + b3 * pv2y) / b4;
+
+        double Ev1 = sqrt(pv1x * pv1x + pv1y * pv1y + pv1z * pv1z);
+        double Ev2 = sqrt(pv2x * pv2x + pv2y * pv2y + pv2z * pv2z);
+
+        TLorentzVector pv1(pv1x, pv1y, pv1z, Ev1);
+        TLorentzVector pv2(pv2x, pv2y, pv2z, Ev2);
+
+        std::pair<TLorentzVector, TLorentzVector> pv(pv1, pv2);
+
+        p_v.push_back(pv);
+    }
+
+    if (verbose) std::cout << "found " << p_v.size() << " pairs of neutrinos.\n";
+
+    return p_v;
+}
 
 
 double Analysis::TotalAsymmetry(TH1D* h_A, TH1D* h_B) {
@@ -1760,7 +1703,7 @@ void Analysis::PrintCutflow()
         h_cutflow->SetBinContent(cut + 1, m_cutflow[cut]);
         h_cutflow->GetXaxis()->SetBinLabel(cut + 1, m_cutNames[cut]);
 
-        printf("%s %i\n", m_cutNames[cut].Data(), m_cutflow[cut]);
+        std::cout << m_cutNames[cut].Data() << " " << m_cutflow[cut] << "\n";
     }
     h_cutflow->Write();
     m_outputFile->Close();

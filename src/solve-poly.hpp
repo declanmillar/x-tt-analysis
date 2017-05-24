@@ -1,3 +1,6 @@
+#ifndef _SOLVE_POLY_H_
+#define _SOLVE_POLY_H_
+
 // solve-poly.h : solution of cubic and quartic equation (+quadratic)
 // (c) Khashin S.I. http://math.ivanovo.ac.ru/dalgebra/Khashin/index.html
 // khash2 (at) gmail.com
@@ -27,3 +30,4 @@ double N4Step(double x, double a,double b,double c,double d);// one Newton step 
 // Returns 0, if there are no roots, else return 2.
 int Solve2( double x0, double x1, double x2, double f0, double f1, double f2, double &r1, double &r2); 
 
+#endif
