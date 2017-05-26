@@ -3,6 +3,7 @@
 #include "progress-bar.hpp"
 #include "bool-to-string.hpp"
 #include "lester_mt2_bisect.h"
+#include "neutrino-weighter.hpp"
 // #include "delphes-branches.hpp"
 
 Analysis::Analysis(const TString& model, const TString& process, const TString& options, const int energy, const int luminosity, const int reconstruction, const TString tag):
@@ -29,7 +30,7 @@ void Analysis::EachEvent()
 {
     UpdateCutflow(c_events, true);
 
-    double weight = 1;
+    double weight = 1.0;
 
     if (!this->TwoElectrons()) return;
     if (!this->OppositeCharge()) return;
