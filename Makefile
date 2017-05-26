@@ -16,8 +16,6 @@ ifeq ($(HOSTNAME), Sunder)
 	BOOSTLIB = -L /usr/local/Cellar/boost/1.64.0_1/lib
 	DELPHESCFLAGS = -isystem /Users/declan/Code/delphes/install/include
 	DELPHESLIB = -L /Users/declan/Code/delphes/install/lib
-	# DELPHESCFLAGS = -isystem /usr/local/Cellar/madgraph5_amcatnlo/2.5.2/Delphes
-	# DELPHESLIB = -L /usr/local/Cellar/madgraph5_amcatnlo/2.5.2/Delphes
 else ifeq ($(HOSTNAME), cyan03)
 	BOOSTCFLAGS = -I /local/software/boost/1.60.0/include
 	BOOSTLIB = -L /local/software/boost/1.60.0/lib
@@ -33,7 +31,7 @@ DELPHESLIBS = $(DELPHESLIB) -ldelphes
 # -lExRootAnalysis -lPhysics
 
 C = c++
-CFLAGS = $(ROOTCFLAGS) $(BOOSTCFLAGS) $(DELPHESCFLAGS)
+CFLAGS = $(ROOTCFLAGS) $(BOOSTCFLAGS) $(DELPHESCFLAGS) -Iinclude
 LIBS = $(ROOTLIBS) $(BOOSTLIBS) $(DELPHESLIBS)
 
 # Compile all files ending in .cpp in SRC
