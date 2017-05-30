@@ -23,6 +23,8 @@
 #include "ExRootAnalysis/ExRootUtilities.h"
 
 class Analysis{
+
+private:
     Analysis();
     Analysis(const Analysis& rhs);
     void operator = (const Analysis& rhs);
@@ -45,7 +47,7 @@ class Analysis{
     double m_Emin = -1;
     double m_Emax = -1;
     bool m_useLumi;
-    bool verbose = false;
+    const bool m_debug = false;
 
     unsigned int m_nReco;
     unsigned int m_nQuarksMatched;
@@ -67,18 +69,18 @@ class Analysis{
     std::vector<int> m_cutflow;
     std::vector<TString> m_cutNames;
     enum m_cutlist{
-          c_events,
-          c_Et,
-          c_eta,
-          c_twoElectrons,
-          c_oppositeCharge,
-          c_sufficientBtags,
-          c_realSolutions,
-          c_MET,
-          c_mtt,
-          c_ytt,
-          c_deltaR,
-          m_cuts // Keep as last entry
+        c_events,
+        c_sufficientBtags,
+        c_twoElectrons,
+        c_oppositeCharge,
+        c_Et,
+        c_eta,
+        c_realSolutions,
+        c_MET,
+        c_mtt,
+        c_ytt,
+        c_deltaR,
+        m_cuts // Keep as last entry
     };
 
     const double m_pi = 3.14159265358979323846;
@@ -86,6 +88,7 @@ class Analysis{
     const int m_btags = 2;
     const double m_efficiency = 1.0;
 
+    const bool truth = false;
     // Histograms
     TH1D* h_pt_l1;
     TH1D* h_eta_l1;
@@ -184,7 +187,7 @@ class Analysis{
     TH2D* h2_mvis_deltaPhi;
     TH2D* h2_KT_deltaPhi;
 
-  protected:
+protected:
     Long64_t TotalEvents();
     Long64_t IncrementEvent(Long64_t i);
     void SetupTreesForNewFile(const TString&);
@@ -241,15 +244,14 @@ class Analysis{
     TH1D* Asymmetry(const TString&, const TString&, TH1D*, TH1D*);
     std::vector<TLorentzVector> ReconstructSemilepton(const std::vector<TLorentzVector>&, const int);
 
-    std::vector<TLorentzVector> ReconstructDilepton(const std::pair<TLorentzVector, TLorentzVector>&,
-                                                    const std::vector<TLorentzVector>&, const std::vector<TLorentzVector>&,
-                                                    const TLorentzVector&);
+    // std::vector<TLorentzVector> ReconstructDilepton(const std::pair<TLorentzVector, TLorentzVector>&, const std::vector<TLorentzVector>&, const std::vector<TLorentzVector>&, const TLorentzVector&);
 
-    std::vector<std::pair<TLorentzVector, TLorentzVector> > KinematicReconstruction(const TLorentzVector&, const TLorentzVector&, const TLorentzVector&,
-                                                                                    const TLorentzVector&, const TLorentzVector&);
+    // std::vector<std::pair<TLorentzVector, TLorentzVector> > KinematicReconstruction(const TLorentzVector&, const TLorentzVector&, const TLorentzVector&,
+    //                                                                                 const TLorentzVector&, const TLorentzVector&);
 
-  public:
+public:
     Analysis(const TString& model, const TString& process, const TString& options, const int energy, const int luminosity, const int reco, const TString tag);
     virtual ~Analysis();
+    void Run();
 };
 #endif

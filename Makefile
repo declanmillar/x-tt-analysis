@@ -1,7 +1,7 @@
 # Makefile for zprime-top-analysis
 # declan.millar@cern.ch
 
-OBJ = solve-poly.o main.o neutrino-weighter.o atlas-style.o trim.o progress-bar.o bool-to-string.o analysis.o
+OBJ = solve-poly.o main.o two-highest.o match-bjets-to-leps.o neutrino-weighter.o kinematic-reconstructer.o atlas-style.o trim.o progress-bar.o bool-to-string.o analysis.o
 BIN = analysis
 LIB = lib
 SRC = src

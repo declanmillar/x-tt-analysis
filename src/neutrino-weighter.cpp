@@ -1,11 +1,9 @@
 #include <iostream>
+#include <string>
 #include <ctime>
 #include "TObject.h"
 #include "TRandom3.h"
 #include "TLorentzVector.h"
-#include <iostream>
-#include <string>
-#include <ctime>
 #include "neutrino-weighter.hpp"
 
 void NeutrinoWeighter::Reset(){
@@ -182,6 +180,11 @@ NeutrinoWeighter::NeutrinoWeighter( int setting, int event_number ){
     pt_200_inf.SetBinContent( i+1, pt_200_inf_hist[i]);
   }
 
+}
+
+NeutrinoWeighter::~NeutrinoWeighter()
+{
+    ;
 }
 
 double NeutrinoWeighter::Reconstruct(TLorentzVector lepton_pos, TLorentzVector lepton_neg, TLorentzVector jet_1, TLorentzVector jet_2, double met_ex, double met_ey, double met_phi){

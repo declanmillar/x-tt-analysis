@@ -4,7 +4,9 @@
 #include "bool-to-string.hpp"
 #include "lester_mt2_bisect.h"
 #include "neutrino-weighter.hpp"
-// #include "delphes-branches.hpp"
+#include "kinematic-reconstructer.hpp"
+#include "two-highest.hpp"
+#include "match-bjets-to-leps.hpp"
 
 Analysis::Analysis(const TString& model, const TString& process, const TString& options, const int energy, const int luminosity, const int reconstruction, const TString tag):
     m_model(model),
@@ -21,6 +23,11 @@ Analysis::Analysis(const TString& model, const TString& process, const TString& 
     m_tree(nullptr)
 {
     this->PreLoop();
+}
+
+
+void Analysis::Run()
+{
     this->Loop();
     this->PostLoop();
 }
@@ -32,9 +39,9 @@ void Analysis::EachEvent()
 
     double weight = 1.0;
 
+    if (!this->SufficientBtags()) return;
     if (!this->TwoElectrons()) return;
     if (!this->OppositeCharge()) return;
-    if (!this->SufficientBtags()) return;
 
     TLorentzVector pvis(0,0,0,0);
     std::vector<TLorentzVector> p_b, p_q, p_j;
@@ -44,6 +51,7 @@ void Analysis::EachEvent()
         TLorentzVector p;
         p.SetPtEtaPhiM(jet->PT, jet->Eta, jet->Phi, jet->Mass);
         if (jet->BTag > 0) {
+            if (m_debug) std::cout << "b-jet pT = " <<p.Pt() << "\n";
             p_b.push_back(p);
             h_pt_bjets->Fill(p.Pt(), weight);
             h_eta_bjets->Fill(p.Eta(), weight);
@@ -78,7 +86,7 @@ void Analysis::EachEvent()
     MissingET *missingET = (MissingET*) b_MissingET->At(0);
     TLorentzVector p_miss;
     double ETmiss = missingET->MET;
-    p_miss.SetPtEtaPhiM(ETmiss, missingET->Eta, missingET->Phi, 0);
+    p_miss.SetPtEtaPhiM(ETmiss, missingET->Eta, missingET->Phi, 0.0);
 
     // ScalarHT *scalarHT = (ScalarHT*) b_ScalarHT->At(0);
     // double HT = scalarHT->HT / 1000;
@@ -96,7 +104,7 @@ void Analysis::EachEvent()
     h_mvis->Fill(mvis, weight);
     h_KT->Fill(KT, weight);
 
-    if (verbose) {
+    if (m_debug) {
         std::cout << "p_l+   = "; p_l.first.Print();
         std::cout << "p_l-   = "; p_l.second.Print();
         for (int i = 0; i < p_b.size(); i++) {
@@ -111,37 +119,54 @@ void Analysis::EachEvent()
     }
 
     std::vector<TLorentzVector> p_bv;
-    TLorentzVector b1, b2, v1, v2;
+    TLorentzVector p_b1, p_b2, p_v1, p_v2, ttbar, p_top, p_tbar, p_ttbar, p_W1, p_W2;
 
-    p_bv = this->ReconstructDilepton(p_l, p_b, p_q, p_miss);
+    bool useKIN = true;
+    std::pair<TLorentzVector, TLorentzVector> p_b_hi = TwoHighestPt(p_b);
 
-    if (verbose) std::cout << "number of solutions: " << p_bv.size() << "\n";
-    if (p_bv.size() == 0) {
-        this->UpdateCutflow(c_realSolutions, false);
-        return;
+    if (useKIN) {
+        std::vector<TLorentzVector> p_b_hiPt = {p_b_hi.first, p_b_hi.second};
+        KinematicReconstructer KIN = KinematicReconstructer(m_bmass, m_Wmass, m_tmass);
+        bool isSolution = KIN.Reconstruct(p_l, p_b_hiPt, p_q, p_miss);
+        p_top   = KIN.GetTop();
+        p_tbar  = KIN.GetTbar();
+        p_ttbar = KIN.GetTtbar();
+        p_b1    = KIN.GetB();
+        p_b2    = KIN.GetBbar();
+        p_v1    = KIN.GetNu();
+        p_v2    = KIN.GetNubar();
+        if (isSolution) {
+            this->UpdateCutflow(c_realSolutions, true);
+        }
+        else {
+            this->UpdateCutflow(c_realSolutions, false);
+            return;
+        }
     }
-    else
-        this->UpdateCutflow(c_realSolutions, true);
+    else {
+        auto p_b_match = MatchBjetsToLeps(p_l, p_b_hi);
 
-    b1 = p_bv[0];
-    b2 = p_bv[1];
-    v1 = p_bv[2];
-    v2 = p_bv[3];
+        NeutrinoWeighter nuW = NeutrinoWeighter(1, p_l.first.Pt() + p_l.first.Phi()); // 2nd argument is random seed same for specific event
+        double weight_max  = nuW.Reconstruct(p_l.first, p_l.second, p_b_match.first, p_b_match.second, p_miss.Px(), p_miss.Py(), p_miss.Phi());
+        if (weight_max > 0.0){
+            p_top   = nuW.GetTop();
+            p_tbar  = nuW.GetTbar();
+            p_ttbar = nuW.GetTtbar();
+            p_b1    = nuW.GetB();
+            p_b2    = nuW.GetBbar();
+            p_v1    = nuW.GetNu();
+            p_v2    = nuW.GetNubar();
+        }
 
-    // NeutrinoWeighting* neutrinoWeighting = new NeutrinoWeighting;
-    // neutrinoWeighting->apply(p_l[0], p_b[0], p_l[1], p_b[1], p_miss);
+        TLorentzVector p_W1 = p_l.first + p_v1;
+        TLorentzVector p_W2 = p_l.second + p_v2;
+    }
 
-    TLorentzVector p_W1 = p_l.first + v1;
-    TLorentzVector p_W2 = p_l.second + v2;
-
-    TLorentzVector p_t = b1 + p_W1;
-    TLorentzVector p_tbar = b2 + p_W2;
-
-    TLorentzVector P = p_t + p_tbar;
-    double mtt = P.M();
-    double ytt = P.Rapidity();
-    double costheta_tt = cos(p_t.Angle(p_tbar.Vect()));
-    double delta_abs_yt = std::abs(p_t.Rapidity()) - std::abs(p_tbar.Rapidity());
+    // TLorentzVector P = p_top + p_tbar;
+    double mtt = p_ttbar.M();
+    double ytt = p_ttbar.Rapidity();
+    double costheta_tt = cos(p_top.Angle(p_tbar.Vect()));
+    double delta_abs_yt = std::abs(p_top.Rapidity()) - std::abs(p_tbar.Rapidity());
 
     // double costheta = pcm_t.CosTheta();
     // double costhetastar = int(ytt / std::abs(ytt)) * costheta;
@@ -153,14 +178,14 @@ void Analysis::EachEvent()
     h_eta_l2->Fill(p_l.second.Eta(), weight);
     h_HT->Fill(HT, weight);
 
-    h_pxt->Fill(p_t.Px(), weight);
-    h_pyt->Fill(p_t.Py(), weight);
-    h_pzt->Fill(p_t.Pz(), weight);
-    h_Et->Fill(p_t.E(), weight);
-    h_pTt->Fill(p_t.Pt(), weight);
-    h_etat->Fill(p_t.Eta(), weight);
-    h_phit->Fill(p_t.Phi() / m_pi, weight);
-    h_mt->Fill(p_t.M(), weight);
+    h_pxt->Fill(p_top.Px(), weight);
+    h_pyt->Fill(p_top.Py(), weight);
+    h_pzt->Fill(p_top.Pz(), weight);
+    h_Et->Fill(p_top.E(), weight);
+    h_pTt->Fill(p_top.Pt(), weight);
+    h_etat->Fill(p_top.Eta(), weight);
+    h_phit->Fill(p_top.Phi() / m_pi, weight);
+    h_mt->Fill(p_top.M(), weight);
 
     h_pxtbar->Fill(p_tbar.Px(), weight);
     h_pytbar->Fill(p_tbar.Py(), weight);
@@ -213,9 +238,9 @@ void Analysis::EachEvent()
     //         TLorentzVector p_W = p[2] + p[3];
     //         double deltaR_bW = p_W.DeltaR(p[0]);
     //         std::vector<double> deltaR_ts;
-    //         deltaR_ts.push_back(p_t.DeltaR(p[0]));
-    //         deltaR_ts.push_back(p_t.DeltaR(p[2]));
-    //         deltaR_ts.push_back(p_t.DeltaR(p[3]));
+    //         deltaR_ts.push_back(p_top.DeltaR(p[0]));
+    //         deltaR_ts.push_back(p_top.DeltaR(p[2]));
+    //         deltaR_ts.push_back(p_top.DeltaR(p[3]));
     //         auto deltaR_max = max_element(std::begin(deltaR_ts), std::end(deltaR_ts));
 
     //         double phil = p[2].Phi();
@@ -262,346 +287,346 @@ void Analysis::EachEvent()
     h2_KT_deltaPhi->Fill(KT, deltaPhi, weight);
 }
 
-std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::pair<TLorentzVector, TLorentzVector>& p_l,
-                                                          const std::vector<TLorentzVector>& p_b, const std::vector<TLorentzVector>& p_q,
-                                                          const TLorentzVector& p_miss)
-{
-    // Uses the Sonnenschein method algebraically solve tt dilepton equations.
-    // http://arxiv.org/abs/hep-ph/0510100
-    // selects solution that minimises mtt
-
-    if (verbose) std::cout << "beginning dilepton reconstruction ...\n";
-    std::vector<TLorentzVector> p_bv;
-
-    int n_b = p_b.size();
-
-    if (verbose) std::cout << "number of b-tagged jets = " << n_b << "\n";
-
-    std::vector<std::vector<std::pair<TLorentzVector, TLorentzVector> > > p_vsol;
-
-    // solve quartic for each possible b-jet combination
-    for (int i = 0; i < n_b; i++)
-        for (int j = 0; j < n_b; j++)
-            if (i != j) p_vsol.push_back(this->KinematicReconstruction(p_l.first, p_l.second, p_b[i], p_b[j], p_miss));
-
-    if (verbose) std::cout << "selecting best solution ...\n";
-    if (verbose) std::cout << "number b-combinations: " << p_vsol.size() << "\n";
-
-    int nsols = 0;
-    for (int i = 0; i < p_vsol.size(); i++) {
-        if (verbose) std::cout << "number of real solutions for b-combo " << i << ": " << p_vsol.at(i).size() << "\n";
-        nsols += p_vsol.at(i).size();
-    }
-    if (verbose) std::cout << "total number of solutions = " << nsols << "\n";
-    if (nsols == 0) return p_bv;
-
-    // allow no events with null b-combinations
-    // bool no_sols = false;
-    // for (int i = 0; i < p_vsol.size(); i++) {
-    //     if (p_vsol.at(i).size() == 0) no_sols = true;
-    // }
-    // if (no_sols) return p_bv;
-
-    int I = 0, J = 0, K = 0, L = 0, l = 0;
-    double mtt_min = DBL_MAX;
-    for (int i = 0; i < n_b; i++) {
-        for (int j = 0; j < n_b; j++) {
-            if (i != j) {
-                for (int k = 0; k < p_vsol.at(l).size(); k++) {
-                    double mtt = (p_l.first + p_l.second + p_b[i] + p_b[j] + p_vsol.at(l).at(k).first + p_vsol.at(l).at(k).second).M();
-                    // double MT2 =  asymm_mt2_lester_bisect::get_mT2(
-                    //            0, p_l.first, pyA,
-                    //            0, pxB, pyB,
-                    //            pxMiss, pyMiss,
-                    //            0, 0,
-                    //            desiredPrecisionOnMt2);
-                    if (mtt < mtt_min) {
-                        mtt_min = mtt;
-                        I = i; J = j; K = k; L = l;
-                    }
-                }
-                l++;
-            }
-        }
-    }
-
-    double mW1 = (p_l.first + p_vsol.at(L).at(K).first).M();
-    double mW2 = (p_l.second + p_vsol.at(L).at(K).second).M();
-    double mt1 = (p_l.first + p_b[I] + p_vsol.at(L).at(K).first).M();
-    double mt2 = (p_l.second + p_b[J] + p_vsol.at(L).at(K).second).M();
-    double mtt = (p_l.first + p_l.second + p_b[I] + p_b[J] + p_vsol.at(L).at(K).first + p_vsol.at(L).at(K).second).M();
-
-    if (false) {
-        // std::cout << "selected a solution\n";
-        if (std::abs(mW1 - m_Wmass) > 10.0) {
-            std::cout << "mW+   = " << mW1 << "\n";
-            p_l.first.Print();
-            p_vsol.at(L).at(K).first.Print();
-            std::cout << "number b-combinations: " << p_vsol.size() << "\n";
-            for (int i = 0; i < p_vsol.size(); i++) {
-                std::cout << "number of real solutions for b-combo " << i << ": " << p_vsol.at(i).size() << "\n";
-            }
-            std::cout << "total number of solutions = " << nsols << "\n";
-            std::cout << "I = " << I << " J = " << J << " K = " << K << " L = "<<  L << "\n";
-        }
-        // if (std::abs(mW2 - m_Wmass) > 1.0) std::cout << "mW-   = " << mW2 << "\n";
-        // if (std::abs(mt1 - m_tmass) > 0.1) std::cout << "mt    = " << mt1 << "\n";
-        // if (std::abs(mt2 - m_tmass) > 0.1) std::cout << "mtbar = " << mt2 << "\n";
-        // std::cout << "mtt   = " << mtt << "\n";
-    }
-
-    p_bv.push_back(p_b.at(I));
-    p_bv.push_back(p_b.at(J));
-    p_bv.push_back(p_vsol.at(L).at(K).first);
-    p_bv.push_back(p_vsol.at(L).at(K).second);
-
-    if (verbose) std::cout << "completed dilepton reconstruction.\n";
-
-    return p_bv;
-}
-
-std::vector<std::pair<TLorentzVector, TLorentzVector> > Analysis::KinematicReconstruction(const TLorentzVector& p_l1, const TLorentzVector& p_l2,
-                                                                                          const TLorentzVector& p_b1, const TLorentzVector& p_b2,
-                                                                                          const TLorentzVector& p_miss)
-{
-    std::vector<std::pair<TLorentzVector, TLorentzVector> > p_v;
-
-    if (verbose) std::cout << "beginning kinematic reconstruction ...\n";
-
-    // store vector components
-    double pl1x = p_l1.Px(), pl1y = p_l1.Py(), pl1z = p_l1.Pz(), El1 = p_l1.E();
-    double pl2x = p_l2.Px(), pl2y = p_l2.Py(), pl2z = p_l2.Pz(), El2 = p_l2.E();
-    double pb1x = p_b1.Px(), pb1y = p_b1.Py(), pb1z = p_b1.Pz(), Eb1 = p_b1.E();
-    double pb2x = p_b2.Px(), pb2y = p_b2.Py(), pb2z = p_b2.Pz(), Eb2 = p_b2.E();
-    double Emissx = p_miss.Px(), Emissy = p_miss.Py();
-
-    // store on-shell pole masses
-    double mt1 = m_tmass, mt2 = m_tmass;
-    double mw1 = m_Wmass, mw2 = m_Wmass;
-    double mb1 = m_bmass, mb2 = m_bmass;
-    double ml1 = 0.0, ml2 = 0.0;
-
-    double a1 = (Eb1 + El1) * (mw1 * mw1 - ml1 * ml1)
-                - El1 * (mt1 * mt1 - mb1 * mb1 - ml1 * ml1)
-                + 2 * Eb1 * El1 * El1
-                - 2 * El1 * (pb1x * pl1x + pb1y * pl1y + pb1z * pl1z);
-
-    double a2 = 2 * (Eb1 * pl1x - El1 * pb1x);
-    double a3 = 2 * (Eb1 * pl1y - El1 * pb1y);
-    double a4 = 2 * (Eb1 * pl1z - El1 * pb1z);
-
-    double b1 = (Eb2 + El2) * (mw2 * mw2 - ml2 * ml2)
-                - El2 * (mt2 * mt2 - mb2 * mb2 - ml2 * ml2)
-                + 2 * Eb2 * El2 * El2
-                - 2 * El2 * (pb2x * pl2x + pb2y * pl2y + pb2z * pl2z);
-
-    double b2 = 2 * (Eb2 * pl2x - El2 * pb2x);
-    double b3 = 2 * (Eb2 * pl2y - El2 * pb2y);
-    double b4 = 2 * (Eb2 * pl2z - El2 * pb2z);
-
-    double c22 = pow(mw1 * mw1 - ml1 * ml1, 2)
-                 -4 * (El1 * El1 - pl1z * pl1z) * (a1 / a4) * (a1 / a4)
-                 -4 * (mw1 * mw1 - ml1 * ml1) * pl1z * a1 / a4;
-
-    double c21 = 4 * (mw1 * mw1 - ml1 * ml1) * (pl1x - pl1z * a2 / a4)
-                 -8 * (El1 * El1 - pl1z * pl1z) * a1 * a2 / (a4 * a4)
-                 -8 * pl1x * pl1z * a1 / a4;
-
-    double c20 = -4 * (El1 * El1 - pl1x * pl1x)
-                 -4 * (El1 * El1 - pl1z * pl1z) * (a2 / a4) * (a2 / a4)
-                 -8 * pl1x * pl1z * a2 / a4;
-
-    double c11 = 4 * (mw1 * mw1 - ml1 * ml1) * (pl1y - pl1z * a3 / a4)
-                 -8 * (El1 * El1 - pl1z * pl1z) * a1 * a3 / (a4 * a4)
-                 -8 * pl1y * pl1z * a1 /  a4;
-
-    double c10 = -8 * (El1 * El1 - pl1z * pl1z) * a2 * a3 / (a4 * a4)
-                 +8 * pl1x * pl1y
-                 -8 * pl1x * pl1z * a3 / a4
-                 -8 * pl1y * pl1z * a2 / a4;
-
-    double c00 = -4 * (El1 * El1 - pl1y * pl1y)
-                 -4 * (El1 * El1 - pl1z * pl1z) * (a3 / a4) * (a3 / a4)
-                 -8 * pl1y * pl1z * a3 / a4;
-
-    c22 = c22 * a4 * a4;
-    c21 = c21 * a4 * a4;
-    c20 = c20 * a4 * a4;
-    c11 = c11 * a4 * a4;
-    c10 = c10 * a4 * a4;
-    c00 = c00 * a4 * a4;
-
-    double dd22 = pow(mw2 * mw2 - ml2 * ml2, 2)
-                  -4 * (El2 * El2 - pl2z * pl2z) * (b1 / b4) * (b1 / b4)
-                  -4 * (mw2 * mw2 - ml2 * ml2) * pl2z * b1 / b4;
-
-    double dd21 = 4 * (mw2 * mw2 - ml2 * ml2) * (pl2x - pl2z * b2 / b4)
-                  -8 * (El2 * El2 - pl2z * pl2z) * b1 * b2 / (b4 * b4)
-                  -8 * pl2x * pl2z * b1 / b4;
-
-    double dd20 = -4 * (El2 * El2 - pl2x * pl2x)
-                  -4 * (El2 * El2 - pl2z * pl2z) * (b2 / b4) * (b2 / b4)
-                  -8 * pl2x * pl2z * b2 / b4;
-
-    double dd11 = 4 * (mw2 * mw2 - ml2 * ml2) * (pl2y - pl2z * b3 / b4)
-                  -8 * (El2 * El2 -pl2z * pl2z) * b1 * b3 / (b4 * b4)
-                  -8 * pl2y * pl2z * b1 / b4;
-
-    double dd10 = -8 * (El2 * El2 - pl2z * pl2z) * b2 * b3 / (b4 * b4)
-                  +8 * pl2x * pl2y
-                  -8 * pl2x * pl2z * b3 / b4
-                  -8 * pl2y * pl2z * b2 / b4;
-
-    double dd00 = -4 * (El2 * El2 - pl2y * pl2y)
-                  -4 * (El2 * El2 - pl2z * pl2z) * (b3 / b4) * (b3 / b4)
-                  -8 * pl2y * pl2z * b3 / b4;
-
-    dd22 = dd22 * b4 * b4;
-    dd21 = dd21 * b4 * b4;
-    dd20 = dd20 * b4 * b4;
-    dd11 = dd11 * b4 * b4;
-    dd10 = dd10 * b4 * b4;
-    dd00 = dd00 * b4 * b4;
-
-    double d22 = dd22
-                 + Emissx * Emissx * dd20
-                 + Emissy * Emissy * dd00
-                 + Emissx * Emissy * dd10
-                 + Emissx * dd21
-                 + Emissy * dd11;
-
-    double d21 = -dd21
-                 -2 * Emissx * dd20
-                 - Emissy * dd10;
-
-    double d20 = dd20;
-
-    double d11 = -dd11
-                 -2 * Emissy * dd00
-                 - Emissx * dd10;
-
-    double d10 = dd10;
-    double d00 = dd00;
-
-    double h4 = c00 * c00 * d22 * d22
-                + c11 * d22 * (c11 * d00 - c00 * d11)
-                + c00 * c22 * (d11 * d11 - 2 * d00 * d22)
-                + c22 * d00 * (c22 * d00 - c11 * d11);
-
-    double h3 = c00 * d21 * (2 * c00 * d22 - c11 * d11)
-                + c00 * d11 * (2 * c22 * d10 + c21 * d11)
-                + c22 * d00 * (2 * c21 * d00 - c11 * d10)
-                - c00 * d22 * (c11 * d10 + c10 * d11)
-                -2 * c00 * d00 * (c22 * d21 + c21 * d22)
-                - d00 * d11 * (c11 * c21 + c10 * c22)
-                + c11 * d00 * (c11 * d21 + 2 * c10 * d22);
-
-    double h2 = c00 * c00 * (2 * d22 * d20 + d21 * d21)
-                - c00 * d21 * (c11 * d10 + c10 * d11)
-                + c11 * d20 * (c11 * d00 - c00 * d11)
-                + c00 * d10 * (c22 * d10 - c10 * d22)
-                + c00 * d11 * (2 * c21 * d10 + c20 * d11)
-                + (2 * c22 * c20 + c21 * c21) * d00 * d00
-                - 2 * c00 * d00 * (c22 * d20 + c21 * d21 + c20 * d22)
-                + c10 * d00 * (2 * c11 * d21 + c10 * d22)
-                - d00 * d10 * (c11 * c21 + c10 * c22)
-                - d00 * d11 * (c11 * c20 + c10 * c21);
-
-    double h1 = c00 * d21 * (2 * c00 * d20 - c10 * d10)
-                - c00 * d20 * (c11 * d10 + c10 * d11)
-                + c00 * d10 * (c21 * d10 + 2 * c20 * d11)
-                - 2 * c00 * d00 * (c21 * d20 + c20 * d21)
-                + c10 * d00 * (2 * c11 * d20 + c10 * d21)
-                + c20 * d00 * (2 * c21 * d00 - c10 * d11)
-                - d00 * d10 * (c11 * c20 + c10 * c21);
-
-    double h0 = c00 * c00 * d20 * d20
-                + c10 * d20 * (c10 * d00 - c00 * d10)
-                + c20 * d10 * (c00 * d10 - c10 * d00)
-                + c20 * d00 * (c20 * d00 - 2 * c00 * d20);
-
-    float a[4] = {static_cast<float>(h1 / h0), static_cast<float>(h2 / h0), static_cast<float>(h3 / h0), static_cast<float>(h4 / h0)};
-
-    if (verbose) std::cout << "solving quartic ...\n";
-    double x[4];
-    int nReal = SolveP4(x, a[0], a[1], a[2], a[3]);
-    // std::vector<double> x;
-    // x = solveQuartic(1.0, a[0], a[1], a[2], a[3]);
-    // int nReal = x.size();
-
-    if (verbose) std::cout << "found " << nReal << " real solutions.\n";
-    if (nReal == 0) return p_v;
-
-    double zero_check;
-    for (int i = 0; i < nReal; i++) {
-        zero_check = pow(x[i], 4) + a[0] * pow(x[i], 3) + a[1] * pow(x[i], 2) + a[2] * x[i] + a[3];
-        if (zero_check > 10e-3) std::cout << "warning expression should be zero; solution " << i << " gives: " << zero_check << "\n";
-    }
-
-    if (x[0] != x[0] or x[1] != x[1] or x[2] != x[2] or x[3] != x[3]) std::cout << "warning: NaNs in quartic solutions.\n";
-
-    bool keepComplex = false;
-
-    std::vector<double> pv1xs;
-    int nSolutions;
-
-    if (keepComplex) {
-        if (nReal == 4) {
-            // they live in x[0], x[1], x[2], x[3].
-            nSolutions = 4;
-            for (int i = 0; i < nSolutions; i++) pv1xs.push_back(x[i]);
-        }
-        else if (nReal == 2) {
-            // x[0], x[1] are the real roots and x[2]±i*x[3] are the complex
-            nSolutions = 3;
-            for (int i = 0; i < nSolutions; i++) pv1xs.push_back(x[i]);
-        }
-        else if (nReal == 0) {
-            // the equation has two pairs of pairs of complex conjugate roots in x[0]±i*x[1] and x[2]±i*x[3].
-            nSolutions = 2;
-            pv1xs.push_back(x[0]);
-            pv1xs.push_back(x[2]);
-        }
-    }
-    else {
-        nSolutions = nReal;
-        for (int i = 0; i < nReal; i++) pv1xs.push_back(x[i]);
-    }
-
-    // Create pairs of neutrino momenta for each real root
-    if (verbose) std::cout << "creating neutrino 4-momenta for each real root ...\n";
-    for (int i = 0; i < nSolutions; i++) {
-        double pv1x = x[i];
-        double pv2x = Emissx - pv1x;
-
-        double c2 = c22 + c21 * pv1x + c20 * pv1x * pv1x;
-        double c1 = c11 + c10 * pv1x;
-        double c0 = c00;
-        double d2 = d22 + d21 * pv1x + d20 * pv1x * pv1x;
-        double d1 = d11 + d10 * pv1x;
-        double d0 = d00;
-
-        double pv1y = (c0 * d2 - c2 * d0) / (c1 * d0 - c0 * d1);
-        double pv2y = Emissy - pv1y;
-
-        double pv1z = -(a1 + a2 * pv1x + a3 * pv1y) / a4;
-        double pv2z = -(b1 + b2 * pv2x + b3 * pv2y) / b4;
-
-        double Ev1 = sqrt(pv1x * pv1x + pv1y * pv1y + pv1z * pv1z);
-        double Ev2 = sqrt(pv2x * pv2x + pv2y * pv2y + pv2z * pv2z);
-
-        TLorentzVector pv1(pv1x, pv1y, pv1z, Ev1);
-        TLorentzVector pv2(pv2x, pv2y, pv2z, Ev2);
-
-        std::pair<TLorentzVector, TLorentzVector> pv(pv1, pv2);
-
-        p_v.push_back(pv);
-    }
-
-    if (verbose) std::cout << "found " << p_v.size() << " pairs of neutrinos.\n";
-
-    return p_v;
-}
+// std::vector<TLorentzVector> Analysis::ReconstructDilepton(const std::pair<TLorentzVector, TLorentzVector>& p_l,
+//                                                           const std::vector<TLorentzVector>& p_b, const std::vector<TLorentzVector>& p_q,
+//                                                           const TLorentzVector& p_miss)
+// {
+//     // Uses the Sonnenschein method algebraically solve tt dilepton equations.
+//     // http://arxiv.org/abs/hep-ph/0510100
+//     // selects solution that minimises mtt
+//
+//     if (m_debug) std::cout << "beginning dilepton reconstruction ...\n";
+//     std::vector<TLorentzVector> p_bv;
+//
+//     int n_b = p_b.size();
+//
+//     if (m_debug) std::cout << "number of b-tagged jets = " << n_b << "\n";
+//
+//     std::vector<std::vector<std::pair<TLorentzVector, TLorentzVector> > > p_vsol;
+//
+//     // solve quartic for each possible b-jet combination
+//     for (int i = 0; i < n_b; i++)
+//         for (int j = 0; j < n_b; j++)
+//             if (i != j) p_vsol.push_back(this->KinematicReconstruction(p_l.first, p_l.second, p_b[i], p_b[j], p_miss));
+//
+//     if (m_debug) std::cout << "selecting best solution ...\n";
+//     if (m_debug) std::cout << "number b-combinations: " << p_vsol.size() << "\n";
+//
+//     int nsols = 0;
+//     for (int i = 0; i < p_vsol.size(); i++) {
+//         if (m_debug) std::cout << "number of real solutions for b-combo " << i << ": " << p_vsol.at(i).size() << "\n";
+//         nsols += p_vsol.at(i).size();
+//     }
+//     if (m_debug) std::cout << "total number of solutions = " << nsols << "\n";
+//     if (nsols == 0) return p_bv;
+//
+//     // allow no events with null b-combinations
+//     // bool no_sols = false;
+//     // for (int i = 0; i < p_vsol.size(); i++) {
+//     //     if (p_vsol.at(i).size() == 0) no_sols = true;
+//     // }
+//     // if (no_sols) return p_bv;
+//
+//     int I = 0, J = 0, K = 0, L = 0, l = 0;
+//     double mtt_min = DBL_MAX;
+//     for (int i = 0; i < n_b; i++) {
+//         for (int j = 0; j < n_b; j++) {
+//             if (i != j) {
+//                 for (int k = 0; k < p_vsol.at(l).size(); k++) {
+//                     double mtt = (p_l.first + p_l.second + p_b[i] + p_b[j] + p_vsol.at(l).at(k).first + p_vsol.at(l).at(k).second).M();
+//                     // double MT2 =  asymm_mt2_lester_bisect::get_mT2(
+//                     //            0, p_l.first, pyA,
+//                     //            0, pxB, pyB,
+//                     //            pxMiss, pyMiss,
+//                     //            0, 0,
+//                     //            desiredPrecisionOnMt2);
+//                     if (mtt < mtt_min) {
+//                         mtt_min = mtt;
+//                         I = i; J = j; K = k; L = l;
+//                     }
+//                 }
+//                 l++;
+//             }
+//         }
+//     }
+//
+//     double mW1 = (p_l.first + p_vsol.at(L).at(K).first).M();
+//     double mW2 = (p_l.second + p_vsol.at(L).at(K).second).M();
+//     double mt1 = (p_l.first + p_b[I] + p_vsol.at(L).at(K).first).M();
+//     double mt2 = (p_l.second + p_b[J] + p_vsol.at(L).at(K).second).M();
+//     double mtt = (p_l.first + p_l.second + p_b[I] + p_b[J] + p_vsol.at(L).at(K).first + p_vsol.at(L).at(K).second).M();
+//
+//     if (false) {
+//         // std::cout << "selected a solution\n";
+//         if (std::abs(mW1 - m_Wmass) > 10.0) {
+//             std::cout << "mW+   = " << mW1 << "\n";
+//             p_l.first.Print();
+//             p_vsol.at(L).at(K).first.Print();
+//             std::cout << "number b-combinations: " << p_vsol.size() << "\n";
+//             for (int i = 0; i < p_vsol.size(); i++) {
+//                 std::cout << "number of real solutions for b-combo " << i << ": " << p_vsol.at(i).size() << "\n";
+//             }
+//             std::cout << "total number of solutions = " << nsols << "\n";
+//             std::cout << "I = " << I << " J = " << J << " K = " << K << " L = "<<  L << "\n";
+//         }
+//         // if (std::abs(mW2 - m_Wmass) > 1.0) std::cout << "mW-   = " << mW2 << "\n";
+//         // if (std::abs(mt1 - m_tmass) > 0.1) std::cout << "mt    = " << mt1 << "\n";
+//         // if (std::abs(mt2 - m_tmass) > 0.1) std::cout << "mtbar = " << mt2 << "\n";
+//         // std::cout << "mtt   = " << mtt << "\n";
+//     }
+//
+//     p_bv.push_back(p_b.at(I));
+//     p_bv.push_back(p_b.at(J));
+//     p_bv.push_back(p_vsol.at(L).at(K).first);
+//     p_bv.push_back(p_vsol.at(L).at(K).second);
+//
+//     if (m_debug) std::cout << "completed dilepton reconstruction.\n";
+//
+//     return p_bv;
+// }
+//
+// std::vector<std::pair<TLorentzVector, TLorentzVector> > Analysis::KinematicReconstruction(const TLorentzVector& p_l1, const TLorentzVector& p_l2,
+//                                                                                           const TLorentzVector& p_b1, const TLorentzVector& p_b2,
+//                                                                                           const TLorentzVector& p_miss)
+// {
+//     std::vector<std::pair<TLorentzVector, TLorentzVector> > p_v;
+//
+//     if (m_debug) std::cout << "beginning kinematic reconstruction ...\n";
+//
+//     // store vector components
+//     double pl1x = p_l1.Px(), pl1y = p_l1.Py(), pl1z = p_l1.Pz(), El1 = p_l1.E();
+//     double pl2x = p_l2.Px(), pl2y = p_l2.Py(), pl2z = p_l2.Pz(), El2 = p_l2.E();
+//     double pb1x = p_b1.Px(), pb1y = p_b1.Py(), pb1z = p_b1.Pz(), Eb1 = p_b1.E();
+//     double pb2x = p_b2.Px(), pb2y = p_b2.Py(), pb2z = p_b2.Pz(), Eb2 = p_b2.E();
+//     double Emissx = p_miss.Px(), Emissy = p_miss.Py();
+//
+//     // store on-shell pole masses
+//     double mt1 = m_tmass, mt2 = m_tmass;
+//     double mw1 = m_Wmass, mw2 = m_Wmass;
+//     double mb1 = m_bmass, mb2 = m_bmass;
+//     double ml1 = 0.0, ml2 = 0.0;
+//
+//     double a1 = (Eb1 + El1) * (mw1 * mw1 - ml1 * ml1)
+//                 - El1 * (mt1 * mt1 - mb1 * mb1 - ml1 * ml1)
+//                 + 2 * Eb1 * El1 * El1
+//                 - 2 * El1 * (pb1x * pl1x + pb1y * pl1y + pb1z * pl1z);
+//
+//     double a2 = 2 * (Eb1 * pl1x - El1 * pb1x);
+//     double a3 = 2 * (Eb1 * pl1y - El1 * pb1y);
+//     double a4 = 2 * (Eb1 * pl1z - El1 * pb1z);
+//
+//     double b1 = (Eb2 + El2) * (mw2 * mw2 - ml2 * ml2)
+//                 - El2 * (mt2 * mt2 - mb2 * mb2 - ml2 * ml2)
+//                 + 2 * Eb2 * El2 * El2
+//                 - 2 * El2 * (pb2x * pl2x + pb2y * pl2y + pb2z * pl2z);
+//
+//     double b2 = 2 * (Eb2 * pl2x - El2 * pb2x);
+//     double b3 = 2 * (Eb2 * pl2y - El2 * pb2y);
+//     double b4 = 2 * (Eb2 * pl2z - El2 * pb2z);
+//
+//     double c22 = pow(mw1 * mw1 - ml1 * ml1, 2)
+//                  -4 * (El1 * El1 - pl1z * pl1z) * (a1 / a4) * (a1 / a4)
+//                  -4 * (mw1 * mw1 - ml1 * ml1) * pl1z * a1 / a4;
+//
+//     double c21 = 4 * (mw1 * mw1 - ml1 * ml1) * (pl1x - pl1z * a2 / a4)
+//                  -8 * (El1 * El1 - pl1z * pl1z) * a1 * a2 / (a4 * a4)
+//                  -8 * pl1x * pl1z * a1 / a4;
+//
+//     double c20 = -4 * (El1 * El1 - pl1x * pl1x)
+//                  -4 * (El1 * El1 - pl1z * pl1z) * (a2 / a4) * (a2 / a4)
+//                  -8 * pl1x * pl1z * a2 / a4;
+//
+//     double c11 = 4 * (mw1 * mw1 - ml1 * ml1) * (pl1y - pl1z * a3 / a4)
+//                  -8 * (El1 * El1 - pl1z * pl1z) * a1 * a3 / (a4 * a4)
+//                  -8 * pl1y * pl1z * a1 /  a4;
+//
+//     double c10 = -8 * (El1 * El1 - pl1z * pl1z) * a2 * a3 / (a4 * a4)
+//                  +8 * pl1x * pl1y
+//                  -8 * pl1x * pl1z * a3 / a4
+//                  -8 * pl1y * pl1z * a2 / a4;
+//
+//     double c00 = -4 * (El1 * El1 - pl1y * pl1y)
+//                  -4 * (El1 * El1 - pl1z * pl1z) * (a3 / a4) * (a3 / a4)
+//                  -8 * pl1y * pl1z * a3 / a4;
+//
+//     c22 = c22 * a4 * a4;
+//     c21 = c21 * a4 * a4;
+//     c20 = c20 * a4 * a4;
+//     c11 = c11 * a4 * a4;
+//     c10 = c10 * a4 * a4;
+//     c00 = c00 * a4 * a4;
+//
+//     double dd22 = pow(mw2 * mw2 - ml2 * ml2, 2)
+//                   -4 * (El2 * El2 - pl2z * pl2z) * (b1 / b4) * (b1 / b4)
+//                   -4 * (mw2 * mw2 - ml2 * ml2) * pl2z * b1 / b4;
+//
+//     double dd21 = 4 * (mw2 * mw2 - ml2 * ml2) * (pl2x - pl2z * b2 / b4)
+//                   -8 * (El2 * El2 - pl2z * pl2z) * b1 * b2 / (b4 * b4)
+//                   -8 * pl2x * pl2z * b1 / b4;
+//
+//     double dd20 = -4 * (El2 * El2 - pl2x * pl2x)
+//                   -4 * (El2 * El2 - pl2z * pl2z) * (b2 / b4) * (b2 / b4)
+//                   -8 * pl2x * pl2z * b2 / b4;
+//
+//     double dd11 = 4 * (mw2 * mw2 - ml2 * ml2) * (pl2y - pl2z * b3 / b4)
+//                   -8 * (El2 * El2 -pl2z * pl2z) * b1 * b3 / (b4 * b4)
+//                   -8 * pl2y * pl2z * b1 / b4;
+//
+//     double dd10 = -8 * (El2 * El2 - pl2z * pl2z) * b2 * b3 / (b4 * b4)
+//                   +8 * pl2x * pl2y
+//                   -8 * pl2x * pl2z * b3 / b4
+//                   -8 * pl2y * pl2z * b2 / b4;
+//
+//     double dd00 = -4 * (El2 * El2 - pl2y * pl2y)
+//                   -4 * (El2 * El2 - pl2z * pl2z) * (b3 / b4) * (b3 / b4)
+//                   -8 * pl2y * pl2z * b3 / b4;
+//
+//     dd22 = dd22 * b4 * b4;
+//     dd21 = dd21 * b4 * b4;
+//     dd20 = dd20 * b4 * b4;
+//     dd11 = dd11 * b4 * b4;
+//     dd10 = dd10 * b4 * b4;
+//     dd00 = dd00 * b4 * b4;
+//
+//     double d22 = dd22
+//                  + Emissx * Emissx * dd20
+//                  + Emissy * Emissy * dd00
+//                  + Emissx * Emissy * dd10
+//                  + Emissx * dd21
+//                  + Emissy * dd11;
+//
+//     double d21 = -dd21
+//                  -2 * Emissx * dd20
+//                  - Emissy * dd10;
+//
+//     double d20 = dd20;
+//
+//     double d11 = -dd11
+//                  -2 * Emissy * dd00
+//                  - Emissx * dd10;
+//
+//     double d10 = dd10;
+//     double d00 = dd00;
+//
+//     double h4 = c00 * c00 * d22 * d22
+//                 + c11 * d22 * (c11 * d00 - c00 * d11)
+//                 + c00 * c22 * (d11 * d11 - 2 * d00 * d22)
+//                 + c22 * d00 * (c22 * d00 - c11 * d11);
+//
+//     double h3 = c00 * d21 * (2 * c00 * d22 - c11 * d11)
+//                 + c00 * d11 * (2 * c22 * d10 + c21 * d11)
+//                 + c22 * d00 * (2 * c21 * d00 - c11 * d10)
+//                 - c00 * d22 * (c11 * d10 + c10 * d11)
+//                 -2 * c00 * d00 * (c22 * d21 + c21 * d22)
+//                 - d00 * d11 * (c11 * c21 + c10 * c22)
+//                 + c11 * d00 * (c11 * d21 + 2 * c10 * d22);
+//
+//     double h2 = c00 * c00 * (2 * d22 * d20 + d21 * d21)
+//                 - c00 * d21 * (c11 * d10 + c10 * d11)
+//                 + c11 * d20 * (c11 * d00 - c00 * d11)
+//                 + c00 * d10 * (c22 * d10 - c10 * d22)
+//                 + c00 * d11 * (2 * c21 * d10 + c20 * d11)
+//                 + (2 * c22 * c20 + c21 * c21) * d00 * d00
+//                 - 2 * c00 * d00 * (c22 * d20 + c21 * d21 + c20 * d22)
+//                 + c10 * d00 * (2 * c11 * d21 + c10 * d22)
+//                 - d00 * d10 * (c11 * c21 + c10 * c22)
+//                 - d00 * d11 * (c11 * c20 + c10 * c21);
+//
+//     double h1 = c00 * d21 * (2 * c00 * d20 - c10 * d10)
+//                 - c00 * d20 * (c11 * d10 + c10 * d11)
+//                 + c00 * d10 * (c21 * d10 + 2 * c20 * d11)
+//                 - 2 * c00 * d00 * (c21 * d20 + c20 * d21)
+//                 + c10 * d00 * (2 * c11 * d20 + c10 * d21)
+//                 + c20 * d00 * (2 * c21 * d00 - c10 * d11)
+//                 - d00 * d10 * (c11 * c20 + c10 * c21);
+//
+//     double h0 = c00 * c00 * d20 * d20
+//                 + c10 * d20 * (c10 * d00 - c00 * d10)
+//                 + c20 * d10 * (c00 * d10 - c10 * d00)
+//                 + c20 * d00 * (c20 * d00 - 2 * c00 * d20);
+//
+//     float a[4] = {static_cast<float>(h1 / h0), static_cast<float>(h2 / h0), static_cast<float>(h3 / h0), static_cast<float>(h4 / h0)};
+//
+//     if (m_debug) std::cout << "solving quartic ...\n";
+//     double x[4];
+//     int nReal = SolveP4(x, a[0], a[1], a[2], a[3]);
+//     // std::vector<double> x;
+//     // x = solveQuartic(1.0, a[0], a[1], a[2], a[3]);
+//     // int nReal = x.size();
+//
+//     if (m_debug) std::cout << "found " << nReal << " real solutions.\n";
+//     if (nReal == 0) return p_v;
+//
+//     double zero_check;
+//     for (int i = 0; i < nReal; i++) {
+//         zero_check = pow(x[i], 4) + a[0] * pow(x[i], 3) + a[1] * pow(x[i], 2) + a[2] * x[i] + a[3];
+//         if (zero_check > 10e-3) std::cout << "warning expression should be zero; solution " << i << " gives: " << zero_check << "\n";
+//     }
+//
+//     if (x[0] != x[0] or x[1] != x[1] or x[2] != x[2] or x[3] != x[3]) std::cout << "warning: NaNs in quartic solutions.\n";
+//
+//     bool keepComplex = false;
+//
+//     std::vector<double> pv1xs;
+//     int nSolutions;
+//
+//     if (keepComplex) {
+//         if (nReal == 4) {
+//             // they live in x[0], x[1], x[2], x[3].
+//             nSolutions = 4;
+//             for (int i = 0; i < nSolutions; i++) pv1xs.push_back(x[i]);
+//         }
+//         else if (nReal == 2) {
+//             // x[0], x[1] are the real roots and x[2]±i*x[3] are the complex
+//             nSolutions = 3;
+//             for (int i = 0; i < nSolutions; i++) pv1xs.push_back(x[i]);
+//         }
+//         else if (nReal == 0) {
+//             // the equation has two pairs of pairs of complex conjugate roots in x[0]±i*x[1] and x[2]±i*x[3].
+//             nSolutions = 2;
+//             pv1xs.push_back(x[0]);
+//             pv1xs.push_back(x[2]);
+//         }
+//     }
+//     else {
+//         nSolutions = nReal;
+//         for (int i = 0; i < nReal; i++) pv1xs.push_back(x[i]);
+//     }
+//
+//     // Create pairs of neutrino momenta for each real root
+//     if (m_debug) std::cout << "creating neutrino 4-momenta for each real root ...\n";
+//     for (int i = 0; i < nSolutions; i++) {
+//         double pv1x = x[i];
+//         double pv2x = Emissx - pv1x;
+//
+//         double c2 = c22 + c21 * pv1x + c20 * pv1x * pv1x;
+//         double c1 = c11 + c10 * pv1x;
+//         double c0 = c00;
+//         double d2 = d22 + d21 * pv1x + d20 * pv1x * pv1x;
+//         double d1 = d11 + d10 * pv1x;
+//         double d0 = d00;
+//
+//         double pv1y = (c0 * d2 - c2 * d0) / (c1 * d0 - c0 * d1);
+//         double pv2y = Emissy - pv1y;
+//
+//         double pv1z = -(a1 + a2 * pv1x + a3 * pv1y) / a4;
+//         double pv2z = -(b1 + b2 * pv2x + b3 * pv2y) / b4;
+//
+//         double Ev1 = sqrt(pv1x * pv1x + pv1y * pv1y + pv1z * pv1z);
+//         double Ev2 = sqrt(pv2x * pv2x + pv2y * pv2y + pv2z * pv2z);
+//
+//         TLorentzVector pv1(pv1x, pv1y, pv1z, Ev1);
+//         TLorentzVector pv2(pv2x, pv2y, pv2z, Ev2);
+//
+//         std::pair<TLorentzVector, TLorentzVector> pv(pv1, pv2);
+//
+//         p_v.push_back(pv);
+//     }
+//
+//     if (m_debug) std::cout << "found " << p_v.size() << " pairs of neutrinos.\n";
+//
+//     return p_v;
+// }
 
 
 void Analysis::SetupInputFiles()
@@ -631,7 +656,7 @@ void Analysis::SetupInputFiles()
                 if (m_model != "SM") intermediates = intermediates + "X";
             }
             filename = m_dataDirectory + "/" + initial + intermediates + final + "." + model + "." + E + "TeV" + "." + m_pdf + options;
-            filename += ".pythia.delphes";
+            if (!truth) filename += ".pythia.delphes";
             m_inputFiles->push_back(filename + ".root");
             m_weightFiles->push_back(filename + ".log");
         }
@@ -1354,6 +1379,7 @@ bool Analysis::PassCutsYtt(const std::vector<TLorentzVector>& p, const TLorentzV
     if (ytt > m_ytt) {
         UpdateCutflow(c_ytt, true);
         return true;
+
     }
     UpdateCutflow(c_ytt, false);
     return false;
@@ -1368,7 +1394,7 @@ void Analysis::PreLoop()
     this->ResetCounters();
     this->InitialiseCutflow();
     this->MakeHistograms();
-    std::cout << std::endl;
+    std::cout << "\n";
 }
 
 
@@ -1426,7 +1452,7 @@ void Analysis::Loop()
             if (ievent < 0) break;
             // std::cout << "event = " << jevent << "\n";
             this->EachEvent();
-            if (!verbose) ProgressBar(jevent, m_nevents - 1, 50);
+            if (!m_debug) ProgressBar(jevent, m_nevents - 1, 50);
         }
         this->CleanUp();
         std::cout << std::endl;
@@ -1629,7 +1655,7 @@ std::vector<TLorentzVector> Analysis::ReconstructSemilepton(const std::vector<TL
     else bestRoot = 0;
     if (imin == bestRoot) m_nNeutrinoMatched++;
 
-    if (verbose) {
+    if (m_debug) {
         // Print reconstruction performance.
         std::cout << "True pz_nu = " << p_nu.Pz() << "\n";
         std::cout << "Possible neutrino solutions:\n";
@@ -1670,7 +1696,7 @@ void Analysis::InitialiseCutflow()
     m_cutNames[c_oppositeCharge]  = "Opposite Charge  ";
     m_cutNames[c_sufficientBtags] = "Sufficient b-tags";
     m_cutNames[c_MET]             = "MET              ";
-    m_cutNames[c_realSolutions]   = "pvz real         ";
+    m_cutNames[c_realSolutions]   = "Has real roots   ";
     m_cutNames[c_mtt]             = "mtt              ";
     m_cutNames[c_ytt]             = "ytt              ";
     m_cutNames[c_eta]             = "eta              ";
