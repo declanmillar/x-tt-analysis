@@ -24,6 +24,64 @@
 
 class Analysis{
 
+public:
+    Analysis(const TString& model, const TString& process, const TString& options, const int energy, const int luminosity, const int reco, const TString tag);
+    virtual ~Analysis();
+    void Run();
+
+protected:
+    void SetupTreesForNewFile(const TString&);
+    void CleanUp();
+    void SetupInputFiles();
+    void SetupOutputFiles();
+    void PreLoop();
+    void Loop();
+    void PostLoop();
+    void EachEvent();
+    void MakeHistograms();
+    void MakeDistributions();
+    void MakeDistribution1D(TH1D*, const TString&);
+    void MakeDistribution2D(TH2D*, TString, TString, TString, TString);
+    void NormalizeSliceY(TH2D*);
+    void WriteHistograms();
+    void CheckResults();
+    void CheckPerformance();
+    void CreateFilenames();
+    void CheckFiles();
+    void GetGenerationCrossSection(TString);
+    void SetDataDirectory();
+    void GetChannelFactors();
+    void AsymmetryUncertainty(TH1D*, TH1D*, TH1D*);
+    void ResetCounters();
+    void GetBranches();
+    void EachFile(TString);
+    void TotalSpinAsymmetries();
+    void InitialiseCutflow();
+    void PrintCutflow();
+    void UpdateCutflow(int, bool);
+    bool PassFiducialCuts(const std::vector<TLorentzVector>&, const TLorentzVector&);
+    bool PassCuts(const std::vector<TLorentzVector>&, const TLorentzVector&);
+    bool TwoElectrons();
+    bool OppositeCharge();
+    bool SufficientBtags();
+    bool PassCutsMET(const std::vector<TLorentzVector>&, const TLorentzVector&);
+    bool PassCutsMtt(const std::vector<TLorentzVector>&, const TLorentzVector&);
+    bool PassCutsEta(const std::vector<TLorentzVector>&, const TLorentzVector&);
+    bool PassCutsYtt(const std::vector<TLorentzVector>&, const TLorentzVector&);
+    bool PassCutsET(const std::vector<TLorentzVector>&, const TLorentzVector&);
+    bool PassCutsDeltaR(const std::vector<TLorentzVector>&, const TLorentzVector&);
+    Long64_t TotalEvents();
+    Long64_t IncrementEvent(Long64_t i);
+    double TotalAsymmetry(TH1D* h_A, TH1D* h_B);
+    TH1D* MakeALL();
+    TH1D* MakeAL();
+    TH1D* Asymmetry(const TString&, const TString&, TH1D*, TH1D*);
+    TClonesArray* b_Jet;
+    TClonesArray* b_Electron;
+    TClonesArray* b_MissingET;
+    TClonesArray* b_ScalarHT;
+    std::vector<TLorentzVector> ReconstructSemilepton(const std::vector<TLorentzVector>&, const int);
+
 private:
     Analysis();
     Analysis(const Analysis& rhs);
@@ -186,72 +244,5 @@ private:
     TH2D* h2_HT_deltaPhi;
     TH2D* h2_mvis_deltaPhi;
     TH2D* h2_KT_deltaPhi;
-
-protected:
-    Long64_t TotalEvents();
-    Long64_t IncrementEvent(Long64_t i);
-    void SetupTreesForNewFile(const TString&);
-    void CleanUp();
-    void SetupInputFiles();
-    void SetupOutputFiles();
-    void PreLoop();
-    void Loop();
-    void PostLoop();
-    void EachEvent();
-    void MakeHistograms();
-    void MakeDistributions();
-    void MakeDistribution1D(TH1D*, const TString&);
-    void MakeDistribution2D(TH2D*, TString, TString, TString, TString);
-    void NormalizeSliceY(TH2D*);
-    void WriteHistograms();
-    void CheckResults();
-    void CheckPerformance();
-    void CreateFilenames();
-    void CheckFiles();
-    void GetGenerationCrossSection(TString);
-    void SetDataDirectory();
-    void GetChannelFactors();
-    void AsymmetryUncertainty(TH1D*, TH1D*, TH1D*);
-    void ResetCounters();
-    void GetBranches();
-    void EachFile(TString);
-
-    TH1D* MakeALL();
-    TH1D* MakeAL();
-    void TotalSpinAsymmetries();
-    double TotalAsymmetry(TH1D* h_A, TH1D* h_B);
-
-    void InitialiseCutflow();
-    void PrintCutflow();
-    void UpdateCutflow(int, bool);
-    bool PassFiducialCuts(const std::vector<TLorentzVector>&, const TLorentzVector&);
-    bool PassCuts(const std::vector<TLorentzVector>&, const TLorentzVector&);
-    bool TwoElectrons();
-    bool OppositeCharge();
-    bool SufficientBtags();
-    bool PassCutsMET(const std::vector<TLorentzVector>&, const TLorentzVector&);
-    bool PassCutsMtt(const std::vector<TLorentzVector>&, const TLorentzVector&);
-    bool PassCutsEta(const std::vector<TLorentzVector>&, const TLorentzVector&);
-    bool PassCutsYtt(const std::vector<TLorentzVector>&, const TLorentzVector&);
-    bool PassCutsET(const std::vector<TLorentzVector>&, const TLorentzVector&);
-    bool PassCutsDeltaR(const std::vector<TLorentzVector>&, const TLorentzVector&);
-
-    TClonesArray* b_Jet;
-    TClonesArray* b_Electron;
-    TClonesArray* b_MissingET;
-    TClonesArray* b_ScalarHT;
-
-    TH1D* Asymmetry(const TString&, const TString&, TH1D*, TH1D*);
-    std::vector<TLorentzVector> ReconstructSemilepton(const std::vector<TLorentzVector>&, const int);
-
-    // std::vector<TLorentzVector> ReconstructDilepton(const std::pair<TLorentzVector, TLorentzVector>&, const std::vector<TLorentzVector>&, const std::vector<TLorentzVector>&, const TLorentzVector&);
-
-    // std::vector<std::pair<TLorentzVector, TLorentzVector> > KinematicReconstruction(const TLorentzVector&, const TLorentzVector&, const TLorentzVector&,
-    //                                                                                 const TLorentzVector&, const TLorentzVector&);
-
-public:
-    Analysis(const TString& model, const TString& process, const TString& options, const int energy, const int luminosity, const int reco, const TString tag);
-    virtual ~Analysis();
-    void Run();
 };
 #endif

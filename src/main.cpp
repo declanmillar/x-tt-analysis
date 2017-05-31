@@ -55,6 +55,8 @@ int main(int argc, char* argv[])
         intermediates = "-";
     }
 
+    intermediates = "-X-";
+
     std::string process = initial_state + intermediates + final_state;
     std::cout << "Energy:         " << energy << " [TeV]\n";
     std::cout << "Process:        " << process << "\n";

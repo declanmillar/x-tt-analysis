@@ -7,9 +7,6 @@
 class KinematicReconstructer{
 
 private:
-    // KinematicReconstructer();
-    // KinematicReconstructer(const KinematicReconstructer& rhs);
-    // void operator = (const KinematicReconstructer& rhs);
     TLorentzVector m_top;
     TLorentzVector m_tbar;
     TLorentzVector m_ttbar;
