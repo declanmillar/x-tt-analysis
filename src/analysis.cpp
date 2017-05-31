@@ -8,7 +8,7 @@
 #include "two-highest.hpp"
 #include "match-bjets-to-leps.hpp"
 
-Analysis::Analysis(const TString& model, const TString& process, const TString& options, const int energy, const int luminosity, const int reconstruction, const TString tag):
+Analysis::Analysis(const TString& model, const TString& process, const TString& options, const int energy, const int luminosity, const std::string& reconstruction, const TString tag):
     m_model(model),
     m_process(process),
     m_options(options),
@@ -122,10 +122,10 @@ void Analysis::EachEvent()
     std::vector<TLorentzVector> p_bv;
     TLorentzVector p_b1, p_b2, p_v1, p_v2, ttbar, p_top, p_tbar, p_ttbar, p_W1, p_W2;
 
-    bool useKIN = true;
     std::pair<TLorentzVector, TLorentzVector> p_b_hi = TwoHighestPt(p_b);
 
-    if (useKIN) {
+    if (m_reconstruction == "KIN") {
+        std::vector<TLorentzVector> p_b_hiPt = {p_b_hi.first, p_b_hi.second};
         std::vector<TLorentzVector> p_b_hiPt = {p_b_hi.first, p_b_hi.second};
         KinematicReconstructer KIN = KinematicReconstructer(m_bmass, m_Wmass, m_tmass);
         bool isSolution = KIN.Reconstruct(p_l, p_b_hiPt, p_q, p_miss);
@@ -144,7 +144,7 @@ void Analysis::EachEvent()
             return;
         }
     }
-    else {
+    else if (m_reconstruction == "NuW") {
         auto p_b_match = MatchBjetsToLeps(p_l, p_b_hi);
 
         NeutrinoWeighter nuW = NeutrinoWeighter(1, p_l.first.Pt() + p_l.first.Phi()); // 2nd argument is random seed same for specific event
@@ -162,6 +162,7 @@ void Analysis::EachEvent()
         TLorentzVector p_W1 = p_l.first + p_v1;
         TLorentzVector p_W2 = p_l.second + p_v2;
     }
+    else std::cout << "reconstruction = {KIN, NuW}\n";
 
     double mtt = p_ttbar.M();
     double ytt = p_ttbar.Rapidity();
@@ -322,7 +323,7 @@ void Analysis::SetupOutputFiles()
 
     m_outputFilename = m_dataDirectory + "/" + m_process + "." + m_model + "." + E + "TeV" + "." + m_pdf + m_options;
     m_outputFilename += ".pythia.delphes";
-    m_outputFilename = m_outputFilename + ".r" + std::to_string(m_reconstruction) + m_tag;
+    m_outputFilename = m_outputFilename + "." + m_reconstruction + m_tag;
     if (m_reconstruction == 2 && m_btags != 2) m_outputFilename += ".b" + std::to_string(m_btags);
     std::string ytt = std::to_string(m_ytt);
     if (m_ytt > 0) m_outputFilename += ".y" + ytt.erase(ytt.find_last_not_of('0') + 1, std::string::npos);
@@ -1057,6 +1058,7 @@ void Analysis::GetBranches()
     std::cout << "Fetching branches ..." << std::endl;
     b_Jet = m_tree->UseBranch("Jet");
     b_Electron = m_tree->UseBranch("Electron");
+    b_Muon = m_tree->UseBranch("Muon");
     b_MissingET = m_tree->UseBranch("MissingET");
     b_ScalarHT = m_tree->UseBranch("ScalarHT");
 }

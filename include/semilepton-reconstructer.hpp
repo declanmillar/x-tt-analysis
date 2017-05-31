@@ -13,6 +13,7 @@ private:
     TLorentzVector m_b;
     TLorentzVector m_bbar;
     TLorentzVector m_nu;
+    const double m_bTags;
     const double m_WMass;
     const double m_TopMass;
     const bool m_debug = false;
@@ -21,7 +22,7 @@ private:
 public:
     SemileptonReconstructer(double, double);
     virtual ~SemileptonReconstructer();
-    bool Reconstruct(const std::pair<TLorentzVector, TLorentzVector>&, const std::vector<TLorentzVector>&, const std::vector<TLorentzVector>&, const TLorentzVector&);
+    bool Reconstruct(const TLorentzVector&, const std::vector<TLorentzVector>&, const std::vector<TLorentzVector>&, const TLorentzVector&);
     TLorentzVector GetTop(){   return m_top;   };
     TLorentzVector GetTbar(){  return m_tbar;  };
     TLorentzVector GetTtbar(){ return m_ttbar; };

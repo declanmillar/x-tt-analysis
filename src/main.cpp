@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
     ("energy,E",         po::value<int>()->default_value(13))
     ("luminosity,L",     po::value<double>()->default_value(-1))
     ("options,o",        po::value<std::string>()->default_value(""))
-    ("reco,r",           po::value<int>()->default_value(1))
+    ("reco,r",           po::value<std::string>()->default_value("NuW"))
     ("tag,t",            po::value<std::string>()->default_value(""))
     ;
     po::variables_map opt;
@@ -26,22 +26,22 @@ int main(int argc, char* argv[])
 
     std::string model = opt["model"].as<std::string>();
     std::string initial_state;
-    bool gg = opt["gg"].as<bool>();
-    bool qq = opt["qq"].as<bool>();
-    bool dd = opt["dd"].as<bool>();
-    bool uu = opt["uu"].as<bool>();
+    auto gg = opt["gg"].as<bool>();
+    auto qq = opt["qq"].as<bool>();
+    auto dd = opt["dd"].as<bool>();
+    auto uu = opt["uu"].as<bool>();
     if (gg) initial_state += "gg";
     if (qq) initial_state += "qq";
     if (dd) initial_state += "dd";
     if (uu) initial_state += "uu";
-    std::string final_state = opt["final_state"].as<std::string>();
-    std::string options = opt["options"].as<std::string>();
-    int energy = opt["energy"].as<int>();
-    int luminosity = opt["luminosity"].as<double>();
-    bool add_gg = opt["add_gg"].as<bool>();
-    bool add_qq = opt["add_qq"].as<bool>();
-    int reco = opt["reco"].as<int>();
-    std::string tag = opt["tag"].as<std::string>();
+    auto final_state = opt["final_state"].as<std::string>();
+    auto options = opt["options"].as<std::string>();
+    auto energy = opt["energy"].as<int>();
+    auto luminosity = opt["luminosity"].as<double>();
+    auto add_gg = opt["add_gg"].as<bool>();
+    auto add_qq = opt["add_qq"].as<bool>();
+    auto reco = opt["reco"].as<std::string>();
+    auto tag = opt["tag"].as<std::string>();
 
     AtlasROOTStyle atlasStyle;
     atlasStyle.SetStyle();
@@ -57,13 +57,13 @@ int main(int argc, char* argv[])
 
     intermediates = "-X-";
 
-    std::string process = initial_state + intermediates + final_state;
+    auto process = initial_state + intermediates + final_state;
     std::cout << "Energy:         " << energy << " [TeV]\n";
     std::cout << "Process:        " << process << "\n";
     std::cout << "Options:        " << options << "\n";
     std::cout << "Luminosity:     " << luminosity << " [fb-1]\n";
     std::cout << "Reconstruction: " << reco << "\n";
 
-    Analysis* analysis = new Analysis(model, process, options, energy, luminosity, reco, tag);
+    auto analysis = new Analysis(model, process, options, energy, luminosity, reco, tag);
     analysis->Run();
 }

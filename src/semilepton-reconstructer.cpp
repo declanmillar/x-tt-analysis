@@ -1,7 +1,8 @@
 #include "semilepton-reconstructer.hpp"
 
 
-SemileptonReconstructer::SemileptonReconstructer(double WMass, double TopMass):
+SemileptonReconstructer::SemileptonReconstructer(int bTags, double WMass, double TopMass):
+    m_bTags(btags),
     m_WMass(WMass),
     m_TopMass(TopMass)
 {
@@ -20,28 +21,8 @@ void SemileptonReconstructer::Reset(){
 }
 
 
-bool SemileptonReconstructer::Reconstruct(const std::pair<TLorentzVector, TLorentzVector>& p_l, const std::vector<TLorentzVector>& p_b, const TLorentzVector& p_miss)
+bool SemileptonReconstructer::Reconstruct(const TLorentzVector& p_l, const std::vector<TLorentzVector>& p_b, const std::vector<TLorentzVector>& p_j, const TLorentzVector& p_miss)
 {
-    // Returns a std::vector of 4-momenta for all 6 particles in the final state with matching of b-quarks to each top
-    // and matching of
-    // Takes a std::vector of true final-state particle momenta as the argument and the charge of the final
-    // state lepton: if +, t decayed leptonically; if -, t~ decayed leptonically.
-    // As going from bbllnn->bblnqq/bbqqln requires only a simple re-weighting for parton truth,
-    // it saves on storage space and processing time to store all events as bbllnn. However,
-    // when we reconstruct the neutrino, we must account for the fact either the top, or the anti-top
-    // may decay hadronically. This means there are two distinguishable final states:
-    // Q_l = +1 : pp -> b b~ l+ nu q q'
-    // Q_l = -1 : pp -> b b~ q q' l- nu
-    // Note that the order here is important, as the order of indices in the std::vector of final state momenta
-    // relates to the parent particle t=(0,2,3), t~=(1,4,5) and is fixed at the generator level.
-    // If we want the results combining each final state, we must add these together.
-    // Note: Experimentally p^{x,y}_nu is equated to the MET, of course.
-
-    // this->UpdateCutflow(c_events, true);
-
-    m_nReco++;
-
-    TLorentzVector p_l, p_nu;
     double a, b, c, k, dh, dl, mblv, mjjb, chi2, chi2min = DBL_MAX;
     unsigned int imin, jmin;
 
@@ -87,10 +68,10 @@ bool SemileptonReconstructer::Reconstruct(const std::pair<TLorentzVector, TLoren
         p_q[3] = p[3];
     }
     std::vector<std::vector<int> > q_perms;
-    if (m_btags == 2) q_perms = { {0, 1, 2, 3}, {1, 0, 2, 3} };
-    if (m_btags == 1) q_perms = { {0, 1, 2, 3}, {0, 2, 1, 3}, {0, 3, 1, 2},
+    if (m_bTags == 2) q_perms = { {0, 1, 2, 3}, {1, 0, 2, 3} };
+    if (m_bTags == 1) q_perms = { {0, 1, 2, 3}, {0, 2, 1, 3}, {0, 3, 1, 2},
                                   {1, 0, 2, 3}, {2, 0, 1, 3}, {3, 0, 1, 2} };
-    if (m_btags == 0) q_perms = { {0, 1, 2, 3}, {0, 2, 1, 3}, {0, 3, 1, 2},
+    if (m_bTags == 0) q_perms = { {0, 1, 2, 3}, {0, 2, 1, 3}, {0, 3, 1, 2},
                                   {1, 0, 2, 3}, {2, 0, 1, 3}, {3, 0, 1, 2},
                                   {2, 0, 1, 3}, {2, 1, 0, 3}, {2, 3, 0, 1},
                                   {3, 0, 1, 2}, {3, 1, 0, 2}, {3, 2, 0, 1} };
@@ -115,7 +96,6 @@ bool SemileptonReconstructer::Reconstruct(const std::pair<TLorentzVector, TLoren
     if (Q_l == +1) {
         p_R[0] = p_q[q_perms[jmin][0]];
         p_R[1] = p_q[q_perms[jmin][1]];
-        p_R[2] = p_l;
         p_R[3] = p_nu_R[imin];
         p_R[4] = p_q[q_perms[jmin][2]];
         p_R[5] = p_q[q_perms[jmin][3]];
@@ -125,7 +105,6 @@ bool SemileptonReconstructer::Reconstruct(const std::pair<TLorentzVector, TLoren
         p_R[1] = p_q[q_perms[jmin][0]];
         p_R[2] = p_q[q_perms[jmin][2]];
         p_R[3] = p_q[q_perms[jmin][3]];
-        p_R[4] = p_l;
         p_R[5] = p_nu_R[imin];
     }
 
@@ -173,5 +152,4 @@ bool SemileptonReconstructer::Reconstruct(const std::pair<TLorentzVector, TLoren
         else printf("b-assignment: incorrect. \n");
         printf("--\n");
     }
-    return p_R;
 }

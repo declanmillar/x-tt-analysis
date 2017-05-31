@@ -25,7 +25,7 @@
 class Analysis{
 
 public:
-    Analysis(const TString& model, const TString& process, const TString& options, const int energy, const int luminosity, const int reco, const TString tag);
+    Analysis(const TString& model, const TString& process, const TString& options, const int energy, const int luminosity, const std::string& reconstruction, const TString tag);
     virtual ~Analysis();
     void Run();
 
@@ -78,6 +78,7 @@ protected:
     TH1D* Asymmetry(const TString&, const TString&, TH1D*, TH1D*);
     TClonesArray* b_Jet;
     TClonesArray* b_Electron;
+    TClonesArray* b_Muon;
     TClonesArray* b_MissingET;
     TClonesArray* b_ScalarHT;
     std::vector<TLorentzVector> ReconstructSemilepton(const std::vector<TLorentzVector>&, const int);
@@ -100,7 +101,7 @@ private:
     bool m_xsec = false;
     bool m_fid = false;
     bool m_iso = false;
-    int m_reconstruction;
+    const std::string m_reconstruction;
     double m_ytt = 0.0;
     double m_Emin = -1;
     double m_Emax = -1;
@@ -145,6 +146,7 @@ private:
     const double m_bmass = 4.18, m_Wmass = 80.4, m_tmass = 172.5;
     const int m_btags = 2;
     const double m_efficiency = 1.0;
+
 
     const bool truth = false;
     // Histograms
