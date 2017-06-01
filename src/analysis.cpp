@@ -40,7 +40,7 @@ void Analysis::EachEvent()
     double weight = 1.0;
 
     if (!this->SufficientBtags()) return;
-    if (!this->TwoElectrons()) return;
+    if (!this->TwoLeptons()) return;
     if (!this->OppositeCharge()) return;
 
     TLorentzVector pvis(0,0,0,0);
@@ -51,6 +51,7 @@ void Analysis::EachEvent()
         TLorentzVector p;
         p.SetPtEtaPhiM(jet->PT, jet->Eta, jet->Phi, jet->Mass);
         if (jet->BTag > 0) {
+        // if (jet->BTag & (1 << i)) {
             if (m_debug) std::cout << "b-jet pT = " <<p.Pt() << "\n";
             p_b.push_back(p);
             h_pt_bjets->Fill(p.Pt(), weight);
@@ -67,21 +68,41 @@ void Analysis::EachEvent()
         pvis += p;
     }
 
-    Electron *electron1 = (Electron*) b_Electron->At(0);
-    Electron *electron2 = (Electron*) b_Electron->At(1);
-
-    double charge1 = electron1->Charge;
-    double charge2 = electron2->Charge;
-
     std::pair<TLorentzVector, TLorentzVector> p_l;
-    if (charge1 > 0) {
-        p_l.first.SetPtEtaPhiM(electron1->PT, electron1->Eta, electron1->Phi, 0.0);
-        p_l.second.SetPtEtaPhiM(electron2->PT, electron2->Eta, electron2->Phi, 0.0);
+    if (m_channel == "electron") {
+        Electron *electron1 = (Electron*) b_Electron->At(0);
+        Electron *electron2 = (Electron*) b_Electron->At(1);
+
+        double charge1 = electron1->Charge;
+        double charge2 = electron2->Charge;
+
+        if (charge1 > 0) {
+            p_l.first.SetPtEtaPhiM(electron1->PT, electron1->Eta, electron1->Phi, 0.0);
+            p_l.second.SetPtEtaPhiM(electron2->PT, electron2->Eta, electron2->Phi, 0.0);
+        }
+        else {
+            p_l.second.SetPtEtaPhiM(electron1->PT, electron1->Eta, electron1->Phi, 0.0);
+            p_l.first.SetPtEtaPhiM(electron2->PT, electron2->Eta, electron2->Phi, 0.0);
+        }
     }
-    else {
-        p_l.second.SetPtEtaPhiM(electron1->PT, electron1->Eta, electron1->Phi, 0.0);
-        p_l.first.SetPtEtaPhiM(electron2->PT, electron2->Eta, electron2->Phi, 0.0);
+    else if (m_channel == "muon") {
+        Muon *muon1 = (Muon*) b_Muon->At(0);
+        Muon *muon2 = (Muon*) b_Muon->At(1);
+
+        double charge1 = muon1->Charge;
+        double charge2 = muon2->Charge;
+
+        if (charge1 > 0) {
+            p_l.first.SetPtEtaPhiM(muon1->PT, muon1->Eta, muon1->Phi, 0.0);
+            p_l.second.SetPtEtaPhiM(muon2->PT, muon2->Eta, muon2->Phi, 0.0);
+        }
+        else {
+            p_l.second.SetPtEtaPhiM(muon1->PT, muon1->Eta, muon1->Phi, 0.0);
+            p_l.first.SetPtEtaPhiM(muon2->PT, muon2->Eta, muon2->Phi, 0.0);
+        }
     }
+    if (m_debug) p_l.first.Print();
+    if (m_debug) p_l.second.Print();
 
     MissingET *missingET = (MissingET*) b_MissingET->At(0);
     TLorentzVector p_miss;
@@ -125,7 +146,6 @@ void Analysis::EachEvent()
     std::pair<TLorentzVector, TLorentzVector> p_b_hi = TwoHighestPt(p_b);
 
     if (m_reconstruction == "KIN") {
-        std::vector<TLorentzVector> p_b_hiPt = {p_b_hi.first, p_b_hi.second};
         std::vector<TLorentzVector> p_b_hiPt = {p_b_hi.first, p_b_hi.second};
         KinematicReconstructer KIN = KinematicReconstructer(m_bmass, m_Wmass, m_tmass);
         bool isSolution = KIN.Reconstruct(p_l, p_b_hiPt, p_q, p_miss);
@@ -267,9 +287,9 @@ void Analysis::EachEvent()
 
 void Analysis::SetupInputFiles()
 {
-    m_inputFiles = new std::vector<TString>;
-    m_weightFiles = new std::vector<TString>;
-    TString filename;
+    m_inputFiles = new std::vector<std::string>;
+    m_weightFiles = new std::vector<std::string>;
+    std::string filename;
 
     std::string E = std::to_string(m_energy);
 
@@ -283,8 +303,7 @@ void Analysis::SetupInputFiles()
             if (initial == "gg" || initial == "qq") model = "SM";
             else model = m_model;
             std::string options = "";
-            if (initial == "gg") options = ".3-5.20x2M.weighted";
-            else if (initial == "qq") options = ".3-5.20x2M.weighted";
+
             options = m_options;
             std::string intermediates = "";
             if (initial == "uu" || initial == "dd") {
@@ -292,10 +311,19 @@ void Analysis::SetupInputFiles()
                 if (m_model != "SM") intermediates = intermediates + "X";
             }
             intermediates = "-X";
-            filename = m_dataDirectory + "/" + initial + intermediates + final + "." + model + "." + E + "TeV" + "." + m_pdf + options;
-            if (!truth) filename += ".pythia.delphes";
-            m_inputFiles->push_back(filename + ".root");
-            m_weightFiles->push_back(filename + ".log");
+            filename = initial + intermediates + final + "." + model + "." + E + "TeV" + "." + m_pdf + options;
+
+            // loop over all matching files (e.g. *.01.root and *.02.root)
+            boost::filesystem::directory_iterator end_itr; // Default ctor yields past-the-end
+            for (boost::filesystem::directory_iterator i(m_dataDirectory + "/"); i != end_itr; ++i) {
+                if (!boost::filesystem::is_regular_file(i->status())) continue;
+                if (!boost::contains(i->path().filename().string(), filename)) continue;
+                if (boost::contains(i->path().filename().string(), "KIN")) continue;
+                if (boost::contains(i->path().filename().string(), "NuW")) continue;
+                if (!boost::contains(i->path().filename().string(), ".pythia.delphes")) continue;
+                if (i->path().extension() == ".root") m_inputFiles->push_back(m_dataDirectory + "/" + i->path().filename().string());
+                if (i->path().extension() == ".log") m_weightFiles->push_back(m_dataDirectory + "/" + i->path().filename().string());
+            }
         }
     }
 
@@ -308,9 +336,9 @@ void Analysis::SetupInputFiles()
     // check all input files exist
     for (auto inputFile : *m_inputFiles) {
         struct stat buffer;
-        bool exists = stat(inputFile.Data(), &buffer) == 0;
+        bool exists = stat(inputFile.c_str(), &buffer) == 0;
         if (exists == false) {
-            std::cout << "Error: no " << inputFile.Data() << std::endl;
+            std::cout << "Error: no " << inputFile << "\n";
             exit(exists);
         }
     }
@@ -334,7 +362,7 @@ void Analysis::SetupOutputFiles()
     if (m_fid) m_outputFilename += ".fid";
     if (m_iso) m_outputFilename += ".iso";
     m_outputFilename += ".root";
-    m_outputFile = new TFile(m_outputFilename, "RECREATE");
+    m_outputFile = new TFile(m_outputFilename.c_str(), "RECREATE");
 }
 
 void Analysis::PostLoop()
@@ -344,14 +372,14 @@ void Analysis::PostLoop()
     this->MakeDistributions();
     // this->WriteHistograms();
     this->PrintCutflow();
-    std::cout << std::endl << "Output: " << m_outputFilename.Data() << std::endl;
+    std::cout << "\n" << "Output: " << m_outputFilename.c_str() << "\n";
 }
 
 
 void Analysis::CheckResults()
 {
     double sigma = h_mtt->Integral("width");
-    std::cout << "Analysis cross section: " << sigma << " [fb]" << std::endl;
+    std::cout << "Analysis cross section: " << sigma << " [fb]\n";
 }
 
 
@@ -401,7 +429,7 @@ void Analysis::MakeHistograms()
     double Emin = 0.05;
     double Emax = 12.95;
     double nbins = (Emax - Emin) / binWidth;
-    std:: cout << "Range:          " << Emin << " -- " << Emax << " [TeV]" << std::endl;
+    std:: cout << "Range:          " << Emin << " -- " << Emax << " [TeV]\n";
 
     h_pt_l1 = new TH1D("pT_l1", "p^{l^{+}}_{T}", 40, 0, 1000);
     h_pt_l1->Sumw2();
@@ -595,7 +623,7 @@ void Analysis::MakeHistograms()
 
 void Analysis::MakeDistributions()
 {
-    std::cout << "Making distributions ..." << std::endl;
+    std::cout << "Making distributions ...\n";
     this->MakeDistribution1D(h_mtt, "TeV");
     this->MakeDistribution1D(h_ytt, "");
 
@@ -739,8 +767,8 @@ void Analysis::MakeDistribution1D(TH1D* h, const TString& units)
         if (m_useLumi) {
             for (int i = 1; i < h->GetNbinsX() + 1; i++) {
                 h->SetBinError(i, sqrt(h->GetBinContent(i)));
-                // std::cout << "N  = " << "" << h->GetBinContent(i) << std::endl;
-                // std::cout << "dN = " << "" << h->GetBinError(i) << std::endl;
+                // std::cout << "N  = " << "" << h->GetBinContent(i) << "\n";
+                // std::cout << "dN = " << "" << h->GetBinError(i) << "\n";
             }
             ytitle = "Expected events";
         }
@@ -776,14 +804,14 @@ void Analysis::MakeDistribution2D(TH2D* h, TString xtitle,  TString xunits, TStr
     if (m_xsec) {
         // h->Scale(m_sigma / m_nevents, "width");
         if (m_useLumi) {
-            // std::cout << "xtitle  = " << xtitle << ", ytitle = " << ytitle << std::endl;
+            // std::cout << "xtitle  = " << xtitle << ", ytitle = " << ytitle << "\n";
             for (int i = 1; i < h->GetNbinsX() + 1; i++) {
                 for (int j = 1; j < h->GetNbinsY() + 1; j++) {
                     h->SetBinError(i, j, sqrt(h->GetBinContent(i, j)));
-                    // std::cout << "N  = " << "" << h->GetBinContent(i, j) << ", dN = " << "" << h->GetBinError(i, j) << std::endl;
+                    // std::cout << "N  = " << "" << h->GetBinContent(i, j) << ", dN = " << "" << h->GetBinError(i, j) << "\n";
                 }
             }
-            // std::cout << std::endl;
+            // std::cout << "\n";
             ztitle = "Expected events";
         }
         ztitle = "d#sigma / d";
@@ -826,7 +854,7 @@ void Analysis::MakeDistribution2D(TH2D* h, TString xtitle,  TString xunits, TStr
 
 void Analysis::WriteHistograms()
 {
-    std::cout << "Writing histograms ..." << std::endl;
+    std::cout << "Writing histograms ...\n";
     m_outputFile->cd();
     m_outputFile->cd("/");
 
@@ -893,23 +921,39 @@ bool Analysis::PassCutsMET(const std::vector<TLorentzVector>& p, const TLorentzV
 }
 
 
-bool Analysis::TwoElectrons()
+bool Analysis::TwoLeptons()
 {
-    bool twoElectrons;
-    if (b_Electron->GetEntries() == 2) twoElectrons = true;
-    else twoElectrons = false;
-    this->UpdateCutflow(c_twoElectrons, twoElectrons);
-    return twoElectrons;
+    bool twoLeptons;
+    if (m_channel == "electron") {
+        if (b_Electron->GetEntries() == 2) twoLeptons = true;
+        else twoLeptons = false;
+    }
+    else if (m_channel == "muon") {
+        if (b_Muon->GetEntries() == 2) twoLeptons = true;
+        else twoLeptons = false;
+    }
+    this->UpdateCutflow(c_twoLeptons, twoLeptons);
+    return twoLeptons;
 }
 
 
 bool Analysis::OppositeCharge()
 {
-    Electron *electron1 = (Electron*) b_Electron->At(0);
-    Electron *electron2 = (Electron*) b_Electron->At(1);
+    double charge1, charge2;
+    if (m_channel == "electron") {
+        Electron *electron1 = (Electron*) b_Electron->At(0);
+        Electron *electron2 = (Electron*) b_Electron->At(1);
 
-    double charge1 = electron1->Charge;
-    double charge2 = electron2->Charge;
+        charge1 = electron1->Charge;
+        charge2 = electron2->Charge;
+    }
+    else if (m_channel == "muon") {
+        Muon *muon1 = (Muon*) b_Muon->At(0);
+        Muon *muon2 = (Muon*) b_Muon->At(1);
+
+        charge1 = muon1->Charge;
+        charge2 = muon2->Charge;
+    }
 
     bool oppositeCharge;
 
@@ -1055,7 +1099,7 @@ void Analysis::ResetCounters()
 
 void Analysis::GetBranches()
 {
-    std::cout << "Fetching branches ..." << std::endl;
+    std::cout << "Fetching branches ...\n";
     b_Jet = m_tree->UseBranch("Jet");
     b_Electron = m_tree->UseBranch("Electron");
     b_Muon = m_tree->UseBranch("Muon");
@@ -1066,12 +1110,12 @@ void Analysis::GetBranches()
 
 void Analysis::Loop()
 {
-    for (Itr_s i = m_inputFiles->begin(); i != m_inputFiles->end(); ++i) {
-        std::cout << "Input : " << i - m_inputFiles->begin() + 1;
-        std::cout << (*i) << std::endl;
+    for (itr_s i = m_inputFiles->begin(); i != m_inputFiles->end(); ++i) {
+        std::cout << "Input " << i - m_inputFiles->begin() + 1 << "\n";
+        std::cout << (*i) << "\n";
         this->EachFile((*i));
         m_nevents = this->TotalEvents();
-        std::cout << "Events: " << m_nevents << std::endl;
+        std::cout << "Events: " << m_nevents << "\n";
         for (Long64_t jevent = 0; jevent < m_nevents; ++jevent) {
             Long64_t ievent = this->IncrementEvent(jevent);
             if (ievent < 0) break;
@@ -1080,7 +1124,7 @@ void Analysis::Loop()
             if (!m_debug) ProgressBar(jevent, m_nevents - 1, 50);
         }
         this->CleanUp();
-        std::cout << std::endl;
+        std::cout << "\n";
     }
 }
 
@@ -1120,7 +1164,7 @@ void Analysis::SetupTreesForNewFile(const TString& s)
     m_chain->Add(TStringNtuple,0);
     m_tree = new ExRootTreeReader(m_chain);
     Long64_t numberOfEntries = m_tree->GetEntries();
-    // std::cout << "Number of entries = " << numberOfEntries << std::endl;
+    // std::cout << "Number of entries = " << numberOfEntries << "\n";
 }
 
 
@@ -1142,10 +1186,10 @@ double Analysis::TotalAsymmetry(TH1D* h_A, TH1D* h_B) {
 void Analysis::InitialiseCutflow()
 {
     m_cutflow = std::vector<int>(m_cuts, -999);
-    m_cutNames = std::vector<TString>(
+    m_cutNames = std::vector<std::string>(
     m_cuts,                         "no name          ");
     m_cutNames[c_events]          = "Events           ";
-    m_cutNames[c_twoElectrons]    = "Two electrons    ";
+    m_cutNames[c_twoLeptons]      = "Two leptons      ";
     m_cutNames[c_oppositeCharge]  = "Opposite Charge  ";
     m_cutNames[c_sufficientBtags] = "Sufficient b-tags";
     m_cutNames[c_MET]             = "MET              ";
@@ -1169,14 +1213,14 @@ void Analysis::UpdateCutflow(const int cut, const bool passed)
 
 void Analysis::PrintCutflow()
 {
-    std::cout << "Cutflow: " << std::endl;
+    std::cout << "Cutflow: \n";
     for (int cut = 0; cut < m_cuts; cut++) {
         if (m_cutflow[cut] == -999) continue;
 
         h_cutflow->SetBinContent(cut + 1, m_cutflow[cut]);
-        h_cutflow->GetXaxis()->SetBinLabel(cut + 1, m_cutNames[cut]);
+        h_cutflow->GetXaxis()->SetBinLabel(cut + 1, m_cutNames[cut].c_str());
 
-        std::cout << m_cutNames[cut].Data() << " " << m_cutflow[cut] << "\n";
+        std::cout << m_cutNames[cut].c_str() << " " << m_cutflow[cut] << "\n";
     }
     h_cutflow->Write();
     m_outputFile->Close();

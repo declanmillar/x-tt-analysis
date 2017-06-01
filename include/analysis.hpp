@@ -10,6 +10,7 @@
 #include "TClonesArray.h"
 #include "sys/stat.h"
 #include "boost/algorithm/string.hpp"
+#include "boost/filesystem.hpp"
 #include "boost/asio.hpp"
 #include "atlas-style.hpp"
 #include "solve-poly.hpp"
@@ -61,7 +62,7 @@ protected:
     void UpdateCutflow(int, bool);
     bool PassFiducialCuts(const std::vector<TLorentzVector>&, const TLorentzVector&);
     bool PassCuts(const std::vector<TLorentzVector>&, const TLorentzVector&);
-    bool TwoElectrons();
+    bool TwoLeptons();
     bool OppositeCharge();
     bool SufficientBtags();
     bool PassCutsMET(const std::vector<TLorentzVector>&, const TLorentzVector&);
@@ -88,7 +89,7 @@ private:
     Analysis(const Analysis& rhs);
     void operator = (const Analysis& rhs);
 
-    typedef std::vector<TString>::const_iterator Itr_s;
+    typedef std::vector<std::string>::const_iterator itr_s;
 
     TString m_model;
     std::string m_process;
@@ -107,6 +108,7 @@ private:
     double m_Emax = -1;
     bool m_useLumi;
     const bool m_debug = false;
+    const std::string m_channel = "muon";
 
     unsigned int m_nReco;
     unsigned int m_nQuarksMatched;
@@ -117,20 +119,20 @@ private:
     Long64_t m_nevents;
 
     std::vector<double> iteration_weights;
-    TString m_dataDirectory;
-    TString m_outputFilename;
+    std::string m_dataDirectory;
+    std::string m_outputFilename;
     TFile* m_outputFile;
-    std::vector<TString>* m_inputFiles;
-    std::vector<TString>* m_weightFiles;
+    std::vector<std::string>* m_inputFiles;
+    std::vector<std::string>* m_weightFiles;
     TChain* m_chain;
     ExRootTreeReader* m_tree;
 
     std::vector<int> m_cutflow;
-    std::vector<TString> m_cutNames;
+    std::vector<std::string> m_cutNames;
     enum m_cutlist{
         c_events,
         c_sufficientBtags,
-        c_twoElectrons,
+        c_twoLeptons,
         c_oppositeCharge,
         c_Et,
         c_eta,

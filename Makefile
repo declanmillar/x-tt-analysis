@@ -27,7 +27,7 @@ else
 	DELPHESLIB = -L /afs/cern.ch/user/d/demillar/delphes/install/lib
 endif
 
-BOOSTLIBS = $(BOOSTLIB) -lboost_system -lboost_program_options
+BOOSTLIBS = $(BOOSTLIB) -lboost_system -lboost_program_options -lboost_filesystem
 DELPHESLIBS = $(DELPHESLIB) -ldelphes
 # -lExRootAnalysis -lPhysics
 
