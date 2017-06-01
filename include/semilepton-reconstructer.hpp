@@ -12,6 +12,8 @@ private:
     TLorentzVector m_ttbar;
     TLorentzVector m_b;
     TLorentzVector m_bbar;
+    TLorentzVector m_q;
+    TLorentzVector m_qbar;
     TLorentzVector m_nu;
     const double m_bTags;
     const double m_WMass;
@@ -20,9 +22,9 @@ private:
     void Reset();
 
 public:
-    SemileptonReconstructer(double, double);
+    SemileptonReconstructer(int, double, double);
     virtual ~SemileptonReconstructer();
-    bool Reconstruct(const TLorentzVector&, const std::vector<TLorentzVector>&, const std::vector<TLorentzVector>&, const TLorentzVector&);
+    bool Reconstruct(const TLorentzVector&, double charge, const std::vector<TLorentzVector>&, const std::vector<TLorentzVector>&, const TLorentzVector&);
     TLorentzVector GetTop(){   return m_top;   };
     TLorentzVector GetTbar(){  return m_tbar;  };
     TLorentzVector GetTtbar(){ return m_ttbar; };

@@ -2,7 +2,7 @@
 
 import os, StringIO, re, optparse, subprocess, sys, glob, socket, string
 
-handler_name = sys.argv[2] + ".sh" 
+handler_name = sys.argv[2] + ".sh"
 executable = "analysis"
 walltime = "08:00:00"
 queue = "8nh"
@@ -37,7 +37,7 @@ print >> handler, "#!/bin/bash"
 # if "lxplus" in hostname:
 #     print >> handler, "source /afs/cern.ch/sw/lcg/external/gcc/4.8/x86_64-slc6/setup.sh"
 if "cyan" in hostname:
-    print >> handler, "module load gcc/4.9.1; source /local/software/cern/root_v6.06.06/bin/thisroot.sh"    
+    print >> handler, "module load gcc/4.9.1; source /local/software/cern/root_v6.06.06/bin/thisroot.sh"
 print >> handler, "cd %s" % run_directory
 print >> handler, "%s/%s %s" % (run_directory, executable, argstring)
 
