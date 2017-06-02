@@ -98,7 +98,7 @@ bool SemileptonReconstructer::Reconstruct(const TLorentzVector& p_l, double char
         m_b = p_b.at(B2);
         m_bbar = p_b.at(B1);
         m_top = m_tbar + m_q + m_qbar;
-        m_tbar = m_b + m_nu + p_l;
+        m_tbar = m_b + p_l + m_nu;
     }
     m_ttbar = m_top + m_tbar;
 
