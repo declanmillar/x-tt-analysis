@@ -58,6 +58,8 @@ int main(int argc, char* argv[])
     intermediates = "-X-";
 
     auto process = initial_state + intermediates + final_state;
+
+    std::cout << "Settings\n";
     std::cout << "Energy:         " << energy << " [TeV]\n";
     std::cout << "Process:        " << process << "\n";
     std::cout << "Options:        " << options << "\n";

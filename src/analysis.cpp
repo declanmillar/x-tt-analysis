@@ -367,12 +367,15 @@ void Analysis::SetupOutputFiles()
 
 void Analysis::PostLoop()
 {
+    std::cout << "Results\n";
     this->CheckResults();
     if (m_reconstruction == 2) this->CheckPerformance();
     this->MakeDistributions();
     // this->WriteHistograms();
     this->PrintCutflow();
-    std::cout << "\n" << "Output: " << m_outputFilename.c_str() << "\n";
+    std::cout << "\n";
+    std::cout << "Output\n";
+    std::cout << m_outputFilename.c_str() << "\n";
 }
 
 
