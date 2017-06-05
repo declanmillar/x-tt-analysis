@@ -20,8 +20,8 @@ else ifeq ($(HOSTNAME), cyan03)
 	BOOSTINC = -I /local/software/boost/1.60.0/include
 	BOOSTLIB = -L /local/software/boost/1.60.0/lib
 else
-	BOOSTINC = -I /afs/cern.ch/sw/lcg/external/Boost/1.55.0_python2.7/x86_64-slc6-gcc47-opt/include/boost-1_55
-	BOOSTLIB = -L /afs/cern.ch/sw/lcg/external/Boost/1.55.0_python2.7/x86_64-slc6-gcc47-opt/lib
+	BOOSTINC = -I /cvmfs/sft.cern.ch/lcg/releases/LCG_88/Boost/1.62.0/x86_64-slc6-gcc62-opt/include/boost-1_62/boost
+	BOOSTLIB = -L /cvmfs/sft.cern.ch/lcg/releases/LCG_88/Boost/1.62.0/x86_64-slc6-gcc62-opt
 	DELPHESINC = -I /afs/cern.ch/user/d/demillar/delphes/install/include
 	DELPHESLIB = -L /afs/cern.ch/user/d/demillar/delphes/install/lib
 endif
