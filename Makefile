@@ -21,7 +21,7 @@ else ifeq ($(HOSTNAME), cyan03)
 	BOOSTLIB = -L /local/software/boost/1.60.0/lib
 else
 	BOOSTINC = -I /cvmfs/sft.cern.ch/lcg/releases/LCG_88/Boost/1.62.0/x86_64-slc6-gcc62-opt/include/boost-1_62
-	BOOSTLIB = -L /cvmfs/sft.cern.ch/lcg/releases/LCG_88/Boost/1.62.0/x86_64-slc6-gcc62-opt
+	BOOSTLIB = -L /cvmfs/sft.cern.ch/lcg/releases/LCG_88/Boost/1.62.0/x86_64-slc6-gcc62-opt/lib
 	DELPHESINC = -I /afs/cern.ch/user/d/demillar/delphes/install/include
 	DELPHESLIB = -L /afs/cern.ch/user/d/demillar/delphes/install/lib
 endif
