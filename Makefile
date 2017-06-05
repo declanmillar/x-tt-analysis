@@ -27,7 +27,7 @@ else
 endif
 
 BOOSTLIBS = $(BOOSTLIB) -lboost_system -lboost_program_options -lboost_filesystem
-DELPHESLIBS = $(DELPHESLIB) -lExRootAnalysis -lPhysics #-ldelphes
+DELPHESLIBS = $(DELPHESLIB) -ldelphes
 
 C = c++
 INC = $(ROOTINC) $(BOOSTINC) $(DELPHESINC) -Iinclude
