@@ -12,12 +12,12 @@ int main(int argc, char* argv[])
     ("qq,q",             po::value<bool>()->default_value(false)->implicit_value(true))
     ("uu,u",             po::value<bool>()->default_value(false)->implicit_value(true))
     ("dd,d",             po::value<bool>()->default_value(false)->implicit_value(true))
-    ("final_state,f",    po::value<std::string>()->default_value("tt-bbmumuvv"))
+    ("final_state,f",    po::value<std::string>()->default_value("tt-bbeevv"))
     ("add_gg,G",         po::value<bool>()->default_value(false)->implicit_value(true))
     ("add_qq,Q",         po::value<bool>()->default_value(false)->implicit_value(true))
     ("energy,E",         po::value<int>()->default_value(13))
     ("luminosity,L",     po::value<double>()->default_value(-1))
-    ("options,o",        po::value<std::string>()->default_value(""))
+    ("options,o",        po::value<std::string>()->default_value(".cut"))
     ("reco,r",           po::value<std::string>()->default_value("NuW"))
     ("tag,t",            po::value<std::string>()->default_value(""))
     ;
@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
         intermediates = "-";
     }
 
-    intermediates = "-X-";
+    // intermediates = "-X-";
 
     auto process = initial_state + intermediates + final_state;
 
