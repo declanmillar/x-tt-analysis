@@ -24,7 +24,7 @@ else
 endif
 
 BOOSTLIBS = $(BOOSTLIB) -lboost_system -lboost_program_options -lboost_filesystem
-DELPHESLIBS = $(DELPHESLIB) -ldelphes
+DELPHESLIBS = $(DELPHESLIB) -lDelphes
 
 C = g++
 INC = $(ROOTINC) $(BOOSTINC) $(DELPHESINC) -Iinclude
