@@ -18,7 +18,7 @@ ifeq ($(HOSTNAME), Sunder)
 	DELPHESLIB = -L /Users/declan/Code/delphes/install/lib
 else
 	BOOSTINC = -I /afs/cern.ch/user/d/demillar/boost_1_64_0
-	BOOSTLIB = -L /afs/cern.ch/user/d/demillar/boost_1_64_0/libs
+	BOOSTLIB = -L /afs/cern.ch/user/d/demillar/boost_1_64_0/bin.v2/libs
 	# BOOSTINC = -I /afs/cern.ch/sw/lcg/external/Boost/1.55.0_python2.7/x86_64-slc6-gcc47-opt/include/boost-1_55
 	# BOOSTLIB = -L /afs/cern.ch/sw/lcg/external/Boost/1.55.0_python2.7/x86_64-slc6-gcc47-opt/lib
 	DELPHESINC = -I /afs/cern.ch/user/d/demillar/delphes/install/include
