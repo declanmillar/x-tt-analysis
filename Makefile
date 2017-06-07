@@ -16,17 +16,22 @@ ifeq ($(HOSTNAME), Sunder)
 	BOOSTLIB = -L /usr/local/Cellar/boost/1.64.0_1/lib
 	DELPHESINC = -isystem /Users/declan/Code/delphes/install/include
 	DELPHESLIB = -L /Users/declan/Code/delphes/install/lib
+else ifeq ($(HOSTNAME), cyan03)
+	BOOSTINC = -I /local/software/boost/1.61.0/include
+	BOOSTLIBS = -L /local/software/boost/1.61.0/lib
+	DELPHESINC = -I /home/dam1g09/delphes/install/include
+	DELPHESLIBS = -L /home/dam1g09/delphes/install/lib
 else
 	BOOSTINC = -I /afs/cern.ch/user/d/demillar/boost_1_64_0
-	BOOSTLIB = -L /afs/cern.ch/user/d/demillar/boost_1_64_0/bin.v2/libs
+	BOOSTLIBS = -L /afs/cern.ch/user/d/demillar/boost_1_64_0/bin.v2/libs
 	# BOOSTINC = -I /afs/cern.ch/sw/lcg/external/Boost/1.55.0_python2.7/x86_64-slc6-gcc47-opt/include/boost-1_55
 	# BOOSTLIB = -L /afs/cern.ch/sw/lcg/external/Boost/1.55.0_python2.7/x86_64-slc6-gcc47-opt/lib
 	DELPHESINC = -I /afs/cern.ch/user/d/demillar/delphes/install/include
-	DELPHESLIB = -L /afs/cern.ch/user/d/demillar/delphes/install/lib
+	DELPHESLIBS = -L /afs/cern.ch/user/d/demillar/delphes/install/lib
 endif
 
-BOOSTLIBS = $(BOOSTLIB) -lboost_system -lboost_program_options -lboost_filesystem
-DELPHESLIBS = $(DELPHESLIB) -lDelphes
+BOOSTLIBS = $(BOOSTLIBS) -lboost_system -lboost_program_options -lboost_filesystem
+DELPHESLIBS = $(DELPHESLIBS) -lDelphes
 
 C = g++
 INC = $(ROOTINC) $(BOOSTINC) $(DELPHESINC) -Iinclude
