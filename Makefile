@@ -18,7 +18,7 @@ ifeq ($(HOSTNAME), Sunder)
 	DELPHESLIB = -L /Users/declan/Code/delphes/install/lib
 else ifeq ($(HOSTNAME), cyan03)
 	BOOSTINC = -I /local/software/boost/1.61.0/include
-	BOOSTLIBS = -L /local/software/boost/1.61.0/lib
+	BOOSTLIB = -L /local/software/boost/1.61.0/lib
 	DELPHESINC = -I /home/dam1g09/delphes/install/include
 	DELPHESLIB = -L /home/dam1g09/delphes/install/lib
 else
