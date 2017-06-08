@@ -1,4 +1,5 @@
-# Z' -> tt Analysis
+# Oracle
+## Previously know as zprime-top-delphes-analysis
 
 ---
 

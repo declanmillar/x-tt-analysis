@@ -311,7 +311,7 @@ void Analysis::SetupInputFiles()
                 if (m_model != "SM") intermediates = intermediates + "X";
             }
             intermediates = "-X";
-            filename = initial + intermediates + final + "." + model + "." + E + "TeV" + "." + m_pdf + options;
+            filename = initial + intermediates + final + "_" + model + "_" + E + "TeV" + "_" + m_pdf + options;
 
             // loop over all matching files (e.g. *.01.root and *.02.root)
             boost::filesystem::directory_iterator end_itr; // Default ctor yields past-the-end
@@ -320,7 +320,7 @@ void Analysis::SetupInputFiles()
                 if (!boost::contains(i->path().filename().string(), filename)) continue;
                 if (boost::contains(i->path().filename().string(), "KIN")) continue;
                 if (boost::contains(i->path().filename().string(), "NuW")) continue;
-                if (!boost::contains(i->path().filename().string(), ".pythia.delphes")) continue;
+                if (!boost::contains(i->path().filename().string(), "_pythia_delphes")) continue;
                 if (i->path().extension() == ".root") m_inputFiles->push_back(m_dataDirectory + "/" + i->path().filename().string());
                 if (i->path().extension() == ".log") m_weightFiles->push_back(m_dataDirectory + "/" + i->path().filename().string());
             }
