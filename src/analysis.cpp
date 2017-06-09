@@ -295,6 +295,7 @@ void Analysis::SetupInputFiles()
 
     std::vector<std::string> initials = {"gg", "qq", "dd", "uu"};
 
+    int nfiles = 0;
     for (auto initial : initials) {
         std::size_t pos = m_process.find("-tt");
         std::string final = m_process.substr(pos);
@@ -324,7 +325,11 @@ void Analysis::SetupInputFiles()
                 if (boost::contains(i->path().filename().string(), "KIN")) continue;
                 if (boost::contains(i->path().filename().string(), "NuW")) continue;
                 if (!boost::contains(i->path().filename().string(), "_pythia_delphes")) continue;
-                if (i->path().extension() == ".root") m_inputFiles->push_back(m_dataDirectory + "/" + i->path().filename().string());
+                if (i->path().extension() == ".root") {
+                    nfiles++;
+                    m_inputFiles->push_back(m_dataDirectory + "/" + i->path().filename().string());
+                    std::cout << "input " << nfiles << ": " << i->path().filename().string();
+                }
                 if (i->path().extension() == ".log") m_weightFiles->push_back(m_dataDirectory + "/" + i->path().filename().string());
             }
         }
