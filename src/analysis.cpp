@@ -317,8 +317,9 @@ void Analysis::SetupInputFiles()
             boost::filesystem::directory_iterator end_itr; // Default ctor yields past-the-end
             for (boost::filesystem::directory_iterator i(m_dataDirectory + "/"); i != end_itr; ++i) {
                 if (!boost::filesystem::is_regular_file(i->status())) continue;
-                if (!boost::contains(i->path().filename().string(), filename)) continue;
                 std::cout << "file: " << i->path().filename().string() << "\n"; 
+                if (!boost::contains(i->path().filename().string(), filename)) continue;
+                std::cout << "file: " << i->path().filename().string() << "\n";
                 if (boost::contains(i->path().filename().string(), "KIN")) continue;
                 if (boost::contains(i->path().filename().string(), "NuW")) continue;
                 if (!boost::contains(i->path().filename().string(), "_pythia_delphes")) continue;
