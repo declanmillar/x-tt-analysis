@@ -328,9 +328,9 @@ void Analysis::SetupInputFiles()
                 if (i->path().extension() == ".root") {
                     nfiles++;
                     m_inputFiles->push_back(m_dataDirectory + "/" + i->path().filename().string());
-                    std::cout << "input " << nfiles << ": " << i->path().filename().string();
+                    std::cout << "Input " << nfiles << ": " << i->path().filename().string() << "\n";
                 }
-                if (i->path().extension() == ".log") m_weightFiles->push_back(m_dataDirectory + "/" + i->path().filename().string());
+                if (i->path().extension() == ".log") m_weightFiles->push_back(m_dataDirectory + "/" + i->path().filename().string()) << "\n";
             }
         }
     }
