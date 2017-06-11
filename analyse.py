@@ -39,10 +39,12 @@ handler = StringIO.StringIO()
 print >> handler, "#!/bin/bash"
 if "lxplus" in hostname:
     print >> handler, "source /afs/cern.ch/sw/lcg/external/gcc/4.9/x86_64-slc6/setup.sh"
+    print >> handler, "cd %s" % run_directory
+    print >> handler, "%s/%s %s" % (run_directory, executable, argstring)
 if "cyan" or "blue" in hostname:
     print >> handler, "source /home/dam1g09/.bash_profile"
-print >> handler, "cd %s" % run_directory
-print >> handler, "%s/%s %s" % (run_directory, executable, argstring)
+    print >> handler, "cd %s" % run_directory
+    print >> handler, "%s/%s %s > %s/%s" % (run_directory, executable, argstring, run_directory, "handler.sh")
 
 # write handler
 try:
