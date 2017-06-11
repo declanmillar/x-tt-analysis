@@ -27,11 +27,11 @@ if not os.path.isdir(data_directory):
     sys.exit("no directory ", data_directory)
 
 # collect command line arguments
-# argstring = ""
-# iterarg = iter(sys.argv)
-# next(iterarg)
-# for arg in iterarg:
-#     argstring = argstring + " " + arg
+argstring = ""
+iterarg = iter(sys.argv)
+next(iterarg)
+for arg in iterarg:
+    argstring = argstring + " " + arg
 
 # print handler
 handler = StringIO.StringIO()
