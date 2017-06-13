@@ -357,18 +357,18 @@ void Analysis::SetupOutputFiles()
 {
     std::string E = std::to_string(m_energy);
 
-    m_outputFilename = m_dataDirectory + "/" + m_process + "." + m_model + "." + E + "TeV" + "." + m_pdf + m_options;
-    m_outputFilename += ".pythia.delphes";
+    m_outputFilename = m_dataDirectory + "/" + m_process + "_" + m_model + "_" + E + "TeV" + "_" + m_pdf + m_options;
+    m_outputFilename += "_pythia_delphes";
     m_outputFilename = m_outputFilename + "." + m_reconstruction + m_tag;
-    if (m_reconstruction == 2 && m_btags != 2) m_outputFilename += ".b" + std::to_string(m_btags);
+    if (m_reconstruction == 2 && m_btags != 2) m_outputFilename += "_b" + std::to_string(m_btags);
     std::string ytt = std::to_string(m_ytt);
-    if (m_ytt > 0) m_outputFilename += ".y" + ytt.erase(ytt.find_last_not_of('0') + 1, std::string::npos);
-    if (m_Emin >= 0 || m_Emax >= 0) m_outputFilename += ".E" + std::to_string(m_Emin) + "-" + std::to_string(m_Emax);
+    if (m_ytt > 0) m_outputFilename += "_y" + ytt.erase(ytt.find_last_not_of('0') + 1, std::string::npos);
+    if (m_Emin >= 0 || m_Emax >= 0) m_outputFilename += "_E" + std::to_string(m_Emin) + "-" + std::to_string(m_Emax);
     std::string eff = std::to_string(m_efficiency);
-    if (m_efficiency < 1.0) m_outputFilename += ".e" + eff.erase(eff.find_last_not_of('0') + 1, std::string::npos);
-    if (m_luminosity > 0) m_outputFilename += ".L" + std::to_string(m_luminosity);
-    if (m_fid) m_outputFilename += ".fid";
-    if (m_iso) m_outputFilename += ".iso";
+    if (m_efficiency < 1.0) m_outputFilename += "_e" + eff.erase(eff.find_last_not_of('0') + 1, std::string::npos);
+    if (m_luminosity > 0) m_outputFilename += "_L" + std::to_string(m_luminosity);
+    if (m_fid) m_outputFilename += "_fid";
+    if (m_iso) m_outputFilename += "_iso";
     m_outputFilename += ".root";
     m_outputFile = new TFile(m_outputFilename.c_str(), "RECREATE");
 }
