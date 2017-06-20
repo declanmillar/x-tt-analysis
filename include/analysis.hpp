@@ -115,7 +115,7 @@ private:
     unsigned int m_nNeutrinoMatched;
     unsigned int m_nRealRoots;
     unsigned int m_nComplexRoots;
-    double m_sigma;
+    double m_crossSection;
     Long64_t m_nevents;
 
     std::vector<double> iteration_weights;
@@ -123,7 +123,6 @@ private:
     std::string m_outputFilename;
     TFile* m_outputFile;
     std::vector<std::string>* m_inputFiles;
-    std::vector<std::string>* m_weightFiles;
     TChain* m_chain;
     ExRootTreeReader* m_tree;
 

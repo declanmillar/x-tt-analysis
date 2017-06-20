@@ -18,7 +18,6 @@ Analysis::Analysis(const TString& model, const TString& process, const TString& 
     m_tag(tag),
     m_outputFile(nullptr),
     m_inputFiles(nullptr),
-    m_weightFiles(nullptr),
     m_chain(nullptr),
     m_tree(nullptr)
 {
@@ -288,7 +287,6 @@ void Analysis::EachEvent()
 void Analysis::SetupInputFiles()
 {
     m_inputFiles = new std::vector<std::string>;
-    m_weightFiles = new std::vector<std::string>;
     std::string filename;
 
     std::string E = std::to_string(m_energy);
@@ -330,7 +328,6 @@ void Analysis::SetupInputFiles()
                     m_inputFiles->push_back(m_dataDirectory + "/" + i->path().filename().string());
                     std::cout << "Input " << nfiles << ":        " << i->path().filename().string() << "\n";
                 }
-                if (i->path().extension() == ".log") m_weightFiles->push_back(m_dataDirectory + "/" + i->path().filename().string());
             }
         }
     }
@@ -1118,6 +1115,14 @@ void Analysis::GetBranches()
     b_ScalarHT = m_tree->UseBranch("ScalarHT");
 }
 
+void Analysis::GetGenerationCrossSection(TString filename)
+{
+    std::string Filename = filename.Data();
+
+    std::cout << "Generation Cross section = " << 1000 << " [fb]\n";
+
+    // m_sigma = 1000 * m_crossSection;
+}
 
 void Analysis::Loop()
 {
