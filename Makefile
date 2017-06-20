@@ -14,8 +14,8 @@ HOSTNAME := $(shell hostname)
 ifeq ($(HOSTNAME), Sunder)
 	BOOSTINC = -isystem /usr/local/Cellar/boost/1.64.0_1/include
 	BOOSTLIB = -L /usr/local/Cellar/boost/1.64.0_1/lib
-	DELPHESINC = -isystem /Users/declan/Code/delphes/install/include
-	DELPHESLIB = -L /Users/declan/Code/delphes/install/lib
+	DELPHESINC = -isystem /Users/declan/Projects/delphes/install/include
+	DELPHESLIB = -L /Users/declan/Projects/delphes/install/lib
 else ifeq ($(HOSTNAME), cyan03)
 	BOOSTINC = -I /local/software/boost/1.61.0/include
 	BOOSTLIB = -L /local/software/boost/1.61.0/lib
