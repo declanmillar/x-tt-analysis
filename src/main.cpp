@@ -62,8 +62,8 @@ int main(int argc, char* argv[])
     std::cout << "Settings\n";
     std::cout << "Energy:         " << energy << " [TeV]\n";
     std::cout << "Process:        " << process << "\n";
-    std::cout << "Options:        " << options << "\n";
-    std::cout << "Luminosity:     " << luminosity << " [fb-1]\n";
+    if (options != "") std::cout << "Options:        " << options << "\n";
+    if (options != -1) std::cout << "Luminosity:     " << luminosity << " [fb-1]\n";
     std::cout << "Reconstruction: " << reco << "\n";
 
     auto analysis = new Analysis(model, process, options, energy, luminosity, reco, tag);

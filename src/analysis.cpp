@@ -17,7 +17,7 @@ Analysis::Analysis(const TString& model, const TString& process, const TString& 
     m_reconstruction(reconstruction),
     m_tag(tag),
     m_outputFile(nullptr),
-    m_inputFiles(nullptr),
+    m_input(nullptr),
     m_chain(nullptr),
     m_tree(nullptr)
 {
@@ -286,7 +286,7 @@ void Analysis::EachEvent()
 
 void Analysis::SetupInputFiles()
 {
-    m_inputFiles = new std::vector<std::string>;
+    m_input = new std::vector<std::tuple<std::string, int> >;
     std::string filename;
 
     std::string E = std::to_string(m_energy);
@@ -328,7 +328,7 @@ void Analysis::SetupInputFiles()
                 if (i->path().extension() == ".root") {
                     // std::cout << "ends .root: " << i->path().filename().string() << "\n";
                     nfiles++;
-                    m_inputFiles->push_back(m_dataDirectory + "/" + i->path().filename().string());
+                    m_input->push_back(m_dataDirectory + "/" + i->path().filename().string());
                     if (nfiles < 10) std::cout << "Input " << nfiles << ":        " << i->path().filename().string() << "\n";
                     else std::cout << "Input " << nfiles << ":       " << i->path().filename().string() << "\n";
                 }
@@ -337,17 +337,17 @@ void Analysis::SetupInputFiles()
     }
 
     // check some input files have been specified
-    if (m_inputFiles->size() < 1) {
+    if (m_input->size() < 1) {
         std::cout << "Error: no input files specified.";
         exit(false);
     }
 
     // check all input files exist
-    for (auto inputFile : *m_inputFiles) {
+    for (auto input : *m_input) {
         struct stat buffer;
-        bool exists = stat(inputFile.c_str(), &buffer) == 0;
+        bool exists = stat((std::get<0>(input)).c_str(), &buffer) == 0;
         if (exists == false) {
-            std::cout << "Error: no " << inputFile << "\n";
+            std::cout << "Error: no " << std::get<0>(input) << "\n";
             exit(exists);
         }
     }
@@ -1109,6 +1109,7 @@ void Analysis::ResetCounters()
     m_nComplexRoots = 0;
 }
 
+
 void Analysis::GetBranches()
 {
     std::cout << "Fetching branches ...\n";
@@ -1119,27 +1120,26 @@ void Analysis::GetBranches()
     b_ScalarHT = m_tree->UseBranch("ScalarHT");
 }
 
+
 void Analysis::GetGenerationCrossSection(TString filename)
 {
     std::string Filename = filename.Data();
-
-    std::cout << "Generation Cross section = " << 1000 << " [fb]\n";
-
-    // m_sigma = 1000 * m_crossSection;
+    m_crossSection = 1000 * m_crossSection;
+    std::cout << "Generation Cross section = " << m_crossSection << " [fb]\n";
 }
+
 
 void Analysis::Loop()
 {
-    for (itr_s i = m_inputFiles->begin(); i != m_inputFiles->end(); ++i) {
-        std::cout << "Input " << i - m_inputFiles->begin() + 1 << "\n";
-        std::cout << (*i) << "\n";
-        this->EachFile((*i));
+    for (itr_s i = m_input->begin(); i != m_input->end(); ++i) {
+        std::cout << "Input " << i - m_input->begin() + 1 << "\n";
+        std::cout << std::get<0>(*i) << "\n";
+        this->EachFile(std::get<0>(*i));
         m_nevents = this->TotalEvents();
         std::cout << "Events: " << m_nevents << "\n";
         for (Long64_t jevent = 0; jevent < m_nevents; ++jevent) {
             Long64_t ievent = this->IncrementEvent(jevent);
             if (ievent < 0) break;
-            // std::cout << "event = " << jevent << "\n";
             this->EachEvent();
             if (!m_debug) ProgressBar(jevent, m_nevents - 1, 50);
         }
@@ -1147,6 +1147,7 @@ void Analysis::Loop()
         std::cout << "\n";
     }
 }
+
 
 void Analysis::EachFile(TString filename)
 {
@@ -1157,7 +1158,7 @@ void Analysis::EachFile(TString filename)
 
 Analysis::~Analysis()
 {
-    delete m_inputFiles;
+    delete m_input;
 }
 
 
