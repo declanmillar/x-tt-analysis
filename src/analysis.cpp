@@ -384,14 +384,14 @@ void Analysis::PostLoop()
     this->PrintCutflow();
     std::cout << "\n";
     std::cout << "Output\n";
-    std::cout << m_outputFilename.c_str() << "\n";
+    std::cout << m_outputFilename << "\n";
 }
 
 
 void Analysis::CheckResults()
 {
-    double sigma = h_mtt->Integral("width");
-    std::cout << "Analysis cross section: " << sigma << " [fb]\n";
+    double crossSection = h_mtt->Integral("width");
+    std::cout << "Analysis cross section: " << crossSection << " [fb]\n";
 }
 
 
@@ -1094,7 +1094,7 @@ void Analysis::SetDataDirectory()
     else if ((Hostname.find("cyan") != std::string::npos) || (Hostname.find("blue") != std::string::npos) || (Hostname.find("green") != std::string::npos))
         m_dataDirectory = "/scratch/dam1g09/zprime";
     else
-        std::cout << "Hostname " << Hostname.c_str() << " not recognised.\n";
+        std::cout << "Hostname " << Hostname << " not recognised.\n";
 }
 
 
@@ -1240,7 +1240,7 @@ void Analysis::PrintCutflow()
         h_cutflow->SetBinContent(cut + 1, m_cutflow[cut]);
         h_cutflow->GetXaxis()->SetBinLabel(cut + 1, m_cutNames[cut].c_str());
 
-        std::cout << m_cutNames[cut].c_str() << " " << m_cutflow[cut] << "\n";
+        std::cout << m_cutNames[cut] << " " << m_cutflow[cut] << "\n";
     }
     h_cutflow->Write();
     m_outputFile->Close();
