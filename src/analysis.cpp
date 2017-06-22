@@ -319,7 +319,7 @@ void Analysis::SetupInputFiles()
                 if (!boost::filesystem::is_regular_file(i->status())) continue;
                 std::cout << "is file: " << i->path().filename().string() << "\n";
                 if (!boost::contains(i->path().filename().string(), filename)) continue;
-                std::cout << "contains filename: " << i->path().filename().string() << "\n";
+                std::cout << "contains " << filename << ": " << i->path().filename().string() << "\n";
                 if (boost::contains(i->path().filename().string(), "KIN")) continue;
                 if (boost::contains(i->path().filename().string(), "NuW")) continue;
                 std::cout << "not output: " << i->path().filename().string() << "\n";
