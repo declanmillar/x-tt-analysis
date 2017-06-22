@@ -312,7 +312,7 @@ void Analysis::SetupInputFiles()
             }
             filename = initial + intermediates + final + "_" + model + "_" + E + "TeV" + "_" + m_pdf + options;
 
-            std::cout << "adding " << filename << "* ...\n";
+            std::cout << "Adding:        " << filename << "*_pythia_delphes.root ...\n";
             // loop over all matching files (e.g. *.01.root and *.02.root)
             boost::filesystem::directory_iterator end_itr; // Default ctor yields past-the-end
             for (boost::filesystem::directory_iterator i(m_dataDirectory + "/"); i != end_itr; ++i) {
@@ -329,7 +329,8 @@ void Analysis::SetupInputFiles()
                     // std::cout << "ends .root: " << i->path().filename().string() << "\n";
                     nfiles++;
                     m_inputFiles->push_back(m_dataDirectory + "/" + i->path().filename().string());
-                    std::cout << "Input " << nfiles << ":        " << i->path().filename().string() << "\n";
+                    if (nfiles < 10) std::cout << "Input " << nfiles << ":        " << i->path().filename().string() << "\n";
+                    else std::cout << "Input " << nfiles << ":       " << i->path().filename().string() << "\n";
                 }
             }
         }
