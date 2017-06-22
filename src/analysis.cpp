@@ -312,7 +312,7 @@ void Analysis::SetupInputFiles()
             }
             filename = initial + intermediates + final + "_" + model + "_" + E + "TeV" + "_" + m_pdf + options;
 
-            // std::cout << "filename = " << filename << "\n";
+            std::cout << "filename = " << filename << "\n";
             // loop over all matching files (e.g. *.01.root and *.02.root)
             boost::filesystem::directory_iterator end_itr; // Default ctor yields past-the-end
             for (boost::filesystem::directory_iterator i(m_dataDirectory + "/"); i != end_itr; ++i) {
