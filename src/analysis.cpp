@@ -308,25 +308,25 @@ void Analysis::SetupInputFiles()
             if (initial == "uu" || initial == "dd") {
                 intermediates = intermediates + "-AZ";
                 if (m_model != "SM") intermediates = intermediates + "X";
-                intermediates = "-X";
+                // intermediates = "-X";
             }
             filename = initial + intermediates + final + "_" + model + "_" + E + "TeV" + "_" + m_pdf + options;
 
-            std::cout << "filename = " << filename << "\n";
+            std::cout << "adding " << filename << "* ...\n";
             // loop over all matching files (e.g. *.01.root and *.02.root)
             boost::filesystem::directory_iterator end_itr; // Default ctor yields past-the-end
             for (boost::filesystem::directory_iterator i(m_dataDirectory + "/"); i != end_itr; ++i) {
                 if (!boost::filesystem::is_regular_file(i->status())) continue;
-                std::cout << "is file: " << i->path().filename().string() << "\n";
+                // std::cout << "is file: " << i->path().filename().string() << "\n";
                 if (!boost::contains(i->path().filename().string(), filename)) continue;
-                std::cout << "contains " << filename << ": " << i->path().filename().string() << "\n";
+                // std::cout << "contains " << filename << ": " << i->path().filename().string() << "\n";
                 if (boost::contains(i->path().filename().string(), "KIN")) continue;
                 if (boost::contains(i->path().filename().string(), "NuW")) continue;
-                std::cout << "not output: " << i->path().filename().string() << "\n";
+                // std::cout << "not output: " << i->path().filename().string() << "\n";
                 if (!boost::contains(i->path().filename().string(), "_pythia_delphes")) continue;
-                std::cout << "has _pythia_delphes suffix: " << i->path().filename().string() << "\n";
+                // std::cout << "has _pythia_delphes suffix: " << i->path().filename().string() << "\n";
                 if (i->path().extension() == ".root") {
-                    std::cout << "ends .root: " << i->path().filename().string() << "\n";
+                    // std::cout << "ends .root: " << i->path().filename().string() << "\n";
                     nfiles++;
                     m_inputFiles->push_back(m_dataDirectory + "/" + i->path().filename().string());
                     std::cout << "Input " << nfiles << ":        " << i->path().filename().string() << "\n";

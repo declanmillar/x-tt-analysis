@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
     ("add_qq,Q",         po::value<bool>()->default_value(false)->implicit_value(true))
     ("energy,E",         po::value<int>()->default_value(13))
     ("luminosity,L",     po::value<double>()->default_value(-1))
-    ("options,o",        po::value<std::string>()->default_value(".cut"))
+    ("options,o",        po::value<std::string>()->default_value(""))
     ("reco,r",           po::value<std::string>()->default_value("NuW"))
     ("tag,t",            po::value<std::string>()->default_value(""))
     ;
