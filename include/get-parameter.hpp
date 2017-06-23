@@ -5,6 +5,7 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <stdexcept>
 
 double get_parameter(std::ifstream*);
 
