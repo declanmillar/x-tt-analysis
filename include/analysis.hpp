@@ -39,7 +39,7 @@ protected:
     void PreLoop();
     void Loop();
     void PostLoop();
-    void EachEvent();
+    void EachEvent(double);
     void MakeHistograms();
     void MakeDistributions();
     void MakeDistribution1D(TH1D*, const TString&);
@@ -50,7 +50,8 @@ protected:
     void CheckPerformance();
     void CreateFilenames();
     void CheckFiles();
-    void GetGenerationCrossSection(TString);
+    void GetGenerationCrossSection(int);
+    void GetProcessWeight(int);
     void SetDataDirectory();
     void GetChannelFactors();
     void AsymmetryUncertainty(TH1D*, TH1D*, TH1D*);
@@ -91,6 +92,9 @@ private:
     void operator = (const Analysis& rhs);
 
     typedef std::vector<std::tuple<std::string, int> >::const_iterator itr_s;
+    std::vector<std::tuple<std::string, int> >* m_input;
+    std::vector<std::tuple<std::string, int, int, double, double, double> >* m_processes;
+
 
     TString m_model;
     std::string m_process;
@@ -110,8 +114,6 @@ private:
     bool m_useLumi;
     const bool m_debug = false;
     const std::string m_channel = "electron";
-    int m_nprocs;
-    std::tuple<std::string, int, int> m_proc;
 
     unsigned int m_nReco;
     unsigned int m_nQuarksMatched;
@@ -125,7 +127,6 @@ private:
     std::string m_dataDirectory;
     std::string m_outputFilename;
     TFile* m_outputFile;
-    std::vector<std::tuple<std::string, int> >* m_input;
     TChain* m_chain;
     ExRootTreeReader* m_tree;
 
