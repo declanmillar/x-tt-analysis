@@ -385,7 +385,7 @@ void Analysis::SetupOutputFiles()
 
     m_outputFilename = m_dataDirectory + "/" + m_process + "_" + m_model + "_" + E + "TeV" + "_" + m_pdf + m_options;
     m_outputFilename += "_pythia_delphes";
-    m_outputFilename = m_outputFilename + "." + m_reconstruction + m_tag;
+    m_outputFilename = m_outputFilename + "_" + m_reconstruction + m_tag;
     if ( m_reconstruction == 2 && m_btags != 2) m_outputFilename += "_b" + std::to_string(m_btags);
     std::string ytt = std::to_string(m_ytt);
     if ( m_ytt > 0) m_outputFilename += "_y" + ytt.erase(ytt.find_last_not_of('0') + 1, std::string::npos);
