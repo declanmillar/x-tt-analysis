@@ -2,8 +2,7 @@
 
 import os, StringIO, subprocess, sys, socket
 
-# handler_name = sys.argv[1] + ".sh"
-handler_name = "handler.sh"
+handler_name = sys.argv[1] + ".sh"
 executable = "analysis"
 walltime = "08:00:00"
 queue = "8nh"

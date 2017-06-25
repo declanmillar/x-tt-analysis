@@ -1,6 +1,8 @@
-# Branchus Readme
+# Apsis
 
-Previously know as `zprime-top-delphes-analysis`. Code to analyse top quark events in models containing *Z'* bosons. Reads `.root` output file from [Delphes](https://cp3.irmp.ucl.ac.be/projects/delphes).
+Previously know as `zprime-top-delphes-analysis`.
+
+Code to analyse top quark events in models containing *Z'* bosons. Reads `.root` output file from [Delphes](https://cp3.irmp.ucl.ac.be/projects/delphes).
 
 The input is stored in a `std::vector` of `std::tuple` with number of entries equal to the number of separate event files: `{string event_file, int proc_id}`.
 
