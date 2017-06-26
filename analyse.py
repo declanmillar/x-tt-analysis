@@ -3,7 +3,9 @@
 import os, StringIO, subprocess, sys, socket
 
 # handler_name = sys.argv[1] + ".sh"
-handler_name = "GLR-R-3.sh"
+filename = "GLR-R-3"
+handler_name = filename + ".sh"
+logfile = filename + ".log"
 executable = "analysis"
 walltime = "08:00:00"
 queue = "8nh"
@@ -18,8 +20,8 @@ if "lxplus" in hostname:
 elif "cyan" in hostname:
     run_directory = "/home/dam1g09/branchus"
     data_directory = "/scratch/dam1g09/zprime"
-else:
-    sys.exit("Unrecognised hostname.")
+# else:
+#     sys.exit("Unrecognised hostname.")
 
 # check directories exist
 if not os.path.isdir(run_directory):
@@ -34,6 +36,8 @@ next(iterarg)
 for arg in iterarg:
     argstring = argstring + " " + arg
 
+print argstring
+
 # print handler
 handler = StringIO.StringIO()
 print >> handler, "#!/bin/bash"
@@ -44,7 +48,7 @@ if "lxplus" in hostname:
 if "cyan" or "blue" in hostname:
     print >> handler, "source /home/dam1g09/.bash_profile"
     print >> handler, "cd %s" % run_directory
-    print >> handler, "%s/%s %s > %s/%s" % (run_directory, executable, argstring, run_directory, "handler.sh")
+    print >> handler, "%s/%s %s > %s/%s" % (run_directory, executable, argstring, run_directory, logfile)
 
 # write handler
 try:
