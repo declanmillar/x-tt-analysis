@@ -8,7 +8,7 @@ handler_name = filename + ".sh"
 logfile = filename + ".log"
 executable = "analysis"
 walltime = "08:00:00"
-queue = "8nh"
+queue = "1nh"
 
 # set directories
 hostname = socket.gethostname()
@@ -47,7 +47,9 @@ if "lxplus" in hostname:
     print >> handler, "%s/%s %s" % (run_directory, executable, argstring)
 if "cyan" or "blue" in hostname:
     print >> handler, "source /home/dam1g09/.bash_profile"
+    print >> handler, "echo 'changing to run directory ...'"
     print >> handler, "cd %s" % run_directory
+    print >> handler, "echo 'running code ...'"
     print >> handler, "%s/%s %s > %s/%s" % (run_directory, executable, argstring, run_directory, logfile)
 
 # write handler
