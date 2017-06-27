@@ -1186,8 +1186,8 @@ void Analysis::Loop()
         this->EachFile( std::get<0>(*it) );
         m_nevents = this->TotalEvents();
         int proc_id = std::get<1>( m_input->at(i) );
-        this->GetGenerationCrossSection(i);
-        this->GetProcessWeight(i);
+        this->GetGenerationCrossSection(proc_id);
+        this->GetProcessWeight(proc_id);
         for ( Long64_t jevent = 0; jevent < m_nevents; ++jevent ) {
             Long64_t ievent = this->IncrementEvent( jevent );
             if ( ievent < 0 ) break;
