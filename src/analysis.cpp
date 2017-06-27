@@ -1148,10 +1148,12 @@ void Analysis::GetBranches()
 
 void Analysis::GetGenerationCrossSection( int i )
 {
-    std::cout << "Getting generation cross section from " << proc_filename << "... \n";
     // std::cout << "thingy = " << std::get<1>( m_input->at(i) ) << "\n";
     // std::cout << "file = " << m_processes->at( std::get<1>( m_input->at(i) ) ) << "\n";
+    std::cout << "Getting generation cross section "
     std::string proc_filename = std::get< 0 >( m_processes->at( std::get<1>( m_input->at(i) ) ) );
+    std::cout << "from " << proc_filename << "... \n";
+
     std::ifstream proc_file;
     proc_file.open(proc_filename);
     std::get<3>( m_processes->at(i) ) = get_parameter(&proc_file);
