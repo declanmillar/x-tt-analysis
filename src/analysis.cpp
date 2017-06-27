@@ -1162,8 +1162,8 @@ void Analysis::GetGenerationCrossSection( int i )
     std::get<4>( m_processes->at( proc_id ) ) = get_parameter( &proc_file );
     proc_file.close();
     std::cout << "process\n";
-    std::cout << "Generation Cross section = " << std::get<3>( m_processes->at(i) ) << " [fb]\n";
-    std::cout << "uncertainty              = " << std::get<4>( m_processes->at(i) ) << " [fb]\n";
+    std::cout << "Generation Cross section = " << std::get<3>( m_processes->at(proc_id) ) << " [fb]\n";
+    std::cout << "uncertainty              = " << std::get<4>( m_processes->at(proc_id) ) << " [fb]\n";
 }
 
 
