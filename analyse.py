@@ -7,8 +7,8 @@ filename = "GLR-R-3"
 handler_name = filename + ".sh"
 logfile = filename + ".log"
 executable = "analysis"
-walltime = "01:00:00"
-queue = "1nh"
+walltime = "08:00:00"
+queue = "8nh"
 
 # set directories
 hostname = socket.gethostname()
