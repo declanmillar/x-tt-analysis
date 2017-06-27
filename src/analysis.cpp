@@ -1148,17 +1148,18 @@ void Analysis::GetBranches()
 
 void Analysis::GetGenerationCrossSection( int i )
 {
-    // std::cout << "thingy = " << std::get<1>( m_input->at(i) ) << "\n";
-    // std::cout << "file = " << m_processes->at( std::get<1>( m_input->at(i) ) ) << "\n";
+    int proc_id = std::get<1>( m_input->at(i) );
+    std::cout << "process id = " << proc_id << "\n";
+    std::cout << "file = " << std::get<0>(m_processes->at( proc_id ) )<< "\n";
     std::cout << "Getting generation cross section ";
-    std::string proc_filename = std::get< 0 >( m_processes->at( std::get<1>( m_input->at(i) ) ) );
+    std::string proc_filename = std::get< 0 >( m_processes->at( proc_id ) );
     std::cout << "from " << proc_filename << "... \n";
 
     std::ifstream proc_file;
     proc_file.open(proc_filename);
-    std::cout << "m_processes size = " << m_processes->size();
-    std::get<3>( m_processes->at(i) ) = get_parameter(&proc_file);
-    std::get<4>( m_processes->at(i) ) = get_parameter(&proc_file);
+    std::cout << "m_processes size = " << m_processes->size() << "\n";
+    std::get<3>( m_processes->at( proc_id ) ) = get_parameter( &proc_file );
+    std::get<4>( m_processes->at( proc_id ) ) = get_parameter( &proc_file );
     proc_file.close();
     std::cout << "process\n";
     std::cout << "Generation Cross section = " << std::get<3>( m_processes->at(i) ) << " [fb]\n";
