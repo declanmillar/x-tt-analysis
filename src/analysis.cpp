@@ -1169,11 +1169,12 @@ void Analysis::GetGenerationCrossSection( int i )
 
 void Analysis::GetProcessWeight(int i)
 {
-    int nproc = std::get<2>( m_processes->at(i) );
+    int proc_id = std::get<1>( m_input->at(i) );
+    int nproc = std::get<2>( m_processes->at(proc_id) );
     std::cout << "nproc = " << nproc << "\n";
     int nevents = m_nevents;
     std::cout << "nevents = " << nevents << "\n";
-    std::get<5>( m_processes->at(i) ) = 1.0 * std::get<3>( m_processes->at(i) ) / ( nevents * nproc );
+    std::get<5>( m_processes->at(proc_id) ) = 1.0 * std::get<3>( m_processes->at(proc_id) ) / ( nevents * nproc );
 }
 
 
