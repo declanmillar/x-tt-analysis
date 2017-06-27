@@ -1146,9 +1146,8 @@ void Analysis::GetBranches()
 }
 
 
-void Analysis::GetGenerationCrossSection( int i )
+void Analysis::GetGenerationCrossSection( int proc_id )
 {
-    int proc_id = std::get<1>( m_input->at(i) );
     std::cout << "process id = " << proc_id << "\n";
     std::cout << "file = " << std::get<0>(m_processes->at( proc_id ) )<< "\n";
     std::cout << "Getting generation cross section ";
@@ -1167,14 +1166,14 @@ void Analysis::GetGenerationCrossSection( int i )
 }
 
 
-void Analysis::GetProcessWeight(int i)
+void Analysis::GetProcessWeight(int proc_id)
 {
-    int proc_id = std::get<1>( m_input->at(i) );
     int nproc = std::get<2>( m_processes->at(proc_id) );
     std::cout << "nproc = " << nproc << "\n";
     int nevents = m_nevents;
-    std::cout << "nevents = " << nevents << "\n";
+    std::cout << "Events: " << nevents << "\n";
     std::get<5>( m_processes->at(proc_id) ) = 1.0 * std::get<3>( m_processes->at(proc_id) ) / ( nevents * nproc );
+    std::cout << "Event weight: "<< std::get<5>( m_processes->at(proc_id) ) << "\n";
 }
 
 
@@ -1186,15 +1185,13 @@ void Analysis::Loop()
         std::cout << std::get<0>(*it) << "\n";
         this->EachFile( std::get<0>(*it) );
         m_nevents = this->TotalEvents();
+        int proc_id = std::get<1>( m_input->at(i) );
         this->GetGenerationCrossSection(i);
         this->GetProcessWeight(i);
-        std::cout << "Events: " << m_nevents << "\n";
-        double weight = std::get<5>( m_processes->at(i) );
-        std::cout << "Event weight: " << weight << "\n";
         for ( Long64_t jevent = 0; jevent < m_nevents; ++jevent ) {
             Long64_t ievent = this->IncrementEvent( jevent );
             if ( ievent < 0 ) break;
-            this->EachEvent(weight);
+            this->EachEvent( std::get<5>( m_processes->at(proc_id) ) );
             if ( !m_debug) ProgressBar(jevent, m_nevents - 1, 50);
         }
         this->CleanUp();
