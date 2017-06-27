@@ -1150,7 +1150,7 @@ void Analysis::GetGenerationCrossSection( int i )
 {
     // std::cout << "thingy = " << std::get<1>( m_input->at(i) ) << "\n";
     // std::cout << "file = " << m_processes->at( std::get<1>( m_input->at(i) ) ) << "\n";
-    std::cout << "Getting generation cross section "
+    std::cout << "Getting generation cross section ";
     std::string proc_filename = std::get< 0 >( m_processes->at( std::get<1>( m_input->at(i) ) ) );
     std::cout << "from " << proc_filename << "... \n";
 
