@@ -12,22 +12,19 @@ hostname = socket.gethostname()
 run_directory = "."
 data_directory = "."
 if "lxplus" in hostname:
-    run_directory = "/afs/cern.ch/user/d/demillar/branchus"
+    run_directory = "/afs/cern.ch/user/d/demillar/apsis"
     data_directory = "/afs/cern.ch/work/d/demillar/zprime"
 elif "cyan" in hostname:
-    run_directory = "/home/dam1g09/branchus"
+    run_directory = "/home/dam1g09/apsis"
     data_directory = "/scratch/dam1g09/zprime"
-# else:
-#     sys.exit("Unrecognised hostname.")
+else:
+    sys.exit("Error: Unrecognised hostname.")
 
 # check directories exist
 if not os.path.isdir(run_directory):
     sys.exit("no directory ", run_directory)
 if not os.path.isdir(data_directory):
     sys.exit("no directory ", data_directory)
-
-
-
 
 # collect command line arguments
 argstring = ""
