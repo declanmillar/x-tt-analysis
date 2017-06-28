@@ -11,7 +11,7 @@ While an additional `std::vector` of `std::tuple` is created for each individual
 # Running the Program
 
 * Run locally: `./analysis [options]`
-* Submit job: `./analyse.py [options]`
+* Submit job: `./analyse.py handler_name [options]`
 
 # Important files
 

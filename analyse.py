@@ -3,9 +3,6 @@
 import os, StringIO, subprocess, sys, socket
 
 # handler_name = sys.argv[1] + ".sh"
-filename = "GLR-R-3"
-handler_name = filename + ".sh"
-logfile = filename + ".log"
 executable = "analysis"
 walltime = "08:00:00"
 queue = "8nh"
@@ -29,14 +26,19 @@ if not os.path.isdir(run_directory):
 if not os.path.isdir(data_directory):
     sys.exit("no directory ", data_directory)
 
+
+
+
 # collect command line arguments
 argstring = ""
 iterarg = iter(sys.argv)
 next(iterarg)
+filename = next(iterarg)
 for arg in iterarg:
     argstring = argstring + " " + arg
 
-print argstring
+handler_name = filename + ".sh"
+logfile = filename + ".log"
 
 # print handler
 handler = StringIO.StringIO()
@@ -51,12 +53,15 @@ if "cyan" or "blue" in hostname:
     print >> handler, "cd %s" % run_directory
     print >> handler, "echo 'running code ...'"
     print >> handler, "%s/%s %s > %s/%s" % (run_directory, executable, argstring, run_directory, logfile)
+else:
+    sys.exit("Error: Unrecognised hostname")
 
 # write handler
 try:
     with open('%s' % handler_name, 'w') as handler_file:
         handler_file.write(handler.getvalue())
     print "Handler file written to %s." % handler_name
+    print "Log written to %s." % logfile
 except IOERROR:
     sys.exit("ERROR! Cannot write handler file.")
 
