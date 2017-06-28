@@ -12,3 +12,8 @@ While an additional `std::vector` of `std::tuple` is created for each individual
 
 * Run locally: `./analysis [options]`
 * Submit job: `./analyse.py [options]`
+
+# Important files
+
+* `analysis`: complied `C++` executable. Use directly when running locally.
+* `analyse.py`: run file to submit analysis as a batch job on `lxplus` or `iridis`.
