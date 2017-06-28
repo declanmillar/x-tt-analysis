@@ -34,6 +34,7 @@ void Analysis::Run()
 
 void Analysis::EveryEvent( double weight )
 {
+    if ( m_debug ) std::cout << "Fetching all jets ...";
     std::vector<TLorentzVector> p_j;
     for ( int i = 0; i < b_Jet->GetEntries(); i++ ) {
         Jet *jet = ( Jet* ) b_Jet->At(i);
@@ -43,6 +44,8 @@ void Analysis::EveryEvent( double weight )
         h_eta_alljets->Fill( p.Eta(), weight );
         p_j.push_back(p);
     }
+
+    if ( m_debug ) std::cout << "Fetching all electrons ...";
     std::vector<TLorentzVector> p_el;
     for ( int i = 0; i < b_Electron->GetEntries(); i++ ) {
         Electron *electron = ( Electron* ) b_Electron->At(i);
@@ -52,6 +55,8 @@ void Analysis::EveryEvent( double weight )
         h_eta_allel->Fill( p.Eta(), weight );
         p_el.push_back(p);
     }
+
+    if ( m_debug ) std::cout << "Fetching all muons ...";
     std::vector<TLorentzVector> p_mu;
     for ( int i = 0; i < b_Muon->GetEntries(); i++ ) {
         Muon *muon = ( Muon* ) b_Muon->At(i);
@@ -61,27 +66,33 @@ void Analysis::EveryEvent( double weight )
         h_eta_allmu->Fill( p.Eta(), weight );
         p_mu.push_back(p);
     }
+
+    if ( m_debug ) std::cout << "Fetching missing ET ...";
     MissingET *missingET = ( MissingET* ) b_MissingET->At(0);
     TLorentzVector p_miss;
     double ETmiss = missingET->MET;
 
-    TLorentzVector pvis( 0, 0, 0, 0 );
-    for ( auto p : p_j ) pvis += p;
-    for ( auto p : p_el ) pvis += p;
-    for ( auto p : p_mu ) pvis += p;
-
+    if ( m_debug ) std::cout << "Calculating HT ...";
     double HT = 0;
     for ( auto p : p_j ) HT += p.Pt();
     for ( auto p : p_el ) HT += p.Pt();
     for ( auto p : p_mu ) HT += p.Pt();
     HT += ETmiss;
+    h_HT_all->Fill( HT / 1000, weight );
 
+    if ( m_debug ) std::cout << "Calculating pvis ...";
+    TLorentzVector pvis( 0, 0, 0, 0 );
+    for ( auto p : p_j ) pvis += p;
+    for ( auto p : p_el ) pvis += p;
+    for ( auto p : p_mu ) pvis += p;
+
+    if ( m_debug ) std::cout << "Calculating mvis ...";
     double mvis = pvis.M();
+    h_mvis_all->Fill( mvis / 1000, weight );
+
+    if ( m_debug ) std::cout << "Calculating KT ...";
     double pTvis = pvis.Pt();
     double KT = sqrt( mvis * mvis + pTvis * pTvis ) + ETmiss;
-
-    h_HT_all->Fill( HT / 1000, weight );
-    h_mvis_all->Fill( mvis / 1000, weight );
     h_KT_all->Fill( KT / 1000, weight );
 }
 
