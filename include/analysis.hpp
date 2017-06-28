@@ -40,6 +40,7 @@ protected:
     void Loop();
     void PostLoop();
     void EachEvent(double);
+    void EveryEvent(double);
     void MakeHistograms();
     void MakeDistributions();
     void MakeDistribution1D(TH1D*, const TString&);
@@ -167,9 +168,21 @@ private:
     TH1D* h_pt_qjets;
     TH1D* h_eta_qjets;
 
+    TH1D* h_pt_alljets;
+    TH1D* h_pt_allel;
+    TH1D* h_pt_allmu;
+    TH1D* h_eta_alljets;
+    TH1D* h_eta_allel;
+    TH1D* h_eta_allmu;
+
+
     TH1D* h_HT;
     TH1D* h_KT;
     TH1D* h_mvis;
+
+    TH1D* h_HT_all;
+    TH1D* h_KT_all;
+    TH1D* h_mvis_all;
 
     TH1D* h_deltaPhi;
 
