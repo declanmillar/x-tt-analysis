@@ -22,9 +22,9 @@ else:
 
 # check directories exist
 if not os.path.isdir(run_directory):
-    sys.exit("no directory ", run_directory)
+    sys.exit("Error: No directory %s" % run_directory)
 if not os.path.isdir(data_directory):
-    sys.exit("no directory ", data_directory)
+    sys.exit("Error: No directory %s" % data_directory)
 
 # collect command line arguments
 argstring = ""
