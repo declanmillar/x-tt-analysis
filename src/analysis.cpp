@@ -643,26 +643,26 @@ void Analysis::MakeHistograms()
     h_cosThetaStar = new TH1D( "costheta_star", "cos#theta^{*}", nbins, -1.0, 1.0 );
     h_cosThetaStar->Sumw2();
 
-    h_HT = new TH1D( "HT", "H_{T}", 50, 0, 6 );
+    h_HT = new TH1D( "HT", "H_{T}", 60, 0, 6 );
     h_HT->Sumw2();
     h_HT_all = new TH1D( "HT_all", "H^{all}_{T}", 50, 0, 6 );
     h_HT_all->Sumw2();
 
-    h_KT = new TH1D( "KT", "K_{T}", 50, 0, 6 );
+    h_KT = new TH1D( "KT", "K_{T}", 60, 0, 6 );
     h_KT->Sumw2();
     h_KT_all = new TH1D( "KT_all", "K^{all}_{T}", 50, 0, 6 );
     h_KT_all->Sumw2();
 
-    h_mvis = new TH1D( "mvis", "m_{vis}", 40, 0, 4 );
+    h_mvis = new TH1D( "mvis", "m_{vis}", 60, 0, 6 );
     h_mvis->Sumw2();
-    h_mvis_all = new TH1D( "mvis_all", "m^{all}_{vis}", 40, 0, 4 );
+    h_mvis_all = new TH1D( "mvis_all", "m^{all}_{vis}", 60, 0, 6 );
     h_mvis_all->Sumw2();
 
-    h_pt_alljets = new TH1D( "pT_alljets", "p_{T}^{jets}", 40, 0, 5000 );
+    h_pt_alljets = new TH1D( "pT_alljets", "p_{T}^{jets}", 50, 0, 5000 );
     h_pt_alljets->Sumw2();
-    h_pt_allel = new TH1D( "pT_allel", "p_{T}^{jets}", 40, 0, 5000 );
+    h_pt_allel = new TH1D( "pT_allel", "p_{T}^{jets}", 50, 0, 5000 );
     h_pt_allel->Sumw2();
-    h_pt_allmu = new TH1D( "pT_allmu", "p_{T}^{jets}", 40, 0, 5000 );
+    h_pt_allmu = new TH1D( "pT_allmu", "p_{T}^{jets}", 50, 0, 5000 );
     h_pt_allmu->Sumw2();
     h_eta_alljets = new TH1D( "eta_alljets", "#eta^{jets}", 100, 0, 10 );
     h_eta_alljets->Sumw2();
