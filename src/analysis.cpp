@@ -1166,14 +1166,14 @@ bool Analysis::SufficientMET()
     return sufficientMET;
 }
 
-// bool Analysis::SufficientJets()
-// {
-//     bool sufficientJets;
-//     if ( b_Jet->GetEntries() >= 2 ) sufficientBtags = true;
-//     else sufficientJets = false;
-//     this->UpdateCutflow( c_sufficientJets, sufficientJets );
-//     return sufficientJets;
-// }
+bool Analysis::SufficientJets()
+{
+    bool sufficientJets;
+    if ( b_Jet->GetEntries() >= 2 ) sufficientJets = true;
+    else sufficientJets = false;
+    this->UpdateCutflow( c_jets, sufficientJets );
+    return sufficientJets;
+}
 //
 //
 // bool Analysis::SufficientMll(std::pair< TLorentzVector > p_l)

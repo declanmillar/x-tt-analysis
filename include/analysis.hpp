@@ -139,6 +139,7 @@ private:
     std::vector< std::string > m_cutNames;
     enum m_cutlist{
         c_events,
+        c_jets,
         c_sufficientBtags,
         c_twoLeptons,
         c_oppositeCharge,
