@@ -311,6 +311,8 @@ void Analysis::EachEvent( double weight )
 void Analysis::EveryEvent( double weight )
 {
     // runs for every event with no event selection or cuts
+    h_nElectrons->Fill(b_Electron->GetEntries(), weight);
+    h_nMuons->Fill(b_Electron->GetEntries(), weight);
 
     if ( m_debug ) std::cout << "Fetching all jets ...";
     std::vector<TLorentzVector> p_j;
@@ -726,6 +728,11 @@ void Analysis::MakeHistograms()
     h_mtt_lB = new TH1D( "mtt_lB", "m_{tt}^{B,l}", nbins, Emin, Emax );
     h_mtt_lB->Sumw2();
 
+    h_nElectrons = new TH1D( "n_electrons", "n_{electrons}", 10, 0, 10 );
+    h_nElectrons->Sumw2();
+    h_nMuons = new TH1D( "n_muons", "n_{muons}", 10, 0, 10 );
+    h_nMuons->Sumw2();
+
     h2_mtt_deltaPhi = new TH2D( "mtt_deltaphi", "m_{tt} #Delta#phi_{l}", nbins, Emin, Emax, 10, 0, 1 );
     h2_mtt_deltaPhi->GetXaxis()->SetTitle( "m_{tt}" );
     h2_mtt_deltaPhi->GetYaxis()->SetTitle( "#Delta#phi_{l}" );
@@ -844,6 +851,9 @@ void Analysis::MakeDistributions()
     this->MakeDistribution1D( h_HT_all, "TeV" );
     this->MakeDistribution1D( h_KT_all, "TeV" );
     this->MakeDistribution1D( h_mvis_all, "TeV" );
+
+    this->MakeDistribution1D( h_nMuons, "" );
+    this->MakeDistribution1D( h_nElectrons, "" );
 
     // this->MakeDistribution1D( h_cosTheta1, "" );
     // this->MakeDistribution1D( h_cosTheta2, "" );

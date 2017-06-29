@@ -259,6 +259,9 @@ private:
     TH1D* h_deltaR_bW;
     TH1D* h_deltaR_tt;
 
+    TH1D* h_nElectrons;
+    TH1D* h_nMuons;
+
     TH2D* h2_mtt_cosThetaStar;
     TH2D* h2_mtt_deltaPhi;
     TH2D* h2_mtt_cosTheta1;
