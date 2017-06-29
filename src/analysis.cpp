@@ -733,6 +733,8 @@ void Analysis::MakeHistograms()
     h_nElectrons->Sumw2();
     h_nMuons = new TH1D( "n_muons", "n_{muons}", 10, 0, 10 );
     h_nMuons->Sumw2();
+    h_nJets = new TH1D( "n_jets", "n_{jets}", 10, 0, 10 );
+    h_nJets->Sumw2();
 
     h2_mtt_deltaPhi = new TH2D( "mtt_deltaphi", "m_{tt} #Delta#phi_{l}", nbins, Emin, Emax, 10, 0, 1 );
     h2_mtt_deltaPhi->GetXaxis()->SetTitle( "m_{tt}" );
@@ -855,6 +857,7 @@ void Analysis::MakeDistributions()
 
     this->MakeDistribution1D( h_nElectrons, "" );
     this->MakeDistribution1D( h_nMuons, "" );
+    this->MakeDistribution1D( h_nJets, "" );
 
     // this->MakeDistribution1D( h_cosTheta1, "" );
     // this->MakeDistribution1D( h_cosTheta2, "" );
