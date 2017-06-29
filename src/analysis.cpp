@@ -312,7 +312,8 @@ void Analysis::EveryEvent( double weight )
 {
     // runs for every event with no event selection or cuts
     h_nElectrons->Fill(b_Electron->GetEntries(), weight);
-    h_nMuons->Fill(b_Electron->GetEntries(), weight);
+    h_nMuons->Fill(b_Muon->GetEntries(), weight);
+    h_nJets->Fill(b_Jet->GetEntries(), weight);
 
     if ( m_debug ) std::cout << "Fetching all jets ...";
     std::vector<TLorentzVector> p_j;
@@ -852,8 +853,8 @@ void Analysis::MakeDistributions()
     this->MakeDistribution1D( h_KT_all, "TeV" );
     this->MakeDistribution1D( h_mvis_all, "TeV" );
 
-    this->MakeDistribution1D( h_nMuons, "" );
     this->MakeDistribution1D( h_nElectrons, "" );
+    this->MakeDistribution1D( h_nMuons, "" );
 
     // this->MakeDistribution1D( h_cosTheta1, "" );
     // this->MakeDistribution1D( h_cosTheta2, "" );
