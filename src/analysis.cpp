@@ -169,7 +169,7 @@ void Analysis::EachEvent( double weight )
     MissingET *missingET = ( MissingET* ) b_MissingET->At(0);
     TLorentzVector p_miss;
     double ETmiss = missingET->MET;
-    p_miss.SetPtEtaPhiM( ETmiss, missingET->Eta, missingET->Phi, 0.0);
+    p_miss.SetPtEtaPhiM( ETmiss, missingET->Eta, missingET->Phi, 0.0 );
 
     // ScalarHT *scalarHT = (ScalarHT*) b_ScalarHT->At(0);
     // double HT = scalarHT->HT;
@@ -207,9 +207,9 @@ void Analysis::EachEvent( double weight )
     std::pair<TLorentzVector, TLorentzVector> p_b_hi = TwoHighestPt(p_b);
 
     if ( m_reconstruction == "KIN" ) {
-        std::vector<TLorentzVector> p_b_hiPt = {p_b_hi.first, p_b_hi.second};
-        KinematicReconstructer KIN = KinematicReconstructer(m_bmass, m_Wmass, m_tmass);
-        bool isSolution = KIN.Reconstruct(p_l, p_b_hiPt, p_q, p_miss);
+        std::vector<TLorentzVector> p_b_hiPt = { p_b_hi.first, p_b_hi.second };
+        KinematicReconstructer KIN = KinematicReconstructer( m_bmass, m_Wmass, m_tmass );
+        bool isSolution = KIN.Reconstruct( p_l, p_b_hiPt, p_q, p_miss );
         p_top   = KIN.GetTop();
         p_tbar  = KIN.GetTbar();
         p_ttbar = KIN.GetTtbar();
@@ -218,17 +218,17 @@ void Analysis::EachEvent( double weight )
         p_v1    = KIN.GetNu();
         p_v2    = KIN.GetNubar();
         if ( isSolution ) {
-            this->UpdateCutflow(c_realSolutions, true);
+            this->UpdateCutflow( c_realSolutions, true );
         }
         else {
-            this->UpdateCutflow(c_realSolutions, false);
+            this->UpdateCutflow( c_realSolutions, false );
             return;
         }
     }
     else if ( m_reconstruction == "NuW" ) {
         auto p_b_match = MatchBjetsToLeps( p_l, p_b_hi );
 
-        NeutrinoWeighter nuW = NeutrinoWeighter(1, p_l.first.Pt() + p_l.first.Phi()); // 2nd argument is random seed same for specific event
+        NeutrinoWeighter nuW = NeutrinoWeighter( 1, p_l.first.Pt() + p_l.first.Phi() ); // 2nd argument is random seed same for specific event
         double weight_max  = nuW.Reconstruct( p_l.first, p_l.second, p_b_match.first, p_b_match.second, p_miss.Px(), p_miss.Py(), p_miss.Phi() );
         if ( weight_max > 0.0) {
             p_top   = nuW.GetTop();
@@ -383,7 +383,7 @@ void Analysis::SetupInputFiles()
             // loop over all matching files (e.g. *.01.root and *.02.root)
             boost::filesystem::directory_iterator end_itr; // Default ctor yields past-the-end
             int nfiles = 0;
-            for ( boost::filesystem::directory_iterator i(m_dataDirectory + "/"); i != end_itr; ++i ) {
+            for ( boost::filesystem::directory_iterator i( m_dataDirectory + "/" ); i != end_itr; ++i ) {
 
                 if ( !boost::filesystem::is_regular_file( i->status() ) ) continue;
                 if ( m_debug) std::cout << "is file: " << i->path().filename().string() << "\n";
@@ -395,25 +395,25 @@ void Analysis::SetupInputFiles()
                 if ( boost::contains( i->path().filename().string(), "NuW" ) ) continue;
                 if ( m_debug) std::cout << "not output: " << i->path().filename().string() << "\n";
 
-                if ( !boost::contains(i->path().filename().string(), "_pythia_delphes")) continue;
+                if ( !boost::contains( i->path().filename().string(), "_pythia_delphes" ) ) continue;
                 if ( m_debug) std::cout << "has _pythia_delphes suffix: " << i->path().filename().string() << "\n";
 
                 if ( i->path().extension() == ".root" ) {
                     // std::cout << "ends .root: " << i->path().filename().string() << "\n";
                     nfiles++;
-                    std::tuple<std::string, int> input = std::make_tuple(m_dataDirectory + "/" + i->path().filename().string(), proc_id);
-                    m_input->push_back(input);
-                    if ( nfiles < 10) std::cout << "Input " << nfiles << ":        " << std::get<0>(input);
-                    else std::cout << "Input " << nfiles << ":       " << std::get<0>(input);
-                    std::cout << ", process: " << std::get<1>(input) << "\n";
+                    std::tuple<std::string, int> input = std::make_tuple( m_dataDirectory + "/" + i->path().filename().string(), proc_id );
+                    m_input->push_back( input );
+                    if ( nfiles < 10 ) std::cout << "Input " << nfiles << ":        " << std::get<0>( input );
+                    else std::cout << "Input " << nfiles << ":       " << std::get<0>( input );
+                    std::cout << ", process: " << std::get<1>( input ) << "\n";
                 }
             }
 
             // FIXME hard coded grid file name
             std::string proc_filename = m_dataDirectory + "/" + initial + intermediates + "-tt-bbllvv" + "_" + model + "_" + E + "TeV" + "_" + m_pdf + options + ".txt";
             std::cout << "Adding process: " << proc_filename << " ...\n";
-            std::tuple<std::string, int, int, double, double, double> process = std::make_tuple(proc_filename, proc_id, nfiles, -999, -999, -999);
-            m_processes->push_back(process);
+            std::tuple<std::string, int, int, double, double, double> process = std::make_tuple( proc_filename, proc_id, nfiles, -999, -999, -999 );
+            m_processes->push_back( process );
             proc_id++;
         }
     }
@@ -421,25 +421,25 @@ void Analysis::SetupInputFiles()
     // check some input files have been specified
     if ( m_input->size() < 1 ) {
         std::cout << "Error: no input files specified.";
-        exit(false);
+        exit( false );
     }
 
     // check all input files exist
     for ( auto input : *m_input ) {
         struct stat buffer;
-        bool exists = stat((std::get<0>(input)).c_str(), &buffer) == 0;
+        bool exists = stat( ( std::get<0>( input ) ).c_str(), &buffer ) == 0;
         if ( exists == false ) {
-            std::cout << "Error: no " << std::get<0>(input) << "\n";
-            exit(exists);
+            std::cout << "Error: no " << std::get<0>( input ) << "\n";
+            exit( exists );
         }
     }
 
     for ( auto process : *m_processes ) {
         struct stat buffer;
-        bool exists = stat((std::get<0>(process)).c_str(), &buffer) == 0;
+        bool exists = stat( (std::get<0>( process ) ).c_str(), &buffer ) == 0;
         if ( exists == false ) {
             std::cout << "Error: no " << std::get<0>(process) << "\n";
-            exit(exists);
+            exit( exists );
         }
     }
 }
@@ -447,29 +447,29 @@ void Analysis::SetupInputFiles()
 
 void Analysis::SetupOutputFiles()
 {
-    std::string E = std::to_string(m_energy);
+    std::string E = std::to_string( m_energy );
 
     m_outputFilename = m_dataDirectory + "/" + m_process + "_" + m_model + "_" + E + "TeV" + "_" + m_pdf + m_options;
     m_outputFilename += "_pythia_delphes";
     m_outputFilename = m_outputFilename + "_" + m_reconstruction + m_tag;
-    if ( m_reconstruction == 2 && m_btags != 2) m_outputFilename += "_b" + std::to_string(m_btags);
-    std::string ytt = std::to_string(m_ytt);
-    if ( m_ytt > 0) m_outputFilename += "_y" + ytt.erase(ytt.find_last_not_of('0') + 1, std::string::npos);
-    if ( m_Emin >= 0 || m_Emax >= 0) m_outputFilename += "_E" + std::to_string(m_Emin) + "-" + std::to_string(m_Emax);
-    std::string eff = std::to_string(m_efficiency);
-    if ( m_efficiency < 1.0) m_outputFilename += "_e" + eff.erase(eff.find_last_not_of('0') + 1, std::string::npos);
-    if ( m_luminosity > 0) m_outputFilename += "_L" + std::to_string(m_luminosity);
-    if ( m_fid) m_outputFilename += "_fid";
-    if ( m_iso) m_outputFilename += "_iso";
+    if ( m_reconstruction == 2 && m_btags != 2 ) m_outputFilename += "_b" + std::to_string( m_btags );
+    std::string ytt = std::to_string( m_ytt );
+    if ( m_ytt > 0 ) m_outputFilename += "_y" + ytt.erase( ytt.find_last_not_of('0') + 1, std::string::npos );
+    if ( m_Emin >= 0 || m_Emax >= 0 ) m_outputFilename += "_E" + std::to_string(m_Emin) + "-" + std::to_string( m_Emax );
+    std::string eff = std::to_string( m_efficiency );
+    if ( m_efficiency < 1.0 ) m_outputFilename += "_e" + eff.erase( eff.find_last_not_of('0') + 1, std::string::npos );
+    if ( m_luminosity > 0 ) m_outputFilename += "_L" + std::to_string( m_luminosity );
+    if ( m_fid ) m_outputFilename += "_fid";
+    if ( m_iso ) m_outputFilename += "_iso";
     m_outputFilename += ".root";
-    m_outputFile = new TFile(m_outputFilename.c_str(), "RECREATE");
+    m_outputFile = new TFile( m_outputFilename.c_str(), "RECREATE" );
 }
 
 void Analysis::PostLoop()
 {
     std::cout << "Results\n";
     this->CheckResults();
-    if ( m_reconstruction == 2) this->CheckPerformance();
+    if ( m_reconstruction == 2 ) this->CheckPerformance();
     this->MakeDistributions();
     // this->WriteHistograms();
     this->PrintCutflow();
@@ -1343,7 +1343,8 @@ void Analysis::CleanUp()
 }
 
 
-double Analysis::TotalAsymmetry(TH1D* h_A, TH1D* h_B ) {
+double Analysis::TotalAsymmetry(TH1D* h_A, TH1D* h_B )
+{
     double A = h_A->Integral("width");
     double B = h_B->Integral("width");
     double Atot = (A - B) / (A + B);

@@ -24,15 +24,15 @@
 #include "ExRootAnalysis/ExRootResult.h"
 #include "ExRootAnalysis/ExRootUtilities.h"
 
-class Analysis{
+class Analysis {
 
 public:
-    Analysis(const TString& model, const TString& process, const TString& options, const int energy, const int luminosity, const std::string& reconstruction, const TString tag);
+    Analysis( const TString& model, const TString& process, const TString& options, const int energy, const int luminosity, const std::string& reconstruction, const TString tag );
     virtual ~Analysis();
     void Run();
 
 protected:
-    void SetupTreesForNewFile(const TString&);
+    void SetupTreesForNewFile( const TString& );
     void CleanUp();
     void SetupInputFiles();
     void SetupOutputFiles();
@@ -43,9 +43,9 @@ protected:
     void EveryEvent(double);
     void MakeHistograms();
     void MakeDistributions();
-    void MakeDistribution1D(TH1D*, const TString&);
-    void MakeDistribution2D(TH2D*, TString, TString, TString, TString);
-    void NormalizeSliceY(TH2D*);
+    void MakeDistribution1D( TH1D*, const TString& );
+    void MakeDistribution2D( TH2D*, TString, TString, TString, TString );
+    void NormalizeSliceY( TH2D* );
     void WriteHistograms();
     void CheckResults();
     void CheckPerformance();
@@ -55,7 +55,7 @@ protected:
     void GetProcessWeight(int);
     void SetDataDirectory();
     void GetChannelFactors();
-    void AsymmetryUncertainty(TH1D*, TH1D*, TH1D*);
+    void AsymmetryUncertainty( TH1D*, TH1D*, TH1D* );
     void ResetCounters();
     void GetBranches();
     void EachFile(TString);
@@ -63,34 +63,34 @@ protected:
     void InitialiseCutflow();
     void PrintCutflow();
     void UpdateCutflow(int, bool);
-    bool PassFiducialCuts(const std::vector<TLorentzVector>&, const TLorentzVector&);
-    bool PassCuts(const std::vector<TLorentzVector>&, const TLorentzVector&);
+    bool PassFiducialCuts( const std::vector<TLorentzVector>&, const TLorentzVector& );
+    bool PassCuts( const std::vector<TLorentzVector>&, const TLorentzVector& );
     bool TwoLeptons();
     bool OppositeCharge();
     bool SufficientBtags();
-    bool PassCutsMET(const std::vector<TLorentzVector>&, const TLorentzVector&);
-    bool PassCutsMtt(const std::vector<TLorentzVector>&, const TLorentzVector&);
-    bool PassCutsEta(const std::vector<TLorentzVector>&, const TLorentzVector&);
-    bool PassCutsYtt(const std::vector<TLorentzVector>&, const TLorentzVector&);
-    bool PassCutsET(const std::vector<TLorentzVector>&, const TLorentzVector&);
-    bool PassCutsDeltaR(const std::vector<TLorentzVector>&, const TLorentzVector&);
+    bool PassCutsMET( const std::vector<TLorentzVector>&, const TLorentzVector& );
+    bool PassCutsMtt( const std::vector<TLorentzVector>&, const TLorentzVector& );
+    bool PassCutsEta( const std::vector<TLorentzVector>&, const TLorentzVector& );
+    bool PassCutsYtt( const std::vector<TLorentzVector>&, const TLorentzVector& );
+    bool PassCutsET( const std::vector<TLorentzVector>&, const TLorentzVector& );
+    bool PassCutsDeltaR( const std::vector<TLorentzVector>&, const TLorentzVector& );
     Long64_t TotalEvents();
     Long64_t IncrementEvent(Long64_t i);
-    double TotalAsymmetry(TH1D* h_A, TH1D* h_B);
+    double TotalAsymmetry( TH1D* h_A, TH1D* h_B );
     TH1D* MakeALL();
     TH1D* MakeAL();
-    TH1D* Asymmetry(const TString&, const TString&, TH1D*, TH1D*);
+    TH1D* Asymmetry( const TString&, const TString&, TH1D*, TH1D* );
     TClonesArray* b_Jet;
     TClonesArray* b_Electron;
     TClonesArray* b_Muon;
     TClonesArray* b_MissingET;
     TClonesArray* b_ScalarHT;
-    std::vector<TLorentzVector> ReconstructSemilepton(const std::vector<TLorentzVector>&, const int);
+    std::vector<TLorentzVector> ReconstructSemilepton( const std::vector<TLorentzVector>&, const int );
 
 private:
     Analysis();
-    Analysis(const Analysis& rhs);
-    void operator = (const Analysis& rhs);
+    Analysis( const Analysis& rhs );
+    void operator = ( const Analysis& rhs );
 
     typedef std::vector<std::tuple<std::string, int> >::const_iterator itr_s;
     std::vector<std::tuple<std::string, int> >* m_input;
