@@ -9,7 +9,7 @@
 #include "match-bjets-to-leps.hpp"
 #include "get-parameter.hpp"
 
-Analysis::Analysis( const TString& model, const TString& process, const TString& options, const int energy, const int luminosity, const std::string& reconstruction, const TString tag ):
+Analysis::Analysis( const std::string& model, const std::string& process, const std::string& options, const int energy, const int luminosity, const std::string& reconstruction, const std::string& tag ):
     m_model( model ),
     m_process( process ),
     m_options( options ),
@@ -32,70 +32,6 @@ void Analysis::Run()
     this->PostLoop();
 }
 
-void Analysis::EveryEvent( double weight )
-{
-    if ( m_debug ) std::cout << "Fetching all jets ...";
-    std::vector<TLorentzVector> p_j;
-    for ( int i = 0; i < b_Jet->GetEntries(); i++ ) {
-        Jet *jet = ( Jet* ) b_Jet->At(i);
-        TLorentzVector p;
-        p.SetPtEtaPhiM( jet->PT, jet->Eta, jet->Phi, jet->Mass );
-        h_pt_alljets->Fill( p.Pt(), weight );
-        h_eta_alljets->Fill( p.Eta(), weight );
-        p_j.push_back(p);
-    }
-
-    if ( m_debug ) std::cout << "Fetching all electrons ...";
-    std::vector<TLorentzVector> p_el;
-    for ( int i = 0; i < b_Electron->GetEntries(); i++ ) {
-        Electron *electron = ( Electron* ) b_Electron->At(i);
-        TLorentzVector p;
-        p.SetPtEtaPhiM( electron->PT, electron->Eta, electron->Phi, 0.0 );
-        h_pt_allel->Fill( p.Pt(), weight );
-        h_eta_allel->Fill( p.Eta(), weight );
-        p_el.push_back(p);
-    }
-
-    if ( m_debug ) std::cout << "Fetching all muons ...";
-    std::vector<TLorentzVector> p_mu;
-    for ( int i = 0; i < b_Muon->GetEntries(); i++ ) {
-        Muon *muon = ( Muon* ) b_Muon->At(i);
-        TLorentzVector p;
-        p.SetPtEtaPhiM( muon->PT, muon->Eta, muon->Phi, 0.0 );
-        h_pt_allmu->Fill( p.Pt(), weight );
-        h_eta_allmu->Fill( p.Eta(), weight );
-        p_mu.push_back(p);
-    }
-
-    if ( m_debug ) std::cout << "Fetching missing ET ...";
-    MissingET *missingET = ( MissingET* ) b_MissingET->At(0);
-    TLorentzVector p_miss;
-    double ETmiss = missingET->MET;
-
-    if ( m_debug ) std::cout << "Calculating HT ...";
-    double HT = 0;
-    for ( auto p : p_j ) HT += p.Pt();
-    for ( auto p : p_el ) HT += p.Pt();
-    for ( auto p : p_mu ) HT += p.Pt();
-    HT += ETmiss;
-    h_HT_all->Fill( HT / 1000, weight );
-
-    if ( m_debug ) std::cout << "Calculating pvis ...";
-    TLorentzVector pvis( 0, 0, 0, 0 );
-    for ( auto p : p_j ) pvis += p;
-    for ( auto p : p_el ) pvis += p;
-    for ( auto p : p_mu ) pvis += p;
-
-    if ( m_debug ) std::cout << "Calculating mvis ...";
-    double mvis = pvis.M();
-    h_mvis_all->Fill( mvis / 1000, weight );
-
-    if ( m_debug ) std::cout << "Calculating KT ...";
-    double pTvis = pvis.Pt();
-    double KT = sqrt( mvis * mvis + pTvis * pTvis ) + ETmiss;
-    h_KT_all->Fill( KT / 1000, weight );
-}
-
 
 void Analysis::EachEvent( double weight )
 {
@@ -103,24 +39,32 @@ void Analysis::EachEvent( double weight )
 
     this->EveryEvent( weight );
 
+    // if ( !this->SufficientJets() ) return;
     if ( !this->SufficientBtags() ) return;
+    // if ( !this->SufficientHT() ) return;
     if ( !this->TwoLeptons() ) return;
     if ( !this->OppositeCharge() ) return;
+    if ( !this->SufficientMET() ) return;
+    // if ( !this->SufficientMll() ) return;
+    // if ( !this->OutsideZmass() ) return;
 
     std::vector<TLorentzVector> p_b, p_q, p_j;
 
-    for ( int i = 0; i < b_Jet->GetEntries(); i++ ) {
-        Jet *jet = (Jet*) b_Jet->At(i);
+    for ( int i = 0; i < b_Jet->GetEntries(); i++ )
+    {
+        Jet *jet = ( Jet* ) b_Jet->At(i);
         TLorentzVector p;
         p.SetPtEtaPhiM(jet->PT, jet->Eta, jet->Phi, jet->Mass);
-        if ( jet->BTag > 0 ) {
-        // if ( jet->BTag & (1 << i) ) {
-            if ( m_debug ) std::cout << "b-jet pT = " <<p.Pt() << "\n";
+        // if ( jet->BTag & (1 << i) )
+        if ( jet->BTag > 0 )
+        {
+            if ( m_debug ) std::cout << "b-jet pT = " << p.Pt() << "\n";
             p_b.push_back(p);
             h_pt_bjets->Fill( p.Pt(), weight );
             h_eta_bjets->Fill( p.Eta(), weight );
         }
-        else {
+        else
+        {
             p_q.push_back(p);
             h_pt_qjets->Fill( p.Pt(), weight );
             h_eta_qjets->Fill( p.Eta(), weight );
@@ -131,34 +75,40 @@ void Analysis::EachEvent( double weight )
     }
 
     std::pair<TLorentzVector, TLorentzVector> p_l;
-    if ( m_channel == "electron" ) {
+    if ( m_channel == "electron" )
+    {
         Electron *electron1 = ( Electron* ) b_Electron->At(0);
         Electron *electron2 = ( Electron* ) b_Electron->At(1);
 
         double charge1 = electron1->Charge;
         double charge2 = electron2->Charge;
 
-        if ( charge1 > 0 ) {
+        if ( charge1 > 0 )
+        {
             p_l.first.SetPtEtaPhiM( electron1->PT, electron1->Eta, electron1->Phi, 0.0 );
             p_l.second.SetPtEtaPhiM( electron2->PT, electron2->Eta, electron2->Phi, 0.0 );
         }
-        else {
+        else
+        {
             p_l.second.SetPtEtaPhiM( electron1->PT, electron1->Eta, electron1->Phi, 0.0 );
             p_l.first.SetPtEtaPhiM( electron2->PT, electron2->Eta, electron2->Phi, 0.0 );
         }
     }
-    else if ( m_channel == "muon" ) {
+    else if ( m_channel == "muon" )
+    {
         Muon *muon1 = ( Muon* ) b_Muon->At(0);
         Muon *muon2 = ( Muon* ) b_Muon->At(1);
 
         double charge1 = muon1->Charge;
         double charge2 = muon2->Charge;
 
-        if ( charge1 > 0 ) {
+        if ( charge1 > 0 )
+        {
             p_l.first.SetPtEtaPhiM( muon1->PT, muon1->Eta, muon1->Phi, 0.0 );
             p_l.second.SetPtEtaPhiM( muon2->PT, muon2->Eta, muon2->Phi, 0.0 );
         }
-        else {
+        else
+        {
             p_l.second.SetPtEtaPhiM( muon1->PT, muon1->Eta, muon1->Phi, 0.0 );
             p_l.first.SetPtEtaPhiM( muon2->PT, muon2->Eta, muon2->Phi, 0.0 );
         }
@@ -187,14 +137,17 @@ void Analysis::EachEvent( double weight )
     h_mvis->Fill( mvis / 1000, weight );
     h_KT->Fill( KT / 1000, weight );
 
-    if ( m_debug ) {
+    if ( m_debug )
+    {
         std::cout << "p_l+   = "; p_l.first.Print();
         std::cout << "p_l-   = "; p_l.second.Print();
-        for ( int i = 0; i < p_b.size(); i++ ) {
+        for ( int i = 0; i < p_b.size(); i++ )
+        {
             std::cout << "p_b" << i << "   = ";
             p_b.at(i).Print();
         }
-        for ( int i = 0; i < p_q.size(); i++ ) {
+        for ( int i = 0; i < p_q.size(); i++ )
+        {
             std::cout << "p_q" << i << "   = ";
             p_q.at(i).Print();
         }
@@ -206,7 +159,8 @@ void Analysis::EachEvent( double weight )
 
     std::pair<TLorentzVector, TLorentzVector> p_b_hi = TwoHighestPt(p_b);
 
-    if ( m_reconstruction == "KIN" ) {
+    if ( m_reconstruction == "KIN" )
+    {
         std::vector<TLorentzVector> p_b_hiPt = { p_b_hi.first, p_b_hi.second };
         KinematicReconstructer KIN = KinematicReconstructer( m_bmass, m_Wmass, m_tmass );
         bool isSolution = KIN.Reconstruct( p_l, p_b_hiPt, p_q, p_miss );
@@ -217,20 +171,24 @@ void Analysis::EachEvent( double weight )
         p_b2    = KIN.GetBbar();
         p_v1    = KIN.GetNu();
         p_v2    = KIN.GetNubar();
-        if ( isSolution ) {
+        if ( isSolution )
+        {
             this->UpdateCutflow( c_realSolutions, true );
         }
-        else {
+        else
+        {
             this->UpdateCutflow( c_realSolutions, false );
             return;
         }
     }
-    else if ( m_reconstruction == "NuW" ) {
+    else if ( m_reconstruction == "NuW" )
+    {
         auto p_b_match = MatchBjetsToLeps( p_l, p_b_hi );
 
         NeutrinoWeighter nuW = NeutrinoWeighter( 1, p_l.first.Pt() + p_l.first.Phi() ); // 2nd argument is random seed same for specific event
         double weight_max  = nuW.Reconstruct( p_l.first, p_l.second, p_b_match.first, p_b_match.second, p_miss.Px(), p_miss.Py(), p_miss.Phi() );
-        if ( weight_max > 0.0) {
+        if ( weight_max > 0.0)
+        {
             p_top   = nuW.GetTop();
             p_tbar  = nuW.GetTbar();
             p_ttbar = nuW.GetTtbar();
@@ -300,7 +258,8 @@ void Analysis::EachEvent( double weight )
     //     if ( delta_abs_yt > 0) h_mtt_tCF->Fill( mtt, weight );
     //     if ( delta_abs_yt < 0) h_mtt_tCB->Fill( mtt, weight );
 
-    //     if ( n == 6 ) {
+    //     if ( n == 6 )
+    // {
 
     //         std::vector<TLorentzVector> ptop = p;
     //         v = -1 * (p[0] + p[2] + p[3]).BoostVector();
@@ -324,7 +283,8 @@ void Analysis::EachEvent( double weight )
     //         for ( int i = 0; i < (int) deltaRs.size(); i++ )
     //             h_deltaRs[i]->Fill( deltaRs[i], weight );
 
-    //         for ( int i = 0; i < (int) p.size(); i++ ) {
+    //         for ( int i = 0; i < (int) p.size(); i++ )
+    // {
     //             h_eta[i]->Fill( p[i].Eta(), weight );
     //             h_pt[i]->Fill( p[i].Pt(), weight );
     //         }
@@ -348,6 +308,75 @@ void Analysis::EachEvent( double weight )
     //         h2_mtt_cos1cos2->Fill( mtt, cos1cos2, weight );
 }
 
+void Analysis::EveryEvent( double weight )
+{
+    // runs for every event with no event selection or cuts
+
+    if ( m_debug ) std::cout << "Fetching all jets ...";
+    std::vector<TLorentzVector> p_j;
+    for ( int i = 0; i < b_Jet->GetEntries(); i++ )
+    {
+        Jet *jet = ( Jet* ) b_Jet->At(i);
+        TLorentzVector p;
+        p.SetPtEtaPhiM( jet->PT, jet->Eta, jet->Phi, jet->Mass );
+        h_pt_alljets->Fill( p.Pt(), weight );
+        h_eta_alljets->Fill( p.Eta(), weight );
+        p_j.push_back(p);
+    }
+
+    if ( m_debug ) std::cout << "Fetching all electrons ...";
+    std::vector<TLorentzVector> p_el;
+    for ( int i = 0; i < b_Electron->GetEntries(); i++ )
+    {
+        Electron *electron = ( Electron* ) b_Electron->At(i);
+        TLorentzVector p;
+        p.SetPtEtaPhiM( electron->PT, electron->Eta, electron->Phi, 0.0 );
+        h_pt_allel->Fill( p.Pt(), weight );
+        h_eta_allel->Fill( p.Eta(), weight );
+        p_el.push_back(p);
+    }
+
+    if ( m_debug ) std::cout << "Fetching all muons ...";
+    std::vector<TLorentzVector> p_mu;
+    for ( int i = 0; i < b_Muon->GetEntries(); i++ )
+    {
+        Muon *muon = ( Muon* ) b_Muon->At(i);
+        TLorentzVector p;
+        p.SetPtEtaPhiM( muon->PT, muon->Eta, muon->Phi, 0.0 );
+        h_pt_allmu->Fill( p.Pt(), weight );
+        h_eta_allmu->Fill( p.Eta(), weight );
+        p_mu.push_back(p);
+    }
+
+    if ( m_debug ) std::cout << "Fetching missing ET ...";
+    MissingET *missingET = ( MissingET* ) b_MissingET->At(0);
+    TLorentzVector p_miss;
+    double ETmiss = missingET->MET;
+
+    if ( m_debug ) std::cout << "Calculating HT ...";
+    double HT = 0;
+    for ( auto p : p_j ) HT += p.Pt();
+    for ( auto p : p_el ) HT += p.Pt();
+    for ( auto p : p_mu ) HT += p.Pt();
+    HT += ETmiss;
+    h_HT_all->Fill( HT / 1000, weight );
+
+    if ( m_debug ) std::cout << "Calculating pvis ...";
+    TLorentzVector pvis( 0, 0, 0, 0 );
+    for ( auto p : p_j ) pvis += p;
+    for ( auto p : p_el ) pvis += p;
+    for ( auto p : p_mu ) pvis += p;
+
+    if ( m_debug ) std::cout << "Calculating mvis ...";
+    double mvis = pvis.M();
+    h_mvis_all->Fill( mvis / 1000, weight );
+
+    if ( m_debug ) std::cout << "Calculating KT ...";
+    double pTvis = pvis.Pt();
+    double KT = sqrt( mvis * mvis + pTvis * pTvis ) + ETmiss;
+    h_KT_all->Fill( KT / 1000, weight );
+}
+
 
 void Analysis::SetupInputFiles()
 {
@@ -360,20 +389,23 @@ void Analysis::SetupInputFiles()
     std::vector<std::string> initials = {"gg", "qq", "dd", "uu"};
 
     int proc_id = 0;
-    for ( auto initial : initials ) {
+    for ( auto initial : initials )
+    {
         std::size_t pos = m_process.find("-tt");
         std::string final_state = m_process.substr(pos);
-        if ( boost::contains(m_process, initial) ) {
+        if ( boost::contains( m_process, initial ) )
+        {
             std::string model = "";
-            if ( initial == "gg" || initial == "qq") model = "SM";
+            if ( initial == "gg" || initial == "qq" ) model = "SM";
             else model = m_model;
             std::string options = "";
 
             options = m_options;
             std::string intermediates = "";
-            if ( initial == "uu" || initial == "dd" ) {
+            if ( initial == "uu" || initial == "dd" )
+            {
                 intermediates = intermediates + "-AZ";
-                if ( m_model != "SM") intermediates = intermediates + "X";
+                if ( m_model != "SM" ) intermediates = intermediates + "X";
                 // intermediates = "-X";
             }
             filename = initial + intermediates + final_state + "_" + model + "_" + E + "TeV" + "_" + m_pdf + options;
@@ -383,7 +415,8 @@ void Analysis::SetupInputFiles()
             // loop over all matching files (e.g. *.01.root and *.02.root)
             boost::filesystem::directory_iterator end_itr; // Default ctor yields past-the-end
             int nfiles = 0;
-            for ( boost::filesystem::directory_iterator i( m_dataDirectory + "/" ); i != end_itr; ++i ) {
+            for ( boost::filesystem::directory_iterator i( m_dataDirectory + "/" ); i != end_itr; ++i )
+            {
 
                 if ( !boost::filesystem::is_regular_file( i->status() ) ) continue;
                 if ( m_debug) std::cout << "is file: " << i->path().filename().string() << "\n";
@@ -398,7 +431,8 @@ void Analysis::SetupInputFiles()
                 if ( !boost::contains( i->path().filename().string(), "_pythia_delphes" ) ) continue;
                 if ( m_debug) std::cout << "has _pythia_delphes suffix: " << i->path().filename().string() << "\n";
 
-                if ( i->path().extension() == ".root" ) {
+                if ( i->path().extension() == ".root" )
+                {
                     // std::cout << "ends .root: " << i->path().filename().string() << "\n";
                     nfiles++;
                     std::tuple<std::string, int> input = std::make_tuple( m_dataDirectory + "/" + i->path().filename().string(), proc_id );
@@ -419,25 +453,30 @@ void Analysis::SetupInputFiles()
     }
 
     // check some input files have been specified
-    if ( m_input->size() < 1 ) {
+    if ( m_input->size() < 1 )
+    {
         std::cout << "Error: no input files specified.";
         exit( false );
     }
 
     // check all input files exist
-    for ( auto input : *m_input ) {
+    for ( auto input : *m_input )
+    {
         struct stat buffer;
         bool exists = stat( ( std::get<0>( input ) ).c_str(), &buffer ) == 0;
-        if ( exists == false ) {
+        if ( exists == false )
+        {
             std::cout << "Error: no " << std::get<0>( input ) << "\n";
             exit( exists );
         }
     }
 
-    for ( auto process : *m_processes ) {
+    for ( auto process : *m_processes )
+    {
         struct stat buffer;
-        bool exists = stat( (std::get<0>( process ) ).c_str(), &buffer ) == 0;
-        if ( exists == false ) {
+        bool exists = stat( ( std::get<0>( process ) ).c_str(), &buffer ) == 0;
+        if ( exists == false )
+        {
             std::cout << "Error: no " << std::get<0>(process) << "\n";
             exit( exists );
         }
@@ -455,7 +494,7 @@ void Analysis::SetupOutputFiles()
     if ( m_reconstruction == 2 && m_btags != 2 ) m_outputFilename += "_b" + std::to_string( m_btags );
     std::string ytt = std::to_string( m_ytt );
     if ( m_ytt > 0 ) m_outputFilename += "_y" + ytt.erase( ytt.find_last_not_of('0') + 1, std::string::npos );
-    if ( m_Emin >= 0 || m_Emax >= 0 ) m_outputFilename += "_E" + std::to_string(m_Emin) + "-" + std::to_string( m_Emax );
+    if ( m_Emin >= 0 || m_Emax >= 0 ) m_outputFilename += "_E" + std::to_string( m_Emin ) + "-" + std::to_string( m_Emax );
     std::string eff = std::to_string( m_efficiency );
     if ( m_efficiency < 1.0 ) m_outputFilename += "_e" + eff.erase( eff.find_last_not_of('0') + 1, std::string::npos );
     if ( m_luminosity > 0 ) m_outputFilename += "_L" + std::to_string( m_luminosity );
@@ -469,9 +508,8 @@ void Analysis::PostLoop()
 {
     std::cout << "Results\n";
     this->CheckResults();
-    if ( m_reconstruction == 2 ) this->CheckPerformance();
     this->MakeDistributions();
-    // this->WriteHistograms();
+    this->WriteHistograms();
     this->PrintCutflow();
     std::cout << "\n";
     std::cout << "Output\n";
@@ -486,22 +524,11 @@ void Analysis::CheckResults()
 }
 
 
-void Analysis::CheckPerformance()
+TH1D* Analysis::Asymmetry( const std::string& name, const std::string& title, TH1D* h1, TH1D* h2 )
 {
-    double quarkRecoRatio = m_nQuarksMatched / (double) m_nReco;
-    double neutrinoRecoRatio = m_nNeutrinoMatched / (double) m_nReco;
-    std::cout << "-- Performance --\n";
-    printf("Quark assignment: %.1f%% correct\n", quarkRecoRatio * 100);
-    printf("pzNu assignment: %.1f%% correct\n", neutrinoRecoRatio * 100);
-    std::cout << "\n";
-}
-
-
-TH1D* Analysis::Asymmetry(const TString& name, const TString& title, TH1D* h1, TH1D* h2)
-{
-    TH1D* h_numerator = (TH1D*) h1->Clone(name);
+    TH1D* h_numerator = (TH1D*) h1->Clone( name.data() );
     TH1D* h_denominator = (TH1D*) h1->Clone();
-    h_numerator->SetTitle(title);
+    h_numerator->SetTitle( title.data() );
     h_numerator->Add(h2, -1);
     h_denominator->Add(h2, 1);
     h_numerator->Divide( h_denominator );
@@ -511,10 +538,11 @@ TH1D* Analysis::Asymmetry(const TString& name, const TString& title, TH1D* h1, T
 }
 
 
-void Analysis::AsymmetryUncertainty(TH1D* hA, TH1D* h1, TH1D* h2)
+void Analysis::AsymmetryUncertainty( TH1D* hA, TH1D* h1, TH1D* h2 )
 {
     double A, dA, N, N1, N2;
-    for ( int i = 1; i < hA->GetNbinsX() + 1; i++ ) {
+    for ( int i = 1; i < hA->GetNbinsX() + 1; i++ )
+    {
         A = hA->GetBinContent(i);
         N1 = h1->GetBinContent(i);
         N2 = h2->GetBinContent(i);
@@ -612,9 +640,9 @@ void Analysis::MakeHistograms()
     h_mtt_tCB = new TH1D( "mtt_tCB", "m_{tt}^{tCB}", nbins, Emin, Emax );
     h_mtt_tCB->Sumw2();
 
-    h2_mtt_cosThetaStar = new TH2D("mtt_costhetastar", "m_{tt} cos#theta^{*}", nbins, Emin, Emax, 10, -1.0, 1.0);
-    h2_mtt_cosThetaStar->GetXaxis()->SetTitle("m_{tt}");
-    h2_mtt_cosThetaStar->GetYaxis()->SetTitle("cos#theta^*");
+    h2_mtt_cosThetaStar = new TH2D( "mtt_costhetastar", "m_{tt} cos#theta^{*}", nbins, Emin, Emax, 10, -1.0, 1.0 );
+    h2_mtt_cosThetaStar->GetXaxis()->SetTitle( "m_{tt}" );
+    h2_mtt_cosThetaStar->GetYaxis()->SetTitle( "cos#theta^*" );
     h2_mtt_cosThetaStar->Sumw2();
 
     h_costheta_tt = new TH1D( "costheta_tt", "cos#theta_{t,#bar{t}}", 20, -1.0, 1.0 );
@@ -698,39 +726,39 @@ void Analysis::MakeHistograms()
     h_mtt_lB = new TH1D( "mtt_lB", "m_{tt}^{B,l}", nbins, Emin, Emax );
     h_mtt_lB->Sumw2();
 
-    h2_mtt_deltaPhi = new TH2D("mtt_deltaphi", "m_{tt} #Delta#phi_{l}", nbins, Emin, Emax, 10, 0, 1);
-    h2_mtt_deltaPhi->GetXaxis()->SetTitle("m_{tt}");
-    h2_mtt_deltaPhi->GetYaxis()->SetTitle("#Delta#phi_{l}");
+    h2_mtt_deltaPhi = new TH2D( "mtt_deltaphi", "m_{tt} #Delta#phi_{l}", nbins, Emin, Emax, 10, 0, 1 );
+    h2_mtt_deltaPhi->GetXaxis()->SetTitle( "m_{tt}" );
+    h2_mtt_deltaPhi->GetYaxis()->SetTitle( "#Delta#phi_{l}" );
     h2_mtt_deltaPhi->Sumw2();
 
-    h2_mtt_cosTheta1 = new TH2D("mtt_costheta_tl1", "m_{tt} cos#theta_{t,l+}", nbins, Emin, Emax, 10, -1.0, 1.0);
-    h2_mtt_cosTheta1->GetXaxis()->SetTitle("m_{tt} [TeV]");
-    h2_mtt_cosTheta1->GetYaxis()->SetTitle("cos#theta_{l+}");
+    h2_mtt_cosTheta1 = new TH2D( "mtt_costheta_tl1", "m_{tt} cos#theta_{t,l+}", nbins, Emin, Emax, 10, -1.0, 1.0 );
+    h2_mtt_cosTheta1->GetXaxis()->SetTitle( "m_{tt} [TeV]" );
+    h2_mtt_cosTheta1->GetYaxis()->SetTitle( "cos#theta_{l+}" );
     h2_mtt_cosTheta1->Sumw2();
 
-    h2_mtt_cosTheta2 = new TH2D("mtt_costheta_tl2", "m_{tt} cos#theta_{t,l-}", nbins, Emin, Emax, 10, -1.0, 1.0);
-    h2_mtt_cosTheta2->GetXaxis()->SetTitle("m_{tt} [TeV]");
-    h2_mtt_cosTheta2->GetYaxis()->SetTitle("cos#theta_{l-}");
+    h2_mtt_cosTheta2 = new TH2D( "mtt_costheta_tl2", "m_{tt} cos#theta_{t,l-}", nbins, Emin, Emax, 10, -1.0, 1.0 );
+    h2_mtt_cosTheta2->GetXaxis()->SetTitle( "m_{tt} [TeV]" );
+    h2_mtt_cosTheta2->GetYaxis()->SetTitle( "cos#theta_{l-}" );
     h2_mtt_cosTheta2->Sumw2();
 
-    h2_mtt_cos1cos2 = new TH2D("mtt_cos1cos2", "m_{tt} cos#theta_{l+}cos#theta_{l-}", nbins, Emin, Emax, 20, -1.0, 1.0);
-    h2_mtt_cos1cos2->GetXaxis()->SetTitle("m_{tt}");
-    h2_mtt_cos1cos2->GetYaxis()->SetTitle("cos#theta_{l+}cos#theta_{l-}");
+    h2_mtt_cos1cos2 = new TH2D( "mtt_cos1cos2", "m_{tt} cos#theta_{l+}cos#theta_{l-}", nbins, Emin, Emax, 20, -1.0, 1.0 );
+    h2_mtt_cos1cos2->GetXaxis()->SetTitle( "m_{tt}" );
+    h2_mtt_cos1cos2->GetYaxis()->SetTitle( "cos#theta_{l+}cos#theta_{l-}" );
     h2_mtt_cos1cos2->Sumw2();
 
-    h2_HT_deltaPhi = new TH2D("HT_deltaphi", "H_{T} #Delta#phi_{l}", 40, 0, 4, 10, 0, 1);
-    h2_HT_deltaPhi->GetXaxis()->SetTitle("H_{T} [TeV]");
-    h2_HT_deltaPhi->GetYaxis()->SetTitle("#Delta#phi_{l} [rad] / #pi");
+    h2_HT_deltaPhi = new TH2D( "HT_deltaphi", "H_{T} #Delta#phi_{l}", 40, 0, 4, 10, 0, 1 );
+    h2_HT_deltaPhi->GetXaxis()->SetTitle( "H_{T} [TeV]" );
+    h2_HT_deltaPhi->GetYaxis()->SetTitle( "#Delta#phi_{l} [rad] / #pi" );
     h2_HT_deltaPhi->Sumw2();
 
-    h2_mvis_deltaPhi = new TH2D("mvis_deltaphi", "m_{vis} #Delta#phi_{l}", 40, 0, 4, 10, 0, 1);
-    h2_mvis_deltaPhi->GetXaxis()->SetTitle("m_{vis} [TeV]");
-    h2_mvis_deltaPhi->GetYaxis()->SetTitle("#Delta#phi_{l} [rad] / #pi");
+    h2_mvis_deltaPhi = new TH2D( "mvis_deltaphi", "m_{vis} #Delta#phi_{l}", 40, 0, 4, 10, 0, 1 );
+    h2_mvis_deltaPhi->GetXaxis()->SetTitle( "m_{vis} [TeV]" );
+    h2_mvis_deltaPhi->GetYaxis()->SetTitle( "#Delta#phi_{l} [rad] / #pi" );
     h2_mvis_deltaPhi->Sumw2();
 
-    h2_KT_deltaPhi = new TH2D("KT_deltaphi", "K_{T} #Delta#phi_{l}", 40, 0, 4, 10, 0, 1);
-    h2_KT_deltaPhi->GetXaxis()->SetTitle("K_{T} [TeV]");
-    h2_KT_deltaPhi->GetYaxis()->SetTitle("#Delta#phi_{l} [rad] / #pi");
+    h2_KT_deltaPhi = new TH2D( "KT_deltaphi", "K_{T} #Delta#phi_{l}", 40, 0, 4, 10, 0, 1 );
+    h2_KT_deltaPhi->GetXaxis()->SetTitle( "K_{T} [TeV]" );
+    h2_KT_deltaPhi->GetYaxis()->SetTitle( "#Delta#phi_{l} [rad] / #pi" );
     h2_KT_deltaPhi->Sumw2();
 
     h_deltaR_tt = new TH1D( "deltaR_tt", "#Delta R(t,#bar{t})", 100, 0, 5 );
@@ -786,7 +814,7 @@ void Analysis::MakeDistributions()
 
     // h_AtFB = this->Asymmetry("AtFB", "A^{t}_{FB^{*}}", h_mtt_tF, h_mtt_tB);
     // h_AtFB->GetYaxis()->SetTitle( h_AtFB->GetTitle() );
-    // h_AtFB->GetXaxis()->SetTitle("m_{tt} [TeV]");
+    // h_AtFB->GetXaxis()->SetTitle( "m_{tt} [TeV]" );
     // h_AtFB->Write();
 
     // this->MakeDistribution1D( h_mtt_tCF, "TeV" );
@@ -794,7 +822,7 @@ void Analysis::MakeDistributions()
 
     // h_AtC = this->Asymmetry("AtC", "A^{t}_{C}", h_mtt_tCF, h_mtt_tCB);
     // h_AtC->GetYaxis()->SetTitle( h_AtC->GetTitle() );
-    // h_AtC->GetXaxis()->SetTitle("m_{tt} [TeV]");
+    // h_AtC->GetXaxis()->SetTitle( "m_{tt} [TeV]" );
     // h_AtC->Write();
 
     this->MakeDistribution1D( h_pt_l1, "TeV" );
@@ -827,7 +855,7 @@ void Analysis::MakeDistributions()
 
     // h_AtlFB = this->Asymmetry("AtlFB", "A^{tl}_{FB^*}", h_mtt_tlF, h_mtt_tlB);
     // h_AtlFB->GetYaxis()->SetTitle( h_AtlFB->GetTitle() );
-    // h_AtlFB->GetXaxis()->SetTitle("m_{tt} [TeV]");
+    // h_AtlFB->GetXaxis()->SetTitle( "m_{tt} [TeV]" );
     // h_AtlFB->GetYaxis()->SetTitleOffset(0.9);
     // h_AtlFB->GetXaxis()->SetTitleOffset(0.95);
     // h_AtlFB->Write();
@@ -837,21 +865,21 @@ void Analysis::MakeDistributions()
 
     // h_Ap = this->Asymmetry("Ap", "A_{P}", h_mtt_lF, h_mtt_lB);
     // h_Ap->GetYaxis()->SetTitle( h_Ap->GetTitle() );
-    // h_Ap->GetXaxis()->SetTitle("m_{tt} [TeV]");
+    // h_Ap->GetXaxis()->SetTitle( "m_{tt} [TeV]" );
     // h_Ap->GetYaxis()->SetTitleOffset(0.9);
     // h_Ap->GetXaxis()->SetTitleOffset(0.95);
     // h_Ap->Write();
 
     // h_AlEl = this->Asymmetry("AlEl", "A^{l}_{E_l}", h_mtt_ElF, h_mtt_ElB);
     // h_AlEl->GetYaxis()->SetTitle( h_AlEl->GetTitle() );
-    // h_AlEl->GetXaxis()->SetTitle("m_{tt} [TeV]");
+    // h_AlEl->GetXaxis()->SetTitle( "m_{tt} [TeV]" );
     // h_AlEl->GetYaxis()->SetTitleOffset(0.9);
     // h_AlEl->GetXaxis()->SetTitleOffset(0.95);
     // h_AlEl->Write();
 
     // h_Aphil = this->Asymmetry("Aphil", "A^{l}_{#phi}", h_mtt_philF, h_mtt_philB);
     // h_Aphil->GetYaxis()->SetTitle( h_Aphil->GetTitle() );
-    // h_Aphil->GetXaxis()->SetTitle("m_{tt} [TeV]");
+    // h_Aphil->GetXaxis()->SetTitle( "m_{tt} [TeV]" );
     // h_Aphil->GetYaxis()->SetTitleOffset(0.9);
     // h_Aphil->GetXaxis()->SetTitleOffset(0.95);
     // h_Aphil->Write();
@@ -863,28 +891,31 @@ void Analysis::MakeDistributions()
     // this->MakeDistribution1D( h_pv2y, "GeV" );
     // this->MakeDistribution1D( h_pv2z, "GeV" );
 
-    // for ( auto& h : h_pt ) {
-    //     h->GetYaxis()->SetTitle("d#sigma / d p_{T}");
-    //     h->GetXaxis()->SetTitle("p_{T}");
+    // for ( auto& h : h_pt )
+    // {
+    //     h->GetYaxis()->SetTitle( "d#sigma / d p_{T}" );
+    //     h->GetXaxis()->SetTitle( "p_{T}" );
     // }
 
-    // for ( auto& h : h_eta ) {
-    //     h->GetYaxis()->SetTitle("d#sigma / d #eta");
-    //     h->GetXaxis()->SetTitle("#eta");
+    // for ( auto& h : h_eta )
+    // {
+    //     h->GetYaxis()->SetTitle( "d#sigma / d #eta" );
+    //     h->GetXaxis()->SetTitle( "#eta" );
     // }
 
-    // for ( auto& h_deltaR : h_deltaRs ) {
-    //     h_deltaR->GetYaxis()->SetTitle("d#sigma / d #Delta R");
-    //     h_deltaR->GetXaxis()->SetTitle("#Delta R");
+    // for ( auto& h_deltaR : h_deltaRs )
+    // {
+    //     h_deltaR->GetYaxis()->SetTitle( "d#sigma / d #Delta R" );
+    //     h_deltaR->GetXaxis()->SetTitle( "#Delta R" );
     // }
 
     // this->MakeDistribution1D( h_deltaR_bW, "" );
     // this->MakeDistribution1D( h_deltaR_max, "" );
     // this->MakeDistribution1D( h_deltaR_tt, "" );
 
-    this->MakeDistribution2D(h2_HT_deltaPhi, "H_{T}", "GeV", "#Delta#phi", "");
-    this->MakeDistribution2D(h2_mvis_deltaPhi, "m_{vis}", "GeV", "#Delta#phi", "");
-    this->MakeDistribution2D(h2_KT_deltaPhi, "K_{T}", "GeV", "#Delta#phi", "");
+    this->MakeDistribution2D( h2_HT_deltaPhi, "H_{T}", "GeV", "#Delta#phi", "" );
+    this->MakeDistribution2D( h2_mvis_deltaPhi, "m_{vis}", "GeV", "#Delta#phi", "" );
+    this->MakeDistribution2D( h2_KT_deltaPhi, "K_{T}", "GeV", "#Delta#phi", "" );
 
     //     this->MakeDistribution2D(h2_mtt_deltaPhi, "m_{tt}", "GeV", "cos#theta cos#theta", "");
     //     this->MakeDistribution2D(h2_mtt_cosThetaStar, "m_{tt}", "GeV", "cos#theta^{*}", "");
@@ -893,54 +924,66 @@ void Analysis::MakeDistributions()
 }
 
 
-void Analysis::MakeDistribution1D(TH1D* h, const TString& units)
+void Analysis::MakeDistribution1D( TH1D* h, const std::string& units )
 {
-    TString ytitle, yunits, xunits;
-    if ( m_xsec ) {
-        if ( m_useLumi ) {
-            for ( int i = 1; i < h->GetNbinsX() + 1; i++ ) {
-                h->SetBinError(i, sqrt(h->GetBinContent(i)));
+    std::string ytitle, yunits, xunits;
+    if ( m_xsec )
+    {
+        if ( m_useLumi )
+        {
+            for ( int i = 1; i < h->GetNbinsX() + 1; i++ )
+            {
+                h->SetBinError( i, sqrt(h->GetBinContent(i) ) );
                 // std::cout << "N  = " << "" << h->GetBinContent(i) << "\n";
                 // std::cout << "dN = " << "" << h->GetBinError(i) << "\n";
             }
             ytitle = "Expected events";
         }
-        else {
-            ytitle = "d#sigma / d" + (TString) h->GetTitle();
-            if ( units != "" ) {
+        else
+        {
+            ytitle = "d#sigma / d" + ( std::string ) h->GetTitle();
+            if ( units != "" )
+            {
                 yunits = " [fb/" + units + "]";
                 xunits = " [" + units + "]";
             }
-            else {
+            else
+            {
                 yunits = "";
                 xunits = "";
             }
         }
     }
-    else {
+    else
+    {
         ytitle = "Generated events";
     }
     if ( units != "") xunits = " [" + units + "]";
     else xunits = "";
-    h->GetYaxis()->SetTitle(ytitle + yunits);
-    h->GetXaxis()->SetTitle(h->GetTitle() + xunits);
+    h->GetYaxis()->SetTitle( (ytitle + yunits).data() );
+    h->GetXaxis()->SetTitle( (h->GetTitle() + xunits).data() );
     h->GetYaxis()->SetTitleOffset(0.9);
     h->GetXaxis()->SetTitleOffset(0.95);
     m_outputFile->cd();
-    m_outputFile->cd("/");
+    m_outputFile->cd( "/" );
     h->Write();
 }
 
 
-void Analysis::MakeDistribution2D(TH2D* h, TString xtitle,  TString xunits, TString ytitle, TString yunits ) {
-    TString ztitle, zunits;
-    if ( m_xsec ) {
+void Analysis::MakeDistribution2D( TH2D* h, std::string xtitle, std::string xunits, std::string ytitle, std::string yunits )
+{
+    std::string ztitle, zunits;
+    if ( m_xsec )
+    {
         // h->Scale(m_sigma / m_nevents, "width");
-        if ( m_useLumi ) {
+        if ( m_useLumi )
+        {
             // std::cout << "xtitle  = " << xtitle << ", ytitle = " << ytitle << "\n";
-            for ( int i = 1; i < h->GetNbinsX() + 1; i++ ) {
-                for ( int j = 1; j < h->GetNbinsY() + 1; j++ ) {
-                    h->SetBinError(i, j, sqrt(h->GetBinContent(i, j)));
+            for ( int i = 1; i < h->GetNbinsX() + 1; i++ )
+            {
+                for ( int j = 1; j < h->GetNbinsY() + 1; j++ )
+                {
+                    h->SetBinError( i, j, sqrt( h->GetBinContent( i, j ) ) );
                     // std::cout << "N  = " << "" << h->GetBinContent(i, j) << ", dN = " << "" << h->GetBinError(i, j) << "\n";
                 }
             }
@@ -948,39 +991,46 @@ void Analysis::MakeDistribution2D(TH2D* h, TString xtitle,  TString xunits, TStr
             ztitle = "Expected events";
         }
         ztitle = "d#sigma / d";
-        if ( xunits != "" and yunits != "" ) {
+        if ( xunits != "" and yunits != "" )
+        {
             zunits = " [fb/" + xunits + "/" + yunits + "]";
             xunits = " [" + xunits + "]";
             yunits = " [" + yunits + "]";
         }
-        else if ( xunits != "" and yunits == "" ) {
+        else if ( xunits != "" and yunits == "" )
+        {
             zunits = " [fb/" + xunits + "]";
             xunits = " [" + xunits + "]";
         }
-        else if ( xunits == "" and yunits != "" ) {
+        else if ( xunits == "" and yunits != "" )
+        {
             zunits = " [fb/" + yunits + "]";
             yunits = " [" + yunits + "]";
         }
-        else {
+        else
+        {
             zunits = "";
         }
-        h->GetZaxis()->SetTitle(ztitle + h->GetTitle() + zunits);
+        h->GetZaxis()->SetTitle( ( ztitle + h->GetTitle() + zunits ).data() );
     }
-    else {
-        if ( m_useLumi ) {
+    else
+    {
+        if ( m_useLumi )
+        {
             ztitle = "Expected events";
         }
-        else {
+        else
+        {
             ztitle = "Generated events";
         }
         if ( xunits != "") xunits = " [" + xunits + "]";
         if ( yunits != "") yunits = " [" + yunits + "]";
-        h->GetZaxis()->SetTitle(ztitle);
+        h->GetZaxis()->SetTitle( (ztitle).data() );
     }
-    h->GetYaxis()->SetTitle(ytitle + yunits);
-    h->GetXaxis()->SetTitle(xtitle + xunits);
+    h->GetYaxis()->SetTitle( (ytitle + yunits).data() );
+    h->GetXaxis()->SetTitle( (xtitle + xunits).data() );
     m_outputFile->cd();
-    m_outputFile->cd("/");
+    m_outputFile->cd( "/" );
     h->Write();
 }
 
@@ -989,31 +1039,31 @@ void Analysis::WriteHistograms()
 {
     std::cout << "Writing histograms ...\n";
     m_outputFile->cd();
-    m_outputFile->cd("/");
+    m_outputFile->cd( "/" );
 
-    TF1 *func = new TF1("func1", "[0]*x + [1]", -1, 1);
+    TF1 *func = new TF1( "func1", "[0]*x + [1]", -1, 1 );
     TObjArray slices1;
-    this->NormalizeSliceY(h2_mtt_cosTheta1);
-    h2_mtt_cosTheta1->FitSlicesY(func, 0, -1, 0, "QRN", &slices1);
+    this->NormalizeSliceY( h2_mtt_cosTheta1 );
+    h2_mtt_cosTheta1->FitSlicesY( func, 0, -1, 0, "QRN", &slices1 );
     for ( auto slice : slices1) slice->Write();
-    TH1D* h_AL1 = (TH1D*) slices1[0]->Clone("AL1");
+    TH1D* h_AL1 = (TH1D*) slices1[0]->Clone( "AL1" );
     slices1.Clear();
-    h_AL1->Scale(2 / h2_mtt_cosTheta1->GetYaxis()->GetBinWidth(1));
-    h_AL1->SetTitle("A_{L}");
-    h_AL1->GetXaxis()->SetTitle("m_{tt} [TeV]");
-    h_AL1->GetYaxis()->SetTitle("A_{L}");
+    h_AL1->Scale( 2 / h2_mtt_cosTheta1->GetYaxis()->GetBinWidth(1) );
+    h_AL1->SetTitle( "A_{L}" );
+    h_AL1->GetXaxis()->SetTitle( "m_{tt} [TeV]" );
+    h_AL1->GetYaxis()->SetTitle( "A_{L}" );
     h_AL1->Write();
 
     TObjArray slices2;
-    this->NormalizeSliceY(h2_mtt_cosTheta2);
-    h2_mtt_cosTheta2->FitSlicesY(func, 0, -1, 0, "QRN", &slices2);
+    this->NormalizeSliceY( h2_mtt_cosTheta2 );
+    h2_mtt_cosTheta2->FitSlicesY( func, 0, -1, 0, "QRN", &slices2 );
     for ( auto slice : slices2) slice->Write();
-    TH1D* h_AL2 = (TH1D*) slices2[0]->Clone("AL2");
+    TH1D* h_AL2 = (TH1D*) slices2[0]->Clone( "AL2" );
     slices2.Clear();
-    h_AL2->Scale(2 / h2_mtt_cosTheta2->GetYaxis()->GetBinWidth(1));
-    h_AL2->SetTitle("A_{L}");
-    h_AL2->GetXaxis()->SetTitle("m_{tt} [TeV]");
-    h_AL2->GetYaxis()->SetTitle("A_{L}");
+    h_AL2->Scale( 2 / h2_mtt_cosTheta2->GetYaxis()->GetBinWidth(1) );
+    h_AL2->SetTitle( "A_{L}" );
+    h_AL2->GetXaxis()->SetTitle( "m_{tt} [TeV]" );
+    h_AL2->GetYaxis()->SetTitle( "A_{L}" );
     h_AL2->Write();
 }
 
@@ -1021,51 +1071,38 @@ void Analysis::NormalizeSliceY(TH2D* h)
 {
     double integral = 1;
     int k;
-    for ( int i = 1; i < h->GetNbinsX() + 1; i++ ) {
-        integral = h->Integral(i, i, 1, h->GetNbinsY());
-        for ( int j = 1; j < h->GetNbinsY() + 1; j++ ) {
-            k = h->GetBin(i, j);
-            h->SetBinContent(k, h->GetBinContent(k) / integral);
-            h->SetBinError(k, h->GetBinError(k) / integral);
+    for ( int i = 1; i < h->GetNbinsX() + 1; i++ )
+    {
+        integral = h->Integral( i, i, 1, h->GetNbinsY() );
+        for ( int j = 1; j < h->GetNbinsY() + 1; j++ )
+        {
+            k = h->GetBin( i, j );
+            h->SetBinContent( k, h->GetBinContent(k) / integral );
+            h->SetBinError( k, h->GetBinError(k) / integral );
         }
     }
 }
 
-bool Analysis::PassFiducialCuts(const std::vector<TLorentzVector>& p, const TLorentzVector& P)
-{
-    if ( !m_fid) return true;
-    if ( this->PassCutsET(p, P) ) {
-        if ( this->PassCutsEta(p, P) ) {
-            if ( !m_iso) return true;
-            if ( this->PassCutsDeltaR(p, P) ) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-
-bool Analysis::PassCutsMET(const std::vector<TLorentzVector>& p, const TLorentzVector& P)
-{
-    bool pass = true;
-    this->UpdateCutflow(c_MET, pass);
-    return pass;
-}
+// Reject muon pair signature
+// $|m_{ll}-m_Z| > 10$ \si{\giga\electronvolt} & Suppress DY+j's background
+// $E_T^{miss} > 60$ \si{\giga\electronvolt} & Account for the neutrinos \newline Further reduce DY background (no cut for $e^\pm \mu^\mp$)
+// $H_T > 130$ \si{\giga\electronvolt} & Suppress $Z/\gamma^*(\rightarrow \tau^+ \tau^-) + jets$
 
 
 bool Analysis::TwoLeptons()
 {
     bool twoLeptons;
-    if ( m_channel == "electron" ) {
+    if ( m_channel == "electron" )
+    {
         if ( b_Electron->GetEntries() == 2 ) twoLeptons = true;
         else twoLeptons = false;
     }
-    else if ( m_channel == "muon" ) {
+    else if ( m_channel == "muon" )
+    {
         if ( b_Muon->GetEntries() == 2 ) twoLeptons = true;
         else twoLeptons = false;
     }
-    this->UpdateCutflow(c_twoLeptons, twoLeptons);
+    this->UpdateCutflow( c_twoLeptons, twoLeptons );
     return twoLeptons;
 }
 
@@ -1073,16 +1110,18 @@ bool Analysis::TwoLeptons()
 bool Analysis::OppositeCharge()
 {
     double charge1, charge2;
-    if ( m_channel == "electron" ) {
+    if ( m_channel == "electron" )
+    {
         Electron *electron1 = ( Electron* ) b_Electron->At(0);
         Electron *electron2 = ( Electron* ) b_Electron->At(1);
 
         charge1 = electron1->Charge;
         charge2 = electron2->Charge;
     }
-    else if ( m_channel == "muon" ) {
-        Muon *muon1 = (Muon*) b_Muon->At(0);
-        Muon *muon2 = (Muon*) b_Muon->At(1);
+    else if ( m_channel == "muon" )
+    {
+        Muon *muon1 = ( Muon* ) b_Muon->At(0);
+        Muon *muon2 = ( Muon* ) b_Muon->At(1);
 
         charge1 = muon1->Charge;
         charge2 = muon2->Charge;
@@ -1090,7 +1129,7 @@ bool Analysis::OppositeCharge()
 
     bool oppositeCharge;
 
-    if ( charge1 == charge2) oppositeCharge = false;
+    if ( charge1 == charge2 ) oppositeCharge = false;
     else oppositeCharge = true;
     this->UpdateCutflow(c_oppositeCharge, oppositeCharge);
 
@@ -1102,89 +1141,46 @@ bool Analysis::SufficientBtags()
 {
     bool sufficientBtags;
     int nBtags = 0;
-    for ( int i = 0; i < b_Jet->GetEntries(); i++ ) {
-      Jet *jet = (Jet*) b_Jet->At(i);
-      if ( jet->BTag > 0 ) nBtags++;
+    for ( int i = 0; i < b_Jet->GetEntries(); i++ )
+    {
+        Jet *jet = ( Jet* ) b_Jet->At(i);
+        if ( jet->BTag > 0 ) nBtags++;
     }
-    if ( nBtags >= m_btags) sufficientBtags = true;
+    if ( nBtags >= m_btags ) sufficientBtags = true;
     else sufficientBtags = false;
-    this->UpdateCutflow(c_sufficientBtags, sufficientBtags);
+    this->UpdateCutflow( c_sufficientBtags, sufficientBtags );
     return sufficientBtags;
 }
 
-
-bool Analysis::PassCutsMtt( const std::vector<TLorentzVector>& p, const TLorentzVector& P )
+bool Analysis::SufficientMET()
 {
-    if ( m_Emin < 0 and m_Emax < 0 ) return true;
-
-    double mtt = P.M() / 1000;
-
-    if ( mtt > m_Emin ) {
-        if ( mtt < m_Emax ) {
-            UpdateCutflow(c_mtt, true);
-            return true;
-        }
-    }
-    UpdateCutflow(c_mtt, false);
-    return false;
+    // $E_T^{miss} > 60$ \si{\giga\electronvolt}
+    // Account for the neutrinos
+    // Further reduce DY background (no cut for $e^\pm \mu^\mp$)
+    bool sufficientMET;
+    MissingET *missingET = ( MissingET* ) b_MissingET->At(0);
+    double ETmiss = missingET->MET;
+    if ( ETmiss > 60 ) sufficientMET = true;
+    else sufficientMET = false;
+    this->UpdateCutflow( c_MET, sufficientMET );
+    return sufficientMET;
 }
 
-
-bool Analysis::PassCutsDeltaR(const std::vector<TLorentzVector>& p, const TLorentzVector& P)
-{
-    std::vector<double> deltaRs;
-    for ( int i = 0; i < 6; i++ )
-        for ( int j = i + 1; j < 6; j++ )
-            if ( p[i].DeltaR(p[j]) < 0.4 ) {
-                UpdateCutflow(c_deltaR, false);
-                return false;
-            }
-    UpdateCutflow(c_deltaR, true);
-    return true;
-}
-
-bool Analysis::PassCutsEta(const std::vector<TLorentzVector>& p, const TLorentzVector& P)
-{
-    for ( unsigned int i = 0; i < p.size(); i++ ) {
-        // bool outsideCrack = abs(p[i].PseudoRapidity()) <= 1.37 || abs(p[i].PseudoRapidity()) >= 1.52;
-        bool central = std::abs( p[i].PseudoRapidity() ) <= 2.5;
-        // bool passesEtaCuts = outsideCrack && central;
-        if ( central == false ) {
-            UpdateCutflow(c_eta, false);
-            return false;
-        }
-    }
-    UpdateCutflow(c_eta, true);
-    return true;
-}
-
-bool Analysis::PassCutsET(const std::vector<TLorentzVector>& p, const TLorentzVector& P)
-{
-    for ( unsigned int i = 0; i < p.size(); i++ ) {
-        if (p[i].Et() <= 25 ) {
-            UpdateCutflow(c_Et, false);
-            return false;
-        }
-        else continue;
-    }
-    UpdateCutflow(c_Et, true);
-    return true;
-}
-
-bool Analysis::PassCutsYtt(const std::vector<TLorentzVector>& p, const TLorentzVector& P)
-{
-    if ( m_ytt < 0) return true;
-
-    double ytt = std::abs(P.Rapidity());
-
-    if ( ytt > m_ytt ) {
-        UpdateCutflow(c_ytt, true);
-        return true;
-
-    }
-    UpdateCutflow(c_ytt, false);
-    return false;
-}
+// bool Analysis::SufficientJets()
+// {
+//     bool sufficientJets;
+//     if ( b_Jet->GetEntries() >= 2 ) sufficientBtags = true;
+//     else sufficientJets = false;
+//     this->UpdateCutflow( c_sufficientJets, sufficientJets );
+//     return sufficientJets;
+// }
+//
+//
+// bool Analysis::SufficientMll(std::pair< TLorentzVector > p_l)
+// {
+//     // $m_{ll} > 15$ GeV: suppress hadronic background, e.g. $J/Psi$
+//
+// }
 
 
 void Analysis::PreLoop()
@@ -1221,7 +1217,7 @@ void Analysis::SetDataDirectory()
 
 void Analysis::ResetCounters()
 {
-    if ( m_luminosity >= 0) m_useLumi = true;
+    if ( m_luminosity >= 0 ) m_useLumi = true;
     else m_useLumi = false;
     m_nQuarksMatched = 0;
     m_nNeutrinoMatched = 0;
@@ -1262,33 +1258,35 @@ void Analysis::GetGenerationCrossSection( int proc_id )
 }
 
 
-void Analysis::GetProcessWeight(int proc_id)
+void Analysis::GetProcessWeight( int proc_id )
 {
-    int nproc = std::get<2>( m_processes->at(proc_id) );
+    int nproc = std::get<2>( m_processes->at( proc_id ) );
     std::cout << "nproc = " << nproc << "\n";
     int nevents = m_nevents;
     std::cout << "Events: " << nevents << "\n";
-    std::get<5>( m_processes->at(proc_id) ) = 1.0 * std::get<3>( m_processes->at(proc_id) ) / ( nevents * nproc );
-    std::cout << "Event weight: "<< std::get<5>( m_processes->at(proc_id) ) << "\n";
+    std::get<5>( m_processes->at( proc_id ) ) = 1.0 * std::get<3>( m_processes->at( proc_id ) ) / ( nevents * nproc );
+    std::cout << "Event weight: "<< std::get<5>( m_processes->at( proc_id ) ) << "\n";
 }
 
 
 void Analysis::Loop()
 {
-    for ( itr_s it = m_input->begin(); it != m_input->end(); ++it ) {
+    for ( itr_s it = m_input->begin(); it != m_input->end(); ++it )
+    {
         int i = it - m_input->begin();
         std::cout << "Input " << i + 1 << "\n";
-        std::cout << std::get<0>(*it) << "\n";
-        this->EachFile( std::get<0>(*it) );
+        std::cout << std::get<0>( *it ) << "\n";
+        this->EachFile( std::get<0>( *it ) );
         m_nevents = this->TotalEvents();
         int proc_id = std::get<1>( m_input->at(i) );
-        this->GetGenerationCrossSection(proc_id);
-        this->GetProcessWeight(proc_id);
-        for ( Long64_t jevent = 0; jevent < m_nevents; ++jevent ) {
+        this->GetGenerationCrossSection( proc_id );
+        this->GetProcessWeight( proc_id );
+        for ( Long64_t jevent = 0; jevent < m_nevents; ++jevent )
+        {
             Long64_t ievent = this->IncrementEvent( jevent );
             if ( ievent < 0 ) break;
-            this->EachEvent( std::get<5>( m_processes->at(proc_id) ) );
-            if ( !m_debug) ProgressBar(jevent, m_nevents - 1, 50);
+            this->EachEvent( std::get<5>( m_processes->at( proc_id ) ) );
+            if ( !m_debug ) ProgressBar( jevent, m_nevents - 1, 50 );
         }
         this->CleanUp();
         std::cout << "\n";
@@ -1296,9 +1294,9 @@ void Analysis::Loop()
 }
 
 
-void Analysis::EachFile(TString filename)
+void Analysis::EachFile (const std::string& filename )
 {
-    this->SetupTreesForNewFile(filename);
+    this->SetupTreesForNewFile( filename );
     this->GetBranches();
 }
 
@@ -1311,7 +1309,8 @@ Analysis::~Analysis()
 
 Long64_t Analysis::TotalEvents()
 {
-    if ( m_tree != 0 ) {return m_tree->GetEntries();}
+    if ( m_tree != 0 )
+    {return m_tree->GetEntries();}
     return -999;
 }
 
@@ -1319,18 +1318,19 @@ Long64_t Analysis::TotalEvents()
 Long64_t Analysis::IncrementEvent(Long64_t i)
 {
     Long64_t ev(-1);
-    if ( m_tree != 0 ) {ev = m_tree->ReadEntry(i);}
+    if ( m_tree != 0 )
+    {ev = m_tree->ReadEntry(i);}
     return ev;
 }
 
 
-void Analysis::SetupTreesForNewFile(const TString& s)
+void Analysis::SetupTreesForNewFile( const std::string& s )
 {
-    TString treeToUse = "Delphes";
-    m_chain = new TChain(treeToUse,"");
-    TString TStringNtuple = s + "/" + treeToUse;
-    m_chain->Add(TStringNtuple,0);
-    m_tree = new ExRootTreeReader(m_chain);
+    std::string treeToUse = "Delphes";
+    m_chain = new TChain ( treeToUse.data(), "" );
+    std::string TStringNtuple = s + "/" + treeToUse;
+    m_chain->Add( TStringNtuple.data(), 0 );
+    m_tree = new ExRootTreeReader( m_chain );
     Long64_t numberOfEntries = m_tree->GetEntries();
     // std::cout << "Number of entries = " << numberOfEntries << "\n";
 }
@@ -1343,31 +1343,31 @@ void Analysis::CleanUp()
 }
 
 
-double Analysis::TotalAsymmetry(TH1D* h_A, TH1D* h_B )
+double Analysis::TotalAsymmetry( TH1D* h_A, TH1D* h_B )
 {
-    double A = h_A->Integral("width");
-    double B = h_B->Integral("width");
-    double Atot = (A - B) / (A + B);
+    double A = h_A->Integral( "width" );
+    double B = h_B->Integral( "width" );
+    double Atot = ( A - B ) / ( A + B );
     return Atot;
 }
 
 
 void Analysis::InitialiseCutflow()
 {
-    m_cutflow = std::vector<int>(m_cuts, -999);
+    m_cutflow = std::vector<int>( m_cuts, -999 );
     m_cutNames = std::vector<std::string>(
-    m_cuts,                         "no name          ");
-    m_cutNames[c_events]          = "Events           ";
-    m_cutNames[c_twoLeptons]      = "Two leptons      ";
-    m_cutNames[c_oppositeCharge]  = "Opposite Charge  ";
-    m_cutNames[c_sufficientBtags] = "Sufficient b-tags";
-    m_cutNames[c_MET]             = "MET              ";
-    m_cutNames[c_realSolutions]   = "Has real roots   ";
-    m_cutNames[c_mtt]             = "mtt              ";
-    m_cutNames[c_ytt]             = "ytt              ";
-    m_cutNames[c_eta]             = "eta              ";
-    m_cutNames[c_Et]              = "ET               ";
-    m_cutNames[c_deltaR]          = "deltaR           ";
+    m_cuts,                           "no name          ");
+    m_cutNames[ c_events ]          = "Events           ";
+    m_cutNames[ c_twoLeptons ]      = "Two leptons      ";
+    m_cutNames[ c_oppositeCharge ]  = "Opposite Charge  ";
+    m_cutNames[ c_sufficientBtags ] = "Sufficient b-tags";
+    m_cutNames[ c_MET ]             = "MET              ";
+    m_cutNames[ c_realSolutions ]   = "Has real roots   ";
+    m_cutNames[ c_mtt ]             = "mtt              ";
+    m_cutNames[ c_ytt ]             = "ytt              ";
+    m_cutNames[ c_eta ]             = "eta              ";
+    m_cutNames[ c_Et ]              = "ET               ";
+    m_cutNames[ c_deltaR ]          = "deltaR           ";
 
     h_cutflow = new TH1D( "cutflow", "cutflow", m_cuts, 0, m_cuts );
 }
@@ -1375,21 +1375,22 @@ void Analysis::InitialiseCutflow()
 
 void Analysis::UpdateCutflow(const int cut, const bool passed)
 {
-    if ( m_cutflow[cut] == -999) m_cutflow[cut] = 0;
-    if ( passed) m_cutflow[cut] += 1;
+    if ( m_cutflow[ cut ] == -999 ) m_cutflow[ cut ] = 0;
+    if ( passed ) m_cutflow[ cut ] += 1;
 }
 
 
 void Analysis::PrintCutflow()
 {
     std::cout << "Cutflow: \n";
-    for ( int cut = 0; cut < m_cuts; cut++ ) {
-        if ( m_cutflow[cut] == -999) continue;
+    for ( int cut = 0; cut < m_cuts; cut++ )
+    {
+        if ( m_cutflow[cut] == -999 ) continue;
 
-        h_cutflow->SetBinContent(cut + 1, m_cutflow[cut]);
-        h_cutflow->GetXaxis()->SetBinLabel(cut + 1, m_cutNames[cut].c_str());
+        h_cutflow->SetBinContent( cut + 1, m_cutflow[ cut ] );
+        h_cutflow->GetXaxis()->SetBinLabel( cut + 1, m_cutNames[ cut ].c_str() );
 
-        std::cout << m_cutNames[cut] << " " << m_cutflow[cut] << "\n";
+        std::cout << m_cutNames[ cut ] << " " << m_cutflow[ cut ] << "\n";
     }
     h_cutflow->Write();
     m_outputFile->Close();
