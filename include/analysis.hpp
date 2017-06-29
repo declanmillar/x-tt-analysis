@@ -147,6 +147,7 @@ private:
         c_eta,
         c_realSolutions,
         c_MET,
+        c_HT,
         c_mtt,
         c_ytt,
         c_deltaR,

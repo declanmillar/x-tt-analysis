@@ -41,7 +41,7 @@ void Analysis::EachEvent( double weight )
 
     // if ( !this->SufficientJets() ) return;
     if ( !this->SufficientBtags() ) return;
-    // if ( !this->SufficientHT() ) return;
+    if ( !this->SufficientHT() ) return;
     if ( !this->TwoLeptons() ) return;
     if ( !this->OppositeCharge() ) return;
     if ( !this->SufficientMET() ) return;
@@ -1100,7 +1100,6 @@ void Analysis::NormalizeSliceY(TH2D* h)
 // Reject muon pair signature
 // $|m_{ll}-m_Z| > 10$ \si{\giga\electronvolt} & Suppress DY+j's background
 // $E_T^{miss} > 60$ \si{\giga\electronvolt} & Account for the neutrinos \newline Further reduce DY background (no cut for $e^\pm \mu^\mp$)
-// $H_T > 130$ \si{\giga\electronvolt} & Suppress $Z/\gamma^*(\rightarrow \tau^+ \tau^-) + jets$
 
 
 bool Analysis::TwoLeptons()
@@ -1179,6 +1178,20 @@ bool Analysis::SufficientMET()
     this->UpdateCutflow( c_MET, sufficientMET );
     return sufficientMET;
 }
+
+bool Analysis::SufficientHT()
+{
+    // $H_T > 130$ GeV
+    // Suppress $Z/\gamma^*(\rightarrow \tau^+ \tau^-) + jets$
+    bool sufficientHT;
+    ScalarHT *scalarHT = ( ScalarHT* ) b_ScalarHT->At(0);
+    double HT = scalarHT->HT;
+    if ( HT > 130 ) sufficientHT = true;
+    else sufficientHT = false;
+    this->UpdateCutflow( c_HT, sufficientHT );
+    return sufficientHT;
+}
+
 
 bool Analysis::SufficientJets()
 {
