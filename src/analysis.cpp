@@ -186,7 +186,7 @@ void Analysis::EachEvent( double weight )
         auto p_b_match = MatchBjetsToLeps( p_l, p_b_hi );
 
         NeutrinoWeighter nuW = NeutrinoWeighter( 1, p_l.first.Pt() + p_l.first.Phi() ); // 2nd argument is random seed same for specific event
-        double weight_max  = nuW.Reconstruct( p_l.first, p_l.second, p_b_match.first, p_b_match.second, p_miss.Px(), p_miss.Py(), p_miss.Phi() );
+        double weight_max = nuW.Reconstruct( p_l.first, p_l.second, p_b_match.first, p_b_match.second, p_miss.Px(), p_miss.Py(), p_miss.Phi() );
         if ( weight_max > 0.0)
         {
             p_top   = nuW.GetTop();
@@ -311,9 +311,9 @@ void Analysis::EachEvent( double weight )
 void Analysis::EveryEvent( double weight )
 {
     // runs for every event with no event selection or cuts
-    h_nElectrons->Fill(b_Electron->GetEntries(), weight);
-    h_nMuons->Fill(b_Muon->GetEntries(), weight);
-    h_nJets->Fill(b_Jet->GetEntries(), weight);
+    h_nElectrons->Fill( b_Electron->GetEntries(), weight );
+    h_nMuons->Fill( b_Muon->GetEntries(), weight );
+    h_nJets->Fill( b_Jet->GetEntries(), weight );
 
     if ( m_debug ) std::cout << "Fetching all jets ...";
     std::vector<TLorentzVector> p_j;
@@ -383,13 +383,13 @@ void Analysis::EveryEvent( double weight )
 
 void Analysis::SetupInputFiles()
 {
-    m_input = new std::vector<std::tuple<std::string, int> >;
-    m_processes = new std::vector<std::tuple<std::string, int, int, double, double, double> >;
+    m_input = new std::vector< std::tuple< std::string, int > >;
+    m_processes = new std::vector< std::tuple< std::string, int, int, double, double, double > >;
     std::string filename;
 
-    std::string E = std::to_string(m_energy);
+    std::string E = std::to_string( m_energy );
 
-    std::vector<std::string> initials = {"gg", "qq", "dd", "uu"};
+    std::vector<std::string> initials = { "gg", "qq", "dd", "uu" };
 
     int proc_id = 0;
     for ( auto initial : initials )
@@ -480,7 +480,7 @@ void Analysis::SetupInputFiles()
         bool exists = stat( ( std::get<0>( process ) ).c_str(), &buffer ) == 0;
         if ( exists == false )
         {
-            std::cout << "Error: no " << std::get<0>(process) << "\n";
+            std::cout << "Error: no " << std::get<0>( process ) << "\n";
             exit( exists );
         }
     }
@@ -974,8 +974,8 @@ void Analysis::MakeDistribution1D( TH1D* h, const std::string& units )
     }
     if ( units != "") xunits = " [" + units + "]";
     else xunits = "";
-    h->GetYaxis()->SetTitle( (ytitle + yunits).data() );
-    h->GetXaxis()->SetTitle( (h->GetTitle() + xunits).data() );
+    h->GetYaxis()->SetTitle( ( ytitle + yunits ).data() );
+    h->GetXaxis()->SetTitle( ( h->GetTitle() + xunits ).data() );
     h->GetYaxis()->SetTitleOffset(0.9);
     h->GetXaxis()->SetTitleOffset(0.95);
     m_outputFile->cd();
@@ -1039,10 +1039,10 @@ void Analysis::MakeDistribution2D( TH2D* h, std::string xtitle, std::string xuni
         }
         if ( xunits != "") xunits = " [" + xunits + "]";
         if ( yunits != "") yunits = " [" + yunits + "]";
-        h->GetZaxis()->SetTitle( (ztitle).data() );
+        h->GetZaxis()->SetTitle( ( ztitle ).data() );
     }
-    h->GetYaxis()->SetTitle( (ytitle + yunits).data() );
-    h->GetXaxis()->SetTitle( (xtitle + xunits).data() );
+    h->GetYaxis()->SetTitle( ( ytitle + yunits ).data() );
+    h->GetXaxis()->SetTitle( ( xtitle + xunits ).data() );
     m_outputFile->cd();
     m_outputFile->cd( "/" );
     h->Write();
@@ -1060,7 +1060,7 @@ void Analysis::WriteHistograms()
     this->NormalizeSliceY( h2_mtt_cosTheta1 );
     h2_mtt_cosTheta1->FitSlicesY( func, 0, -1, 0, "QRN", &slices1 );
     for ( auto slice : slices1) slice->Write();
-    TH1D* h_AL1 = (TH1D*) slices1[0]->Clone( "AL1" );
+    TH1D* h_AL1 = ( TH1D* ) slices1[0]->Clone( "AL1" );
     slices1.Clear();
     h_AL1->Scale( 2 / h2_mtt_cosTheta1->GetYaxis()->GetBinWidth(1) );
     h_AL1->SetTitle( "A_{L}" );
@@ -1099,8 +1099,6 @@ void Analysis::NormalizeSliceY(TH2D* h)
 
 // Reject muon pair signature
 // $|m_{ll}-m_Z| > 10$ \si{\giga\electronvolt} & Suppress DY+j's background
-// $E_T^{miss} > 60$ \si{\giga\electronvolt} & Account for the neutrinos \newline Further reduce DY background (no cut for $e^\pm \mu^\mp$)
-
 
 bool Analysis::TwoLeptons()
 {
@@ -1144,7 +1142,7 @@ bool Analysis::OppositeCharge()
 
     if ( charge1 == charge2 ) oppositeCharge = false;
     else oppositeCharge = true;
-    this->UpdateCutflow(c_oppositeCharge, oppositeCharge);
+    this->UpdateCutflow( c_oppositeCharge, oppositeCharge );
 
     return oppositeCharge;
 }
@@ -1201,8 +1199,8 @@ bool Analysis::SufficientJets()
     this->UpdateCutflow( c_jets, sufficientJets );
     return sufficientJets;
 }
-//
-//
+
+
 // bool Analysis::SufficientMll(std::pair< TLorentzVector > p_l)
 // {
 //     // $m_{ll} > 15$ GeV: suppress hadronic background, e.g. $J/Psi$
@@ -1226,16 +1224,16 @@ void Analysis::SetDataDirectory()
 {
     // sets directory based on hostname
 
-    char hostname[1024];
-    hostname[1023] = '\0';
-    gethostname(hostname, 1023);
-    std::string Hostname(hostname);
+    char hostname[ 1024 ];
+    hostname[ 1023 ] = '\0';
+    gethostname( hostname, 1023 );
+    std::string Hostname( hostname );
 
-    if ( Hostname == "Sunder")
+    if ( Hostname == "Sunder" )
         m_dataDirectory = "/Users/declan/Data/zprime";
-    else if ( (Hostname.find("lxplus") != std::string::npos) || (Hostname.find("cern") != std::string::npos))
+    else if ( ( Hostname.find( "lxplus" ) != std::string::npos ) || (Hostname.find( "cern" ) != std::string::npos ) )
         m_dataDirectory = "/afs/cern.ch/work/d/demillar/zprime";
-    else if ( (Hostname.find("cyan") != std::string::npos) || (Hostname.find("blue") != std::string::npos) || (Hostname.find("green") != std::string::npos))
+    else if ( ( Hostname.find( "cyan" ) != std::string::npos ) || (Hostname.find( "blue" ) != std::string::npos ) || ( Hostname.find( "green" ) != std::string::npos ) )
         m_dataDirectory = "/scratch/dam1g09/zprime";
     else
         std::cout << "Hostname " << Hostname << " not recognised.\n";
@@ -1257,31 +1255,31 @@ void Analysis::ResetCounters()
 void Analysis::GetBranches()
 {
     std::cout << "Fetching branches ...\n";
-    b_Jet = m_tree->UseBranch("Jet");
-    b_Electron = m_tree->UseBranch("Electron");
-    b_Muon = m_tree->UseBranch("Muon");
-    b_MissingET = m_tree->UseBranch("MissingET");
-    b_ScalarHT = m_tree->UseBranch("ScalarHT");
+    b_Jet = m_tree->UseBranch( "Jet" );
+    b_Electron = m_tree->UseBranch( "Electron" );
+    b_Muon = m_tree->UseBranch( "Muon" );
+    b_MissingET = m_tree->UseBranch( "MissingET" );
+    b_ScalarHT = m_tree->UseBranch( "ScalarHT" );
 }
 
 
 void Analysis::GetGenerationCrossSection( int proc_id )
 {
     std::cout << "process id = " << proc_id << "\n";
-    std::cout << "file = " << std::get<0>(m_processes->at( proc_id ) )<< "\n";
+    std::cout << "file = " << std::get<0>( m_processes->at( proc_id ) )<< "\n";
     std::cout << "Getting generation cross section ";
-    std::string proc_filename = std::get< 0 >( m_processes->at( proc_id ) );
+    std::string proc_filename = std::get<0>( m_processes->at( proc_id ) );
     std::cout << "from " << proc_filename << "... \n";
 
     std::ifstream proc_file;
-    proc_file.open(proc_filename);
+    proc_file.open( proc_filename );
     std::cout << "m_processes size = " << m_processes->size() << "\n";
     std::get<3>( m_processes->at( proc_id ) ) = get_parameter( &proc_file );
     std::get<4>( m_processes->at( proc_id ) ) = get_parameter( &proc_file );
     proc_file.close();
     std::cout << "process\n";
-    std::cout << "Generation Cross section = " << std::get<3>( m_processes->at(proc_id) ) << " [fb]\n";
-    std::cout << "uncertainty              = " << std::get<4>( m_processes->at(proc_id) ) << " [fb]\n";
+    std::cout << "Generation Cross section = " << std::get<3>( m_processes->at( proc_id ) ) << " [fb]\n";
+    std::cout << "uncertainty              = " << std::get<4>( m_processes->at( proc_id ) ) << " [fb]\n";
 }
 
 
@@ -1321,7 +1319,7 @@ void Analysis::Loop()
 }
 
 
-void Analysis::EachFile (const std::string& filename )
+void Analysis::EachFile ( const std::string& filename )
 {
     this->SetupTreesForNewFile( filename );
     this->GetBranches();
@@ -1412,7 +1410,7 @@ void Analysis::PrintCutflow()
     std::cout << "Cutflow: \n";
     for ( int cut = 0; cut < m_cuts; cut++ )
     {
-        if ( m_cutflow[cut] == -999 ) continue;
+        if ( m_cutflow[ cut ] == -999 ) continue;
 
         h_cutflow->SetBinContent( cut + 1, m_cutflow[ cut ] );
         h_cutflow->GetXaxis()->SetBinLabel( cut + 1, m_cutNames[ cut ].c_str() );
