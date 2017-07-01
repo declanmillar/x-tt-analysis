@@ -1284,11 +1284,11 @@ void Analysis::GetGenerationCrossSection( int proc_id )
 void Analysis::GetProcessWeight( int proc_id )
 {
     int nproc = std::get<2>( m_processes->at( proc_id ) );
-    std::cout << "nproc = " << nproc << "\n";
+    if ( m_debug ) std::cout << "nproc = " << nproc << "\n";
     int nevents = m_nevents;
-    std::cout << "Events: " << nevents << "\n";
+    std::cout << "Number of events = " << nevents << "\n";
     std::get<5>( m_processes->at( proc_id ) ) = 1.0 * std::get<3>( m_processes->at( proc_id ) ) / ( nevents * nproc );
-    std::cout << "Event weight: "<< std::get<5>( m_processes->at( proc_id ) ) << "\n";
+    std::cout << "Event weight = "<< std::get<5>( m_processes->at( proc_id ) ) << "\n";
 }
 
 
