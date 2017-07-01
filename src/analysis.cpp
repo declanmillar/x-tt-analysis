@@ -440,7 +440,7 @@ void Analysis::SetupInputFiles()
                     nfiles++;
                     std::tuple< std::string, int > input = std::make_tuple( m_dataDirectory + "/" + i->path().filename().string(), proc_id );
                     m_input->push_back( input );
-                    if ( nfiles < 10 ) std::cout << "Input " << nfiles << ":         " << std::get<0>( input );
+                    if ( nfiles < 10 ) std::cout << "Input " << nfiles << ":        " << std::get<0>( input );
                     else if ( nfiles < 100 ) std::cout << "Input " << nfiles << ":       " << std::get<0>( input );
                     else std::cout << "Input " << nfiles << ":      " << std::get<0>( input );
                     std::cout << ", process: " << std::get<1>( input ) << "\n";
