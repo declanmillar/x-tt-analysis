@@ -48,7 +48,7 @@ void Analysis::EachEvent( double weight )
     // if ( !this->SufficientMll() ) return;
     // if ( !this->OutsideZmass() ) return;
 
-    std::vector<TLorentzVector> p_b, p_q, p_j;
+    std::vector< TLorentzVector > p_b, p_q, p_j;
 
     for ( int i = 0; i < b_Jet->GetEntries(); i++ )
     {
@@ -161,7 +161,7 @@ void Analysis::EachEvent( double weight )
 
     if ( m_reconstruction == "KIN" )
     {
-        std::vector<TLorentzVector> p_b_hiPt = { p_b_hi.first, p_b_hi.second };
+        std::vector< TLorentzVector > p_b_hiPt = { p_b_hi.first, p_b_hi.second };
         KinematicReconstructer KIN = KinematicReconstructer( m_bmass, m_Wmass, m_tmass );
         bool isSolution = KIN.Reconstruct( p_l, p_b_hiPt, p_q, p_miss );
         p_top = KIN.GetTop();
@@ -187,7 +187,7 @@ void Analysis::EachEvent( double weight )
 
         NeutrinoWeighter nuW = NeutrinoWeighter( 1, p_l.first.Pt() + p_l.first.Phi() ); // 2nd argument is random seed same for specific event
         double weight_max = nuW.Reconstruct( p_l.first, p_l.second, p_b_match.first, p_b_match.second, p_miss.Px(), p_miss.Py(), p_miss.Phi() );
-        if ( weight_max > 0.0)
+        if ( weight_max > 0.0 )
         {
             p_top = nuW.GetTop();
             p_tbar = nuW.GetTbar();
@@ -265,7 +265,7 @@ void Analysis::EachEvent( double weight )
     //         v = -1 * ( p[0] + p[2] + p[3] ).BoostVector();
     //         for ( auto& l : ptop) l.Boost(v);
 
-    //         std::vector<TLorentzVector> patop = p;
+    //         std::vector< TLorentzVector > patop = p;
     //         v = -1 * ( p[1] + p[4] + p[5] ).BoostVector();
     //         for ( auto& l : patop ) l.Boost(v);
 
@@ -316,7 +316,7 @@ void Analysis::EveryEvent( double weight )
     h_nJets->Fill( b_Jet->GetEntries(), weight );
 
     if ( m_debug ) std::cout << "Fetching all jets ...";
-    std::vector<TLorentzVector> p_j;
+    std::vector< TLorentzVector > p_j;
     for ( int i = 0; i < b_Jet->GetEntries(); i++ )
     {
         Jet *jet = ( Jet* ) b_Jet->At(i);
@@ -328,7 +328,7 @@ void Analysis::EveryEvent( double weight )
     }
 
     if ( m_debug ) std::cout << "Fetching all electrons ...";
-    std::vector<TLorentzVector> p_el;
+    std::vector< TLorentzVector > p_el;
     for ( int i = 0; i < b_Electron->GetEntries(); i++ )
     {
         Electron *electron = ( Electron* ) b_Electron->At(i);
@@ -340,7 +340,7 @@ void Analysis::EveryEvent( double weight )
     }
 
     if ( m_debug ) std::cout << "Fetching all muons ...";
-    std::vector<TLorentzVector> p_mu;
+    std::vector< TLorentzVector > p_mu;
     for ( int i = 0; i < b_Muon->GetEntries(); i++ )
     {
         Muon *muon = ( Muon* ) b_Muon->At(i);
