@@ -687,17 +687,17 @@ void Analysis::MakeHistograms()
     h_mvis_all = new TH1D( "mvis_all", "m^{all}_{vis}", 60, 0, 6 );
     h_mvis_all->Sumw2();
 
-    h_pt_alljets = new TH1D( "pT_alljets", "p_{T}^{jets}", 1000, 0, 5000 );
+    h_pt_alljets = new TH1D( "pT_alljets", "p_{T}^{jet}", 1000, 0, 5000 );
     h_pt_alljets->Sumw2();
     h_pt_allel = new TH1D( "pT_allel", "p_{T}^{electron}", 1000, 0, 5000 );
     h_pt_allel->Sumw2();
-    h_pt_allmu = new TH1D( "pT_allmu", "p_{T}^{muon}", 200, 0, 5000 );
+    h_pt_allmu = new TH1D( "pT_allmu", "p_{T}^{muon}", 1000, 0, 5000 );
     h_pt_allmu->Sumw2();
-    h_eta_alljets = new TH1D( "eta_alljets", "#eta^{jets}", 500, 0, 5 );
+    h_eta_alljets = new TH1D( "eta_alljets", "#eta^{jet}", 500, 0, 5.0 );
     h_eta_alljets->Sumw2();
-    h_eta_allel = new TH1D( "eta_allel", "#eta^{jets}", 250, 0, 2.5 );
+    h_eta_allel = new TH1D( "eta_allel", "#eta^{electron}", 250, 0, 2.5 );
     h_eta_allel->Sumw2();
-    h_eta_allmu = new TH1D( "eta_allmu", "#eta^{jets}", 250, 0, 2.5 );
+    h_eta_allmu = new TH1D( "eta_allmu", "#eta^{muon}", 250, 0, 2.5 );
     h_eta_allmu->Sumw2();
 
     h_deltaPhi = new TH1D( "delta_phi", "#Delta#phi", 10, 0, 1 );
