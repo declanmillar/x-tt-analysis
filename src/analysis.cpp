@@ -389,7 +389,7 @@ void Analysis::SetupInputFiles()
 
     std::string E = std::to_string( m_energy );
 
-    std::vector<std::string> initials = { "gg", "qq", "dd", "uu" };
+    std::vector< std::string > initials = { "gg", "qq", "dd", "uu" };
 
     int proc_id = 0;
     for ( auto initial : initials )
@@ -438,15 +438,13 @@ void Analysis::SetupInputFiles()
                 {
                     // std::cout << "ends .root: " << i->path().filename().string() << "\n";
                     nfiles++;
-                    std::tuple<std::string, int> input = std::make_tuple( m_dataDirectory + "/" + i->path().filename().string(), proc_id );
+                    std::tuple< std::string, int > input = std::make_tuple( m_dataDirectory + "/" + i->path().filename().string(), proc_id );
                     m_input->push_back( input );
                     if ( nfiles < 10 ) std::cout << "Input " << nfiles << ":        " << std::get<0>( input );
                     else std::cout << "Input " << nfiles << ":       " << std::get<0>( input );
                     std::cout << ", process: " << std::get<1>( input ) << "\n";
                 }
             }
-
-            // FIXME hard coded grid file name
             std::string proc_filename = m_dataDirectory + "/" + initial + intermediates + "-tt-bbllvv" + "_" + model + "_" + E + "TeV" + "_" + m_pdf + options + ".txt";
             std::cout << "Adding process: " << proc_filename << " ...\n";
             std::tuple< std::string, int, int, double, double, double > process = std::make_tuple( proc_filename, proc_id, nfiles, -999, -999, -999 );
