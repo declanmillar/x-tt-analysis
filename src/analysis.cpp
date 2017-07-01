@@ -42,7 +42,7 @@ void Analysis::EachEvent( double weight )
     // if ( !this->SufficientJets() ) return;
     if ( !this->SufficientBtags() ) return;
     if ( !this->SufficientHT() ) return;
-    if ( !this->TwoLeptons() ) return;
+    if ( !this->AtLeastTwoLeptons() ) return;
     if ( !this->OppositeCharge() ) return;
     if ( !this->SufficientMET() ) return;
     // if ( !this->SufficientMll() ) return;
@@ -54,8 +54,8 @@ void Analysis::EachEvent( double weight )
     {
         Jet *jet = ( Jet* ) b_Jet->At(i);
         TLorentzVector p;
-        p.SetPtEtaPhiM(jet->PT, jet->Eta, jet->Phi, jet->Mass);
-        // if ( jet->BTag & (1 << i) )
+        p.SetPtEtaPhiM( jet->PT, jet->Eta, jet->Phi, jet->Mass );
+        // if ( jet->BTag & ( 1 << i ) )
         if ( jet->BTag > 0 )
         {
             if ( m_debug ) std::cout << "b-jet pT = " << p.Pt() << "\n";
@@ -74,7 +74,7 @@ void Analysis::EachEvent( double weight )
         h_eta_jets->Fill( p.Eta(), weight );
     }
 
-    std::pair<TLorentzVector, TLorentzVector> p_l;
+    std::pair< TLorentzVector, TLorentzVector > p_l;
     if ( m_channel == "electron" )
     {
         Electron *electron1 = ( Electron* ) b_Electron->At(0);
@@ -154,23 +154,23 @@ void Analysis::EachEvent( double weight )
         std::cout << "p_miss = "; p_miss.Print();
     }
 
-    std::vector<TLorentzVector> p_bv;
+    std::vector< TLorentzVector > p_bv;
     TLorentzVector p_b1, p_b2, p_v1, p_v2, ttbar, p_top, p_tbar, p_ttbar, p_W1, p_W2;
 
-    std::pair<TLorentzVector, TLorentzVector> p_b_hi = TwoHighestPt(p_b);
+    std::pair< TLorentzVector, TLorentzVector > p_b_hi = TwoHighestPt( p_b );
 
     if ( m_reconstruction == "KIN" )
     {
         std::vector<TLorentzVector> p_b_hiPt = { p_b_hi.first, p_b_hi.second };
         KinematicReconstructer KIN = KinematicReconstructer( m_bmass, m_Wmass, m_tmass );
         bool isSolution = KIN.Reconstruct( p_l, p_b_hiPt, p_q, p_miss );
-        p_top   = KIN.GetTop();
-        p_tbar  = KIN.GetTbar();
+        p_top = KIN.GetTop();
+        p_tbar = KIN.GetTbar();
         p_ttbar = KIN.GetTtbar();
-        p_b1    = KIN.GetB();
-        p_b2    = KIN.GetBbar();
-        p_v1    = KIN.GetNu();
-        p_v2    = KIN.GetNubar();
+        p_b1 = KIN.GetB();
+        p_b2 = KIN.GetBbar();
+        p_v1 = KIN.GetNu();
+        p_v2 = KIN.GetNubar();
         if ( isSolution )
         {
             this->UpdateCutflow( c_realSolutions, true );
@@ -189,13 +189,13 @@ void Analysis::EachEvent( double weight )
         double weight_max = nuW.Reconstruct( p_l.first, p_l.second, p_b_match.first, p_b_match.second, p_miss.Px(), p_miss.Py(), p_miss.Phi() );
         if ( weight_max > 0.0)
         {
-            p_top   = nuW.GetTop();
-            p_tbar  = nuW.GetTbar();
+            p_top = nuW.GetTop();
+            p_tbar = nuW.GetTbar();
             p_ttbar = nuW.GetTtbar();
-            p_b1    = nuW.GetB();
-            p_b2    = nuW.GetBbar();
-            p_v1    = nuW.GetNu();
-            p_v2    = nuW.GetNubar();
+            p_b1 = nuW.GetB();
+            p_b2 = nuW.GetBbar();
+            p_v1 = nuW.GetNu();
+            p_v2 = nuW.GetNubar();
         }
 
         TLorentzVector p_W1 = p_l.first + p_v1;
@@ -261,17 +261,17 @@ void Analysis::EachEvent( double weight )
     //     if ( n == 6 )
     // {
 
-    //         std::vector<TLorentzVector> ptop = p;
-    //         v = -1 * (p[0] + p[2] + p[3]).BoostVector();
+    //         std::vector< TLorentzVector > ptop = p;
+    //         v = -1 * ( p[0] + p[2] + p[3] ).BoostVector();
     //         for ( auto& l : ptop) l.Boost(v);
 
     //         std::vector<TLorentzVector> patop = p;
-    //         v = -1 * (p[1] + p[4] + p[5]).BoostVector();
-    //         for ( auto& l : patop) l.Boost(v);
+    //         v = -1 * ( p[1] + p[4] + p[5] ).BoostVector();
+    //         for ( auto& l : patop ) l.Boost(v);
 
 
-    //         double costheta_tl1 = cos(ptop[2].Angle(pcm_t.Vect()));
-    //         double costheta_tl2 = cos(patop[4].Angle(pcm_tbar.Vect()));
+    //         double costheta_tl1 = cos( ptop[2].Angle( pcm_t.Vect() ) );
+    //         double costheta_tl2 = cos( patop[4].Angle( pcm_tbar.Vect() ) );
     //         double cos1cos2 = costheta_tl1 * costheta_tl2;
 
     //         h_cosTheta1->Fill( costheta_tl1, weight );
@@ -280,7 +280,7 @@ void Analysis::EachEvent( double weight )
     //         h_deltaR_bW->Fill( deltaR_bW, weight );
     //         h_deltaR_max->Fill( *deltaR_max, weight );
 
-    //         for ( int i = 0; i < (int) deltaRs.size(); i++ )
+    //         for ( int i = 0; i < ( int) deltaRs.size(); i++ )
     //             h_deltaRs[i]->Fill( deltaRs[i], weight );
 
     //         for ( int i = 0; i < (int) p.size(); i++ )
@@ -289,17 +289,17 @@ void Analysis::EachEvent( double weight )
     //             h_pt[i]->Fill( p[i].Pt(), weight );
     //         }
 
-    //         if ( costheta_tl1 > 0) h_mtt_tlF->Fill( mtt, weight );
-    //         if ( costheta_tl2 < 0) h_mtt_tlB->Fill( mtt, weight );
+    //         if ( costheta_tl1 > 0 ) h_mtt_tlF->Fill( mtt, weight );
+    //         if ( costheta_tl2 < 0 ) h_mtt_tlB->Fill( mtt, weight );
 
-    //         if ( costheta_tl1 > 0) h_mtt_lF->Fill( mtt, weight );
-    //         if ( costheta_tl1 < 0) h_mtt_lB->Fill( mtt, weight );
+    //         if ( costheta_tl1 > 0 ) h_mtt_lF->Fill( mtt, weight );
+    //         if ( costheta_tl1 < 0 ) h_mtt_lB->Fill( mtt, weight );
 
-    //         if ( phil < m_pi and phil > phi0) h_mtt_philF->Fill( mtt, weight );
-    //         if ( phil < phi0) h_mtt_philB->Fill( mtt, weight );
+    //         if ( phil < m_pi and phil > phi0 ) h_mtt_philF->Fill( mtt, weight );
+    //         if ( phil < phi0 ) h_mtt_philB->Fill( mtt, weight );
 
-    //         if ( El > E0) h_mtt_ElF->Fill( mtt, weight );
-    //         if ( El < E0) h_mtt_ElB->Fill( mtt, weight );
+    //         if ( El > E0 ) h_mtt_ElF->Fill( mtt, weight );
+    //         if ( El < E0 ) h_mtt_ElB->Fill( mtt, weight );
 
     //         h2_mtt_cosThetaStar->Fill( mtt, costhetastar, weight );
     //         h2_mtt_deltaPhi->Fill( mtt, deltaPhi, weight );
@@ -422,17 +422,17 @@ void Analysis::SetupInputFiles()
             {
 
                 if ( !boost::filesystem::is_regular_file( i->status() ) ) continue;
-                if ( m_debug) std::cout << "is file: " << i->path().filename().string() << "\n";
+                if ( m_debug ) std::cout << "is file: " << i->path().filename().string() << "\n";
 
-                if ( !boost::contains( i->path().filename().string(), filename) ) continue;
-                if ( m_debug) std::cout << "contains " << filename << ": " << i->path().filename().string() << "\n";
+                if ( !boost::contains( i->path().filename().string(), filename ) ) continue;
+                if ( m_debug ) std::cout << "contains " << filename << ": " << i->path().filename().string() << "\n";
 
                 if ( boost::contains( i->path().filename().string(), "KIN" ) ) continue;
                 if ( boost::contains( i->path().filename().string(), "NuW" ) ) continue;
-                if ( m_debug) std::cout << "not output: " << i->path().filename().string() << "\n";
+                if ( m_debug ) std::cout << "not output: " << i->path().filename().string() << "\n";
 
                 if ( !boost::contains( i->path().filename().string(), "_pythia_delphes" ) ) continue;
-                if ( m_debug) std::cout << "has _pythia_delphes suffix: " << i->path().filename().string() << "\n";
+                if ( m_debug ) std::cout << "has _pythia_delphes suffix: " << i->path().filename().string() << "\n";
 
                 if ( i->path().extension() == ".root" )
                 {
@@ -449,7 +449,7 @@ void Analysis::SetupInputFiles()
             // FIXME hard coded grid file name
             std::string proc_filename = m_dataDirectory + "/" + initial + intermediates + "-tt-bbllvv" + "_" + model + "_" + E + "TeV" + "_" + m_pdf + options + ".txt";
             std::cout << "Adding process: " << proc_filename << " ...\n";
-            std::tuple<std::string, int, int, double, double, double> process = std::make_tuple( proc_filename, proc_id, nfiles, -999, -999, -999 );
+            std::tuple< std::string, int, int, double, double, double > process = std::make_tuple( proc_filename, proc_id, nfiles, -999, -999, -999 );
             m_processes->push_back( process );
             proc_id++;
         }
@@ -496,10 +496,10 @@ void Analysis::SetupOutputFiles()
     m_outputFilename = m_outputFilename + "_" + m_reconstruction + m_tag;
     if ( m_reconstruction == 2 && m_btags != 2 ) m_outputFilename += "_b" + std::to_string( m_btags );
     std::string ytt = std::to_string( m_ytt );
-    if ( m_ytt > 0 ) m_outputFilename += "_y" + ytt.erase( ytt.find_last_not_of('0') + 1, std::string::npos );
+    if ( m_ytt > 0 ) m_outputFilename += "_y" + ytt.erase( ytt.find_last_not_of( '0' ) + 1, std::string::npos );
     if ( m_Emin >= 0 || m_Emax >= 0 ) m_outputFilename += "_E" + std::to_string( m_Emin ) + "-" + std::to_string( m_Emax );
     std::string eff = std::to_string( m_efficiency );
-    if ( m_efficiency < 1.0 ) m_outputFilename += "_e" + eff.erase( eff.find_last_not_of('0') + 1, std::string::npos );
+    if ( m_efficiency < 1.0 ) m_outputFilename += "_e" + eff.erase( eff.find_last_not_of( '0' ) + 1, std::string::npos );
     if ( m_luminosity > 0 ) m_outputFilename += "_L" + std::to_string( m_luminosity );
     if ( m_fid ) m_outputFilename += "_fid";
     if ( m_iso ) m_outputFilename += "_iso";
@@ -522,21 +522,21 @@ void Analysis::PostLoop()
 
 void Analysis::CheckResults()
 {
-    double crossSection = h_mtt->Integral("width");
+    double crossSection = h_mtt->Integral( "width" );
     std::cout << "Analysis cross section: " << crossSection << " [fb]\n";
 }
 
 
 TH1D* Analysis::Asymmetry( const std::string& name, const std::string& title, TH1D* h1, TH1D* h2 )
 {
-    TH1D* h_numerator = (TH1D*) h1->Clone( name.data() );
-    TH1D* h_denominator = (TH1D*) h1->Clone();
+    TH1D* h_numerator = ( TH1D* ) h1->Clone( name.data() );
+    TH1D* h_denominator = ( TH1D* ) h1->Clone();
     h_numerator->SetTitle( title.data() );
-    h_numerator->Add(h2, -1);
-    h_denominator->Add(h2, 1);
+    h_numerator->Add( h2, -1 );
+    h_denominator->Add( h2, 1 );
     h_numerator->Divide( h_denominator );
     delete h_denominator;
-    if ( m_useLumi) this->AsymmetryUncertainty( h_numerator, h1, h2 );
+    if ( m_useLumi ) this->AsymmetryUncertainty( h_numerator, h1, h2 );
     return h_numerator;
 }
 
@@ -550,9 +550,9 @@ void Analysis::AsymmetryUncertainty( TH1D* hA, TH1D* h1, TH1D* h2 )
         N1 = h1->GetBinContent(i);
         N2 = h2->GetBinContent(i);
         N = N1 + N2;
-        if ( N > 0) dA = sqrt( (1.0 - A * A) / N);
+        if ( N > 0 ) dA = sqrt( ( 1.0 - A * A ) / N );
         else dA = 0;
-        hA->SetBinError(i, dA);
+        hA->SetBinError( i, dA );
     }
 }
 
@@ -822,7 +822,7 @@ void Analysis::MakeDistributions()
     // this->MakeDistribution1D( h_mtt_tF, "TeV" );
     // this->MakeDistribution1D( h_mtt_tB, "TeV" );
 
-    // h_AtFB = this->Asymmetry("AtFB", "A^{t}_{FB^{*}}", h_mtt_tF, h_mtt_tB);
+    // h_AtFB = this->Asymmetry( "AtFB", "A^{t}_{FB^{*}}", h_mtt_tF, h_mtt_tB );
     // h_AtFB->GetYaxis()->SetTitle( h_AtFB->GetTitle() );
     // h_AtFB->GetXaxis()->SetTitle( "m_{tt} [TeV]" );
     // h_AtFB->Write();
@@ -867,35 +867,35 @@ void Analysis::MakeDistributions()
     // this->MakeDistribution1D( h_mtt_tlF, "TeV" );
     // this->MakeDistribution1D( h_mtt_tlB, "TeV" );
 
-    // h_AtlFB = this->Asymmetry("AtlFB", "A^{tl}_{FB^*}", h_mtt_tlF, h_mtt_tlB);
+    // h_AtlFB = this->Asymmetry( "AtlFB", "A^{tl}_{FB^*}", h_mtt_tlF, h_mtt_tlB );
     // h_AtlFB->GetYaxis()->SetTitle( h_AtlFB->GetTitle() );
     // h_AtlFB->GetXaxis()->SetTitle( "m_{tt} [TeV]" );
-    // h_AtlFB->GetYaxis()->SetTitleOffset(0.9);
-    // h_AtlFB->GetXaxis()->SetTitleOffset(0.95);
+    // h_AtlFB->GetYaxis()->SetTitleOffset( 0.9 );
+    // h_AtlFB->GetXaxis()->SetTitleOffset( 0.95 );
     // h_AtlFB->Write();
 
     // this->MakeDistribution1D( h_mtt_lF, "TeV" );
     // this->MakeDistribution1D( h_mtt_lB, "TeV" );
 
-    // h_Ap = this->Asymmetry("Ap", "A_{P}", h_mtt_lF, h_mtt_lB);
+    // h_Ap = this->Asymmetry( "Ap", "A_{P}", h_mtt_lF, h_mtt_lB );
     // h_Ap->GetYaxis()->SetTitle( h_Ap->GetTitle() );
     // h_Ap->GetXaxis()->SetTitle( "m_{tt} [TeV]" );
-    // h_Ap->GetYaxis()->SetTitleOffset(0.9);
-    // h_Ap->GetXaxis()->SetTitleOffset(0.95);
+    // h_Ap->GetYaxis()->SetTitleOffset( 0.9 );
+    // h_Ap->GetXaxis()->SetTitleOffset( 0.95 );
     // h_Ap->Write();
 
-    // h_AlEl = this->Asymmetry("AlEl", "A^{l}_{E_l}", h_mtt_ElF, h_mtt_ElB);
+    // h_AlEl = this->Asymmetry( "AlEl", "A^{l}_{E_l}", h_mtt_ElF, h_mtt_ElB );
     // h_AlEl->GetYaxis()->SetTitle( h_AlEl->GetTitle() );
     // h_AlEl->GetXaxis()->SetTitle( "m_{tt} [TeV]" );
-    // h_AlEl->GetYaxis()->SetTitleOffset(0.9);
-    // h_AlEl->GetXaxis()->SetTitleOffset(0.95);
+    // h_AlEl->GetYaxis()->SetTitleOffset( 0.9 );
+    // h_AlEl->GetXaxis()->SetTitleOffset( 0.95 );
     // h_AlEl->Write();
 
-    // h_Aphil = this->Asymmetry("Aphil", "A^{l}_{#phi}", h_mtt_philF, h_mtt_philB);
+    // h_Aphil = this->Asymmetry( "Aphil", "A^{l}_{#phi}", h_mtt_philF, h_mtt_philB );
     // h_Aphil->GetYaxis()->SetTitle( h_Aphil->GetTitle() );
     // h_Aphil->GetXaxis()->SetTitle( "m_{tt} [TeV]" );
-    // h_Aphil->GetYaxis()->SetTitleOffset(0.9);
-    // h_Aphil->GetXaxis()->SetTitleOffset(0.95);
+    // h_Aphil->GetYaxis()->SetTitleOffset( 0.9 );
+    // h_Aphil->GetXaxis()->SetTitleOffset( 0.95 );
     // h_Aphil->Write();
 
     // this->MakeDistribution1D( h_pv1x, "GeV" );
@@ -972,7 +972,7 @@ void Analysis::MakeDistribution1D( TH1D* h, const std::string& units )
     {
         ytitle = "Generated events";
     }
-    if ( units != "") xunits = " [" + units + "]";
+    if ( units != "" ) xunits = " [" + units + "]";
     else xunits = "";
     h->GetYaxis()->SetTitle( ( ytitle + yunits ).data() );
     h->GetXaxis()->SetTitle( ( h->GetTitle() + xunits ).data() );
@@ -998,7 +998,7 @@ void Analysis::MakeDistribution2D( TH2D* h, std::string xtitle, std::string xuni
                 for ( int j = 1; j < h->GetNbinsY() + 1; j++ )
                 {
                     h->SetBinError( i, j, sqrt( h->GetBinContent( i, j ) ) );
-                    // std::cout << "N  = " << "" << h->GetBinContent(i, j) << ", dN = " << "" << h->GetBinError(i, j) << "\n";
+                    // std::cout << "N  = " << "" << h->GetBinContent( i, j ) << ", dN = " << "" << h->GetBinError( i, j ) << "\n";
                 }
             }
             // std::cout << "\n";
@@ -1059,7 +1059,7 @@ void Analysis::WriteHistograms()
     TObjArray slices1;
     this->NormalizeSliceY( h2_mtt_cosTheta1 );
     h2_mtt_cosTheta1->FitSlicesY( func, 0, -1, 0, "QRN", &slices1 );
-    for ( auto slice : slices1) slice->Write();
+    for ( auto slice : slices1 ) slice->Write();
     TH1D* h_AL1 = ( TH1D* ) slices1[0]->Clone( "AL1" );
     slices1.Clear();
     h_AL1->Scale( 2 / h2_mtt_cosTheta1->GetYaxis()->GetBinWidth(1) );
@@ -1071,7 +1071,7 @@ void Analysis::WriteHistograms()
     TObjArray slices2;
     this->NormalizeSliceY( h2_mtt_cosTheta2 );
     h2_mtt_cosTheta2->FitSlicesY( func, 0, -1, 0, "QRN", &slices2 );
-    for ( auto slice : slices2) slice->Write();
+    for ( auto slice : slices2 ) slice->Write();
     TH1D* h_AL2 = (TH1D*) slices2[0]->Clone( "AL2" );
     slices2.Clear();
     h_AL2->Scale( 2 / h2_mtt_cosTheta2->GetYaxis()->GetBinWidth(1) );
@@ -1100,7 +1100,7 @@ void Analysis::NormalizeSliceY(TH2D* h)
 // Reject muon pair signature
 // $|m_{ll}-m_Z| > 10$ \si{\giga\electronvolt} & Suppress DY+j's background
 
-bool Analysis::TwoLeptons()
+bool Analysis::AtLeastTwoLeptons()
 {
     bool twoLeptons;
     if ( m_channel == "electron" )
@@ -1334,8 +1334,7 @@ Analysis::~Analysis()
 
 Long64_t Analysis::TotalEvents()
 {
-    if ( m_tree != 0 )
-    {return m_tree->GetEntries();}
+    if ( m_tree != 0 ) return m_tree->GetEntries();
     return -999;
 }
 
@@ -1343,8 +1342,7 @@ Long64_t Analysis::TotalEvents()
 Long64_t Analysis::IncrementEvent(Long64_t i)
 {
     Long64_t ev(-1);
-    if ( m_tree != 0 )
-    {ev = m_tree->ReadEntry(i);}
+    if ( m_tree != 0 ) ev = m_tree->ReadEntry(i);
     return ev;
 }
 
@@ -1379,8 +1377,8 @@ double Analysis::TotalAsymmetry( TH1D* h_A, TH1D* h_B )
 
 void Analysis::InitialiseCutflow()
 {
-    m_cutflow = std::vector<int>( m_cuts, -999 );
-    m_cutNames = std::vector<std::string>(
+    m_cutflow = std::vector< int >( m_cuts, -999 );
+    m_cutNames = std::vector< std::string >(
     m_cuts,                           "no name          ");
     m_cutNames[ c_events ]          = "Events           ";
     m_cutNames[ c_twoLeptons ]      = "Two leptons      ";
