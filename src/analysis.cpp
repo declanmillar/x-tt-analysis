@@ -18,8 +18,9 @@ Analysis::Analysis( const std::string& model, const std::string& process, const 
     m_luminosity( luminosity ),
     m_reconstruction( reconstruction ),
     m_tag( tag ),
-    m_outputFile( nullptr ),
+    m_output( nullptr ),
     m_input( nullptr ),
+    m_processes( nullptr ),
     m_chain( nullptr ),
     m_tree( nullptr)
 {
@@ -40,20 +41,96 @@ void Analysis::EachEvent( double weight )
 
     this->EveryEvent( weight );
 
+    m_missingET = ( MissingET* ) b_MissingET->At(0);
+    if ( !this->SufficientMET() ) return;
+
+    m_electron = new std::vector< Electron* >;
+    for ( int i = 0; i < b_Electron->GetEntries(); i++ )
+    {
+        bool passed = false;
+        Electron* electron = ( Electron* ) b_Electron->At(i);
+        if ( electron->PT > 25.0 && electron->Eta < 2.47 ) passed = true;
+        if ( passed ) m_electron->push_back( electron );
+    }
+
+    m_muon = new std::vector< Muon* >;
+    for ( int i = 0; i < b_Muon->GetEntries(); i++ )
+    {
+        bool passed = false;
+        Muon* muon = ( Muon* ) b_Muon->At(i);
+        if ( muon->PT > 25.0 && muon->Eta < 2.5 ) passed = true;
+        if ( passed ) m_muon->push_back( muon );
+    }
+
+    if ( !this->AtLeastTwoLeptons() ) return;
+    if ( !this->OppositeCharge() ) return;
+
+    m_jet = new std::vector< Jet* >;
+    for ( int i = 0; i < b_Jet->GetEntries(); i++ )
+    {
+        bool passed = false;
+        Jet *jet = ( Jet* ) b_Jet->At(i);
+        if ( jet->PT > 25.0 && jet->Eta < 2.5 ) passed = true;
+        if ( passed ) m_jet->push_back( jet );
+    }
+
     // if ( !this->SufficientJets() ) return;
     if ( !this->SufficientBtags() ) return;
     if ( !this->SufficientHT() ) return;
-    if ( !this->AtLeastTwoLeptons() ) return;
-    if ( !this->OppositeCharge() ) return;
-    if ( !this->SufficientMET() ) return;
+
     // if ( !this->SufficientMll() ) return;
     // if ( !this->OutsideZmass() ) return;
 
-    std::vector< TLorentzVector > p_b, p_q, p_j;
+    TLorentzVector p_miss;
+    double ETmiss = m_missingET->MET;
+    p_miss.SetPtEtaPhiM( ETmiss, m_missingET->Eta, m_missingET->Phi, 0.0 );
 
-    for ( int i = 0; i < b_Jet->GetEntries(); i++ )
+    std::pair< TLorentzVector, TLorentzVector > p_l;
+    if ( m_channel == "electron" )
     {
-        Jet *jet = ( Jet* ) b_Jet->At(i);
+        Electron *electron1 = m_electron->at(0);
+        Electron *electron2 = m_electron->at(1);
+
+        double charge1 = electron1->Charge;
+        double charge2 = electron2->Charge;
+
+        if ( charge1 > 0 )
+        {
+            p_l.first.SetPtEtaPhiM( electron1->PT, electron1->Eta, electron1->Phi, 0.0 );
+            p_l.second.SetPtEtaPhiM( electron2->PT, electron2->Eta, electron2->Phi, 0.0 );
+        }
+        else
+        {
+            p_l.second.SetPtEtaPhiM( electron1->PT, electron1->Eta, electron1->Phi, 0.0 );
+            p_l.first.SetPtEtaPhiM( electron2->PT, electron2->Eta, electron2->Phi, 0.0 );
+        }
+    }
+    else if ( m_channel == "muon" )
+    {
+        Muon *muon1 = ( Muon* ) m_muon->at(0);
+        Muon *muon2 = ( Muon* ) m_muon->at(1);
+
+        double charge1 = muon1->Charge;
+        double charge2 = muon2->Charge;
+
+        if ( charge1 > 0 )
+        {
+            p_l.first.SetPtEtaPhiM( muon1->PT, muon1->Eta, muon1->Phi, 0.0 );
+            p_l.second.SetPtEtaPhiM( muon2->PT, muon2->Eta, muon2->Phi, 0.0 );
+        }
+        else
+        {
+            p_l.second.SetPtEtaPhiM( muon1->PT, muon1->Eta, muon1->Phi, 0.0 );
+            p_l.first.SetPtEtaPhiM( muon2->PT, muon2->Eta, muon2->Phi, 0.0 );
+        }
+    }
+    if ( m_debug ) p_l.first.Print();
+    if ( m_debug ) p_l.second.Print();
+
+    std::vector< TLorentzVector > p_j, p_b, p_q;
+    for ( int i = 0; i < m_jet->size(); i++ )
+    {
+        Jet *jet = ( Jet* ) m_jet->at(i);
         TLorentzVector p;
         p.SetPtEtaPhiM( jet->PT, jet->Eta, jet->Phi, jet->Mass );
         // if ( jet->BTag & ( 1 << i ) )
@@ -74,53 +151,6 @@ void Analysis::EachEvent( double weight )
         h_pt_jets->Fill( p.Pt(), weight );
         h_eta_jets->Fill( p.Eta(), weight );
     }
-
-    std::pair< TLorentzVector, TLorentzVector > p_l;
-    if ( m_channel == "electron" )
-    {
-        Electron *electron1 = ( Electron* ) b_Electron->At(0);
-        Electron *electron2 = ( Electron* ) b_Electron->At(1);
-
-        double charge1 = electron1->Charge;
-        double charge2 = electron2->Charge;
-
-        if ( charge1 > 0 )
-        {
-            p_l.first.SetPtEtaPhiM( electron1->PT, electron1->Eta, electron1->Phi, 0.0 );
-            p_l.second.SetPtEtaPhiM( electron2->PT, electron2->Eta, electron2->Phi, 0.0 );
-        }
-        else
-        {
-            p_l.second.SetPtEtaPhiM( electron1->PT, electron1->Eta, electron1->Phi, 0.0 );
-            p_l.first.SetPtEtaPhiM( electron2->PT, electron2->Eta, electron2->Phi, 0.0 );
-        }
-    }
-    else if ( m_channel == "muon" )
-    {
-        Muon *muon1 = ( Muon* ) b_Muon->At(0);
-        Muon *muon2 = ( Muon* ) b_Muon->At(1);
-
-        double charge1 = muon1->Charge;
-        double charge2 = muon2->Charge;
-
-        if ( charge1 > 0 )
-        {
-            p_l.first.SetPtEtaPhiM( muon1->PT, muon1->Eta, muon1->Phi, 0.0 );
-            p_l.second.SetPtEtaPhiM( muon2->PT, muon2->Eta, muon2->Phi, 0.0 );
-        }
-        else
-        {
-            p_l.second.SetPtEtaPhiM( muon1->PT, muon1->Eta, muon1->Phi, 0.0 );
-            p_l.first.SetPtEtaPhiM( muon2->PT, muon2->Eta, muon2->Phi, 0.0 );
-        }
-    }
-    if ( m_debug ) p_l.first.Print();
-    if ( m_debug ) p_l.second.Print();
-
-    MissingET *missingET = ( MissingET* ) b_MissingET->At(0);
-    TLorentzVector p_miss;
-    double ETmiss = missingET->MET;
-    p_miss.SetPtEtaPhiM( ETmiss, missingET->Eta, missingET->Phi, 0.0 );
 
     // ScalarHT *scalarHT = (ScalarHT*) b_ScalarHT->At(0);
     // double HT = scalarHT->HT;
@@ -307,6 +337,15 @@ void Analysis::EachEvent( double weight )
     //         h2_mtt_cosTheta1->Fill( mtt, costheta_tl1, weight );
     //         h2_mtt_cosTheta2->Fill( mtt, costheta_tl2, weight );
     //         h2_mtt_cos1cos2->Fill( mtt, cos1cos2, weight );
+    this->CleanupEvent();
+}
+
+void Analysis::CleanupEvent()
+{
+    delete m_electron;
+    delete m_muon;
+    delete m_jet;
+    delete m_missingET;
 }
 
 void Analysis::EveryEvent( double weight )
@@ -395,8 +434,8 @@ void Analysis::SetupInputFiles()
     int proc_id = 0;
     for ( auto initial : initials )
     {
-        std::size_t pos = m_process.find("-tt");
-        std::string final_state = m_process.substr(pos);
+        std::size_t pos = m_process.find( "-tt" );
+        std::string final_state = m_process.substr( pos );
         if ( boost::contains( m_process, initial ) )
         {
             std::string model = "";
@@ -491,20 +530,20 @@ void Analysis::SetupOutputFiles()
 {
     std::string E = std::to_string( m_energy );
 
-    m_outputFilename = m_dataDirectory + "/" + m_process + "_" + m_model + "_" + E + "TeV" + "_" + m_pdf + m_options;
-    m_outputFilename += "_pythia_delphes";
-    m_outputFilename = m_outputFilename + "_" + m_reconstruction + m_tag;
-    if ( m_reconstruction == 2 && m_btags != 2 ) m_outputFilename += "_b" + std::to_string( m_btags );
+    m_outputName = m_dataDirectory + "/" + m_process + "_" + m_model + "_" + E + "TeV" + "_" + m_pdf + m_options;
+    m_outputName += "_pythia_delphes";
+    m_outputName = m_outputName + "_" + m_reconstruction + m_tag;
+    if ( m_reconstruction == 2 && m_btags != 2 ) m_outputName += "_b" + std::to_string( m_btags );
     std::string ytt = std::to_string( m_ytt );
-    if ( m_ytt > 0 ) m_outputFilename += "_y" + ytt.erase( ytt.find_last_not_of( '0' ) + 1, std::string::npos );
-    if ( m_Emin >= 0 || m_Emax >= 0 ) m_outputFilename += "_E" + std::to_string( m_Emin ) + "-" + std::to_string( m_Emax );
+    if ( m_ytt > 0 ) m_outputName += "_y" + ytt.erase( ytt.find_last_not_of( '0' ) + 1, std::string::npos );
+    if ( m_Emin >= 0 || m_Emax >= 0 ) m_outputName += "_E" + std::to_string( m_Emin ) + "-" + std::to_string( m_Emax );
     std::string eff = std::to_string( m_efficiency );
-    if ( m_efficiency < 1.0 ) m_outputFilename += "_e" + eff.erase( eff.find_last_not_of( '0' ) + 1, std::string::npos );
-    if ( m_luminosity > 0 ) m_outputFilename += "_L" + std::to_string( m_luminosity );
-    if ( m_fid ) m_outputFilename += "_fid";
-    if ( m_iso ) m_outputFilename += "_iso";
-    m_outputFilename += ".root";
-    m_outputFile = new TFile( m_outputFilename.c_str(), "RECREATE" );
+    if ( m_efficiency < 1.0 ) m_outputName += "_e" + eff.erase( eff.find_last_not_of( '0' ) + 1, std::string::npos );
+    if ( m_luminosity > 0 ) m_outputName += "_L" + std::to_string( m_luminosity );
+    if ( m_fid ) m_outputName += "_fid";
+    if ( m_iso ) m_outputName += "_iso";
+    m_outputName += ".root";
+    m_output = new TFile( m_outputName.c_str(), "RECREATE" );
 }
 
 void Analysis::PostLoop()
@@ -516,7 +555,7 @@ void Analysis::PostLoop()
     this->PrintCutflow();
     std::cout << "\n";
     std::cout << "Output\n";
-    std::cout << m_outputFilename << "\n";
+    std::cout << m_outputName << "\n";
 }
 
 
@@ -978,8 +1017,8 @@ void Analysis::MakeDistribution1D( TH1D* h, const std::string& units )
     h->GetXaxis()->SetTitle( ( h->GetTitle() + xunits ).data() );
     h->GetYaxis()->SetTitleOffset(0.9);
     h->GetXaxis()->SetTitleOffset(0.95);
-    m_outputFile->cd();
-    m_outputFile->cd( "/" );
+    m_output->cd();
+    m_output->cd( "/" );
     h->Write();
 }
 
@@ -1043,8 +1082,8 @@ void Analysis::MakeDistribution2D( TH2D* h, std::string xtitle, std::string xuni
     }
     h->GetYaxis()->SetTitle( ( ytitle + yunits ).data() );
     h->GetXaxis()->SetTitle( ( xtitle + xunits ).data() );
-    m_outputFile->cd();
-    m_outputFile->cd( "/" );
+    m_output->cd();
+    m_output->cd( "/" );
     h->Write();
 }
 
@@ -1052,8 +1091,8 @@ void Analysis::MakeDistribution2D( TH2D* h, std::string xtitle, std::string xuni
 void Analysis::WriteHistograms()
 {
     std::cout << "Writing histograms ...\n";
-    m_outputFile->cd();
-    m_outputFile->cd( "/" );
+    m_output->cd();
+    m_output->cd( "/" );
 
     TF1 *func = new TF1( "func1", "[0]*x + [1]", -1, 1 );
     TObjArray slices1;
@@ -1105,12 +1144,12 @@ bool Analysis::AtLeastTwoLeptons()
     bool twoLeptons;
     if ( m_channel == "electron" )
     {
-        if ( b_Electron->GetEntries() == 2 ) twoLeptons = true;
+        if ( b_Electron->GetEntries() >= 2 ) twoLeptons = true;
         else twoLeptons = false;
     }
     else if ( m_channel == "muon" )
     {
-        if ( b_Muon->GetEntries() == 2 ) twoLeptons = true;
+        if ( b_Muon->GetEntries() >= 2 ) twoLeptons = true;
         else twoLeptons = false;
     }
     this->UpdateCutflow( c_twoLeptons, twoLeptons );
@@ -1123,16 +1162,16 @@ bool Analysis::OppositeCharge()
     double charge1, charge2;
     if ( m_channel == "electron" )
     {
-        Electron *electron1 = ( Electron* ) b_Electron->At(0);
-        Electron *electron2 = ( Electron* ) b_Electron->At(1);
+        Electron *electron1 = ( Electron* ) m_electron->at(0);
+        Electron *electron2 = ( Electron* ) m_electron->at(1);
 
         charge1 = electron1->Charge;
         charge2 = electron2->Charge;
     }
     else if ( m_channel == "muon" )
     {
-        Muon *muon1 = ( Muon* ) b_Muon->At(0);
-        Muon *muon2 = ( Muon* ) b_Muon->At(1);
+        Muon *muon1 = ( Muon* ) m_muon->at(0);
+        Muon *muon2 = ( Muon* ) m_muon->at(1);
 
         charge1 = muon1->Charge;
         charge2 = muon2->Charge;
@@ -1152,9 +1191,9 @@ bool Analysis::SufficientBtags()
 {
     bool sufficientBtags;
     int nBtags = 0;
-    for ( int i = 0; i < b_Jet->GetEntries(); i++ )
+    for ( int i = 0; i < m_jet->size(); i++ )
     {
-        Jet *jet = ( Jet* ) b_Jet->At(i);
+        Jet *jet = ( Jet* ) m_jet->at(i);
         if ( jet->BTag > 0 ) nBtags++;
     }
     if ( nBtags >= m_btags ) sufficientBtags = true;
@@ -1169,8 +1208,7 @@ bool Analysis::SufficientMET()
     // Account for the neutrinos
     // Further reduce DY background (no cut for $e^\pm \mu^\mp$)
     bool sufficientMET;
-    MissingET *missingET = ( MissingET* ) b_MissingET->At(0);
-    double ETmiss = missingET->MET;
+    double ETmiss = m_missingET->MET;
     if ( ETmiss > 60 ) sufficientMET = true;
     else sufficientMET = false;
     this->UpdateCutflow( c_MET, sufficientMET );
@@ -1327,6 +1365,7 @@ void Analysis::EachFile ( const std::string& filename )
 Analysis::~Analysis()
 {
     delete m_input;
+    delete m_output;
 }
 
 
@@ -1414,6 +1453,5 @@ void Analysis::PrintCutflow()
         std::cout << m_cutNames[ cut ] << " " << m_cutflow[ cut ] << "\n";
     }
     h_cutflow->Write();
-    m_outputFile->Close();
-    delete m_outputFile;
+    m_output->Close();
 }

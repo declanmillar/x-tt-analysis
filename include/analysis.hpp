@@ -43,6 +43,7 @@ protected:
 
     void EachEvent( double );
     void EveryEvent( double );
+    void CleanupEvent();
 
     // histograms
     void MakeHistograms();
@@ -100,6 +101,10 @@ private:
     std::vector< std::tuple< std::string, int > >* m_input;
     std::vector< std::tuple< std::string, int, int, double, double, double > >* m_processes;
 
+    std::vector< Electron* >* m_electron;
+    std::vector< Muon* >* m_muon;
+    std::vector< Jet* >* m_jet;
+    MissingET* m_missingET;
 
     TString m_model;
     std::string m_process;
@@ -130,8 +135,8 @@ private:
 
     std::vector<double> iteration_weights;
     std::string m_dataDirectory;
-    std::string m_outputFilename;
-    TFile* m_outputFile;
+    std::string m_outputName;
+    TFile* m_output;
     TChain* m_chain;
     ExRootTreeReader* m_tree;
 
