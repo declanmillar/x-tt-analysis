@@ -8,6 +8,7 @@
 #include "two-highest.hpp"
 #include "match-bjets-to-leps.hpp"
 #include "get-parameter.hpp"
+#include <exception>
 
 Analysis::Analysis( const std::string& model, const std::string& process, const std::string& options, const int energy, const int luminosity, const std::string& reconstruction, const std::string& tag ):
     m_model( model ),
@@ -1071,7 +1072,7 @@ void Analysis::WriteHistograms()
     this->NormalizeSliceY( h2_mtt_cosTheta2 );
     h2_mtt_cosTheta2->FitSlicesY( func, 0, -1, 0, "QRN", &slices2 );
     for ( auto slice : slices2 ) slice->Write();
-    TH1D* h_AL2 = (TH1D*) slices2[0]->Clone( "AL2" );
+    TH1D* h_AL2 = ( TH1D* ) slices2[0]->Clone( "AL2" );
     slices2.Clear();
     h_AL2->Scale( 2 / h2_mtt_cosTheta2->GetYaxis()->GetBinWidth(1) );
     h_AL2->SetTitle( "A_{L}" );
@@ -1230,9 +1231,9 @@ void Analysis::SetDataDirectory()
 
     if ( Hostname == "Sunder" )
         m_dataDirectory = "/Users/declan/Data/zprime";
-    else if ( ( Hostname.find( "lxplus" ) != std::string::npos ) || (Hostname.find( "cern" ) != std::string::npos ) )
+    else if ( ( Hostname.find( "lxplus" ) != std::string::npos ) || ( Hostname.find( "cern" ) != std::string::npos ) )
         m_dataDirectory = "/afs/cern.ch/work/d/demillar/zprime";
-    else if ( ( Hostname.find( "cyan" ) != std::string::npos ) || (Hostname.find( "blue" ) != std::string::npos ) || ( Hostname.find( "green" ) != std::string::npos ) )
+    else if ( ( Hostname.find( "cyan" ) != std::string::npos ) || ( Hostname.find( "blue" ) != std::string::npos ) || ( Hostname.find( "green" ) != std::string::npos ) )
         m_dataDirectory = "/scratch/dam1g09/zprime";
     else
         std::cout << "Hostname " << Hostname << " not recognised.\n";
@@ -1264,19 +1265,18 @@ void Analysis::GetBranches()
 
 void Analysis::GetGenerationCrossSection( int proc_id )
 {
-    std::cout << "process id = " << proc_id << "\n";
-    std::cout << "file = " << std::get<0>( m_processes->at( proc_id ) )<< "\n";
-    std::cout << "Getting generation cross section ";
+    if ( m_debug ) std::cout << "Getting generation cross section ...\n";
     std::string proc_filename = std::get<0>( m_processes->at( proc_id ) );
-    std::cout << "from " << proc_filename << "... \n";
+    std::cout << "Process ID = " << proc_id << "\n";
+    std::cout << "File = " << proc_filename << "\n";
 
     std::ifstream proc_file;
     proc_file.open( proc_filename );
-    std::cout << "m_processes size = " << m_processes->size() << "\n";
+    if ( !proc_file.is_open() ) std::cout << "Error: Unable to open file.";
+    if ( m_debug ) std::cout << "m_processes size = " << m_processes->size() << "\n";
     std::get<3>( m_processes->at( proc_id ) ) = get_parameter( &proc_file );
     std::get<4>( m_processes->at( proc_id ) ) = get_parameter( &proc_file );
     proc_file.close();
-    std::cout << "process\n";
     std::cout << "Generation cross section = " << std::get<3>( m_processes->at( proc_id ) ) << " +/- " << std::get<4>( m_processes->at( proc_id ) ) << " [fb]\n";
 }
 
