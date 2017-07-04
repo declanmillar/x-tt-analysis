@@ -396,7 +396,7 @@ void Analysis::EveryEvent( double weight )
     TLorentzVector p_miss;
     double ETmiss = missingET->MET;
 
-    if ( m_debug ) std::cout << "Calculating HT ...";
+    if ( m_debug ) std::cout << "Calculating HT ...\n";
     double HT = 0;
     for ( auto p : p_j ) HT += p.Pt();
     for ( auto p : p_el ) HT += p.Pt();
@@ -404,17 +404,17 @@ void Analysis::EveryEvent( double weight )
     HT += ETmiss;
     h_HT_all->Fill( HT / 1000, weight );
 
-    if ( m_debug ) std::cout << "Calculating pvis ...";
+    if ( m_debug ) std::cout << "Calculating pvis ...\n";
     TLorentzVector pvis( 0, 0, 0, 0 );
     for ( auto p : p_j ) pvis += p;
     for ( auto p : p_el ) pvis += p;
     for ( auto p : p_mu ) pvis += p;
 
-    if ( m_debug ) std::cout << "Calculating mvis ...";
+    if ( m_debug ) std::cout << "Calculating mvis ...\n";
     double mvis = pvis.M();
     h_mvis_all->Fill( mvis / 1000, weight );
 
-    if ( m_debug ) std::cout << "Calculating KT ...";
+    if ( m_debug ) std::cout << "Calculating KT ...\n";
     double pTvis = pvis.Pt();
     double KT = sqrt( mvis * mvis + pTvis * pTvis ) + ETmiss;
     h_KT_all->Fill( KT / 1000, weight );
