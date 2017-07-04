@@ -63,7 +63,7 @@ void Analysis::EachEvent( double weight )
 
     if ( m_debug ) std::cout << "Applied lepton cuts\n";
 
-    if ( !this->TwoLeptons() ) return;
+    if ( !this->ExactlyTwoLeptons() ) return;
     if ( !this->OppositeCharge() ) return;
 
     if ( m_debug ) std::cout << "Starting jet cuts\n";
@@ -1154,7 +1154,7 @@ void Analysis::NormalizeSliceY(TH2D* h)
 // Reject muon pair signature
 // $|m_{ll}-m_Z| > 10$ \si{\giga\electronvolt} & Suppress DY+j's background
 
-bool Analysis::TwoLeptons()
+bool Analysis::ExactlyTwoLeptons()
 {
     bool twoLeptons;
     if ( m_channel == "electron" )

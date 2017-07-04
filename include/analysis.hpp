@@ -70,7 +70,7 @@ protected:
 
     // event selection
     bool PassesEventSelection();
-    bool TwoLeptons();
+    bool ExactlyTwoLeptons();
     bool OppositeCharge();
     bool SufficientJets();
     bool SufficientBtags();
