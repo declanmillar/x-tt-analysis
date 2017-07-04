@@ -122,7 +122,7 @@ private:
     double m_Emin = -1;
     double m_Emax = -1;
     bool m_useLumi;
-    const bool m_debug = false;
+    const bool m_debug = true;
     const std::string m_channel = "electron";
 
     unsigned int m_nReco;
