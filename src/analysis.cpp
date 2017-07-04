@@ -355,7 +355,7 @@ void Analysis::EveryEvent( double weight )
     h_nMuons->Fill( b_Muon->GetEntries(), weight );
     h_nJets->Fill( b_Jet->GetEntries(), weight );
 
-    if ( m_debug ) std::cout << "Fetching all jets ...";
+    if ( m_debug ) std::cout << "Fetching all jets ...\n";
     std::vector< TLorentzVector > p_j;
     for ( int i = 0; i < b_Jet->GetEntries(); i++ )
     {
@@ -367,7 +367,7 @@ void Analysis::EveryEvent( double weight )
         p_j.push_back(p);
     }
 
-    if ( m_debug ) std::cout << "Fetching all electrons ...";
+    if ( m_debug ) std::cout << "Fetching all electrons ...\n";
     std::vector< TLorentzVector > p_el;
     for ( int i = 0; i < b_Electron->GetEntries(); i++ )
     {
@@ -379,7 +379,7 @@ void Analysis::EveryEvent( double weight )
         p_el.push_back(p);
     }
 
-    if ( m_debug ) std::cout << "Fetching all muons ...";
+    if ( m_debug ) std::cout << "Fetching all muons ...\n";
     std::vector< TLorentzVector > p_mu;
     for ( int i = 0; i < b_Muon->GetEntries(); i++ )
     {
@@ -391,7 +391,7 @@ void Analysis::EveryEvent( double weight )
         p_mu.push_back(p);
     }
 
-    if ( m_debug ) std::cout << "Fetching missing ET ...";
+    if ( m_debug ) std::cout << "Fetching missing ET ...\n";
     MissingET *missingET = ( MissingET* ) b_MissingET->At(0);
     TLorentzVector p_miss;
     double ETmiss = missingET->MET;
