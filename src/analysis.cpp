@@ -39,10 +39,9 @@ void Analysis::EachEvent( double weight )
 {
     UpdateCutflow( c_events, true );
 
-    this->EveryEvent( weight );
+    if ( m_debug ) std::cout << "Starting EachEvent\n";
 
-    m_missingET = ( MissingET* ) b_MissingET->At(0);
-    if ( !this->SufficientMET() ) return;
+    MissingET* missingET = ( MissingET* ) b_MissingET->At(0);
 
     m_electron = new std::vector< Electron* >;
     for ( int i = 0; i < b_Electron->GetEntries(); i++ )
@@ -62,8 +61,12 @@ void Analysis::EachEvent( double weight )
         if ( passed ) m_muon->push_back( muon );
     }
 
-    if ( !this->AtLeastTwoLeptons() ) return;
+    if ( m_debug ) std::cout << "Applied lepton cuts\n";
+
+    if ( !this->TwoLeptons() ) return;
     if ( !this->OppositeCharge() ) return;
+
+    if ( m_debug ) std::cout << "Starting jet cuts\n";
 
     m_jet = new std::vector< Jet* >;
     for ( int i = 0; i < b_Jet->GetEntries(); i++ )
@@ -74,6 +77,8 @@ void Analysis::EachEvent( double weight )
         if ( passed ) m_jet->push_back( jet );
     }
 
+    if ( m_debug ) std::cout << "Finished object level cuts";
+
     // if ( !this->SufficientJets() ) return;
     if ( !this->SufficientBtags() ) return;
     if ( !this->SufficientHT() ) return;
@@ -82,8 +87,8 @@ void Analysis::EachEvent( double weight )
     // if ( !this->OutsideZmass() ) return;
 
     TLorentzVector p_miss;
-    double ETmiss = m_missingET->MET;
-    p_miss.SetPtEtaPhiM( ETmiss, m_missingET->Eta, m_missingET->Phi, 0.0 );
+    double ETmiss = missingET->MET;
+    p_miss.SetPtEtaPhiM( ETmiss, missingET->Eta, missingET->Phi, 0.0 );
 
     std::pair< TLorentzVector, TLorentzVector > p_l;
     if ( m_channel == "electron" )
@@ -192,6 +197,7 @@ void Analysis::EachEvent( double weight )
 
     if ( m_reconstruction == "KIN" )
     {
+        if ( m_debug ) std::cout << "Setting up kinematic reconstruction\n";
         std::vector< TLorentzVector > p_b_hiPt = { p_b_hi.first, p_b_hi.second };
         KinematicReconstructer KIN = KinematicReconstructer( m_bmass, m_Wmass, m_tmass );
         bool isSolution = KIN.Reconstruct( p_l, p_b_hiPt, p_q, p_miss );
@@ -211,6 +217,7 @@ void Analysis::EachEvent( double weight )
             this->UpdateCutflow( c_realSolutions, false );
             return;
         }
+        if ( m_debug ) std::cout << "Finished kinematic reconstruction\n";
     }
     else if ( m_reconstruction == "NuW" )
     {
@@ -232,7 +239,7 @@ void Analysis::EachEvent( double weight )
         TLorentzVector p_W1 = p_l.first + p_v1;
         TLorentzVector p_W2 = p_l.second + p_v2;
     }
-    else std::cout << "reconstruction = {KIN, NuW}\n";
+    else std::cout << "Reconstruction = {KIN, NuW}\n";
 
     double mtt = p_ttbar.M();
     double ytt = p_ttbar.Rapidity();
@@ -243,6 +250,8 @@ void Analysis::EachEvent( double weight )
     // double costhetastar = int(ytt / std::abs(ytt)) * costheta;
 
     // fill histograms
+    if ( m_debug ) std::cout << "Filling histograms ...\n";
+
     h_pt_l1->Fill( p_l.first.Pt(), weight );
     h_pt_l2->Fill( p_l.second.Pt(), weight );
     h_eta_l1->Fill( p_l.first.Eta(), weight );
@@ -337,15 +346,17 @@ void Analysis::EachEvent( double weight )
     //         h2_mtt_cosTheta1->Fill( mtt, costheta_tl1, weight );
     //         h2_mtt_cosTheta2->Fill( mtt, costheta_tl2, weight );
     //         h2_mtt_cos1cos2->Fill( mtt, cos1cos2, weight );
+    if ( m_debug ) std::cout << "Finished filling histograms\n";
     this->CleanupEvent();
 }
 
 void Analysis::CleanupEvent()
 {
+    if ( m_debug ) std::cout << "Cleaning up event\n";
     delete m_electron;
     delete m_muon;
     delete m_jet;
-    delete m_missingET;
+    if ( m_debug ) std::cout << "Finished filling histograms\n";
 }
 
 void Analysis::EveryEvent( double weight )
@@ -1143,17 +1154,17 @@ void Analysis::NormalizeSliceY(TH2D* h)
 // Reject muon pair signature
 // $|m_{ll}-m_Z| > 10$ \si{\giga\electronvolt} & Suppress DY+j's background
 
-bool Analysis::AtLeastTwoLeptons()
+bool Analysis::TwoLeptons()
 {
     bool twoLeptons;
     if ( m_channel == "electron" )
     {
-        if ( b_Electron->GetEntries() >= 2 ) twoLeptons = true;
+        if ( m_electron->size() == 2 ) twoLeptons = true;
         else twoLeptons = false;
     }
     else if ( m_channel == "muon" )
     {
-        if ( b_Muon->GetEntries() >= 2 ) twoLeptons = true;
+        if ( m_muon->size() == 2 ) twoLeptons = true;
         else twoLeptons = false;
     }
     this->UpdateCutflow( c_twoLeptons, twoLeptons );
@@ -1212,7 +1223,8 @@ bool Analysis::SufficientMET()
     // Account for the neutrinos
     // Further reduce DY background (no cut for $e^\pm \mu^\mp$)
     bool sufficientMET;
-    double ETmiss = m_missingET->MET;
+    MissingET* missingET = ( MissingET* ) b_MissingET->At(0);
+    double ETmiss = missingET->MET;
     if ( ETmiss > 60 ) sufficientMET = true;
     else sufficientMET = false;
     this->UpdateCutflow( c_MET, sufficientMET );
@@ -1350,6 +1362,7 @@ void Analysis::Loop()
         {
             Long64_t ievent = this->IncrementEvent( jevent );
             if ( ievent < 0 ) break;
+            this->EveryEvent( std::get<5>( m_processes->at( proc_id ) ) );
             this->EachEvent( std::get<5>( m_processes->at( proc_id ) ) );
             if ( !m_debug ) ProgressBar( jevent, m_nevents - 1, 50 );
         }

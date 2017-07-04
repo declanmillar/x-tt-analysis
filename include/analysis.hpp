@@ -70,7 +70,7 @@ protected:
 
     // event selection
     bool PassesEventSelection();
-    bool AtLeastTwoLeptons();
+    bool TwoLeptons();
     bool OppositeCharge();
     bool SufficientJets();
     bool SufficientBtags();
@@ -104,7 +104,6 @@ private:
     std::vector< Electron* >* m_electron;
     std::vector< Muon* >* m_muon;
     std::vector< Jet* >* m_jet;
-    MissingET* m_missingET;
 
     TString m_model;
     std::string m_process;
