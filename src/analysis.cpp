@@ -350,6 +350,8 @@ void Analysis::CleanupEvent()
 
 void Analysis::EveryEvent( double weight )
 {
+    if ( m_debug ) std::cout << "Starting EveryEvent ...\n";
+
     // runs for every event with no event selection or cuts
     h_nElectrons->Fill( b_Electron->GetEntries(), weight );
     h_nMuons->Fill( b_Muon->GetEntries(), weight );
@@ -418,6 +420,8 @@ void Analysis::EveryEvent( double weight )
     double pTvis = pvis.Pt();
     double KT = sqrt( mvis * mvis + pTvis * pTvis ) + ETmiss;
     h_KT_all->Fill( KT / 1000, weight );
+
+    if ( m_debug ) std::cout << "Finished EveryEvent ...\n";
 }
 
 
