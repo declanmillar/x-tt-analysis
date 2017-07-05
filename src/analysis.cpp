@@ -39,9 +39,14 @@ void Analysis::EachEvent( double weight )
 {
     UpdateCutflow( c_events, true );
 
-    if ( m_debug ) std::cout << "Starting EachEvent\n";
+    if ( m_debug ) std::cout << "Starting EachEvent ...\n";
 
     MissingET* missingET = ( MissingET* ) b_MissingET->At(0);
+    TLorentzVector p_miss;
+    double ETmiss = missingET->MET;
+    p_miss.SetPtEtaPhiM( ETmiss, missingET->Eta, missingET->Phi, 0.0 );
+
+    if ( !this->SufficientMET() ) return;
 
     m_electron = new std::vector< Electron* >;
     for ( int i = 0; i < b_Electron->GetEntries(); i++ )
@@ -61,34 +66,8 @@ void Analysis::EachEvent( double weight )
         if ( passed ) m_muon->push_back( muon );
     }
 
-    if ( m_debug ) std::cout << "Applied lepton cuts\n";
-
     if ( !this->ExactlyTwoLeptons() ) return;
     if ( !this->OppositeCharge() ) return;
-
-    if ( m_debug ) std::cout << "Starting jet cuts\n";
-
-    m_jet = new std::vector< Jet* >;
-    for ( int i = 0; i < b_Jet->GetEntries(); i++ )
-    {
-        bool passed = false;
-        Jet *jet = ( Jet* ) b_Jet->At(i);
-        if ( jet->PT > 25.0 && jet->Eta < 2.5 ) passed = true;
-        if ( passed ) m_jet->push_back( jet );
-    }
-
-    if ( m_debug ) std::cout << "Finished object level cuts";
-
-    // if ( !this->SufficientJets() ) return;
-    if ( !this->SufficientBtags() ) return;
-    if ( !this->SufficientHT() ) return;
-
-    // if ( !this->SufficientMll() ) return;
-    // if ( !this->OutsideZmass() ) return;
-
-    TLorentzVector p_miss;
-    double ETmiss = missingET->MET;
-    p_miss.SetPtEtaPhiM( ETmiss, missingET->Eta, missingET->Phi, 0.0 );
 
     std::pair< TLorentzVector, TLorentzVector > p_l;
     if ( m_channel == "electron" )
@@ -132,6 +111,18 @@ void Analysis::EachEvent( double weight )
     if ( m_debug ) p_l.first.Print();
     if ( m_debug ) p_l.second.Print();
 
+    if ( !this->SufficientMll( p_l ) ) return;
+    if ( !this->OutsideZmassWindow( p_l ) ) return;
+
+    m_jet = new std::vector< Jet* >;
+    for ( int i = 0; i < b_Jet->GetEntries(); i++ )
+    {
+        bool passed = false;
+        Jet *jet = ( Jet* ) b_Jet->At(i);
+        if ( jet->PT > 25.0 && jet->Eta < 2.5 ) passed = true;
+        if ( passed ) m_jet->push_back( jet );
+    }
+
     std::vector< TLorentzVector > p_j, p_b, p_q;
     for ( int i = 0; i < m_jet->size(); i++ )
     {
@@ -157,6 +148,10 @@ void Analysis::EachEvent( double weight )
         h_eta_jets->Fill( p.Eta(), weight );
     }
 
+    if ( !this->SufficientJets() ) return;
+    if ( !this->SufficientBtags() ) return;
+    if ( !this->SufficientHT() ) return;
+
     // ScalarHT *scalarHT = (ScalarHT*) b_ScalarHT->At(0);
     // double HT = scalarHT->HT;
     double HT = p_l.first.Pt() + p_l.second.Pt() + ETmiss;
@@ -168,6 +163,8 @@ void Analysis::EachEvent( double weight )
     double mvis = pvis.M();
     double pTvis = pvis.Pt();
     double KT = sqrt( mvis * mvis + pTvis * pTvis ) + ETmiss;
+
+    // if ( m_debug ) std::cout << "BORK\n";
 
     h_HT->Fill( HT / 1000, weight );
     h_mvis->Fill( mvis / 1000, weight );
@@ -190,14 +187,15 @@ void Analysis::EachEvent( double weight )
         std::cout << "p_miss = "; p_miss.Print();
     }
 
-    std::vector< TLorentzVector > p_bv;
-    TLorentzVector p_b1, p_b2, p_v1, p_v2, ttbar, p_top, p_tbar, p_ttbar, p_W1, p_W2;
-
     std::pair< TLorentzVector, TLorentzVector > p_b_hi = TwoHighestPt( p_b );
+
+    TLorentzVector p_top, p_tbar, p_ttbar, p_b1, p_b2, p_v1, p_v2;
+
+    if ( m_debug ) std::cout << "Reconstruction method: " << m_reconstruction << "\n";
 
     if ( m_reconstruction == "KIN" )
     {
-        if ( m_debug ) std::cout << "Setting up kinematic reconstruction\n";
+        if ( m_debug ) std::cout << "Setting up kinematic reconstruction ...\n";
         std::vector< TLorentzVector > p_b_hiPt = { p_b_hi.first, p_b_hi.second };
         KinematicReconstructer KIN = KinematicReconstructer( m_bmass, m_Wmass, m_tmass );
         bool isSolution = KIN.Reconstruct( p_l, p_b_hiPt, p_q, p_miss );
@@ -208,10 +206,7 @@ void Analysis::EachEvent( double weight )
         p_b2 = KIN.GetBbar();
         p_v1 = KIN.GetNu();
         p_v2 = KIN.GetNubar();
-        if ( isSolution )
-        {
-            this->UpdateCutflow( c_realSolutions, true );
-        }
+        if ( isSolution ) this->UpdateCutflow( c_realSolutions, true );
         else
         {
             this->UpdateCutflow( c_realSolutions, false );
@@ -235,21 +230,37 @@ void Analysis::EachEvent( double weight )
             p_v1 = nuW.GetNu();
             p_v2 = nuW.GetNubar();
         }
-
-        TLorentzVector p_W1 = p_l.first + p_v1;
-        TLorentzVector p_W2 = p_l.second + p_v2;
     }
-    else std::cout << "Reconstruction = {KIN, NuW}\n";
+    else std::cout << "Error: Reconstruction = {KIN, NuW}\n";
+
+    TLorentzVector p_W1 = p_l.first + p_v1;
+    TLorentzVector p_W2 = p_l.second + p_v2;
 
     double mtt = p_ttbar.M();
     double ytt = p_ttbar.Rapidity();
     double costheta_tt = cos( p_top.Angle( p_tbar.Vect() ) );
     double delta_abs_yt = std::abs( p_top.Rapidity() ) - std::abs( p_tbar.Rapidity() );
 
-    // double costheta = pcm_t.CosTheta();
-    // double costhetastar = int(ytt / std::abs(ytt)) * costheta;
+    TLorentzVector pcm_top = p_top;
+    TLorentzVector pcm_tbar = p_tbar;
+    TLorentzVector pcm_ttbar = p_ttbar;
+    TLorentzVector pcm_b1 = p_b1;
+    TLorentzVector pcm_b2 = p_b2;
+    TLorentzVector pcm_v1 = p_v1;
+    TLorentzVector pcm_v2 = p_v2;
 
-    // fill histograms
+    TVector3 v = - ( p_ttbar ).BoostVector();
+    pcm_top.Boost(v);
+    pcm_tbar.Boost(v);
+    pcm_ttbar.Boost(v);
+    pcm_b1.Boost(v);
+    pcm_b2.Boost(v);
+    pcm_v1.Boost(v);
+    pcm_v2.Boost(v);
+
+    double costheta = pcm_top.CosTheta();
+    double costhetastar = int( ytt / std::abs( ytt ) ) * costheta;
+
     if ( m_debug ) std::cout << "Filling histograms ...\n";
 
     h_pt_l1->Fill( p_l.first.Pt(), weight );
@@ -288,64 +299,60 @@ void Analysis::EachEvent( double weight )
     h2_mvis_deltaPhi->Fill( mvis, deltaPhi, weight );
     h2_KT_deltaPhi->Fill( KT, deltaPhi, weight );
 
-    //     h_costheta_tt->Fill( costheta_tt, weight );
-    //     h_cosTheta->Fill( costheta, weight );
-    //     h_cosThetaStar->Fill( costhetastar, weight );
+    h_costheta_tt->Fill( costheta_tt, weight );
+    h_cosTheta->Fill( costheta, weight );
+    h_cosThetaStar->Fill( costhetastar, weight );
 
-    //     if ( costhetastar > 0) h_mtt_tF->Fill( mtt, weight );
-    //     if ( costhetastar < 0) h_mtt_tB->Fill( mtt, weight );
+    if ( costhetastar > 0) h_mtt_tF->Fill( mtt, weight );
+    if ( costhetastar < 0) h_mtt_tB->Fill( mtt, weight );
 
-    //     if ( delta_abs_yt > 0) h_mtt_tCF->Fill( mtt, weight );
-    //     if ( delta_abs_yt < 0) h_mtt_tCB->Fill( mtt, weight );
+    if ( delta_abs_yt > 0) h_mtt_tCF->Fill( mtt, weight );
+    if ( delta_abs_yt < 0) h_mtt_tCB->Fill( mtt, weight );
 
-    //     if ( n == 6 )
+    // std::vector< TLorentzVector > ptop = p;
+    // v = -1 * ( p_top ).BoostVector();
+    // for ( auto& l : ptop) l.Boost(v);
+    //
+    // std::vector< TLorentzVector > patop = p;
+    // v = -1 * ( p[1] + p[4] + p[5] ).BoostVector();
+    // for ( auto& l : patop ) l.Boost(v);
+    //
+    // double costheta_tl1 = cos( ptop[2].Angle( pcm_t.Vect() ) );
+    // double costheta_tl2 = cos( patop[4].Angle( pcm_tbar.Vect() ) );
+    // double cos1cos2 = costheta_tl1 * costheta_tl2;
+    //
+    // h_cosTheta1->Fill( costheta_tl1, weight );
+    // h_cosTheta2->Fill( costheta_tl2, weight );
+    // h_cos1cos2->Fill( cos1cos2, weight );
+    // h_deltaR_bW->Fill( deltaR_bW, weight );
+    // h_deltaR_max->Fill( *deltaR_max, weight );
+    //
+    // for ( int i = 0; i < ( int) deltaRs.size(); i++ )
+    //     h_deltaRs[i]->Fill( deltaRs[i], weight );
+    //
+    // for ( int i = 0; i < (int) p.size(); i++ )
     // {
+    //     h_eta[i]->Fill( p[i].Eta(), weight );
+    //     h_pt[i]->Fill( p[i].Pt(), weight );
+    // }
+    //
+    // if ( costheta_tl1 > 0 ) h_mtt_tlF->Fill( mtt, weight );
+    // if ( costheta_tl2 < 0 ) h_mtt_tlB->Fill( mtt, weight );
+    //
+    // if ( costheta_tl1 > 0 ) h_mtt_lF->Fill( mtt, weight );
+    // if ( costheta_tl1 < 0 ) h_mtt_lB->Fill( mtt, weight );
+    //
+    // if ( phil < m_pi and phil > phi0 ) h_mtt_philF->Fill( mtt, weight );
+    // if ( phil < phi0 ) h_mtt_philB->Fill( mtt, weight );
+    //
+    // if ( El > E0 ) h_mtt_ElF->Fill( mtt, weight );
+    // if ( El < E0 ) h_mtt_ElB->Fill( mtt, weight );
 
-    //         std::vector< TLorentzVector > ptop = p;
-    //         v = -1 * ( p[0] + p[2] + p[3] ).BoostVector();
-    //         for ( auto& l : ptop) l.Boost(v);
-
-    //         std::vector< TLorentzVector > patop = p;
-    //         v = -1 * ( p[1] + p[4] + p[5] ).BoostVector();
-    //         for ( auto& l : patop ) l.Boost(v);
-
-
-    //         double costheta_tl1 = cos( ptop[2].Angle( pcm_t.Vect() ) );
-    //         double costheta_tl2 = cos( patop[4].Angle( pcm_tbar.Vect() ) );
-    //         double cos1cos2 = costheta_tl1 * costheta_tl2;
-
-    //         h_cosTheta1->Fill( costheta_tl1, weight );
-    //         h_cosTheta2->Fill( costheta_tl2, weight );
-    //         h_cos1cos2->Fill( cos1cos2, weight );
-    //         h_deltaR_bW->Fill( deltaR_bW, weight );
-    //         h_deltaR_max->Fill( *deltaR_max, weight );
-
-    //         for ( int i = 0; i < ( int) deltaRs.size(); i++ )
-    //             h_deltaRs[i]->Fill( deltaRs[i], weight );
-
-    //         for ( int i = 0; i < (int) p.size(); i++ )
-    // {
-    //             h_eta[i]->Fill( p[i].Eta(), weight );
-    //             h_pt[i]->Fill( p[i].Pt(), weight );
-    //         }
-
-    //         if ( costheta_tl1 > 0 ) h_mtt_tlF->Fill( mtt, weight );
-    //         if ( costheta_tl2 < 0 ) h_mtt_tlB->Fill( mtt, weight );
-
-    //         if ( costheta_tl1 > 0 ) h_mtt_lF->Fill( mtt, weight );
-    //         if ( costheta_tl1 < 0 ) h_mtt_lB->Fill( mtt, weight );
-
-    //         if ( phil < m_pi and phil > phi0 ) h_mtt_philF->Fill( mtt, weight );
-    //         if ( phil < phi0 ) h_mtt_philB->Fill( mtt, weight );
-
-    //         if ( El > E0 ) h_mtt_ElF->Fill( mtt, weight );
-    //         if ( El < E0 ) h_mtt_ElB->Fill( mtt, weight );
-
-    //         h2_mtt_cosThetaStar->Fill( mtt, costhetastar, weight );
-    //         h2_mtt_deltaPhi->Fill( mtt, deltaPhi, weight );
-    //         h2_mtt_cosTheta1->Fill( mtt, costheta_tl1, weight );
-    //         h2_mtt_cosTheta2->Fill( mtt, costheta_tl2, weight );
-    //         h2_mtt_cos1cos2->Fill( mtt, cos1cos2, weight );
+    h2_mtt_cosThetaStar->Fill( mtt, costhetastar, weight );
+    h2_mtt_deltaPhi->Fill( mtt, deltaPhi, weight );
+    // h2_mtt_cosTheta1->Fill( mtt, costheta_tl1, weight );
+    // h2_mtt_cosTheta2->Fill( mtt, costheta_tl2, weight );
+    // h2_mtt_cos1cos2->Fill( mtt, cos1cos2, weight );
     if ( m_debug ) std::cout << "Finished filling histograms\n";
     this->CleanupEvent();
 }
@@ -356,7 +363,7 @@ void Analysis::CleanupEvent()
     delete m_electron;
     delete m_muon;
     delete m_jet;
-    if ( m_debug ) std::cout << "Finished filling histograms\n";
+    if ( m_debug ) std::cout << "Finished cleaning up event\n";
 }
 
 void Analysis::EveryEvent( double weight )
@@ -1152,7 +1159,6 @@ void Analysis::NormalizeSliceY(TH2D* h)
 }
 
 // Reject muon pair signature
-// $|m_{ll}-m_Z| > 10$ \si{\giga\electronvolt} & Suppress DY+j's background
 
 bool Analysis::ExactlyTwoLeptons()
 {
@@ -1202,6 +1208,33 @@ bool Analysis::OppositeCharge()
 }
 
 
+bool Analysis::SufficientMll( const std::pair< TLorentzVector, TLorentzVector >& p_l )
+{
+    // $m_{ll} > 15$ GeV: suppress hadronic background, e.g. $J/Psi$
+    if ( m_debug ) std::cout << "cutting on mll...\n";
+    bool sufficientMll;
+    double mll = ( p_l.first + p_l.second ).M();
+    if ( mll > 15.0 ) sufficientMll = true;
+    else sufficientMll = false;
+    this->UpdateCutflow (c_sufficientMll, sufficientMll);
+    if ( m_debug ) std::cout << "cut on mll\n";
+    return sufficientMll;
+}
+
+bool Analysis::OutsideZmassWindow( const std::pair< TLorentzVector, TLorentzVector >& p_l )
+{
+    // $|m_{ll}-m_Z| > 10$ \si{\giga\electronvolt} & Suppress DY+j's background
+    if ( m_debug ) std::cout << "cutting on |mll - mZ| > 10 ...\n";
+    bool outsideZmassWindow;
+    double mll = ( p_l.first + p_l.second ).M();
+    if ( ( mll - m_zmass ) > 10.0 ) outsideZmassWindow = true;
+    else outsideZmassWindow = false;
+    this->UpdateCutflow (c_outsideZmassWindow, outsideZmassWindow);
+    if ( m_debug ) std::cout << "cut on |mll - mZ| > 10 ...\n";
+    return outsideZmassWindow;
+}
+
+
 bool Analysis::SufficientBtags()
 {
     bool sufficientBtags;
@@ -1227,7 +1260,7 @@ bool Analysis::SufficientMET()
     double ETmiss = missingET->MET;
     if ( ETmiss > 60 ) sufficientMET = true;
     else sufficientMET = false;
-    this->UpdateCutflow( c_MET, sufficientMET );
+    this->UpdateCutflow( c_sufficientMET, sufficientMET );
     return sufficientMET;
 }
 
@@ -1240,7 +1273,7 @@ bool Analysis::SufficientHT()
     double HT = scalarHT->HT;
     if ( HT > 130 ) sufficientHT = true;
     else sufficientHT = false;
-    this->UpdateCutflow( c_HT, sufficientHT );
+    this->UpdateCutflow( c_sufficientHT, sufficientHT );
     return sufficientHT;
 }
 
@@ -1250,16 +1283,9 @@ bool Analysis::SufficientJets()
     bool sufficientJets;
     if ( b_Jet->GetEntries() >= 2 ) sufficientJets = true;
     else sufficientJets = false;
-    this->UpdateCutflow( c_jets, sufficientJets );
+    this->UpdateCutflow( c_sufficientJets, sufficientJets );
     return sufficientJets;
 }
-
-
-// bool Analysis::SufficientMll(std::pair< TLorentzVector > p_l)
-// {
-//     // $m_{ll} > 15$ GeV: suppress hadronic background, e.g. $J/Psi$
-//
-// }
 
 
 void Analysis::PreLoop()
@@ -1433,18 +1459,20 @@ void Analysis::InitialiseCutflow()
 {
     m_cutflow = std::vector< int >( m_cuts, -999 );
     m_cutNames = std::vector< std::string >(
-    m_cuts,                           "no name          ");
-    m_cutNames[ c_events ]          = "Events           ";
-    m_cutNames[ c_twoLeptons ]      = "Two leptons      ";
-    m_cutNames[ c_oppositeCharge ]  = "Opposite Charge  ";
-    m_cutNames[ c_sufficientBtags ] = "Sufficient b-tags";
-    m_cutNames[ c_MET ]             = "MET              ";
-    m_cutNames[ c_realSolutions ]   = "Has real roots   ";
-    m_cutNames[ c_mtt ]             = "mtt              ";
-    m_cutNames[ c_ytt ]             = "ytt              ";
-    m_cutNames[ c_eta ]             = "eta              ";
-    m_cutNames[ c_Et ]              = "ET               ";
-    m_cutNames[ c_deltaR ]          = "deltaR           ";
+    m_cuts,                              "no name               ");
+    m_cutNames[ c_sufficientMET ]      = "Sufficient MET        ";
+    m_cutNames[ c_events ]             = "Events                ";
+    m_cutNames[ c_twoLeptons ]         = "Two leptons           ";
+    m_cutNames[ c_oppositeCharge ]     = "Opposite Charge       ";
+    m_cutNames[ c_sufficientMll ]      = "Sufficient mll        ";
+    m_cutNames[ c_outsideZmassWindow ] = "Outside Z mass window ";
+    m_cutNames[ c_sufficientJets ]     = "Sufficient jets       ";
+    m_cutNames[ c_sufficientBtags ]    = "Sufficient b-tags     ";
+    m_cutNames[ c_sufficientHT ]       = "Sufficient HT         ";
+    m_cutNames[ c_realSolutions ]      = "Has real roots        ";
+    m_cutNames[ c_mtt ]                = "mtt                   ";
+    m_cutNames[ c_ytt ]                = "ytt                   ";
+    m_cutNames[ c_deltaR ]             = "deltaR                ";
 
     h_cutflow = new TH1D( "cutflow", "cutflow", m_cuts, 0, m_cuts );
 }

@@ -76,8 +76,8 @@ protected:
     bool SufficientBtags();
     bool SufficientHT();
     bool SufficientMET();
-    bool SufficientMll();
-    bool OutsideZmass();
+    bool SufficientMll(const  std::pair< TLorentzVector, TLorentzVector >& );
+    bool OutsideZmassWindow(const  std::pair< TLorentzVector, TLorentzVector >& );
 
     Long64_t TotalEvents();
     Long64_t IncrementEvent( Long64_t i );
@@ -121,7 +121,7 @@ private:
     double m_Emin = -1;
     double m_Emax = -1;
     bool m_useLumi;
-    const bool m_debug = true;
+    const bool m_debug = false;
     const std::string m_channel = "electron";
 
     unsigned int m_nReco;
@@ -143,15 +143,16 @@ private:
     std::vector< std::string > m_cutNames;
     enum m_cutlist{
         c_events,
-        c_jets,
-        c_sufficientBtags,
+        c_sufficientMET,
         c_twoLeptons,
         c_oppositeCharge,
-        c_Et,
-        c_eta,
-        c_realSolutions,
-        c_MET,
+        c_sufficientMll,
+        c_outsideZmassWindow,
+        c_sufficientJets,
+        c_sufficientBtags,
+        c_sufficientHT,
         c_HT,
+        c_realSolutions,
         c_mtt,
         c_ytt,
         c_deltaR,
@@ -159,7 +160,7 @@ private:
     };
 
     const double m_pi = 3.14159265358979323846;
-    const double m_bmass = 4.18, m_Wmass = 80.4, m_tmass = 172.5;
+    const double m_bmass = 4.18, m_Wmass = 80.4, m_zmass = 91.19, m_tmass = 172.5;
     const int m_btags = 2;
     const double m_efficiency = 1.0;
 

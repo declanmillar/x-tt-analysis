@@ -8,7 +8,7 @@ SRC = src
 OUT = .
 
 ROOTINC = $(shell root-config --cflags)
-ROOTLIBS = $(shell root-config --libs)
+ROOTLIBS = $(shell root-config --libs) -lTree
 
 HOSTNAME := $(shell hostname)
 ifeq ($(HOSTNAME), Sunder)

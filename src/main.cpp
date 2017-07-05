@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
     ("energy,E",         po::value<int>()->default_value(13))
     ("luminosity,L",     po::value<double>()->default_value(-1))
     ("options,o",        po::value<std::string>()->default_value(""))
-    ("reco,r",           po::value<std::string>()->default_value("NuW"))
+    ("reconstruction,r", po::value<std::string>()->default_value("NuW"))
     ("tag,t",            po::value<std::string>()->default_value(""))
     ;
     po::variables_map opt;
@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
     auto luminosity = opt["luminosity"].as<double>();
     auto add_gg = opt["add_gg"].as<bool>();
     auto add_qq = opt["add_qq"].as<bool>();
-    auto reco = opt["reco"].as<std::string>();
+    auto reconstruction = opt["reconstruction"].as<const std::string>();
     auto tag = opt["tag"].as<std::string>();
 
     AtlasROOTStyle atlasStyle;
@@ -64,8 +64,8 @@ int main(int argc, char* argv[])
     std::cout << "Process:        " << process << "\n";
     if (options != "") std::cout << "Options:        " << options << "\n";
     if (options != -1) std::cout << "Luminosity:     " << luminosity << " [fb-1]\n";
-    std::cout << "Reconstruction: " << reco << "\n";
+    std::cout << "Reconstruction: " << reconstruction << "\n";
 
-    auto analysis = new Analysis(model, process, options, energy, luminosity, reco, tag);
+    auto analysis = new Analysis(model, process, options, energy, luminosity, reconstruction, tag);
     analysis->Run();
 }

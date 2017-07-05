@@ -3,6 +3,6 @@
 
 #include "TLorentzVector.h"
 
-std::pair<TLorentzVector, TLorentzVector> MatchBjetsToLeps(const std::pair<TLorentzVector, TLorentzVector>&, const std::pair<TLorentzVector, TLorentzVector>&);
+std::pair<TLorentzVector, TLorentzVector> MatchBjetsToLeps( const std::pair<TLorentzVector, TLorentzVector>& , const std::pair<TLorentzVector, TLorentzVector>&);
 
 #endif
