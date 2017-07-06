@@ -159,7 +159,8 @@ private:
 
     const double m_pi = 3.14159265358979323846;
     const double m_bmass = 4.18, m_Wmass = 80.4, m_zmass = 91.19, m_tmass = 172.5;
-    const int m_btags = 2;
+    const int m_minimumBtags = 2;
+    int m_btags;
     const double m_efficiency = 1.0;
 
 

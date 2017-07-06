@@ -24,7 +24,6 @@ void KinematicReconstructer::Reset(){
 bool KinematicReconstructer::Reconstruct(
     const std::pair< TLorentzVector, TLorentzVector >& p_l,
     const std::vector< TLorentzVector >& p_b,
-    const std::vector< TLorentzVector >& p_q,
     const TLorentzVector& p_miss )
 {
     // Uses the Sonnenschein method (http://arxiv.org/abs/hep-ph/0510100)

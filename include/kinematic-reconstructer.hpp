@@ -24,8 +24,7 @@ private:
 public:
     KinematicReconstructer(double, double, double);
     virtual ~KinematicReconstructer();
-    bool Reconstruct(const std::pair<TLorentzVector, TLorentzVector>&, const std::vector<TLorentzVector>&,
-                     const std::vector<TLorentzVector>&, const TLorentzVector&);
+    bool Reconstruct(const std::pair<TLorentzVector, TLorentzVector>&, const std::vector<TLorentzVector>&, const TLorentzVector&);
     TLorentzVector GetTop(){   return m_top;   };
     TLorentzVector GetTbar(){  return m_tbar;  };
     TLorentzVector GetTtbar(){ return m_ttbar; };

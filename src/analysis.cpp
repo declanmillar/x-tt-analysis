@@ -5,7 +5,7 @@
 #include "lester_mt2_bisect.h"
 #include "neutrino-weighter.hpp"
 #include "kinematic-reconstructer.hpp"
-#include "two-highest.hpp"
+#include "highest-pt.hpp"
 #include "match-bjets-to-leps.hpp"
 #include "get-parameter.hpp"
 #include <exception>
@@ -209,7 +209,14 @@ void Analysis::EachEvent( double weight )
         std::cout << "p_miss = "; p_miss.Print();
     }
 
-    std::pair< TLorentzVector, TLorentzVector > p_b_hi = TwoHighestPt( p_b );
+    std::pair< TLorentzVector, TLorentzVector > p_b_hypo;
+    if ( m_btags >= 2) p_b_hypo = TwoHighestPt( p_b );
+    else if ( m_btags == 0 ) p_b_hypo = TwoHighestPt( p_q );
+    else if ( m_btags == 1 )
+    {
+        p_b_hypo.first = p_b.at(0);
+        p_b_hypo.second = HighestPt( p_q );
+    }
 
     TLorentzVector p_top, p_tbar, p_ttbar, p_b1, p_b2, p_v1, p_v2;
 
@@ -218,9 +225,9 @@ void Analysis::EachEvent( double weight )
     if ( m_reconstruction == "KIN" )
     {
         if ( m_debug ) std::cout << "Setting up kinematic reconstruction ...\n";
-        std::vector< TLorentzVector > p_b_hiPt = { p_b_hi.first, p_b_hi.second };
+        std::vector< TLorentzVector > p_b_hiPt = { p_b_hypo.first, p_b_hypo.second };
         KinematicReconstructer KIN = KinematicReconstructer( m_bmass, m_Wmass, m_tmass );
-        bool isSolution = KIN.Reconstruct( p_l, p_b_hiPt, p_q, p_miss );
+        bool isSolution = KIN.Reconstruct( p_l, p_b_hiPt, p_miss );
         p_top = KIN.GetTop();
         p_tbar = KIN.GetTbar();
         p_ttbar = KIN.GetTtbar();
@@ -238,7 +245,7 @@ void Analysis::EachEvent( double weight )
     }
     else if ( m_reconstruction == "NuW" )
     {
-        auto p_b_match = MatchBjetsToLeps( p_l, p_b_hi );
+        auto p_b_match = MatchBjetsToLeps( p_l, p_b_hypo );
 
         NeutrinoWeighter nuW = NeutrinoWeighter( 1, p_l.first.Pt() + p_l.first.Phi() ); // 2nd argument is random seed same for specific event
         double weight_max = nuW.Reconstruct( p_l.first, p_l.second, p_b_match.first, p_b_match.second, p_miss.Px(), p_miss.Py(), p_miss.Phi() );
@@ -1250,13 +1257,13 @@ bool Analysis::OutsideZmassWindow( const std::pair< TLorentzVector, TLorentzVect
 bool Analysis::SufficientBtags()
 {
     bool sufficientBtags;
-    int nBtags = 0;
+    m_btags = 0;
     for ( int i = 0; i < m_jet->size(); i++ )
     {
         Jet *jet = ( Jet* ) m_jet->at(i);
-        if ( jet->BTag > 0 ) nBtags++;
+        if ( jet->BTag > 0 ) m_btags++;
     }
-    if ( nBtags >= m_btags ) sufficientBtags = true;
+    if ( m_btags >= m_minimumBtags ) sufficientBtags = true;
     else sufficientBtags = false;
     this->UpdateCutflow( c_sufficientBtags, sufficientBtags );
     return sufficientBtags;
