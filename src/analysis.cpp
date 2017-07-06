@@ -1209,9 +1209,9 @@ bool Analysis::OutsideZmassWindow( const std::pair< TLorentzVector, TLorentzVect
     if ( m_debug ) std::cout << "cutting on |mll - mZ| > 10 ...\n";
     bool outsideZmassWindow;
     double mll = ( p_l.first + p_l.second ).M();
-    if ( ( mll - m_zmass ) > 10.0 ) outsideZmassWindow = true;
+    if ( ( std::abs( mll - m_zmass ) ) > 10.0 ) outsideZmassWindow = true;
     else outsideZmassWindow = false;
-    this->UpdateCutflow (c_outsideZmassWindow, outsideZmassWindow);
+    this->UpdateCutflow ( c_outsideZmassWindow, outsideZmassWindow );
     if ( m_debug ) std::cout << "cut on |mll - mZ| > 10 ...\n";
     return outsideZmassWindow;
 }
