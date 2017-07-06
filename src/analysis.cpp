@@ -46,7 +46,7 @@ void Analysis::EachEvent( double weight )
     double ETmiss = missingET->MET;
     p_miss.SetPtEtaPhiM( ETmiss, missingET->Eta, missingET->Phi, 0.0 );
 
-    if ( !this->SufficientMET() ) return;
+    if ( ( m_channel == "ee" or m_channel == "mumu" ) and !this->SufficientMET() ) return;
 
     m_electron = new std::vector< Electron* >;
     for ( int i = 0; i < b_Electron->GetEntries(); i++ )
@@ -133,7 +133,7 @@ void Analysis::EachEvent( double weight )
     if ( m_debug ) p_l.second.Print();
 
     if ( !this->SufficientMll( p_l ) ) return;
-    if ( !this->OutsideZmassWindow( p_l ) ) return;
+    if ( ( m_channel == "ee" or m_channel == "mumu" ) and !this->OutsideZmassWindow( p_l ) ) return;
 
     m_jet = new std::vector< Jet* >;
     for ( int i = 0; i < b_Jet->GetEntries(); i++ )
@@ -171,7 +171,7 @@ void Analysis::EachEvent( double weight )
 
     if ( !this->SufficientJets() ) return;
     if ( !this->SufficientBtags() ) return;
-    if ( !this->SufficientHT() ) return;
+    if ( m_channel == "emu" and !this->SufficientHT() ) return;
 
     // ScalarHT *scalarHT = (ScalarHT*) b_ScalarHT->At(0);
     // double HT = scalarHT->HT;
