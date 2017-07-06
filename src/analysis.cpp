@@ -1158,7 +1158,7 @@ void Analysis::AssignChannel()
     else if ( m_muon->size() == 2 ) m_channel = "mumu";
     else if ( m_electron->size() == 1 and m_muon->size() == 1 ) m_channel = "emu";
     else std::cout << "Error: can't assign channel\n";
-    std::cout << "Channel assinged: " << m_channel << "\n";
+    if ( m_debug ) std::cout << "Channel assinged: " << m_channel << "\n";
 }
 
 bool Analysis::OppositeCharge()
@@ -1461,8 +1461,6 @@ void Analysis::InitialiseCutflow()
     m_cutNames[ c_sufficientBtags ]    = "Sufficient b-tags     ";
     m_cutNames[ c_sufficientHT ]       = "Sufficient HT         ";
     m_cutNames[ c_realSolutions ]      = "Has real roots        ";
-    m_cutNames[ c_mtt ]                = "mtt                   ";
-    m_cutNames[ c_ytt ]                = "ytt                   ";
     m_cutNames[ c_deltaR ]             = "deltaR                ";
 
     h_cutflow = new TH1D( "cutflow", "cutflow", m_cuts, 0, m_cuts );

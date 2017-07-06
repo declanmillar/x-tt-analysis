@@ -152,10 +152,7 @@ private:
         c_sufficientJets,
         c_sufficientBtags,
         c_sufficientHT,
-        c_HT,
         c_realSolutions,
-        c_mtt,
-        c_ytt,
         c_deltaR,
         m_cuts // Keep as last entry
     };
