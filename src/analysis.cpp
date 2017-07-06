@@ -109,6 +109,26 @@ void Analysis::EachEvent( double weight )
             p_l.first.SetPtEtaPhiM( muon2->PT, muon2->Eta, muon2->Phi, 0.0 );
         }
     }
+    else if ( m_channel == "emu" )
+    {
+        Electron *electron = ( Electron* ) m_electron->at(0);
+        Muon *muon = ( Muon* ) m_muon->at(0);
+
+        double charge1 = electron->Charge;
+        double charge2 = muon->Charge;
+
+        if ( charge1 > 0 )
+        {
+            p_l.first.SetPtEtaPhiM( electron->PT, electron->Eta, electron->Phi, 0.0 );
+            p_l.second.SetPtEtaPhiM( muon->PT, muon->Eta, muon->Phi, 0.0 );
+        }
+        else
+        {
+            p_l.second.SetPtEtaPhiM( electron->PT, electron->Eta, electron->Phi, 0.0 );
+            p_l.first.SetPtEtaPhiM( muon->PT, muon->Eta, muon->Phi, 0.0 );
+        }
+    }
+    else std::cout << "Error: invalid channel\n";
     if ( m_debug ) p_l.first.Print();
     if ( m_debug ) p_l.second.Print();
 
