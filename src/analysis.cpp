@@ -236,29 +236,57 @@ void Analysis::EachEvent( double weight )
     TLorentzVector p_W1 = p_l.first + p_v1;
     TLorentzVector p_W2 = p_l.second + p_v2;
 
-    double mtt = p_ttbar.M();
-    double ytt = p_ttbar.Rapidity();
-    double costheta_tt = cos( p_top.Angle( p_tbar.Vect() ) );
-    double delta_abs_yt = std::abs( p_top.Rapidity() ) - std::abs( p_tbar.Rapidity() );
+    auto mtt = p_ttbar.M();
+    auto ytt = p_ttbar.Rapidity();
+    auto costheta_tt = cos( p_top.Angle( p_tbar.Vect() ) );
+    auto delta_abs_yt = std::abs( p_top.Rapidity() ) - std::abs( p_tbar.Rapidity() );
 
-    TLorentzVector pcm_top = p_top;
-    TLorentzVector pcm_tbar = p_tbar;
-    TLorentzVector pcm_ttbar = p_ttbar;
-    TLorentzVector pcm_b1 = p_b1;
-    TLorentzVector pcm_b2 = p_b2;
-    TLorentzVector pcm_v1 = p_v1;
-    TLorentzVector pcm_v2 = p_v2;
+    auto pttbar_top = p_top, pttbar_tbar = p_tbar, pttbar_ttbar = p_ttbar;
+    auto pttbar_b1 = p_b1, pttbar_b2 = p_b2, pttbar_v1 = p_v1, pttbar_v2 = p_v2;
+    auto pttbar_l = p_l;
 
-    TVector3 v = - ( p_ttbar ).BoostVector();
-    pcm_top.Boost(v);
-    pcm_tbar.Boost(v);
-    pcm_ttbar.Boost(v);
-    pcm_b1.Boost(v);
-    pcm_b2.Boost(v);
-    pcm_v1.Boost(v);
-    pcm_v2.Boost(v);
+    TVector3 v_ttbar = - ( p_ttbar ).BoostVector();
+    pttbar_top.Boost( v_ttbar );
+    pttbar_tbar.Boost( v_ttbar );
+    pttbar_ttbar.Boost( v_ttbar );
+    pttbar_b1.Boost( v_ttbar );
+    pttbar_b2.Boost( v_ttbar );
+    pttbar_l.first.Boost( v_ttbar );
+    pttbar_l.second.Boost( v_ttbar );
+    pttbar_v1.Boost( v_ttbar );
+    pttbar_v2.Boost( v_ttbar );
 
-    double costheta = pcm_top.CosTheta();
+    auto ptop_top = p_top, ptop_tbar = p_tbar, ptop_ttbar = p_ttbar;
+    auto ptop_b1 = p_b1, ptop_b2 = p_b2, ptop_v1 = p_v1, ptop_v2 = p_v2;
+    auto ptop_l = p_l;
+
+    TVector3 v_top = - ( p_top ).BoostVector();
+    ptop_top.Boost( v_top );
+    ptop_tbar.Boost( v_top );
+    ptop_ttbar.Boost( v_top );
+    ptop_b1.Boost( v_top );
+    ptop_b2.Boost( v_top );
+    ptop_l.first.Boost( v_top );
+    ptop_l.second.Boost( v_top );
+    ptop_v1.Boost( v_top );
+    ptop_v2.Boost( v_top );
+
+    auto ptbar_top = p_top, ptbar_tbar = p_tbar, ptbar_ttbar = p_ttbar;
+    auto ptbar_b1 = p_b1, ptbar_b2 = p_b2, ptbar_v1 = p_v1, ptbar_v2 = p_v2;
+    auto ptbar_l = p_l;
+
+    TVector3 v_tbar = - ( p_tbar ).BoostVector();
+    ptbar_top.Boost( v_tbar );
+    ptbar_tbar.Boost( v_tbar );
+    ptbar_ttbar.Boost( v_tbar );
+    ptbar_b1.Boost( v_tbar );
+    ptbar_b2.Boost( v_tbar );
+    ptbar_l.first.Boost( v_tbar );
+    ptbar_l.second.Boost( v_tbar );
+    ptbar_v1.Boost( v_tbar );
+    ptbar_v2.Boost( v_tbar );
+
+    double costheta = pttbar_top.CosTheta();
     double costhetastar = int( ytt / std::abs( ytt ) ) * costheta;
 
     if ( m_debug ) std::cout << "Filling histograms ...\n";
@@ -295,64 +323,40 @@ void Analysis::EachEvent( double weight )
     double deltaPhi = p_l.first.DeltaPhi( p_l.second ) / m_pi;
     h_deltaPhi->Fill( deltaPhi, weight );
 
-    h2_HT_deltaPhi->Fill( HT, deltaPhi, weight );
-    h2_mvis_deltaPhi->Fill( mvis, deltaPhi, weight );
-    h2_KT_deltaPhi->Fill( KT, deltaPhi, weight );
+    h2_HT_deltaPhi->Fill( HT / 1000, deltaPhi, weight );
+    h2_mvis_deltaPhi->Fill( mvis / 1000, deltaPhi, weight );
+    h2_KT_deltaPhi->Fill( KT / 1000, deltaPhi, weight );
 
     h_costheta_tt->Fill( costheta_tt, weight );
     h_cosTheta->Fill( costheta, weight );
     h_cosThetaStar->Fill( costhetastar, weight );
 
-    if ( costhetastar > 0) h_mtt_tF->Fill( mtt, weight );
-    if ( costhetastar < 0) h_mtt_tB->Fill( mtt, weight );
+    if ( costhetastar > 0 ) h_mtt_tF->Fill( mtt / 1000, weight );
+    if ( costhetastar < 0 ) h_mtt_tB->Fill( mtt / 1000, weight );
 
-    if ( delta_abs_yt > 0) h_mtt_tCF->Fill( mtt, weight );
-    if ( delta_abs_yt < 0) h_mtt_tCB->Fill( mtt, weight );
+    if ( delta_abs_yt > 0 ) h_mtt_tCF->Fill( mtt / 1000, weight );
+    if ( delta_abs_yt < 0 ) h_mtt_tCB->Fill( mtt / 1000, weight );
 
-    // std::vector< TLorentzVector > ptop = p;
-    // v = -1 * ( p_top ).BoostVector();
-    // for ( auto& l : ptop) l.Boost(v);
-    //
-    // std::vector< TLorentzVector > patop = p;
-    // v = -1 * ( p[1] + p[4] + p[5] ).BoostVector();
-    // for ( auto& l : patop ) l.Boost(v);
-    //
-    // double costheta_tl1 = cos( ptop[2].Angle( pcm_t.Vect() ) );
-    // double costheta_tl2 = cos( patop[4].Angle( pcm_tbar.Vect() ) );
-    // double cos1cos2 = costheta_tl1 * costheta_tl2;
-    //
-    // h_cosTheta1->Fill( costheta_tl1, weight );
-    // h_cosTheta2->Fill( costheta_tl2, weight );
-    // h_cos1cos2->Fill( cos1cos2, weight );
-    // h_deltaR_bW->Fill( deltaR_bW, weight );
-    // h_deltaR_max->Fill( *deltaR_max, weight );
-    //
-    // for ( int i = 0; i < ( int) deltaRs.size(); i++ )
-    //     h_deltaRs[i]->Fill( deltaRs[i], weight );
-    //
-    // for ( int i = 0; i < (int) p.size(); i++ )
-    // {
-    //     h_eta[i]->Fill( p[i].Eta(), weight );
-    //     h_pt[i]->Fill( p[i].Pt(), weight );
-    // }
-    //
-    // if ( costheta_tl1 > 0 ) h_mtt_tlF->Fill( mtt, weight );
-    // if ( costheta_tl2 < 0 ) h_mtt_tlB->Fill( mtt, weight );
-    //
-    // if ( costheta_tl1 > 0 ) h_mtt_lF->Fill( mtt, weight );
-    // if ( costheta_tl1 < 0 ) h_mtt_lB->Fill( mtt, weight );
-    //
-    // if ( phil < m_pi and phil > phi0 ) h_mtt_philF->Fill( mtt, weight );
-    // if ( phil < phi0 ) h_mtt_philB->Fill( mtt, weight );
-    //
-    // if ( El > E0 ) h_mtt_ElF->Fill( mtt, weight );
-    // if ( El < E0 ) h_mtt_ElB->Fill( mtt, weight );
+    double costheta_tl1 = cos( ptop_l.first.Angle( pttbar_top.Vect() ) );
+    double costheta_tl2 = cos( ptbar_l.second.Angle( pttbar_tbar.Vect() ) );
+    double cos1cos2 = costheta_tl1 * costheta_tl2;
 
-    h2_mtt_cosThetaStar->Fill( mtt, costhetastar, weight );
-    h2_mtt_deltaPhi->Fill( mtt, deltaPhi, weight );
-    // h2_mtt_cosTheta1->Fill( mtt, costheta_tl1, weight );
-    // h2_mtt_cosTheta2->Fill( mtt, costheta_tl2, weight );
-    // h2_mtt_cos1cos2->Fill( mtt, cos1cos2, weight );
+    h_cosTheta1->Fill( costheta_tl1, weight );
+    h_cosTheta2->Fill( costheta_tl2, weight );
+    h_cos1cos2->Fill( cos1cos2, weight );
+
+    if ( costheta_tl1 > 0 ) h_mtt_tlF->Fill( mtt / 1000, weight );
+    if ( costheta_tl2 < 0 ) h_mtt_tlB->Fill( mtt / 1000, weight );
+
+    if ( costheta_tl1 > 0 ) h_mtt_lF->Fill( mtt / 1000, weight );
+    if ( costheta_tl1 < 0 ) h_mtt_lB->Fill( mtt / 1000, weight );
+
+    h2_mtt_cosThetaStar->Fill( mtt / 1000, costhetastar, weight );
+    h2_mtt_deltaPhi->Fill( mtt / 1000, deltaPhi, weight );
+    h2_mtt_cosTheta1->Fill( mtt / 1000, costheta_tl1, weight );
+    h2_mtt_cosTheta2->Fill( mtt / 1000, costheta_tl2, weight );
+    h2_mtt_cos1cos2->Fill( mtt / 1000, cos1cos2, weight );
+
     if ( m_debug ) std::cout << "Finished filling histograms\n";
     this->CleanupEvent();
 }
@@ -876,25 +880,25 @@ void Analysis::MakeDistributions()
     this->MakeDistribution1D( h_eta_allel, "" );
     this->MakeDistribution1D( h_eta_allmu, "" );
 
-    // this->MakeDistribution1D( h_cosTheta, "" );
-    // this->MakeDistribution1D( h_cosThetaStar, "" );
-    // this->MakeDistribution1D( h_costheta_tt, "" );
+    this->MakeDistribution1D( h_cosTheta, "" );
+    this->MakeDistribution1D( h_cosThetaStar, "" );
+    this->MakeDistribution1D( h_costheta_tt, "" );
 
-    // this->MakeDistribution1D( h_mtt_tF, "TeV" );
-    // this->MakeDistribution1D( h_mtt_tB, "TeV" );
+    this->MakeDistribution1D( h_mtt_tF, "TeV" );
+    this->MakeDistribution1D( h_mtt_tB, "TeV" );
 
-    // h_AtFB = this->Asymmetry( "AtFB", "A^{t}_{FB^{*}}", h_mtt_tF, h_mtt_tB );
-    // h_AtFB->GetYaxis()->SetTitle( h_AtFB->GetTitle() );
-    // h_AtFB->GetXaxis()->SetTitle( "m_{tt} [TeV]" );
-    // h_AtFB->Write();
+    h_AtFB = this->Asymmetry( "AtFB", "A^{t}_{FB^{*}}", h_mtt_tF, h_mtt_tB );
+    h_AtFB->GetYaxis()->SetTitle( h_AtFB->GetTitle() );
+    h_AtFB->GetXaxis()->SetTitle( "m_{tt} [TeV]" );
+    h_AtFB->Write();
 
-    // this->MakeDistribution1D( h_mtt_tCF, "TeV" );
-    // this->MakeDistribution1D( h_mtt_tCB, "TeV" );
+    this->MakeDistribution1D( h_mtt_tCF, "TeV" );
+    this->MakeDistribution1D( h_mtt_tCB, "TeV" );
 
-    // h_AtC = this->Asymmetry("AtC", "A^{t}_{C}", h_mtt_tCF, h_mtt_tCB);
-    // h_AtC->GetYaxis()->SetTitle( h_AtC->GetTitle() );
-    // h_AtC->GetXaxis()->SetTitle( "m_{tt} [TeV]" );
-    // h_AtC->Write();
+    h_AtC = this->Asymmetry("AtC", "A^{t}_{C}", h_mtt_tCF, h_mtt_tCB);
+    h_AtC->GetYaxis()->SetTitle( h_AtC->GetTitle() );
+    h_AtC->GetXaxis()->SetTitle( "m_{tt} [TeV]" );
+    h_AtC->Write();
 
     this->MakeDistribution1D( h_pt_l1, "TeV" );
     this->MakeDistribution1D( h_eta_l1, "" );
@@ -920,13 +924,13 @@ void Analysis::MakeDistributions()
     this->MakeDistribution1D( h_nMuons, "" );
     this->MakeDistribution1D( h_nJets, "" );
 
-    // this->MakeDistribution1D( h_cosTheta1, "" );
-    // this->MakeDistribution1D( h_cosTheta2, "" );
-    // this->MakeDistribution1D( h_cos1cos2, "" );
+    this->MakeDistribution1D( h_cosTheta1, "" );
+    this->MakeDistribution1D( h_cosTheta2, "" );
+    this->MakeDistribution1D( h_cos1cos2, "" );
     this->MakeDistribution1D( h_deltaPhi, "rad / #pi" );
 
-    // this->MakeDistribution1D( h_mtt_tlF, "TeV" );
-    // this->MakeDistribution1D( h_mtt_tlB, "TeV" );
+    this->MakeDistribution1D( h_mtt_tlF, "TeV" );
+    this->MakeDistribution1D( h_mtt_tlB, "TeV" );
 
     // h_AtlFB = this->Asymmetry( "AtlFB", "A^{tl}_{FB^*}", h_mtt_tlF, h_mtt_tlB );
     // h_AtlFB->GetYaxis()->SetTitle( h_AtlFB->GetTitle() );
@@ -966,36 +970,14 @@ void Analysis::MakeDistributions()
     // this->MakeDistribution1D( h_pv2y, "GeV" );
     // this->MakeDistribution1D( h_pv2z, "GeV" );
 
-    // for ( auto& h : h_pt )
-    // {
-    //     h->GetYaxis()->SetTitle( "d#sigma / d p_{T}" );
-    //     h->GetXaxis()->SetTitle( "p_{T}" );
-    // }
-
-    // for ( auto& h : h_eta )
-    // {
-    //     h->GetYaxis()->SetTitle( "d#sigma / d #eta" );
-    //     h->GetXaxis()->SetTitle( "#eta" );
-    // }
-
-    // for ( auto& h_deltaR : h_deltaRs )
-    // {
-    //     h_deltaR->GetYaxis()->SetTitle( "d#sigma / d #Delta R" );
-    //     h_deltaR->GetXaxis()->SetTitle( "#Delta R" );
-    // }
-
-    // this->MakeDistribution1D( h_deltaR_bW, "" );
-    // this->MakeDistribution1D( h_deltaR_max, "" );
-    // this->MakeDistribution1D( h_deltaR_tt, "" );
-
     this->MakeDistribution2D( h2_HT_deltaPhi, "H_{T}", "GeV", "#Delta#phi", "" );
     this->MakeDistribution2D( h2_mvis_deltaPhi, "m_{vis}", "GeV", "#Delta#phi", "" );
     this->MakeDistribution2D( h2_KT_deltaPhi, "K_{T}", "GeV", "#Delta#phi", "" );
 
-    //     this->MakeDistribution2D(h2_mtt_deltaPhi, "m_{tt}", "GeV", "cos#theta cos#theta", "");
-    //     this->MakeDistribution2D(h2_mtt_cosThetaStar, "m_{tt}", "GeV", "cos#theta^{*}", "");
-    //     this->MakeDistribution2D(h2_mtt_cosTheta1, "m_{tt}", "GeV", "cos#theta_{l^{+}}", "");
-    //     this->MakeDistribution2D(h2_mtt_cosTheta2, "m_{tt}", "GeV", "cos#theta_{l^{-}}", "");
+    this->MakeDistribution2D(h2_mtt_deltaPhi, "m_{tt}", "GeV", "cos#theta cos#theta", "");
+    this->MakeDistribution2D(h2_mtt_cosThetaStar, "m_{tt}", "GeV", "cos#theta^{*}", "");
+    this->MakeDistribution2D(h2_mtt_cosTheta1, "m_{tt}", "GeV", "cos#theta_{l^{+}}", "");
+    this->MakeDistribution2D(h2_mtt_cosTheta2, "m_{tt}", "GeV", "cos#theta_{l^{-}}", "");
 }
 
 
