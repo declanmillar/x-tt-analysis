@@ -44,6 +44,7 @@ protected:
     void EachEvent( double );
     void EveryEvent( double );
     void CleanupEvent();
+    void AssignChannel();
 
     // histograms
     void MakeHistograms();
@@ -122,7 +123,7 @@ private:
     double m_Emax = -1;
     bool m_useLumi;
     const bool m_debug = false;
-    const std::string m_channel = "electron";
+    std::string m_channel;
 
     unsigned int m_nReco;
     unsigned int m_nQuarksMatched;

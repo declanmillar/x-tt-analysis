@@ -67,10 +67,11 @@ void Analysis::EachEvent( double weight )
     }
 
     if ( !this->ExactlyTwoLeptons() ) return;
+    this->AssignChannel();
     if ( !this->OppositeCharge() ) return;
 
     std::pair< TLorentzVector, TLorentzVector > p_l;
-    if ( m_channel == "electron" )
+    if ( m_channel == "ee" )
     {
         Electron *electron1 = m_electron->at(0);
         Electron *electron2 = m_electron->at(1);
@@ -89,7 +90,7 @@ void Analysis::EachEvent( double weight )
             p_l.first.SetPtEtaPhiM( electron2->PT, electron2->Eta, electron2->Phi, 0.0 );
         }
     }
-    else if ( m_channel == "muon" )
+    else if ( m_channel == "mumu" )
     {
         Muon *muon1 = ( Muon* ) m_muon->at(0);
         Muon *muon2 = ( Muon* ) m_muon->at(1);
@@ -1145,25 +1146,25 @@ void Analysis::NormalizeSliceY(TH2D* h)
 bool Analysis::ExactlyTwoLeptons()
 {
     bool twoLeptons;
-    if ( m_channel == "electron" )
-    {
-        if ( m_electron->size() == 2 ) twoLeptons = true;
-        else twoLeptons = false;
-    }
-    else if ( m_channel == "muon" )
-    {
-        if ( m_muon->size() == 2 ) twoLeptons = true;
-        else twoLeptons = false;
-    }
+    if ( m_electron->size() + m_muon->size() == 2 ) twoLeptons = true;
+    else twoLeptons = false;
     this->UpdateCutflow( c_twoLeptons, twoLeptons );
     return twoLeptons;
 }
 
+void Analysis::AssignChannel()
+{
+    if ( m_electron->size() == 2 ) m_channel = "ee";
+    else if ( m_muon->size() == 2 ) m_channel = "mumu";
+    else if ( m_electron->size() == 1 and m_muon->size() == 1 ) m_channel = "emu";
+    else std::cout << "Error: can't assign channel\n";
+    std::cout << "Channel assinged: " << m_channel << "\n";
+}
 
 bool Analysis::OppositeCharge()
 {
     double charge1, charge2;
-    if ( m_channel == "electron" )
+    if ( m_channel == "ee" )
     {
         Electron *electron1 = ( Electron* ) m_electron->at(0);
         Electron *electron2 = ( Electron* ) m_electron->at(1);
@@ -1171,7 +1172,7 @@ bool Analysis::OppositeCharge()
         charge1 = electron1->Charge;
         charge2 = electron2->Charge;
     }
-    else if ( m_channel == "muon" )
+    else if ( m_channel == "mumu" )
     {
         Muon *muon1 = ( Muon* ) m_muon->at(0);
         Muon *muon2 = ( Muon* ) m_muon->at(1);
@@ -1179,6 +1180,14 @@ bool Analysis::OppositeCharge()
         charge1 = muon1->Charge;
         charge2 = muon2->Charge;
     }
+    else if (m_channel == "emu") {
+        Muon *muon = ( Muon* ) m_muon->at(0);
+        Electron *electron = ( Electron* ) m_electron->at(0);
+
+        charge1 = muon->Charge;
+        charge2 = electron->Charge;
+    }
+    else std::cout << "Error: invalid channel\n";
 
     bool oppositeCharge;
 
@@ -1198,7 +1207,7 @@ bool Analysis::SufficientMll( const std::pair< TLorentzVector, TLorentzVector >&
     double mll = ( p_l.first + p_l.second ).M();
     if ( mll > 15.0 ) sufficientMll = true;
     else sufficientMll = false;
-    this->UpdateCutflow (c_sufficientMll, sufficientMll);
+    this->UpdateCutflow ( c_sufficientMll, sufficientMll );
     if ( m_debug ) std::cout << "cut on mll\n";
     return sufficientMll;
 }
