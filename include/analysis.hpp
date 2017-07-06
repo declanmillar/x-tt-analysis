@@ -145,13 +145,13 @@ private:
     enum m_cutlist{
         c_events,
         c_sufficientMET,
+        c_sufficientHT,
         c_twoLeptons,
         c_oppositeCharge,
         c_sufficientMll,
         c_outsideZmassWindow,
         c_sufficientJets,
         c_sufficientBtags,
-        c_sufficientHT,
         c_realSolutions,
         c_deltaR,
         m_cuts // Keep as last entry

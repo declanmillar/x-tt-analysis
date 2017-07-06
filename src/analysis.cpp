@@ -47,6 +47,7 @@ void Analysis::EachEvent( double weight )
     p_miss.SetPtEtaPhiM( ETmiss, missingET->Eta, missingET->Phi, 0.0 );
 
     if ( ( m_channel == "ee" or m_channel == "mumu" ) and !this->SufficientMET() ) return;
+    if ( m_channel == "emu" and !this->SufficientHT() ) return;
 
     m_electron = new std::vector< Electron* >;
     for ( int i = 0; i < b_Electron->GetEntries(); i++ )
@@ -144,6 +145,9 @@ void Analysis::EachEvent( double weight )
         if ( passed ) m_jet->push_back( jet );
     }
 
+    if ( !this->SufficientJets() ) return;
+    if ( !this->SufficientBtags() ) return;
+
     std::vector< TLorentzVector > p_j, p_b, p_q;
     for ( int i = 0; i < m_jet->size(); i++ )
     {
@@ -169,9 +173,6 @@ void Analysis::EachEvent( double weight )
         h_eta_jets->Fill( p.Eta(), weight );
     }
 
-    if ( !this->SufficientJets() ) return;
-    if ( !this->SufficientBtags() ) return;
-    if ( m_channel == "emu" and !this->SufficientHT() ) return;
 
     // ScalarHT *scalarHT = (ScalarHT*) b_ScalarHT->At(0);
     // double HT = scalarHT->HT;
@@ -1292,7 +1293,7 @@ bool Analysis::SufficientHT()
 bool Analysis::SufficientJets()
 {
     bool sufficientJets;
-    if ( b_Jet->GetEntries() >= 2 ) sufficientJets = true;
+    if ( m_jet->size() >= 2 ) sufficientJets = true;
     else sufficientJets = false;
     this->UpdateCutflow( c_sufficientJets, sufficientJets );
     return sufficientJets;
