@@ -1388,6 +1388,7 @@ void Analysis::GetProcessWeight( int proc_id )
     int nevents = m_nevents;
     std::cout << "Number of events = " << nevents << "\n";
     std::get<5>( m_processes->at( proc_id ) ) = 1.0 * std::get<3>( m_processes->at( proc_id ) ) / ( nevents * nproc );
+    if ( m_useLumi ) std::get<5>( m_processes->at( proc_id ) ) *= m_luminosity;
     std::cout << "Event weight = "<< std::get<5>( m_processes->at( proc_id ) ) << "\n";
 }
 
