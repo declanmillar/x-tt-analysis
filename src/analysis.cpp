@@ -10,12 +10,13 @@
 #include "get-parameter.hpp"
 #include <exception>
 
-Analysis::Analysis( const std::string& model, const std::string& process, const std::string& options, const int energy, const int luminosity, const std::string& reconstruction, const std::string& tag ):
+Analysis::Analysis( const std::string& model, const std::string& process, const std::string& options, const int energy, const int luminosity, const int minimumBtags, const std::string& reconstruction, const std::string& tag ):
     m_model( model ),
     m_process( process ),
     m_options( options ),
     m_energy( energy ),
     m_luminosity( luminosity ),
+    m_minimumBtags( minimumBtags ),
     m_reconstruction( reconstruction ),
     m_tag( tag ),
     m_output( nullptr ),

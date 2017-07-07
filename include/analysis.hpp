@@ -27,7 +27,7 @@
 class Analysis {
 
 public:
-    Analysis( const std::string& model, const std::string& process, const std::string& options, const int energy, const int luminosity, const std::string& reconstruction, const std::string& tag );
+    Analysis( const std::string& model, const std::string& process, const std::string& options, const int energy, const int luminosity, const int minimumBtags, const std::string& reconstruction, const std::string& tag );
     virtual ~Analysis();
     void Run();
 
