@@ -40,6 +40,7 @@ int main(int argc, char* argv[])
     auto luminosity = opt["luminosity"].as<double>();
     auto add_gg = opt["add_gg"].as<bool>();
     auto add_qq = opt["add_qq"].as<bool>();
+    auto minimumBtags = opt["minimumBtags"].as<int>();
     auto reconstruction = opt["reconstruction"].as<const std::string>();
     auto tag = opt["tag"].as<std::string>();
 
@@ -66,6 +67,6 @@ int main(int argc, char* argv[])
     if (options != -1) std::cout << "Luminosity:     " << luminosity << " [fb-1]\n";
     std::cout << "Reconstruction: " << reconstruction << "\n";
 
-    auto analysis = new Analysis(model, process, options, energy, luminosity, reconstruction, tag);
+    auto analysis = new Analysis(model, process, options, energy, luminosity, minimumBtags, reconstruction, tag);
     analysis->Run();
 }
