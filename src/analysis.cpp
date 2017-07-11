@@ -47,8 +47,8 @@ void Analysis::EachEvent( double weight )
     double ETmiss = missingET->MET;
     p_miss.SetPtEtaPhiM( ETmiss, missingET->Eta, missingET->Phi, 0.0 );
 
-    if ( ( m_channel == "ee" or m_channel == "mumu" ) and !this->SufficientMET() ) return;
-    if ( m_channel == "emu" and !this->SufficientHT() ) return;
+    if ( !this->SufficientMET() ) return;
+    if ( !this->SufficientHT() ) return;
 
     m_electron = new std::vector< Electron* >;
     for ( int i = 0; i < b_Electron->GetEntries(); i++ )
@@ -135,7 +135,7 @@ void Analysis::EachEvent( double weight )
     if ( m_debug ) p_l.second.Print();
 
     if ( !this->SufficientMll( p_l ) ) return;
-    if ( ( m_channel == "ee" or m_channel == "mumu" ) and !this->OutsideZmassWindow( p_l ) ) return;
+    if ( !this->OutsideZmassWindow( p_l ) ) return;
 
     m_jet = new std::vector< Jet* >;
     for ( int i = 0; i < b_Jet->GetEntries(); i++ )
@@ -1249,6 +1249,7 @@ bool Analysis::OutsideZmassWindow( const std::pair< TLorentzVector, TLorentzVect
     double mll = ( p_l.first + p_l.second ).M();
     if ( ( std::abs( mll - m_zmass ) ) > 10.0 ) outsideZmassWindow = true;
     else outsideZmassWindow = false;
+    if ( m_channel == "emu" ) outsideZmassWindow = true;
     this->UpdateCutflow ( c_outsideZmassWindow, outsideZmassWindow );
     if ( m_debug ) std::cout << "cut on |mll - mZ| > 10 ...\n";
     return outsideZmassWindow;
@@ -1280,6 +1281,7 @@ bool Analysis::SufficientMET()
     double ETmiss = missingET->MET;
     if ( ETmiss > 60 ) sufficientMET = true;
     else sufficientMET = false;
+    if ( m_channel == "emu" ) sufficientMET = true;
     this->UpdateCutflow( c_sufficientMET, sufficientMET );
     return sufficientMET;
 }
@@ -1293,6 +1295,7 @@ bool Analysis::SufficientHT()
     double HT = scalarHT->HT;
     if ( HT > 130 ) sufficientHT = true;
     else sufficientHT = false;
+    if ( m_channel == "ee" or m_channel == "mumu" ) sufficientHT = true;
     this->UpdateCutflow( c_sufficientHT, sufficientHT );
     return sufficientHT;
 }
