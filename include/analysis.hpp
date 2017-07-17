@@ -24,15 +24,16 @@
 #include "ExRootAnalysis/ExRootResult.h"
 #include "ExRootAnalysis/ExRootUtilities.h"
 
-class Analysis {
+using namespace std;
 
+class Analysis {
 public:
-    Analysis( const std::string& model, const std::string& process, const std::string& options, const int energy, const int luminosity, const int minimumBtags, const std::string& reconstruction, const std::string& tag );
+    Analysis(const string& model, const string& process, const string& options, const int energy, const int luminosity, const int minimumBtags, const string& reconstruction, const string& tag);
     virtual ~Analysis();
     void Run();
 
 protected:
-    void SetupTreesForNewFile( const std::string& );
+    void SetupTreesForNewFile(const string&);
     void CleanUp();
     void SetupInputFiles();
     void SetupOutputFiles();
@@ -41,33 +42,32 @@ protected:
     void Loop();
     void PostLoop();
 
-    void EachEvent( double );
-    void EveryEvent( double );
+    void EachEvent(double);
+    void EveryEvent(double);
     void CleanupEvent();
     void AssignChannel();
 
     // histograms
     void MakeHistograms();
     void MakeDistributions();
-    void MakeDistribution1D( TH1D*, const std::string& );
-    void MakeDistribution2D( TH2D*, std::string, std::string, std::string, std::string );
-    void NormalizeSliceY( TH2D* );
+    void MakeDistribution1D(TH1D*, const string&);
+    void MakeDistribution2D(TH2D*, string, string, string, string);
+    void MakeDistributionAL(TH2D*, const string&);
+    void NormalizeSliceY(TH2D*);
     void WriteHistograms();
 
-    void CheckResults();
-    void GetGenerationCrossSection( int );
-    void GetProcessWeight( int );
+    void GetGenerationCrossSection(int);
+    void GetProcessWeight(int);
     void SetDataDirectory();
     void GetChannelFactors();
-    void AsymmetryUncertainty( TH1D*, TH1D*, TH1D* );
-    void ResetCounters();
+    void AsymmetryUncertainty(TH1D*, TH1D*, TH1D*);
     void GetBranches();
-    void EachFile( const std::string& );
+    void EachFile(const string&);
 
     // cutflow
     void InitialiseCutflow();
     void PrintCutflow();
-    void UpdateCutflow( int, bool );
+    void UpdateCutflow(int, bool);
 
     // event selection
     bool PassesEventSelection();
@@ -77,13 +77,13 @@ protected:
     bool SufficientBtags();
     bool SufficientHT();
     bool SufficientMET();
-    bool SufficientMll(const  std::pair< TLorentzVector, TLorentzVector >& );
-    bool OutsideZmassWindow(const  std::pair< TLorentzVector, TLorentzVector >& );
+    bool SufficientMll(const pair<TLorentzVector, TLorentzVector>&);
+    bool OutsideZmassWindow(const pair<TLorentzVector, TLorentzVector>&);
 
     Long64_t TotalEvents();
-    Long64_t IncrementEvent( Long64_t i );
-    double TotalAsymmetry( TH1D* h_A, TH1D* h_B );
-    TH1D* Asymmetry( const std::string&, const std::string&, TH1D*, TH1D* );
+    Long64_t IncrementEvent(Long64_t i);
+    double TotalAsymmetry(TH1D* h_A, TH1D* h_B);
+    TH1D* Asymmetry(const string&, const string&, TH1D*, TH1D*);
 
     // tuple
     TClonesArray* b_Jet;
@@ -92,56 +92,45 @@ protected:
     TClonesArray* b_MissingET;
     TClonesArray* b_ScalarHT;
 
-
 private:
     Analysis();
-    Analysis( const Analysis& rhs );
-    void operator = ( const Analysis& rhs );
+    Analysis(const Analysis& rhs);
+    void operator = (const Analysis& rhs);
 
-    typedef std::vector< std::tuple< std::string, int > >::const_iterator itr_s;
-    std::vector< std::tuple< std::string, int > >* m_input;
-    std::vector< std::tuple< std::string, int, int, double, double, double > >* m_processes;
+    typedef vector<tuple<string, int>>::const_iterator itr_s;
+    vector<tuple<string, int>>* m_input;
+    vector<tuple<string, int, int, double, double, double>>* m_processes;
 
-    std::vector< Electron* >* m_electron;
-    std::vector< Muon* >* m_muon;
-    std::vector< Jet* >* m_jet;
+    vector<Electron*>* m_electron;
+    vector<Muon*>* m_muon;
+    vector<Jet*>* m_jet;
 
-    TString m_model;
-    std::string m_process;
-    TString m_options;
+    string m_model;
+    string m_process;
+    string m_options;
     int m_energy;
     int m_luminosity;
-    TString m_tag;
-    std::string m_pdf = "CT14LL";
+    string m_tag;
+    string m_pdf = "CT14LL";
 
     bool m_xsec = false;
-    bool m_fid = false;
-    bool m_iso = false;
-    const std::string m_reconstruction;
-    double m_ytt = 0.0;
-    double m_Emin = -1;
-    double m_Emax = -1;
+    const string m_reconstruction;
     bool m_useLumi;
     const bool m_debug = false;
-    std::string m_channel;
+    string m_channel;
 
-    unsigned int m_nReco;
-    unsigned int m_nQuarksMatched;
-    unsigned int m_nNeutrinoMatched;
-    unsigned int m_nRealRoots;
-    unsigned int m_nComplexRoots;
     double m_crossSection;
     Long64_t m_nevents;
 
-    std::vector<double> iteration_weights;
-    std::string m_dataDirectory;
-    std::string m_outputName;
+    vector<double> iteration_weights;
+    string m_dataDirectory;
+    string m_outputName;
     TFile* m_output;
     TChain* m_chain;
     ExRootTreeReader* m_tree;
 
-    std::vector< int > m_cutflow;
-    std::vector< std::string > m_cutNames;
+    vector<int> m_cutflow;
+    vector<string> m_cutNames;
     enum m_cutlist{
         c_events,
         c_sufficientMET,
@@ -159,12 +148,10 @@ private:
 
     const double m_pi = 3.14159265358979323846;
     const double m_bmass = 4.18, m_Wmass = 80.4, m_zmass = 91.19, m_tmass = 172.5;
+
     const int m_minimumBtags;
     int m_btags;
-    const double m_efficiency = 1.0;
 
-
-    const bool truth = false;
     // Histograms
     TH1D* h_pt_l1;
     TH1D* h_eta_l1;

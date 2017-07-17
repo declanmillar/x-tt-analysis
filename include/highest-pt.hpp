@@ -3,7 +3,7 @@
 
 #include "TLorentzVector.h"
 
-TLorentzVector HighestPt( const std::vector< TLorentzVector >& );
-std::pair< TLorentzVector, TLorentzVector > TwoHighestPt( const std::vector< TLorentzVector >& );
+TLorentzVector HighestPt(const std::vector<TLorentzVector>&);
+std::pair<TLorentzVector, TLorentzVector> TwoHighestPt(const std::vector<TLorentzVector>&);
 
 #endif

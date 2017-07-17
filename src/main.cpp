@@ -3,24 +3,24 @@
 
 namespace po = boost::program_options;
 
-int main( int argc, char* argv[] )
+int main(int argc, char* argv[])
 {
-    po::options_description desc( "options" );
+    po::options_description desc("options");
     desc.add_options()
-    ( "model,m",          po::value< std::string >()->default_value( "SM" ) )
-    ( "gg,g",             po::value< bool >()->default_value( false )->implicit_value( true ) )
-    ( "qq,q",             po::value< bool >()->default_value( false )->implicit_value( true ) )
-    ( "uu,u",             po::value< bool >()->default_value( false )->implicit_value( true ) )
-    ( "dd,d",             po::value< bool >()->default_value( false )->implicit_value( true ) )
-    ( "final_state,f",    po::value< std::string >()->default_value( "tt-bbeevv" ) )
-    ( "add_gg,G",         po::value< bool >()->default_value( false )->implicit_value( true ) )
-    ( "add_qq,Q",         po::value< bool >()->default_value( false )->implicit_value( true ) )
-    ( "energy,E",         po::value< int >()->default_value(13) )
-    ( "luminosity,L",     po::value< double >()->default_value(-1) )
-    ( "minimumBtags,b",   po::value< int >()->default_value(2) )
-    ( "options,o",        po::value< std::string >()->default_value("") )
-    ( "reconstruction,r", po::value< std::string >()->default_value( "NuW" ) )
-    ( "tag,t",            po::value< std::string >()->default_value("") )
+    ("model,m",          po::value< std::string >()->default_value("SM"))
+    ("gg,g",             po::value< bool >()->default_value(false)->implicit_value(true))
+    ("qq,q",             po::value< bool >()->default_value(false)->implicit_value(true))
+    ("uu,u",             po::value< bool >()->default_value(false)->implicit_value(true))
+    ("dd,d",             po::value< bool >()->default_value(false)->implicit_value(true))
+    ("final_state,f",    po::value< std::string >()->default_value("tt-bbeevv"))
+    ("add_gg,G",         po::value< bool >()->default_value(false)->implicit_value(true))
+    ("add_qq,Q",         po::value< bool >()->default_value(false)->implicit_value(true))
+    ("energy,E",         po::value< int >()->default_value(13))
+    ("luminosity,L",     po::value< double >()->default_value(-1))
+    ("minimumBtags,b",   po::value< int >()->default_value(2))
+    ("options,o",        po::value< std::string >()->default_value(""))
+    ("reconstruction,r", po::value< std::string >()->default_value("NuW"))
+    ("tag,t",            po::value< std::string >()->default_value(""))
     ;
     po::variables_map opt;
     po::store(po::parse_command_line(argc, argv, desc), opt);
@@ -31,10 +31,10 @@ int main( int argc, char* argv[] )
     auto qq = opt[ "qq" ].as< bool >();
     auto dd = opt[ "dd" ].as< bool >();
     auto uu = opt[ "uu" ].as< bool >();
-    if ( gg ) initial_state += "gg";
-    if ( qq ) initial_state += "qq";
-    if ( dd ) initial_state += "dd";
-    if ( uu ) initial_state += "uu";
+    if (gg) initial_state += "gg";
+    if (qq) initial_state += "qq";
+    if (dd) initial_state += "dd";
+    if (uu) initial_state += "uu";
     auto final_state = opt[ "final_state" ].as< std::string >();
     auto options = opt[ "options" ].as< std::string >();
     auto energy = opt[ "energy" ].as< int >();
@@ -49,9 +49,9 @@ int main( int argc, char* argv[] )
     atlasStyle.SetStyle();
 
     std::string intermediates;
-    if ( boost::contains( initial_state, "uu" ) or boost::contains( initial_state, "dd" ) )
+    if (boost::contains(initial_state, "uu") or boost::contains(initial_state, "dd"))
     {
-        if ( model == "SM" ) intermediates = "-AZ-";
+        if (model == "SM") intermediates = "-AZ-";
         else intermediates = "-AZX-";
     }
     else
@@ -66,10 +66,10 @@ int main( int argc, char* argv[] )
     std::cout << "Settings\n";
     std::cout << "Energy:         " << energy << " [TeV]\n";
     std::cout << "Process:        " << process << "\n";
-    if ( options != "" ) std::cout << "Options:        " << options << "\n";
-    if ( options != -1 ) std::cout << "Luminosity:     " << luminosity << " [fb-1]\n";
+    if (options != "") std::cout << "Options:        " << options << "\n";
+    if (options != -1) std::cout << "Luminosity:     " << luminosity << " [fb-1]\n";
     std::cout << "Reconstruction: " << reconstruction << "\n";
 
-    auto analysis = new Analysis( model, process, options, energy, luminosity, minimumBtags, reconstruction, tag );
+    auto analysis = new Analysis(model, process, options, energy, luminosity, minimumBtags, reconstruction, tag);
     analysis->Run();
 }
