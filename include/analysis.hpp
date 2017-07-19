@@ -115,7 +115,7 @@ private:
     bool m_xsec = false;
     const string m_reconstruction;
     bool m_useLumi;
-    const bool m_debug = true;
+    const bool m_debug;
     string m_channel;
 
     double m_crossSection;

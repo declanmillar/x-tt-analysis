@@ -19,6 +19,7 @@ Analysis::Analysis(const string& model, const string& process, const string& opt
     m_minimumBtags(minimumBtags),
     m_reconstruction(reconstruction),
     m_tag(tag),
+    m_debug(false),
     m_output(nullptr),
     m_input(nullptr),
     m_processes(nullptr),
