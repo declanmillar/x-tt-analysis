@@ -288,6 +288,12 @@ void Analysis::EachEvent(double weight) {
     double costheta = pttbar_top.CosTheta();
     double costhetastar = int(ytt / abs(ytt)) * costheta;
 
+    double deltaPhi = p_l.first.DeltaPhi(p_l.second) / m_pi;
+
+
+    double costheta_tl1 = cos(ptop_l.first.Angle(pttbar_top.Vect()));
+    double costheta_tl2 = cos(ptbar_l.second.Angle(pttbar_tbar.Vect()));
+
     if (m_debug) cout << "Filling histograms ...\n";
 
     mtt = mtt / 1000;
@@ -297,18 +303,12 @@ void Analysis::EachEvent(double weight) {
     h_eta_l1->Fill(p_l.first.Eta(), weight);
     h_eta_l2->Fill(p_l.second.Eta(), weight);
 
-    h_pxt->Fill(p_top.Px(), weight);
-    h_pyt->Fill(p_top.Py(), weight);
-    h_pzt->Fill(p_top.Pz(), weight);
     h_Et->Fill(p_top.E(), weight);
     h_pTt->Fill(p_top.Pt(), weight);
     h_etat->Fill(p_top.Eta(), weight);
     h_phit->Fill(p_top.Phi() / m_pi, weight);
     h_mt->Fill(p_top.M(), weight);
 
-    h_pxtbar->Fill(p_tbar.Px(), weight);
-    h_pytbar->Fill(p_tbar.Py(), weight);
-    h_pztbar->Fill(p_tbar.Pz(), weight);
     h_Etbar->Fill(p_tbar.E(), weight);
     h_pTtbar->Fill(p_tbar.Pt(), weight);
     h_etatbar->Fill(p_tbar.Eta(), weight);
@@ -321,7 +321,6 @@ void Analysis::EachEvent(double weight) {
     h_mW1->Fill(p_W1.M(), weight);
     h_mW2->Fill(p_W2.M(), weight);
 
-    double deltaPhi = p_l.first.DeltaPhi(p_l.second) / m_pi;
     h_deltaPhi->Fill(deltaPhi, weight);
 
     h2_HT_deltaPhi->Fill(HT / 1000, deltaPhi, weight);
@@ -338,8 +337,6 @@ void Analysis::EachEvent(double weight) {
     if (delta_abs_yt > 0) h_mtt_tCF->Fill(mtt, weight);
     if (delta_abs_yt < 0) h_mtt_tCB->Fill(mtt, weight);
 
-    double costheta_tl1 = cos(ptop_l.first.Angle(pttbar_top.Vect()));
-    double costheta_tl2 = cos(ptbar_l.second.Angle(pttbar_tbar.Vect()));
     double cos1cos2 = costheta_tl1 * costheta_tl2;
 
     h_cosTheta1->Fill(costheta_tl1, weight);
@@ -795,18 +792,12 @@ void Analysis::MakeDistributions() {
     this->MakeDistribution1D(h_mW1, "TeV");
     this->MakeDistribution1D(h_mW2, "TeV");
 
-    this->MakeDistribution1D(h_pxt, "GeV");
-    this->MakeDistribution1D(h_pyt, "GeV");
-    this->MakeDistribution1D(h_pzt, "GeV");
     this->MakeDistribution1D(h_Et, "GeV");
     this->MakeDistribution1D(h_pTt, "GeV");
     this->MakeDistribution1D(h_etat, "");
     this->MakeDistribution1D(h_phit, "");
     this->MakeDistribution1D(h_mt, "GeV");
 
-    this->MakeDistribution1D(h_pxtbar, "GeV");
-    this->MakeDistribution1D(h_pytbar, "GeV");
-    this->MakeDistribution1D(h_pztbar, "GeV");
     this->MakeDistribution1D(h_Etbar, "GeV");
     this->MakeDistribution1D(h_pTtbar, "GeV");
     this->MakeDistribution1D(h_etatbar, "");
