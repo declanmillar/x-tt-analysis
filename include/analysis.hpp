@@ -54,7 +54,6 @@ protected:
     void MakeDistribution2D(TH2D*, string, string, string, string);
     void MakeDistributionAL(TH2D*, const string&);
     void NormalizeSliceY(TH2D*);
-    void WriteHistograms();
 
     void GetGenerationCrossSection(int);
     void GetProcessWeight(int);
@@ -220,12 +219,6 @@ private:
     TH1D* h_mtt_ElB;
     TH1D* h_ytt;
 
-    TH1D* h_pv1x;
-    TH1D* h_pv1y;
-    TH1D* h_pv1z;
-    TH1D* h_pv2x;
-    TH1D* h_pv2y;
-    TH1D* h_pv2z;
     TH1D* h_cosTheta;
     TH1D* h_cosTheta1;
     TH1D* h_cosTheta2;
@@ -242,8 +235,6 @@ private:
     TH1D* h_AL1;
     TH1D* h_AL2;
     TH1D* h_AtlFB;
-    TH1D* h_Aphil;
-    TH1D* h_AlEl;
     TH1D* h_AL;
     TH1D* h_ALL;
 

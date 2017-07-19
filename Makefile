@@ -11,7 +11,7 @@ ROOTINC = $(shell root-config --cflags)
 ROOTLIBS = $(shell root-config --libs) -lTree
 
 HOSTNAME := $(shell hostname)
-ifeq ($(HOSTNAME), Sunder)
+ifeq ($(HOSTNAME), Lorkhan)
 	BOOSTINC = -isystem /usr/local/Cellar/boost/1.64.0_1/include
 	BOOSTLIB = -L /usr/local/Cellar/boost/1.64.0_1/lib
 	DELPHESINC = -isystem /Users/declan/Projects/delphes/install/include
