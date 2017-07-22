@@ -122,7 +122,7 @@ void Analysis::EachEvent(double weight) {
     if (!this->SufficientMll(p_l)) return;
     if (!this->OutsideZmassWindow(p_l)) return;
 
-    m_jet = new vector<Jet* >;
+    m_jet = new vector<Jet*>;
     for (int i = 0; i < b_Jet->GetEntries(); i++) {
         bool passed = false;
         Jet *jet = (Jet*) b_Jet->At(i);
@@ -462,8 +462,7 @@ void Analysis::SetupInputFiles() {
 
             options = m_options;
             string intermediates = "";
-            if (initial == "uu" or initial == "dd")
-            {
+            if (initial == "uu" or initial == "dd") {
                 intermediates = intermediates + "-AZ";
                 if (m_model != "SM") intermediates = intermediates + "X";
                 // intermediates = "-X";
@@ -475,8 +474,7 @@ void Analysis::SetupInputFiles() {
             // loop over all matching files (e.g. *.01.root and *.02.root)
             boost::filesystem::directory_iterator end_itr; // Default ctor yields past-the-end
             int nfiles = 0;
-            for (boost::filesystem::directory_iterator i(m_dataDirectory); i != end_itr; ++i)
-            {
+            for (boost::filesystem::directory_iterator i(m_dataDirectory); i != end_itr; ++i) {
 
                 if (!boost::filesystem::is_regular_file(i->status())) continue;
                 if (m_debug) cout << "is file: " << i->path().filename().string() << "\n";
@@ -491,8 +489,7 @@ void Analysis::SetupInputFiles() {
                 if (!boost::contains(i->path().filename().string(), "_pythia_delphes")) continue;
                 if (m_debug) cout << "has _pythia_delphes suffix: " << i->path().filename().string() << "\n";
 
-                if (i->path().extension() == ".root")
-                {
+                if (i->path().extension() == ".root") {
                     // cout << "ends .root: " << i->path().filename().string() << "\n";
                     nfiles++;
                     tuple< string, int > input = make_tuple(m_dataDirectory + i->path().filename().string(), proc_id);

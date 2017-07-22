@@ -58,7 +58,6 @@ protected:
     void GetGenerationCrossSection(int);
     void GetProcessWeight(int);
     void SetDataDirectory();
-    void GetChannelFactors();
     void AsymmetryUncertainty(TH1D*, TH1D*, TH1D*);
     void GetBranches();
     void EachFile(const string&);
