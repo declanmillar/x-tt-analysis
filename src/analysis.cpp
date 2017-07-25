@@ -932,16 +932,12 @@ void Analysis::MakeDistribution1D(TH1D* h, const string& units) {
 void Analysis::MakeDistribution2D(TH2D* h, string xtitle, string xunits, string ytitle, string yunits) {
     string ztitle, zunits;
     if (m_xsec) {
-        // h->Scale(m_sigma / m_nevents, "width");
         if (m_luminosity > 0) {
-            // cout << "xtitle  = " << xtitle << ", ytitle = " << ytitle << "\n";
             for (int i = 1; i < h->GetNbinsX() + 1; i++) {
                 for (int j = 1; j < h->GetNbinsY() + 1; j++) {
                     h->SetBinError(i, j, sqrt(h->GetBinContent(i, j)));
-                    // cout << "N  = " << "" << h->GetBinContent(i, j) << ", dN = " << "" << h->GetBinError(i, j) << "\n";
                 }
             }
-            // cout << "\n";
             ztitle = "Expected events";
         }
         ztitle = "d#sigma / d";
