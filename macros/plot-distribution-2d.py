@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # Declan Millar (declan.millar@cern.ch)
-import ROOT, sys, optparse, os, glob, subprocess, math
+import ROOT, sys, argparse, os, glob, subprocess, math
 
 class HistPainter():
     "Makes a canvas. Has members to add histograms and text boxes."
@@ -290,29 +290,33 @@ class HistPainter():
         import atlas_style
 
 
+parser = argparse.ArgumentParser()
+parser.add_argument("filename", help = "input file name")
+args = parser.parse_args()
+
 red = ROOT.TColor.GetColor(250.0 / 255.0, 0.0 / 255.0, 0.0 / 255.0)
 blue = ROOT.TColor.GetColor(0.0 / 255.0, 90.0 / 255.0, 130.0 / 255.0)
 green = ROOT.TColor.GetColor(0.0 / 255.0, 130.0 / 255.0, 90.0 / 255.0)
 grey = ROOT.TColor.GetColor(64.0 / 255.0, 64.0 / 255.0, 64.0 / 255.0)
 black = ROOT.TColor.GetColor(0.0, 0.0, 0.0)
 
-h2s = ["mtt_costhetastar", "mtt_costheta_tl1"]
-hs = ["mtt_costhetastar_R", "mtt_costhetal_R"]
+# h2s = ["mtt_costhetastar", "mtt_costheta_tl1"]
+# hs = ["mtt_costhetastar_R", "mtt_costhetal_R"]
 
-f2 = "ggqqdduu-AZX-tt-bbllvv.GLR-R-4.13TeV.CT14LL.2-5.weighted.r2.y0.5.L300.fid.root"
+# f2 = "ggqqdduu-AZX-tt-bbllvv.GLR-R-4.13TeV.CT14LL.2-5.weighted.r2.y0.5.L300.fid.root"
 
 # hs = ["m_tt"]
 
 # models  = ["GLR-R-4", "GLR-Y-4", "GLR-LR-4", "GSM-T3L-4", "GSM-SM-4"]
 # models2 = ["U(1)_{R}", "U(1)_{Y}", "U(1)_{LR}", "U(1)_{T^{3}_{L}}", "U(1)_{SM}"]
-models  = ["GLR-R-4"]
-models2 = ["U(1)_{R}"]
-widths = [2.5, 2.4, 2.1, 4.7, 3.2]
+# models  = ["GLR-R-4"]
+# models2 = ["U(1)_{R}"]
+# widths = [2.5, 2.4, 2.1, 4.7, 3.2]
 
-fs = []
+fs = [args.filename]
 
-for model in models:
-    fs.append("ggqqdduu-AZX-tt-bbllvv." + model + ".13TeV.CT14LL.2-5.weighted.r2.L300.fid.root")
+# for model in models:
+#     fs.append("ggqqdduu-AZX-tt-bbllvv." + model + ".13TeV.CT14LL.2-5.weighted.r2.L300.fid.root")
 
 # models.append("SM")
 # fs.append("ggqqdduu-AZ-tt-bbllvv.SM.13TeV.CT14LL.3-5.20x2M.weighted.r2.L300.fid.root")
@@ -327,7 +331,7 @@ for f in fs:
         art = HistPainter(1920, 1080)
 
         art.SetHistType(h, f)
-        
+
         # if ("m_tt" in h): art.SetLogy()
         # art.SetLogz()
         art.SetStyle()
@@ -348,18 +352,18 @@ for f in fs:
         elif "mtt_costhetal" in h or "mtt_costheta_tl" in h:
             art.SetYtitle("#it{cos#theta_{l}}")
             art.SetZtitle("Expected events")
-        else: 
+        else:
             # art.SetYtitle("d#it{#sigma} / d#it{m_{tt}} [pb/TeV]")
             art.SetYtitle("Expected events")
 
-        art.AddHistogram(h, f2,  "#bf{truth}", black)
+        art.AddHistogram(h, f,  "#bf{truth}", black)
         # art.AddHistogram(h, f2, "#bf{reconstruction}", red)
 
-        if models[j] == "SM": art.AddInfoBox("SM", 0, 0, 13, 300, 0.6, 0.55, 0.95)
-        else: art.AddInfoBox(models2[j], 4, widths[j], 13, 300, 0.6, 0.55, 0.95)
+        # if models[j] == "SM": art.AddInfoBox("SM", 0, 0, 13, 300, 0.6, 0.55, 0.95)
+        # else: art.AddInfoBox(models2[j], 4, widths[j], 13, 300, 0.6, 0.55, 0.95)
         # art.AddLegend(0.0, 0.0, 0.29, 0.15)
 
-        art.Save("~/Desktop/" + h + "-" + models[j] + ".pdf")
+        art.Save("~/Desktop/" + h + "-" + f + ".pdf")
         # art.Save("~/Desktop/" + h + "-" + models[j] + ".3-5.pdf")
         i += 1
     j += 1

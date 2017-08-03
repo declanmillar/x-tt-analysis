@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # Declan Millar (declan.millar@cern.ch)
-import ROOT, sys, optparse, os, glob, subprocess, math
+import ROOT, sys, argparse, os, glob, subprocess, math
 
 class HistPainter():
     "Makes a canvas. Has members to add histograms and text boxes."
@@ -296,6 +296,9 @@ class HistPainter():
 
 #############################################################################
 
+parser = argparse.ArgumentParser()
+parser.add_argument("filename", help = "input file name")
+args = parser.parse_args()
 
 red = ROOT.TColor.GetColor(250.0 / 255.0, 0.0 / 255.0, 0.0 / 255.0)
 orange = ROOT.TColor.GetColor(255.0 / 255.0, 165.0 / 255.0, 0.0 / 255.0)
@@ -309,91 +312,92 @@ black = ROOT.TColor.GetColor(0.0, 0.0, 0.0)
 hs = ["mtt_R", "AtFB_R", "AL_R"]
 
 # models = ["SM"]
-models = []
-models.append("GLR-R-4")
+# models = []
+# models.append("GLR-R-4")
 # models = ["GSM-Q-4", "GLR-BL-4"]
 # models = ["E6-S-4", "E6-I-4", "E6-N-4"]
 # models = ["E6-chi-4", "E6-eta-4", "E6-psi-4"]
 # models = ["GSM-T3L-4", "GSM-SM-4"]
-widths = [2.5, 2.4, 2.1, 4.7]
+# widths = [2.5, 2.4, 2.1, 4.7]
 
 # fs = ["ggqqdduu-AZ-tt-bbllvv.SM.13TeV.CT14LL.3-5.20x2M.weighted.r2.L300.fid.root"]
 
-fs = []
+fs = [args.filename]
 
-f2 = "ggqqdduu-AZX-tt-bbllvv.GLR-R-4.13TeV.CT14LL.2-5.weighted.r2.y0.5.L300.fid.root"
+# f2 = "ggqqdduu-AZX-tt-bbllvv.GLR-R-4.13TeV.CT14LL.2-5.weighted.r2.y0.5.L300.fid.root"
 
-for model in models:
-    fs.append("ggqqdduu-AZX-tt-bbllvv." + model + ".13TeV.CT14LL.2-5.weighted.r2.L300.fid.root")
+# for model in models:
+#     fs.append("ggqqdduu-AZX-tt-bbllvv." + model + ".13TeV.CT14LL.2-5.weighted.r2.L300.fid.root")
 
 # models.append("SM")
 # fs.append("ggqqdduu-AZ-tt-bbllvv.SM.13TeV.CT14LL.3-5.20x2M.weighted.r2.L300.fid.root")
 
 # j = 0
-# for f in fs:
-i = 0
-for h in hs:
-    art = HistPainter(1920, 1080)
+for f in fs:
+    i = 0
+    for h in hs:
+        art = HistPainter(1920, 1080)
 
-    art.SetHistType(h, fs[0])
-    
-    if ("mtt_R" in h): art.SetLogy()
-    # art.SetLogz()
-    art.SetStyle()
-    art.AddPads()
+        art.SetHistType(h, f)
 
-    # art.SetDomain(3.025, 4.975)
-    if "AtFB" in h: art.SetRange(-1.0, 1.0)
-    if "AL" in h: art.SetRange(-1.0, 1.0)
+        if ("mtt_R" in h): art.SetLogy()
+        # art.SetLogz()
+        art.SetStyle()
+        art.AddPads()
 
-    art.SetXtitle("#it{m_{tt}} [TeV]")
-    if "AtFB" in h:
-        art.SetYtitle("#it{A^{t}_{FB^{*}}}")
-    elif "AL" in h:
-        art.SetYtitle("#it{A_{L}}")
-    elif "mtt_costhetastar_R" in h:
-        art.SetYtitle("#it{cos#theta*}")
-        art.SetZtitle("Expected events")
-    elif "mtt_costhetal_R" in h:
-        art.SetYtitle("#it{cos#theta_{l}}")
-        art.SetZtitle("Expected events")   
-    else: 
-        # art.SetYtitle("d#it{#sigma} / d#it{m_{tt}} [pb/TeV]")
-        art.SetYtitle("Expected events")
+        # art.SetDomain(3.025, 4.975)
+        if "AtFB" in h: art.SetRange(-1.0, 1.0)
+        if "AL" in h: art.SetRange(-1.0, 1.0)
 
-    # art.AddHistogram(h, fs[0], " #bf{GSM-#it{T^{3}_{L}}}", red, 1)
-    # art.AddHistogram(h, fs[0], " #bf{U(1)_{#chi}}", red, 1)
-    # art.AddHistogram(h, fs[1], " #bf{U(1)_{#eta}}", green, 1)
-    # art.AddHistogram(h, fs[2], " #bf{U(1)_{#psi}}", blue, 1)
-    # art.AddHistogram(h, fs[0], " #bf{U(1)_{S}}", red, 1)
-    # art.AddHistogram(h, fs[1], " #bf{U(1)_{I}}", green, 1)
-    # art.AddHistogram(h, fs[2], " #bf{U(1)_{N}}", blue, 1)
-    # art.AddHistogram(h, fs[1], " #bf{U(1)_{R}}", red, 1)
-    # art.AddHistogram(h, fs[2], " #bf{U(1)_{Y}}", green, 1)
-    # art.AddHistogram(h, fs[3], " #bf{U(1)_{LR}}", blue, 1)
-    # art.AddHistogram(h, fs[0], " #bf{U(1)_{Q}}", red, 1)
-    # art.AddHistogram(h, fs[1], " #bf{U(1)_{B-L}}", blue, 1)
-    # art.AddHistogram(h, fs[0], " #bf{U(1)_{T^{3}_{L}}}", red, 1)
-    # art.AddHistogram(h, fs[1], " #bf{U(1)_{SM}}", blue, 1)
-    # art.AddHistogram(h, fs[0], " #bf{SM}", black, 1)
+        art.SetXtitle("#it{m_{tt}} [TeV]")
+        if "AtFB" in h:
+            art.SetYtitle("#it{A^{t}_{FB^{*}}}")
+        elif "AL" in h:
+            art.SetYtitle("#it{A_{L}}")
+        elif "mtt_costhetastar_R" in h:
+            art.SetYtitle("#it{cos#theta*}")
+            art.SetZtitle("Expected events")
+        elif "mtt_costhetal_R" in h:
+            art.SetYtitle("#it{cos#theta_{l}}")
+            art.SetZtitle("Expected events")
+        else:
+            # art.SetYtitle("d#it{#sigma} / d#it{m_{tt}} [pb/TeV]")
+            art.SetYtitle("Expected events")
 
-    art.AddHistogram(h, fs[0], " #bf{|y_{tt}| #geq 0.0}", black, 1)
-    art.AddHistogram(h, f2, " #bf{|y_{tt}| > 0.5}", red, 1)
+        # art.AddHistogram(h, f, " #bf{GSM-#it{T^{3}_{L}}}", red, 1)
+        # art.AddHistogram(h, fs[0], " #bf{U(1)_{#chi}}", red, 1)
+        # art.AddHistogram(h, fs[1], " #bf{U(1)_{#eta}}", green, 1)
+        # art.AddHistogram(h, fs[2], " #bf{U(1)_{#psi}}", blue, 1)
+        # art.AddHistogram(h, fs[0], " #bf{U(1)_{S}}", red, 1)
+        # art.AddHistogram(h, fs[1], " #bf{U(1)_{I}}", green, 1)
+        # art.AddHistogram(h, fs[2], " #bf{U(1)_{N}}", blue, 1)
+        # art.AddHistogram(h, fs[1], " #bf{U(1)_{R}}", red, 1)
+        # art.AddHistogram(h, fs[2], " #bf{U(1)_{Y}}", green, 1)
+        # art.AddHistogram(h, fs[3], " #bf{U(1)_{LR}}", blue, 1)
+        # art.AddHistogram(h, fs[0], " #bf{U(1)_{Q}}", red, 1)
+        # art.AddHistogram(h, fs[1], " #bf{U(1)_{B-L}}", blue, 1)
+        # art.AddHistogram(h, fs[0], " #bf{U(1)_{T^{3}_{L}}}", red, 1)
+        # art.AddHistogram(h, fs[1], " #bf{U(1)_{SM}}", blue, 1)
+        # art.AddHistogram(h, fs[0], " #bf{SM}", black, 1)
 
-    if ("mtt_costhetastar_R" in h or "mtt_costhetal_R" in h): 
-        if models[j] == "SM": art.AddInfoBox("SM", 0, 0, 13, 300, 0.6, 0.55, 0.95)
-        else: art.AddInfoBox(models[0].rsplit('-',1)[0], 4, 0, 13, 300, 0.6, 0.55, 0.95)
-    else:
-        if "mtt_R" in h: art.AddInfoBox(models[0].rsplit('-',1)[0], 4, 0, 13, 300, 0.6, 0.77, 0.87)
-        else: art.AddInfoBox(models[0].rsplit('-',1)[0], 4, 0, 13, 300, 0.6, 0.2, 0.87)
-        # art.AddLegend(0.14, 0.16, 0.27, 0.36)
-        # art.AddLegend(0.14, 0.16, 0.27, 0.31)
-        art.AddLegend(0.15, 0.2, 0.3, 0.4)
+        art.AddHistogram(h, f, " #bf{|y_{tt}| #geq 0.0}", black, 1)
+        # art.AddHistogram(h, f2, " #bf{|y_{tt}| > 0.5}", red, 1)
 
-    art.Save("~/Desktop/" + h + "-" + models[0].rsplit("-",2)[0] + ".pdf")
-    # art.Save("~/Desktop/" + h + "-" + "GSM-Q-GLR-BL.pdf")
-    # art.Save("~/Desktop/" + h + "-" + "GLR.pdf")
-    # art.Save("~/Desktop/" + h + "-" + "E62.pdf")
-    # art.Save("~/Desktop/" + h + "-" + models[j] + ".3-5.pdf")
-    i += 1
-    # j += 1
+        if ("mtt_costhetastar_R" in h or "mtt_costhetal_R" in h):
+            if models[j] == "SM": art.AddInfoBox("SM", 0, 0, 13, 300, 0.6, 0.55, 0.95)
+            else: art.AddInfoBox(models[0].rsplit('-',1)[0], 4, 0, 13, 300, 0.6, 0.55, 0.95)
+        else:
+            if "mtt_R" in h: art.AddInfoBox(models[0].rsplit('-',1)[0], 4, 0, 13, 300, 0.6, 0.77, 0.87)
+            else: art.AddInfoBox(models[0].rsplit('-',1)[0], 4, 0, 13, 300, 0.6, 0.2, 0.87)
+            # art.AddLegend(0.14, 0.16, 0.27, 0.36)
+            # art.AddLegend(0.14, 0.16, 0.27, 0.31)
+            art.AddLegend(0.15, 0.2, 0.3, 0.4)
+
+        art.Save("~/Desktop/" + h + "-" + f + ".pdf")
+        # art.Save("~/Desktop/" + h + "-" + models[0].rsplit("-",2)[0] + ".pdf")
+        # art.Save("~/Desktop/" + h + "-" + "GSM-Q-GLR-BL.pdf")
+        # art.Save("~/Desktop/" + h + "-" + "GLR.pdf")
+        # art.Save("~/Desktop/" + h + "-" + "E62.pdf")
+        # art.Save("~/Desktop/" + h + "-" + models[j] + ".3-5.pdf")
+        i += 1
+    j += 1
