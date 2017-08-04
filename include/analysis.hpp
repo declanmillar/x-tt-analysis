@@ -110,6 +110,7 @@ private:
     int m_luminosity;
     string m_tag;
     string m_pdf = "CT14LL";
+    bool m_use_mass_slices = false;
 
     bool m_xsec = false;
     const string m_reconstruction;

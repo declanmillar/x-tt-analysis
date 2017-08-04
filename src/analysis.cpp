@@ -485,14 +485,13 @@ void Analysis::SetupInputFiles() {
         // loop over all matching files (e.g. *_01.root and *_02.root)
         boost::filesystem::directory_iterator end_itr; // Default ctor yields past-the-end
         int nfiles = 0;
-        bool use_mass_slices = true;
 
         int end = 1;
-        if (use_mass_slices) end =  m_energy;
+        if (m_use_mass_slices) end =  m_energy;
 
         for (int j = 0; j < end; j++) {
             string range = "";
-            if (use_mass_slices) range = "_" + to_string(j) + "-" + to_string(j + 1);
+            if (m_use_mass_slices) range = "_" + to_string(j) + "-" + to_string(j + 1);
 
             int nfiles_per_slice = 0;
             for (boost::filesystem::directory_iterator i(m_dataDirectory); i != end_itr; ++i) {
@@ -524,7 +523,7 @@ void Analysis::SetupInputFiles() {
                     cout << ", process: " << get<1>(input) << "\n";
                 }
             }
-            if (use_mass_slices and nfiles_per_slice == 0) {
+            if (m_use_mass_slices and nfiles_per_slice == 0) {
                 cout << "No files in energy range " << range << " [TeV]\n";
                 continue;
             }
@@ -569,6 +568,7 @@ void Analysis::SetupOutputFiles() {
 
     m_outputName = m_dataDirectory + m_process + "_" + m_model + "_" + E + "_" + m_pdf + m_options;
     m_outputName += "_pythia_delphes";
+    if (m_use_mass_slices) m_outputName += "_sliced";
     m_outputName += "_" + m_reconstruction + m_tag;
     if (m_luminosity > 0) m_outputName += L;
     m_outputName += ".root";
