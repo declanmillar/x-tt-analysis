@@ -487,6 +487,8 @@ void Analysis::SetupInputFiles() {
         boost::filesystem::directory_iterator end_itr; // Default ctor yields past-the-end
         int nfiles = 0;
 
+        if (m_use_mass_slices) cout << "I AM USING MASS SLICES\n";
+
         int end = 1;
         if (m_use_mass_slices) end =  m_energy;
 
