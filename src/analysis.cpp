@@ -521,7 +521,7 @@ void Analysis::SetupInputFiles() {
                     cout << ", process: " << get<1>(input) << "\n";
                 }
             }
-            string proc_filename = m_dataDirectory + initial + intermediates + "-tt-bbllvv" + "_" + model + "_" + E + "TeV" + "_" + m_pdf + options + ".txt";
+            string proc_filename = m_dataDirectory + initial + intermediates + "-tt-bbllvv" + "_" + model + "_" + E + "TeV" + "_" + m_pdf + options + range ".txt";
             cout << "Adding process: " << proc_filename << " ...\n";
             tuple< string, int, int, double, double, double > process = make_tuple(proc_filename, proc_id, nfiles, -999, -999, -999);
             m_processes->push_back(process);
