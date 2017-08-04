@@ -452,28 +452,45 @@ void Analysis::SetupInputFiles() {
 
     int proc_id = 0;
     for (auto initial : initials) {
+
+        // check initial state has been specified for analysis
         size_t pos = m_process.find("-tt");
         string final_state = m_process.substr(pos);
-        if (boost::contains(m_process, initial)) {
-            string model = "";
-            if (initial == "gg" or initial == "qq") model = "SM";
-            else model = m_model;
-            string options = "";
+        if (!boost::contains(m_process, initial)) continue;
 
-            options = m_options;
-            string intermediates = "";
-            if (initial == "uu" or initial == "dd") {
-                intermediates = intermediates + "-AZ";
-                if (m_model != "SM") intermediates = intermediates + "X";
-                // intermediates = "-X";
-            }
-            filename = initial + intermediates + final_state + "_" + model + "_" + E + "TeV" + "_" + m_pdf + options;
+        // get model name (if only QCD processes - set to Standard Model)
+        string model = "";
+        if (initial == "gg" or initial == "qq") model = "SM";
+        else model = m_model;
 
-            cout << "Adding:         " << filename << "*_pythia_delphes.root ...\n";
+        // infer intermediate EW sector bosons based on model and intial states
+        string intermediates = "";
+        if (initial == "uu" or initial == "dd") {
+            intermediates = intermediates + "-AZ";
+            if (m_model != "SM") intermediates = intermediates + "X";
+            // intermediates = "-X";
+        }
 
-            // loop over all matching files (e.g. *.01.root and *.02.root)
-            boost::filesystem::directory_iterator end_itr; // Default ctor yields past-the-end
-            int nfiles = 0;
+        // get options
+        string options = "";
+        options = m_options;
+
+        // combine for file name
+        filename = initial + intermediates + final_state + "_" + model + "_" + E + "TeV" + "_" + m_pdf + options;
+
+
+
+        cout << "Adding:         " << filename << "*_pythia_delphes.root ...\n";
+
+        // loop over all matching files (e.g. *_01.root and *_02.root)
+        boost::filesystem::directory_iterator end_itr; // Default ctor yields past-the-end
+        int nfiles = 0;
+        bool use_mass_slices = true;
+
+        int end = 1;
+        if (use_mass_slices) end = 13;
+
+        for (int j = 0; j < end; j++) {
             for (boost::filesystem::directory_iterator i(m_dataDirectory); i != end_itr; ++i) {
 
                 if (!boost::filesystem::is_regular_file(i->status())) continue;
@@ -488,6 +505,10 @@ void Analysis::SetupInputFiles() {
 
                 if (!boost::contains(i->path().filename().string(), "_pythia_delphes")) continue;
                 if (m_debug) cout << "has _pythia_delphes suffix: " << i->path().filename().string() << "\n";
+
+                string range = "";
+                if (use_mass_slices) range = "_" + to_string(j) + "-" + to_string(j + 1);
+                if (!boost::contains(i->path().filename().string(), range)) continue;
 
                 if (i->path().extension() == ".root") {
                     // cout << "ends .root: " << i->path().filename().string() << "\n";
