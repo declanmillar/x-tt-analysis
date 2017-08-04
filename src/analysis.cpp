@@ -512,7 +512,7 @@ void Analysis::SetupInputFiles() {
 
                 if (!boost::contains(i->path().filename().string(), range)) continue;
 
-                regex reg(filename + "_[0-9]-[0-9]_pythia_delphes");
+                regex reg(filename + "_[0-9]-[0-9]_[0-9]+_pythia_delphes");
                 if (!m_use_mass_slices and regex_match( i->path().filename().string(), reg)) continue;
 
                 if (i->path().extension() == ".root") {
