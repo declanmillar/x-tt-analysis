@@ -22,6 +22,7 @@ int main(int argc, char* argv[]) {
     ("options,o",        po::value<string>()->default_value(""))
     ("reconstruction,r", po::value<string>()->default_value("NuW"))
     ("tag,t",            po::value<string>()->default_value(""))
+    ("slice,s",          po::value<bool>()->default_value(false)->implicit_value(true))
     ;
     po::variables_map opt;
     po::store(po::parse_command_line(argc, argv, desc), opt);
@@ -45,6 +46,7 @@ int main(int argc, char* argv[]) {
     auto minimumBtags = opt["minimumBtags"].as<int>();
     auto reconstruction = opt["reconstruction"].as<const string>();
     auto tag = opt["tag"].as<string>();
+    auto slice = opt["slice"].as<bool>();
 
     AtlasROOTStyle atlasStyle;
     atlasStyle.SetStyle();
@@ -68,5 +70,6 @@ int main(int argc, char* argv[]) {
     cout << "Reconstruction: " << reconstruction << "\n";
 
     auto analysis = new Analysis(model, process, options, energy, luminosity, minimumBtags, reconstruction, tag);
+    if (slice) analysis->UseMassSlices();
     analysis->Run();
 }

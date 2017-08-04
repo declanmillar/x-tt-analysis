@@ -30,6 +30,7 @@ class Analysis {
 public:
     Analysis(const string& model, const string& process, const string& options, const int energy, const int luminosity, const int minimumBtags, const string& reconstruction, const string& tag);
     virtual ~Analysis();
+    void UseMassSlices();
     void Run();
 
 protected:

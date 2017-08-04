@@ -961,6 +961,9 @@ void Analysis::MakeDistribution1D(TH1D* h, const string& units) {
 }
 
 
+void::Analysis::UseMassSlices() { m_use_mass_slices = true; }
+
+
 void Analysis::MakeDistribution2D(TH2D* h, string xtitle, string xunits, string ytitle, string yunits) {
     string ztitle, zunits;
     if (m_xsec) {
