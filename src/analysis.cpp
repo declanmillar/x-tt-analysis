@@ -9,6 +9,7 @@
 #include "match-bjets-to-leps.hpp"
 #include "get-parameter.hpp"
 #include <exception>
+#include <regex>
 
 Analysis::Analysis(const string& model, const string& process, const string& options, const int energy, const int luminosity, const int minimumBtags, const string& reconstruction, const string& tag):
     m_model(model),
@@ -510,6 +511,9 @@ void Analysis::SetupInputFiles() {
                 if (m_debug) cout << "has _pythia_delphes suffix: " << i->path().filename().string() << "\n";
 
                 if (!boost::contains(i->path().filename().string(), range)) continue;
+
+                regex reg(filename + "_[0-9]-[0-9]_pythia_delphes");
+                if (!m_use_mass_slices and regex_match( i->path().filename().string(), reg)) continue;
 
                 if (i->path().extension() == ".root") {
                     // cout << "ends .root: " << i->path().filename().string() << "\n";
