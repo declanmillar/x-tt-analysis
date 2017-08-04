@@ -69,7 +69,6 @@ int main(int argc, char* argv[]) {
     if (options != -1) cout << "Luminosity:     " << luminosity << " [fb-1]\n";
     cout << "Reconstruction: " << reconstruction << "\n";
 
-    auto analysis = new Analysis(model, process, options, energy, luminosity, minimumBtags, reconstruction, tag);
-    if (slice) analysis->UseMassSlices();
+    auto analysis = new Analysis(model, process, options, energy, luminosity, minimumBtags, reconstruction, tag, slice);
     analysis->Run();
 }

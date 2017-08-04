@@ -11,7 +11,7 @@
 #include <exception>
 #include <regex>
 
-Analysis::Analysis(const string& model, const string& process, const string& options, const int energy, const int luminosity, const int minimumBtags, const string& reconstruction, const string& tag):
+Analysis::Analysis(const string& model, const string& process, const string& options, const int energy, const int luminosity, const int minimumBtags, const string& reconstruction, const string& tag, bool slice):
     m_model(model),
     m_process(process),
     m_options(options),
@@ -20,6 +20,7 @@ Analysis::Analysis(const string& model, const string& process, const string& opt
     m_minimumBtags(minimumBtags),
     m_reconstruction(reconstruction),
     m_tag(tag),
+    m_use_mass_slices(slice),
     m_debug(false),
     m_output(nullptr),
     m_input(nullptr),
@@ -962,8 +963,6 @@ void Analysis::MakeDistribution1D(TH1D* h, const string& units) {
     h->Write();
 }
 
-
-void::Analysis::UseMassSlices() { m_use_mass_slices = true; }
 
 
 void Analysis::MakeDistribution2D(TH2D* h, string xtitle, string xunits, string ytitle, string yunits) {
