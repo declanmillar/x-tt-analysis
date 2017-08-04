@@ -525,7 +525,7 @@ void Analysis::SetupInputFiles() {
                 }
             }
             if (use_mass_slices and nfiles_per_slice == 0) {
-                cout << "No files in energy range " << range << "\n";
+                cout << "No files in energy range " << range << " [TeV]\n";
                 continue;
             }
             string proc_filename = m_dataDirectory + initial + intermediates + "-tt-bbllvv" + "_" + model + "_" + E + "TeV" + "_" + m_pdf + options + range + ".txt";
@@ -616,7 +616,7 @@ void Analysis::MakeHistograms() {
     double Emin = 0.05;
     double Emax = 12.95;
     double nbins = (Emax - Emin) / binWidth;
-     cout << "Range:          " << Emin << " -- " << Emax << " [TeV]\n";
+     cout << "Plotting range: " << Emin << " - " << Emax << " [TeV]\n";
 
     h_pt_l1 = new TH1D("pT_l1", "p^{l^{+}}_{T}", 40, 0.0, 1000.0);
     h_pt_l1->Sumw2();
