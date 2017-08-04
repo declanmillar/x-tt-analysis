@@ -491,6 +491,9 @@ void Analysis::SetupInputFiles() {
         if (use_mass_slices) end = 13;
 
         for (int j = 0; j < end; j++) {
+            string range = "";
+            if (use_mass_slices) range = "_" + to_string(j) + "-" + to_string(j + 1);
+
             for (boost::filesystem::directory_iterator i(m_dataDirectory); i != end_itr; ++i) {
 
                 if (!boost::filesystem::is_regular_file(i->status())) continue;
@@ -506,8 +509,6 @@ void Analysis::SetupInputFiles() {
                 if (!boost::contains(i->path().filename().string(), "_pythia_delphes")) continue;
                 if (m_debug) cout << "has _pythia_delphes suffix: " << i->path().filename().string() << "\n";
 
-                string range = "";
-                if (use_mass_slices) range = "_" + to_string(j) + "-" + to_string(j + 1);
                 if (!boost::contains(i->path().filename().string(), range)) continue;
 
                 if (i->path().extension() == ".root") {
@@ -521,7 +522,7 @@ void Analysis::SetupInputFiles() {
                     cout << ", process: " << get<1>(input) << "\n";
                 }
             }
-            string proc_filename = m_dataDirectory + initial + intermediates + "-tt-bbllvv" + "_" + model + "_" + E + "TeV" + "_" + m_pdf + options + range ".txt";
+            string proc_filename = m_dataDirectory + initial + intermediates + "-tt-bbllvv" + "_" + model + "_" + E + "TeV" + "_" + m_pdf + options + range + ".txt";
             cout << "Adding process: " << proc_filename << " ...\n";
             tuple< string, int, int, double, double, double > process = make_tuple(proc_filename, proc_id, nfiles, -999, -999, -999);
             m_processes->push_back(process);
