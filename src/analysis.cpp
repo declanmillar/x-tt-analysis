@@ -488,12 +488,13 @@ void Analysis::SetupInputFiles() {
         bool use_mass_slices = true;
 
         int end = 1;
-        if (use_mass_slices) end = 13;
+        if (use_mass_slices) end =  m_energy;
 
         for (int j = 0; j < end; j++) {
             string range = "";
             if (use_mass_slices) range = "_" + to_string(j) + "-" + to_string(j + 1);
 
+            int nfiles_per_slice = 0;
             for (boost::filesystem::directory_iterator i(m_dataDirectory); i != end_itr; ++i) {
 
                 if (!boost::filesystem::is_regular_file(i->status())) continue;
@@ -514,6 +515,7 @@ void Analysis::SetupInputFiles() {
                 if (i->path().extension() == ".root") {
                     // cout << "ends .root: " << i->path().filename().string() << "\n";
                     nfiles++;
+                    nfiles_per_slice++;
                     tuple< string, int > input = make_tuple(m_dataDirectory + i->path().filename().string(), proc_id);
                     m_input->push_back(input);
                     if (nfiles < 10) cout << "Input " << nfiles << ":        " << get<0>(input);
@@ -521,6 +523,10 @@ void Analysis::SetupInputFiles() {
                     else cout << "Input " << nfiles << ":      " << get<0>(input);
                     cout << ", process: " << get<1>(input) << "\n";
                 }
+            }
+            if (use_mass_slices and nfiles_per_slice == 0) {
+                cout << "No files in energy range " << range << "\n";
+                continue;
             }
             string proc_filename = m_dataDirectory + initial + intermediates + "-tt-bbllvv" + "_" + model + "_" + E + "TeV" + "_" + m_pdf + options + range + ".txt";
             cout << "Adding process: " << proc_filename << " ...\n";
