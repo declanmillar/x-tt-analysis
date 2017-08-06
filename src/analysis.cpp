@@ -493,7 +493,7 @@ void Analysis::SetupInputFiles() {
 
         for (int j = 0; j < end; j++) {
             string range = "";
-            if (m_use_mass_slices) range = to_string(j) + "-" + to_string(j + 1);
+            if (m_use_mass_slices) range = "_" + to_string(j) + "-" + to_string(j + 1);
 
             int nfiles_per_slice = 0;
             for (boost::filesystem::directory_iterator i(m_dataDirectory); i != end_itr; ++i) {
