@@ -480,8 +480,6 @@ void Analysis::SetupInputFiles() {
         // combine for file name
         filename = initial + intermediates + final_state + "_" + model + "_" + E + "TeV" + "_" + m_pdf + options;
 
-
-
         cout << "Adding:         " << filename << "*_pythia_delphes.root ...\n";
 
         // loop over all matching files (e.g. *_01.root and *_02.root)
@@ -495,43 +493,38 @@ void Analysis::SetupInputFiles() {
 
         for (int j = 0; j < end; j++) {
             string range = "";
-            if (m_use_mass_slices) range = "_" + to_string(j) + "-" + to_string(j + 1);
+            if (m_use_mass_slices) range = to_string(j) + "-" + to_string(j + 1);
 
             int nfiles_per_slice = 0;
             for (boost::filesystem::directory_iterator i(m_dataDirectory); i != end_itr; ++i) {
 
+                string file = i->path().filename().string();
+
                 if (!boost::filesystem::is_regular_file(i->status())) continue;
-                if (m_debug) cout << "is file: " << i->path().filename().string() << "\n";
+                if (!boost::contains(file, filename)) continue;
+                if (boost::contains(file, "KIN")) continue;
+                if (boost::contains(file, "NuW")) continue;
+                if (!boost::contains(file, "_pythia_delphes")) continue;
+                if (!boost::contains(file, range)) continue;
 
-                if (!boost::contains(i->path().filename().string(), filename)) continue;
-                if (m_debug) cout << "contains " << filename << ": " << i->path().filename().string() << "\n";
+                regex reg(filename + "_[0-9]+-[0-9]+_[0-9]+_pythia_delphes");
+                if (!m_use_mass_slices and regex_search(file, reg)) continue;
+                if (m_use_mass_slices and !regex_search(file, reg)) continue;
 
-                if (boost::contains(i->path().filename().string(), "KIN")) continue;
-                if (boost::contains(i->path().filename().string(), "NuW")) continue;
-                if (m_debug) cout << "not output: " << i->path().filename().string() << "\n";
+                if (!i->path().extension() == ".root") continue;
 
-                if (!boost::contains(i->path().filename().string(), "_pythia_delphes")) continue;
-                if (m_debug) cout << "has _pythia_delphes suffix: " << i->path().filename().string() << "\n";
-
-                if (!boost::contains(i->path().filename().string(), range)) continue;
-
-                regex reg(filename + "_[0-9]-[0-9]_[0-9]+_pythia_delphes");
-                if (!m_use_mass_slices and regex_search( i->path().filename().string(), reg)) continue;
-
-                if (i->path().extension() == ".root") {
-                    // cout << "ends .root: " << i->path().filename().string() << "\n";
-                    nfiles++;
-                    nfiles_per_slice++;
-                    tuple< string, int > input = make_tuple(m_dataDirectory + i->path().filename().string(), proc_id);
-                    m_input->push_back(input);
-                    if (nfiles < 10) cout << "Input " << nfiles << ":        " << get<0>(input);
-                    else if (nfiles < 100) cout << "Input " << nfiles << ":       " << get<0>(input);
-                    else cout << "Input " << nfiles << ":      " << get<0>(input);
-                    cout << ", process: " << get<1>(input) << "\n";
-                }
+                nfiles++;
+                nfiles_per_slice++;
+                tuple<string, int> input = make_tuple(m_dataDirectory + file, proc_id);
+                m_input->push_back(input);
+                if (nfiles < 10) cout << "Input " << nfiles << ":        " << get<0>(input);
+                else if (nfiles < 100) cout << "Input " << nfiles << ":       " << get<0>(input);
+                else cout << "Input " << nfiles << ":      " << get<0>(input);
+                cout << ", process: " << get<1>(input) << "\n";
             }
+
             if (m_use_mass_slices and nfiles_per_slice == 0) {
-                cout << "No files in energy range " << range << " [TeV]\n";
+                cout << "no files in energy range " << range << " [TeV]\n";
                 continue;
             }
             string proc_filename = m_dataDirectory + initial + intermediates + "-tt-bbllvv" + "_" + model + "_" + E + "TeV" + "_" + m_pdf + options + range + ".txt";
@@ -962,7 +955,6 @@ void Analysis::MakeDistribution1D(TH1D* h, const string& units) {
     m_output->cd("/");
     h->Write();
 }
-
 
 
 void Analysis::MakeDistribution2D(TH2D* h, string xtitle, string xunits, string ytitle, string yunits) {
