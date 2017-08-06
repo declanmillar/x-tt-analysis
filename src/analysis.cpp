@@ -500,18 +500,17 @@ void Analysis::SetupInputFiles() {
 
                 string file = i->path().filename().string();
 
-                if (!boost::filesystem::is_regular_file(i->status())) continue;
+                if (i->path().extension() != ".root") continue;
                 if (!boost::contains(file, filename)) continue;
                 if (boost::contains(file, "KIN")) continue;
                 if (boost::contains(file, "NuW")) continue;
                 if (!boost::contains(file, "_pythia_delphes")) continue;
                 if (!boost::contains(file, range)) continue;
+                if (!boost::filesystem::is_regular_file(i->status())) continue;
 
                 regex reg(filename + "_[0-9]+-[0-9]+_[0-9]+_pythia_delphes");
                 if (!m_use_mass_slices and regex_search(file, reg)) continue;
                 if (m_use_mass_slices and !regex_search(file, reg)) continue;
-
-                if (!i->path().extension() == ".root") continue;
 
                 nfiles++;
                 nfiles_per_slice++;
