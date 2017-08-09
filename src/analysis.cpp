@@ -464,7 +464,7 @@ void Analysis::SetupInputFiles() {
 
     int proc_id = 0;
 
-    for (auto final : finals) {
+    for (auto fin : finals) {
         for (auto initial : initials) {
 
             // check initial state has been specified for analysis
@@ -488,7 +488,7 @@ void Analysis::SetupInputFiles() {
             options = m_options;
 
             // combine for file name
-            filename = initial + intermediates + final + "_" + model + "_" + E + "TeV" + "_" + m_pdf + options;
+            filename = initial + intermediates + fin + "_" + model + "_" + E + "TeV" + "_" + m_pdf + options;
 
             cout << "Adding:         " << filename << "*_pythia_delphes.root ...\n";
 
