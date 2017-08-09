@@ -459,7 +459,7 @@ void Analysis::SetupInputFiles() {
         exit(false);
     }
     string final_state = m_process.substr(pos);
-    if (!boost::contains(final_state, "tt-bbllvv")) finals = { "tt-bbeevv", "tt-bbmumuvv", "tt-bbemuvv", "tt-bbmuevv" };
+    if (boost::contains(final_state, "tt-bbllvv")) finals = { "tt-bbeevv", "tt-bbmumuvv", "tt-bbemuvv", "tt-bbmuevv" };
     else finals = { final_state };
 
     int proc_id = 0;
