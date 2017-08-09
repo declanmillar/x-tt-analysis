@@ -457,6 +457,7 @@ void Analysis::SetupInputFiles() {
 
         // check initial state has been specified for analysis
         size_t pos = m_process.find("-tt");
+        std::cout << pos << "\n";
         string final_state = m_process.substr(pos);
         if (!boost::contains(m_process, initial)) continue;
 
