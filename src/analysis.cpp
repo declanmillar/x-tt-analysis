@@ -539,7 +539,7 @@ void Analysis::SetupInputFiles() {
 
     // check some input files have been specified
     if (m_input->size() < 1) {
-        cout << "Error: no input files specified.";
+        cout << "Error: no input files found.";
         exit(false);
     }
 
