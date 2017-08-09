@@ -456,10 +456,11 @@ void Analysis::SetupInputFiles() {
     for (auto initial : initials) {
 
         // check initial state has been specified for analysis
-        size_t pos = m_process.find("-");
-        // if (pos == std::string::npos) {
-        //     cout << "final state doesn't contains
-        // }
+        size_t pos = m_process.find("-tt");
+        if (pos == std::string::npos) {
+            cout << "Error: final state doesn't contain -tt\n";
+            exit(false);
+        }
         string final_state = m_process.substr(pos);
         if (!boost::contains(m_process, initial)) continue;
 
