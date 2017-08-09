@@ -459,6 +459,7 @@ void Analysis::SetupInputFiles() {
         exit(false);
     }
     string final_state = m_process.substr(pos);
+    cout << final_state << "\n";
     if (final_state == "tt-bbllvv") finals = { "tt-bbeevv", "tt-bbmumuvv", "tt-bbemuvv", "tt-bbmuevv" };
     else finals = { final_state };
 
