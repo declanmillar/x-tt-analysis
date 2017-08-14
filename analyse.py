@@ -4,8 +4,8 @@ import os, StringIO, subprocess, sys, socket
 
 # handler_name = sys.argv[1] + ".sh"
 executable = "analysis"
-walltime = "08:00:00"
-queue = "8nh"
+walltime = "60:00:00"
+queue = "1nw"
 
 # set directories
 hostname = socket.gethostname()
@@ -18,7 +18,7 @@ elif "cyan" in hostname:
     run_directory = "/home/dam1g09/apsis"
     data_directory = "/scratch/dam1g09/zprime"
 else:
-    sys.exit("Error: Unrecognised hostname.")
+    sys.exit("Error: unrecognised hostname")
 
 # check directories exist
 if not os.path.isdir(run_directory):
