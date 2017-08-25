@@ -12,8 +12,8 @@ ROOTLIBS = $(shell root-config --libs) -lTree
 
 HOSTNAME := $(shell hostname)
 ifeq ($(HOSTNAME), Lorkhan)
-	BOOSTINC = -isystem /usr/local/Cellar/boost/1.64.0_1/include
-	BOOSTLIB = -L /usr/local/Cellar/boost/1.64.0_1/lib
+	BOOSTINC = -isystem /usr/local/Cellar/boost/1.65.0/include
+	BOOSTLIB = -L /usr/local/Cellar/boost/1.65.0/lib
 	DELPHESINC = -isystem /Users/declan/Projects/delphes/install/include
 	DELPHESLIB = -L /Users/declan/Projects/delphes/install/lib
 else ifeq ($(HOSTNAME), cyan03)

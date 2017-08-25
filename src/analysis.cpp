@@ -543,6 +543,7 @@ void Analysis::SetupInputFiles() {
                 proc_id++;
             }
         }
+        std::sort(m_input->begin(), m_input->end()); 
     }
 
     // check some input files have been specified
