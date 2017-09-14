@@ -1260,7 +1260,7 @@ void Analysis::Loop() {
             if (ievent < 0) break;
             this->EveryEvent(get<5>(m_processes->at(proc_id)));
             this->EachEvent(get<5>(m_processes->at(proc_id)));
-            if (!m_debug) ProgressBar(jevent, m_nevents - 1, 50);
+            // if (!m_debug) ProgressBar(jevent, m_nevents - 1, 50);
         }
         this->CleanUp();
         // cout << "\n";
