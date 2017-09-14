@@ -543,7 +543,7 @@ void Analysis::SetupInputFiles() {
                 proc_id++;
             }
         }
-        std::sort(m_input->begin(), m_input->end()); 
+        std::sort(m_input->begin(), m_input->end());
     }
 
     // check some input files have been specified
@@ -1208,7 +1208,7 @@ void Analysis::SetDataDirectory() {
 
 
 void Analysis::GetBranches() {
-    cout << "Fetching branches ...\n";
+    if (m_debug) cout << "Fetching branches ...\n";
     b_Jet = m_tree->UseBranch("Jet");
     b_Electron = m_tree->UseBranch("Electron");
     b_Muon = m_tree->UseBranch("Muon");
@@ -1220,8 +1220,8 @@ void Analysis::GetBranches() {
 void Analysis::GetGenerationCrossSection(int proc_id) {
     if (m_debug) cout << "Getting generation cross section ...\n";
     string proc_filename = get<0>(m_processes->at(proc_id));
-    cout << "Process ID = " << proc_id << "\n";
-    cout << "File = " << proc_filename << "\n";
+    if (m_debug) cout << "Process ID = " << proc_id << "\n";
+    if (m_debug) cout << "File = " << proc_filename << "\n";
 
     ifstream proc_file;
     proc_file.open(proc_filename);
@@ -1230,7 +1230,7 @@ void Analysis::GetGenerationCrossSection(int proc_id) {
     get<3>(m_processes->at(proc_id)) = get_parameter(&proc_file);
     get<4>(m_processes->at(proc_id)) = get_parameter(&proc_file);
     proc_file.close();
-    cout << "Generation cross section = " << get<3>(m_processes->at(proc_id)) << " +/- " << get<4>(m_processes->at(proc_id)) << " [fb]\n";
+    if (m_debug) cout << "Generation cross section = " << get<3>(m_processes->at(proc_id)) << " +/- " << get<4>(m_processes->at(proc_id)) << " [fb]\n";
 }
 
 
@@ -1241,14 +1241,14 @@ void Analysis::GetProcessWeight(int proc_id) {
     cout << "Number of events = " << nevents << "\n";
     get<5>(m_processes->at(proc_id)) = 1.0 * get<3>(m_processes->at(proc_id)) / (nevents * nproc);
     if (m_luminosity > 0) get<5>(m_processes->at(proc_id)) *= m_luminosity;
-    cout << "Event weight = "<< get<5>(m_processes->at(proc_id)) << "\n";
+    if (m_debug) cout << "Event weight = "<< get<5>(m_processes->at(proc_id)) << "\n";
 }
 
 
 void Analysis::Loop() {
     for (itr_s it = m_input->begin(); it != m_input->end(); ++it) {
         int i = it - m_input->begin();
-        cout << "Input " << i + 1 << "\n";
+        cout << "Input " << i + 1 << ": ";
         cout << get<0>(*it) << "\n";
         this->EachFile(get<0>(*it));
         m_nevents = this->TotalEvents();
