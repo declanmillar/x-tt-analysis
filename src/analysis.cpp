@@ -1248,10 +1248,10 @@ void Analysis::GetProcessWeight(int proc_id) {
 void Analysis::Loop() {
     for (itr_s it = m_input->begin(); it != m_input->end(); ++it) {
         int i = it - m_input->begin();
-        int nfiles m_input->size();
+        int nfiles = m_input->size();
         if (nfiles < 10) cout << "  ";
         else if (nfiles < 100) cout << " ";
-        cout << i + 1 << "/" << n << ": ";
+        cout << i + 1 << "/" << nfiles << ": ";
         cout << get<0>(*it) << "\n";
         this->EachFile(get<0>(*it));
         m_nevents = this->TotalEvents();
