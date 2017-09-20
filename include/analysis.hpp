@@ -217,6 +217,13 @@ private:
     TH1D* h_mtt_philB;
     TH1D* h_mtt_ElF;
     TH1D* h_mtt_ElB;
+    TH1D* h_mtt_c1c2F;
+    TH1D* h_mtt_c1c2B;
+    TH1D* h_mtt_DphiF;
+    TH1D* h_mtt_DphiB;
+    TH1D* h_mtt_cphiF;
+    TH1D* h_mtt_cphiB;
+    TH1D* h_mtt_ctctF;
     TH1D* h_ytt;
 
     TH1D* h_cosTheta;
@@ -232,11 +239,12 @@ private:
     TH1D* h_AtFB;
     TH1D* h_AtC;
     TH1D* h_Ap;
-    TH1D* h_AL1;
-    TH1D* h_AL2;
     TH1D* h_AtlFB;
     TH1D* h_AL;
     TH1D* h_ALL;
+    TH1D* h_ADphi;
+    TH1D* h_Ac1c2;
+    TH1D* h_Acphi;
 
     TH1D* h_deltaR_max;
     TH1D* h_deltaR_bW;

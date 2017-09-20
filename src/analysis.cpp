@@ -325,6 +325,8 @@ void Analysis::EachEvent(double weight) {
     h_mW2->Fill(p_W2.M(), weight);
 
     h_deltaPhi->Fill(deltaPhi, weight);
+    if (deltaPhi > m_pi / 2) h_mtt_DphiF->Fill(mtt, weight);
+    if (deltaPhi < m_pi / 2) h_mtt_DphiB->Fill(mtt, weight);
 
     h2_HT_deltaPhi->Fill(HT / 1000, deltaPhi, weight);
     h2_mvis_deltaPhi->Fill(mvis / 1000, deltaPhi, weight);
@@ -345,6 +347,9 @@ void Analysis::EachEvent(double weight) {
     h_cosTheta1->Fill(costheta_tl1, weight);
     h_cosTheta2->Fill(costheta_tl2, weight);
     h_cos1cos2->Fill(cos1cos2, weight);
+
+    if (cos1cos2 > 0) h_mtt_c1c2F->Fill(mtt, weight);
+    if (cos1cos2 < 0) h_mtt_c1c2B->Fill(mtt, weight);
 
     if (costheta_tl1 > 0) h_mtt_tlF->Fill(mtt, weight);
     if (costheta_tl2 < 0) h_mtt_tlB->Fill(mtt, weight);
