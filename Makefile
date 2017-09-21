@@ -8,6 +8,8 @@ SRC = src
 OUT = .
 
 ROOTINC = $(shell root-config --cflags)
+# ROOTINC = -pthread -stdlib=libc++  -std=c++11 -m64 -I/usr/local/Cellar/root/6.10.04/include/root
+# -std=c++11
 ROOTLIBS = $(shell root-config --libs) -lTree
 
 HOSTNAME := $(shell hostname)

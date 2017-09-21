@@ -809,7 +809,7 @@ void Analysis::MakeHistograms() {
     h2_mtt_deltaPhi->Sumw2();
 
     h2_mtt_cosTheta1 = new TH2D("mtt_costheta_tl1", "m_{tt} \\cos\\theta_{t,l+}\\", nbins, Emin, Emax, 10, -1.0, 1.0);
-    h2_mtt_cosTheta1->GetXaxis()->SetTitle("m_{tt}\\[TeV]");
+    h2_mtt_cosTheta1->GetXaxis()->SetTitle("m_{tt}\\ [TeV]");
     h2_mtt_cosTheta1->GetYaxis()->SetTitle("\\cos\\theta_{\\ell^{+}}");
     h2_mtt_cosTheta1->Sumw2();
 
@@ -824,18 +824,18 @@ void Analysis::MakeHistograms() {
     h2_mtt_cos1cos2->Sumw2();
 
     h2_HT_deltaPhi = new TH2D("HT_deltaphi", "H_{\\mathrm{T}} \\times \\Delta\\phi_{\\ell}", 40, 0.0, 4.0, 10, 0.0, 1.0);
-    h2_HT_deltaPhi->GetXaxis()->SetTitle("H_{\\mathrm{T}}\\[TeV]");
-    h2_HT_deltaPhi->GetYaxis()->SetTitle("\\Delta\\phi_{l}\\[rad/\\pi]");
+    h2_HT_deltaPhi->GetXaxis()->SetTitle("H_{\\mathrm{T}}\\ [TeV]");
+    h2_HT_deltaPhi->GetYaxis()->SetTitle("\\Delta\\phi_{l}\\ [rad/\\pi]");
     h2_HT_deltaPhi->Sumw2();
 
     h2_mvis_deltaPhi = new TH2D("mvis_deltaphi", "m_{\\mathrm{vis}} \\Delta\\phi_{\\ell^{+}\\ell^{-}}", 40, 0.0, 4.0, 10, 0.0, 1.0);
-    h2_mvis_deltaPhi->GetXaxis()->SetTitle("m_{\\mathrm{vis}} [TeV]");
-    h2_mvis_deltaPhi->GetYaxis()->SetTitle("\\Delta\\phi_{\\ell^{+}\\ell^{-}}\\[rad/\\pi]");
+    h2_mvis_deltaPhi->GetXaxis()->SetTitle("m_{\\mathrm{vis}}\\ [TeV]");
+    h2_mvis_deltaPhi->GetYaxis()->SetTitle("\\Delta\\phi_{\\ell^{+}\\ell^{-}}\\ [rad/\\pi]");
     h2_mvis_deltaPhi->Sumw2();
 
     h2_KT_deltaPhi = new TH2D("KT_deltaphi", "K_{\\mathrm{T}} \\Delta\\phi_{\\ell^{+}\\ell^{-}}\\", 40, 0.0, 4.0, 10, 0.0, 1.0);
-    h2_KT_deltaPhi->GetXaxis()->SetTitle("K_{\\mathrm{T}}\\[TeV]\\");
-    h2_KT_deltaPhi->GetYaxis()->SetTitle("\\Delta\\phi_{l}\\[rad/\\pi]\\");
+    h2_KT_deltaPhi->GetXaxis()->SetTitle("K_{\\mathrm{T}}\\ [TeV]\\");
+    h2_KT_deltaPhi->GetYaxis()->SetTitle("\\Delta\\phi_{l}\\ [rad/\\pi]\\");
     h2_KT_deltaPhi->Sumw2();
 
     h_deltaR_tt = new TH1D("deltaR_tt", "\\Delta R(t,\\bar{t})\\", 100, 0.0, 5.0);
@@ -843,7 +843,7 @@ void Analysis::MakeHistograms() {
 
     h_deltaR_bW = new TH1D("deltaR_bW", "\\Delta R(b,W)\\", 100, 0.0, 5.0);
     h_deltaR_bW->Sumw2();
-    h_deltaR_max = new TH1D("deltaR_max", "\\Delta R_{\\mathrm{max}}\\\\", 100, 0.0, 5.0);
+    h_deltaR_max = new TH1D("deltaR_max", "\\Delta R_{\\mathrm{max}}\\", 100, 0.0, 5.0);
     h_deltaR_max->Sumw2();
 }
 
@@ -1351,8 +1351,8 @@ double Analysis::TotalAsymmetry(TH1D* h_A, TH1D* h_B) {
 
 
 void Analysis::InitialiseCutflow() {
-    m_cutflow = vector<int >(m_cuts, -999);
-    m_cutNames = vector<string >(
+    m_cutflow = vector<int>(m_cuts, -999);
+    m_cutNames = vector<string>(
     m_cuts,                            "no name               ");
     m_cutNames[c_sufficientMET]      = "Sufficient MET        ";
     m_cutNames[c_events]             = "Events                ";
@@ -1366,19 +1366,19 @@ void Analysis::InitialiseCutflow() {
     m_cutNames[c_realSolutions]      = "Has real roots        ";
     m_cutNames[c_deltaR]             = "deltaR                ";
 
-    m_cutTitles = vector<string >(
-    m_cuts,                            "no name               ");
-    m_cutTitles[c_sufficientMET]      = "\\mathrm{Sufficient}\\, E^{\\mathrm{miss}}_{\\mathrm{T}}";
-    m_cutTitles[c_events]             = "Events                ";
-    m_cutTitles[c_twoLeptons]         = "Two leptons           ";
-    m_cutTitles[c_oppositeCharge]     = "Opposite Charge       ";
-    m_cutTitles[c_sufficientMll]      = "\\mathrm{Sufficient}\\, m_{\\ell\\ell}";
-    m_cutTitles[c_outsideZmassWindow] = "\\mathrm{Outside}\\,m_{Z}\\,window";
-    m_cutTitles[c_sufficientJets]     = "Sufficient jets       ";
-    m_cutTitles[c_sufficientBtags]    = "Sufficient b-tags     ";
-    m_cutTitles[c_sufficientHT]       = "\\mathrm{Sufficient}\\, H_{\\mathrm{T}}";
-    m_cutTitles[c_realSolutions]      = "Has real roots        ";
-    m_cutTitles[c_deltaR]             = "\\Delta R             ";
+    m_cutTitles = vector<string>(
+    m_cuts,                            "no name");
+    m_cutTitles[c_sufficientMET]      = "\\mathrm{Sufficient}\\ E^{\\mathrm{miss}}_{\\mathrm{T}}";
+    m_cutTitles[c_events]             = "Events";
+    m_cutTitles[c_twoLeptons]         = "Two leptons";
+    m_cutTitles[c_oppositeCharge]     = "Opposite Charge";
+    m_cutTitles[c_sufficientMll]      = "\\mathrm{Sufficient}\\ m_{\\ell\\ell}";
+    m_cutTitles[c_outsideZmassWindow] = "\\mathrm{Outside}\\ m_{Z}\\,window";
+    m_cutTitles[c_sufficientJets]     = "Sufficient jets";
+    m_cutTitles[c_sufficientBtags]    = "\\mathrm{Sufficient}\\ b\\mathrm{-tags}";
+    m_cutTitles[c_sufficientHT]       = "\\mathrm{Sufficient}\\ H_{\\mathrm{T}}";
+    m_cutTitles[c_realSolutions]      = "Has real roots";
+    m_cutTitles[c_deltaR]             = "\\Delta R";
 
     h_cutflow = new TH1D("cutflow", "cutflow", m_cuts, 0.0, m_cuts);
 }
