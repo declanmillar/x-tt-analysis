@@ -6,6 +6,8 @@
 #include "TH2.h"
 #include "TF1.h"
 #include "TSystem.h"
+#include "TLatex.h"
+#include "TMathText.h"
 #include "TLorentzVector.h"
 #include "TVector2.h"
 #include "TClonesArray.h"
@@ -52,7 +54,7 @@ protected:
     void MakeDistributions();
     void MakeDistribution1D(TH1D*, const string&);
     void MakeDistribution2D(TH2D*, string, string, string, string);
-    void MakeDistributionAL(TH2D*, const string&);
+    void MakeDistributionAL(TH2D*, const string&, const string&);
     void NormalizeSliceY(TH2D*);
 
     void GetGenerationCrossSection(int);
@@ -81,7 +83,7 @@ protected:
     Long64_t TotalEvents();
     Long64_t IncrementEvent(Long64_t i);
     double TotalAsymmetry(TH1D* h_A, TH1D* h_B);
-    TH1D* Asymmetry(const string&, const string&, TH1D*, TH1D*);
+    void Asymmetry(const string&, const string&, TH1D*, TH1D*);
 
     // tuple
     TClonesArray* b_Jet;
@@ -130,6 +132,7 @@ private:
 
     vector<int> m_cutflow;
     vector<string> m_cutNames;
+    vector<string> m_cutTitles;
     enum m_cutlist{
         c_events,
         c_sufficientMET,
@@ -152,6 +155,8 @@ private:
     int m_btags;
 
     // Histograms
+    TH1D* h_cutflow;
+
     TH1D* h_pt_l1;
     TH1D* h_eta_l1;
     TH1D* h_pt_l2;
@@ -178,7 +183,7 @@ private:
     TH1D* h_KT_all;
     TH1D* h_mvis_all;
 
-    TH1D* h_deltaPhi;
+    TH1D* h_deltaPhi_ll;
 
     TH1D* h_mW1;
     TH1D* h_mW2;
@@ -232,19 +237,6 @@ private:
     TH1D* h_cos1cos2;
     TH1D* h_cosThetaStar;
     TH1D* h_costheta_tt;
-
-    TH1D* h_cutflow;
-
-    // asymmetries
-    TH1D* h_AtFB;
-    TH1D* h_AtC;
-    TH1D* h_Ap;
-    TH1D* h_AtlFB;
-    TH1D* h_AL;
-    TH1D* h_ALL;
-    TH1D* h_ADphi;
-    TH1D* h_Ac1c2;
-    TH1D* h_Acphi;
 
     TH1D* h_deltaR_max;
     TH1D* h_deltaR_bW;

@@ -324,7 +324,7 @@ void Analysis::EachEvent(double weight) {
     h_mW1->Fill(p_W1.M(), weight);
     h_mW2->Fill(p_W2.M(), weight);
 
-    h_deltaPhi->Fill(deltaPhi, weight);
+    h_deltaPhi_ll->Fill(deltaPhi, weight);
     if (deltaPhi > m_pi / 2) h_mtt_DphiF->Fill(mtt, weight);
     if (deltaPhi < m_pi / 2) h_mtt_DphiB->Fill(mtt, weight);
 
@@ -592,15 +592,15 @@ void Analysis::SetupOutputFiles() {
 }
 
 void Analysis::PostLoop() {
-    this->MakeDistributions();
     this->PrintCutflow();
+    this->MakeDistributions();
     m_output->Close();
     cout << "\nOutput\n";
     cout << m_outputName << "\n";
 }
 
 
-TH1D* Analysis::Asymmetry(const string& name, const string& title, TH1D* h1, TH1D* h2) {
+void Analysis::Asymmetry(const string& name, const string& title, TH1D* h1, TH1D* h2) {
     TH1D* h_numerator = (TH1D*) h1->Clone(name.data());
     TH1D* h_denominator = (TH1D*) h1->Clone();
     h_numerator->SetTitle(title.data());
@@ -609,7 +609,9 @@ TH1D* Analysis::Asymmetry(const string& name, const string& title, TH1D* h1, TH1
     h_numerator->Divide(h_denominator);
     delete h_denominator;
     if (m_luminosity > 0) this->AsymmetryUncertainty(h_numerator, h1, h2);
-    return h_numerator;
+    h_numerator->GetYaxis()->SetTitle(h_numerator->GetTitle());
+    h_numerator->GetXaxis()->SetTitle(h_numerator->GetXaxis()->GetTitle());
+    h_numerator->Write();
 }
 
 
@@ -634,304 +636,326 @@ void Analysis::MakeHistograms() {
     double nbins = (Emax - Emin) / binWidth;
      cout << "Plotting range: " << Emin << " - " << Emax << " [TeV]\n";
 
-    h_pt_l1 = new TH1D("pT_l1", "p^{l^{+}}_{T}", 40, 0.0, 1000.0);
+    TMathText l;
+
+    h_pt_l1 = new TH1D("pT_l1", "p^{\\ell^{+}}_{\\mathrm{T}}\\", 40, 0.0, 1000.0);
     h_pt_l1->Sumw2();
-    h_pt_l2 = new TH1D("pT_l2", "p^{l^{-}}_{T}", 40, 0.0, 1000.0);
+    h_pt_l2 = new TH1D("pT_l2", "p^{\\ell^{-}}_{\\mathrm{T}}\\", 40, 0.0, 1000.0);
     h_pt_l2->Sumw2();
-    h_eta_l1 = new TH1D("eta_l1", "#eta_{l^{+}}", 60, -3.0, 3.0);
+    h_eta_l1 = new TH1D("eta_l1", "\\eta_{\\ell^{+}}\\", 60, -3.0, 3.0);
     h_eta_l1->Sumw2();
-    h_eta_l2 = new TH1D("eta_l2", "#eta_{l^{-}}", 60, -3.0, 3.0);
+    h_eta_l2 = new TH1D("eta_l2", "\\eta_{\\ell^{-}}\\", 60, -3.0, 3.0);
     h_eta_l2->Sumw2();
 
-    h_pt_jets = new TH1D("pT_jets", "p_{T}^{jets}", 40, 0.0, 5000.0);
+    h_pt_jets = new TH1D("pT_jet", "p_{\\mathrm{T}}^{jet}\\", 40, 0.0, 5000.0);
     h_pt_jets->Sumw2();
-    h_eta_jets = new TH1D("eta_jets", "#eta_{jets}", 60, -3.0, 3.0);
+    h_eta_jets = new TH1D("eta_jet", "\\eta_{jet}\\", 60, -3.0, 3.0);
     h_eta_jets->Sumw2();
-    h_pt_bjets = new TH1D("pT_bjets", "p_{T}^{b-jets}", 40, 0.0, 5000.0);
+    h_pt_bjets = new TH1D("pT_bjet", "p_{\\mathrm{T}}^{b-jet}\\", 40, 0.0, 5000.0);
     h_pt_bjets->Sumw2();
-    h_eta_bjets = new TH1D("eta_bjets", "#eta_{b-jets}", 60, -3.0, 3.0);
+    h_eta_bjets = new TH1D("eta_bjet", "\\eta_{b-jet}\\", 60, -3.0, 3.0);
     h_eta_bjets->Sumw2();
-    h_pt_qjets = new TH1D("pT_qjets", "p_{T}^{q-jets}", 40, 0.0, 5000.0);
+    h_pt_qjets = new TH1D("pT_qjet", "p_{\\mathrm{T}}^{q-jet}\\", 40, 0.0, 5000.0);
     h_pt_qjets->Sumw2();
-    h_eta_qjets = new TH1D("eta_qjets", "#eta_{q-jets}", 60, -3.0, 3.0);
+    h_eta_qjets = new TH1D("eta_qjet", "\\eta_{q-jet}\\", 60, -3.0, 3.0);
     h_eta_qjets->Sumw2();
 
-    h_mtt = new TH1D("m_tt", "m_{tt}", nbins, Emin, Emax);
+    h_mtt = new TH1D("m_tt", "m_{tt}\\", nbins, Emin, Emax);
     h_mtt->Sumw2();
-    h_ytt = new TH1D("y_tt", "y_{tt}", 50, -2.5, 2.5);
+    h_ytt = new TH1D("y_tt", "y_{tt}\\", 50, -2.5, 2.5);
     h_ytt->Sumw2();
 
-    h_mW1 = new TH1D("mW1", "m_{W^{+}}", 150, 0.0, 150.0);
+    h_mW1 = new TH1D("mW1", "m_{W^{+}}\\", 150, 0.0, 150.0);
     h_mW1->Sumw2();
-    h_mW2 = new TH1D("mW2", "m_{W^{-}}", 150, 0.0, 150.0);
+    h_mW2 = new TH1D("mW2", "m_{W^{-}}\\", 150, 0.0, 150.0);
     h_mW2->Sumw2();
 
-    h_Et = new TH1D("E_t", "E_{t}", 100, 0.0, 5000.0);
+    h_Et = new TH1D("E_t", "E_{t}\\", 100, 0.0, 5000.0);
     h_Et->Sumw2();
-    h_pTt = new TH1D("pT_t", "p_{T}^{t}", 100, 0.0, 5000.0);
+    h_pTt = new TH1D("pT_t", "p_{\\mathrm{T}}^{t}\\", 100, 0.0, 5000.0);
     h_pTt->Sumw2();
-    h_etat = new TH1D("eta_t", "#eta_{t}", nbins, 0.0, 10.0);
+    h_etat = new TH1D("eta_t", "\\eta_{t}\\", nbins, 0.0, 10.0);
     h_etat->Sumw2();
-    h_phit = new TH1D("phi_t", "#phi_{t}", nbins, -1.0, 1.0);
+    h_phit = new TH1D("phi_t", "\\phi_{t}\\", nbins, -1.0, 1.0);
     h_phit->Sumw2();
-    h_mt = new TH1D("m_t", "m_{t}", 40, 100.0, 300.0);
+    h_mt = new TH1D("m_t", "m_{t}\\", 40, 100.0, 300.0);
     h_mt->Sumw2();
 
-    h_Etbar = new TH1D("E_tbar", "E_{#bar{t}}", 100, 0.0, 5000.0);
+    h_Etbar = new TH1D("E_tbar", "E_{\\bar{t}}\\", 100, 0.0, 5000.0);
     h_Etbar->Sumw2();
-    h_pTtbar = new TH1D("pT_tbar", "p_{T}^{#bar{t}}", 100, 0.0, 5000.0);
+    h_pTtbar = new TH1D("pT_tbar", "p_{\\mathrm{T}}^{\\bar{t}}\\", 100, 0.0, 5000.0);
     h_pTtbar->Sumw2();
-    h_etatbar = new TH1D("eta_tbar", "#eta_{#bar{t}}", nbins, 0.0, 10.0);
+    h_etatbar = new TH1D("eta_tbar", "\\eta_{\\bar{t}}\\", nbins, 0.0, 10.0);
     h_etatbar->Sumw2();
-    h_phitbar = new TH1D("phi_tbar", "#phi_{#bar{t}}", nbins, -1.0, 1.0);
+    h_phitbar = new TH1D("phi_tbar", "\\phi_{\\bar{t}}\\", nbins, -1.0, 1.0);
     h_phitbar->Sumw2();
-    h_mtbar = new TH1D("m_tbar", "m_{#bar{t}}", 40, 100.0, 300.0);
+    h_mtbar = new TH1D("m_tbar", "m_{\\bar{t}}\\", 40, 100.0, 300.0);
     h_mtbar->Sumw2();
 
     // AtFB
-    h_mtt_tF = new TH1D("mtt_tF", "m_{tt}^{tF}", nbins, Emin, Emax);
+    h_mtt_tF = new TH1D("mtt_tF", "m_{tt}^{tF}\\", nbins, Emin, Emax);
     h_mtt_tF->Sumw2();
-    h_mtt_tB = new TH1D("mtt_tB", "m_{tt}^{tB}", nbins, Emin, Emax);
+    h_mtt_tB = new TH1D("mtt_tB", "m_{tt}^{tB}\\", nbins, Emin, Emax);
     h_mtt_tB->Sumw2();
 
     // AtC
-    h_mtt_tCF = new TH1D("mtt_tCF", "m_{tt}^{tCF}", nbins, Emin, Emax);
+    h_mtt_tCF = new TH1D("mtt_tCF", "m_{tt}^{tCF}\\", nbins, Emin, Emax);
     h_mtt_tCF->Sumw2();
-    h_mtt_tCB = new TH1D("mtt_tCB", "m_{tt}^{tCB}", nbins, Emin, Emax);
+    h_mtt_tCB = new TH1D("mtt_tCB", "m_{tt}^{tCB}\\", nbins, Emin, Emax);
     h_mtt_tCB->Sumw2();
 
-    h2_mtt_cosThetaStar = new TH2D("mtt_costhetastar", "m_{tt} cos#theta^{*}", nbins, Emin, Emax, 10, -1.0, 1.0);
-    h2_mtt_cosThetaStar->GetXaxis()->SetTitle("m_{tt}");
-    h2_mtt_cosThetaStar->GetYaxis()->SetTitle("cos#theta^*");
+    // Ac1c2
+    h_mtt_c1c2F = new TH1D("mtt_c1c2F", "m_{tt}^{c1c2F}\\", nbins, Emin, Emax);
+    h_mtt_c1c2F->Sumw2();
+    h_mtt_c1c2B = new TH1D("mtt_c1c2B", "m_{tt}^{c1c2B}\\", nbins, Emin, Emax);
+    h_mtt_c1c2B->Sumw2();
+
+    // ADphi
+    h_mtt_DphiF = new TH1D("mtt_DphiF", "m_{tt}^{DphiF}\\", nbins, Emin, Emax);
+    h_mtt_DphiF->Sumw2();
+    h_mtt_DphiB = new TH1D("mtt_DphiB", "m_{tt}^{DphiB}\\", nbins, Emin, Emax);
+    h_mtt_DphiB->Sumw2();
+
+    // cphi
+    h_mtt_cphiF = new TH1D("mtt_cphiF", "m_{tt}^{cphiF}\\", nbins, Emin, Emax);
+    h_mtt_cphiF->Sumw2();
+    h_mtt_cphiB = new TH1D("mtt_cphiB", "m_{tt}^{cphiB}\\", nbins, Emin, Emax);
+    h_mtt_cphiB->Sumw2();
+
+    h2_mtt_cosThetaStar = new TH2D("mtt_costhetastar", "m_{tt} \\cos\\theta^{*}\\", nbins, Emin, Emax, 10, -1.0, 1.0);
+    h2_mtt_cosThetaStar->GetXaxis()->SetTitle("m_{tt}\\");
+    h2_mtt_cosThetaStar->GetYaxis()->SetTitle("\\cos\\theta^{*}\\");
     h2_mtt_cosThetaStar->Sumw2();
 
-    h_costheta_tt = new TH1D("costheta_tt", "cos#theta_{t,#bar{t}}", 20, -1.0, 1.0);
+    h_costheta_tt = new TH1D("costheta_tt", "\\cos\\theta_{t,\\bar{t}}\\", 20, -1.0, 1.0);
     h_costheta_tt->Sumw2();
 
     // AtlFB
-    h_mtt_tlF = new TH1D("mtt_tlF", "m_{tt}^{tlF}", nbins, Emin, Emax);
+    h_mtt_tlF = new TH1D("mtt_tlF", "m_{tt}^{tlF}\\", nbins, Emin, Emax);
     h_mtt_tlF->Sumw2();
-    h_mtt_tlB = new TH1D("mtt_tlB", "m_{tt}^{tlB}", nbins, Emin, Emax);
+    h_mtt_tlB = new TH1D("mtt_tlB", "m_{tt}^{tlB}\\", nbins, Emin, Emax);
     h_mtt_tlB->Sumw2();
 
     // Aphil
-    h_mtt_philF = new TH1D("mtt_philF", "m_{tt}^{philF}", nbins, Emin, Emax);
+    h_mtt_philF = new TH1D("mtt_philF", "m_{tt}^{philF}\\", nbins, Emin, Emax);
     h_mtt_philF->Sumw2();
-    h_mtt_philB = new TH1D("mtt_philB", "m_{tt}^{philB}", nbins, Emin, Emax);
+    h_mtt_philB = new TH1D("mtt_philB", "m_{tt}^{philB}\\", nbins, Emin, Emax);
     h_mtt_philB->Sumw2();
 
     // AlEl
-    h_mtt_ElF = new TH1D("mtt_ElF", "m_{tt}^{ElF}", nbins, Emin, Emax);
+    h_mtt_ElF = new TH1D("mtt_ElF", "m_{tt}^{ElF}\\", nbins, Emin, Emax);
     h_mtt_ElF->Sumw2();
-    h_mtt_ElB = new TH1D("mtt_ElB", "m_{tt}^{ElB}", nbins, Emin, Emax);
+    h_mtt_ElB = new TH1D("mtt_ElB", "m_{tt}^{ElB}\\", nbins, Emin, Emax);
     h_mtt_ElB->Sumw2();
 
-    h_cosTheta = new TH1D("costheta", "cos#theta", nbins, -1.0, 1.0);
+    h_cosTheta = new TH1D("costheta", "\\cos\\theta", nbins, -1.0, 1.0);
     h_cosTheta->Sumw2();
-    h_cosThetaStar = new TH1D("costheta_star", "cos#theta^{*}", nbins, -1.0, 1.0);
+    h_cosThetaStar = new TH1D("costheta_star", "\\cos\\theta^{*}\\", nbins, -1.0, 1.0);
     h_cosThetaStar->Sumw2();
 
-    h_HT = new TH1D("HT", "H_{T}", 60, 0.0, 6.0);
-    h_HT->Sumw2();
-    h_HT_all = new TH1D("HT_all", "H^{all}_{T}", 50, 0.0, 6.0);
+    h_HT_all = new TH1D("HT_all", "H^{\\mathrm{all}}_{\\mathrm{T}}\\", 50, 0.0, 6.0);
     h_HT_all->Sumw2();
+    h_HT = new TH1D("HT", "H_{\\mathrm{T}}\\", 60, 0.0, 6.0);
+    h_HT->Sumw2();
 
-    h_KT = new TH1D("KT", "K_{T}", 60, 0.0, 6.0);
-    h_KT->Sumw2();
-    h_KT_all = new TH1D("KT_all", "K^{all}_{T}", 50, 0.0, 6.0);
+    h_KT_all = new TH1D("KT_all", "K^{\\mathrm{all}}_{\\mathrm{T}}\\", 50, 0.0, 6.0);
     h_KT_all->Sumw2();
+    h_KT = new TH1D("KT", "K_{\\mathrm{T}}\\", 60, 0.0, 6.0);
+    h_KT->Sumw2();
 
-    h_mvis = new TH1D("mvis", "m_{vis}", 60, 0.0, 6.0);
-    h_mvis->Sumw2();
-    h_mvis_all = new TH1D("mvis_all", "m^{all}_{vis}", 60, 0.0, 6.0);
+    h_mvis_all = new TH1D("mvis_all", "m^{\\mathrm{\\mathrm{all}}}_{\\mathrm{vis}}", 60, 0.0, 6.0);
     h_mvis_all->Sumw2();
+    h_mvis = new TH1D("mvis", "m_{\\mathrm{vis}}\\", 60, 0.0, 6.0);
+    h_mvis->Sumw2();
 
-    h_pt_alljets = new TH1D("pT_alljets", "p_{T}^{jet}", 1000, 0.0, 5000.0);
+    h_pt_alljets = new TH1D("pT_alljets", "p_{\\mathrm{T}}^{jet}\\", 1000, 0.0, 5000.0);
     h_pt_alljets->Sumw2();
-    h_pt_allel = new TH1D("pT_allel", "p_{T}^{electron}", 1000, 0.0, 5000.0);
+    h_pt_allel = new TH1D("pT_allel", "p_{\\mathrm{T}}^{e}\\", 1000, 0.0, 5000.0);
     h_pt_allel->Sumw2();
-    h_pt_allmu = new TH1D("pT_allmu", "p_{T}^{muon}", 1000, 0.0, 5000.0);
+    h_pt_allmu = new TH1D("pT_allmu", "p_{\\mathrm{T}}^{\\mu}\\", 1000, 0.0, 5000.0);
     h_pt_allmu->Sumw2();
-    h_eta_alljets = new TH1D("eta_alljets", "#eta^{jet}", 500, 0.0, 5.0);
+    h_eta_alljets = new TH1D("eta_alljets", "\\eta^{jet}\\", 500, 0.0, 5.0);
     h_eta_alljets->Sumw2();
-    h_eta_allel = new TH1D("eta_allel", "#eta^{electron}", 250, 0.0, 2.5);
+    h_eta_allel = new TH1D("eta_allel", "\\eta^{e}\\", 250, 0.0, 2.5);
     h_eta_allel->Sumw2();
-    h_eta_allmu = new TH1D("eta_allmu", "#eta^{muon}", 250, 0.0, 2.5);
+    h_eta_allmu = new TH1D("eta_allmu", "\\eta^{\\mu}\\", 250, 0.0, 2.5);
     h_eta_allmu->Sumw2();
 
-    h_deltaPhi = new TH1D("delta_phi", "#Delta#phi", 10, 0.0, 1.0);
-    h_deltaPhi->Sumw2();
+    h_deltaPhi_ll = new TH1D("delta_phi", "\\Delta\\phi_{\\ell^{+}\\ell^{-}}\\", 10, 0.0, 1.0);
+    h_deltaPhi_ll->Sumw2();
 
-    h_cosTheta1 = new TH1D("costheta_tl1", "cos#theta_{t,l+}", 10, -1.0, 1.0);
+    h_cosTheta1 = new TH1D("costheta_tl1", "\\cos\\theta_{t,\\ell^{+}}\\", 10, -1.0, 1.0);
     h_cosTheta1->Sumw2();
-    h_cosTheta2 = new TH1D("costheta_tl2", "cos#theta_{t,l-}", 10, -1.0, 1.0);
+    h_cosTheta2 = new TH1D("costheta_tl2", "\\cos\\theta_{t,\\ell^{-}}\\", 10, -1.0, 1.0);
     h_cosTheta2->Sumw2();
-    h_cos1cos2 = new TH1D("cos1cos2", "cos#theta_{t,l+}cos#theta_{t,l-}", 20, -1.0, 1.0);
+    h_cos1cos2 = new TH1D("cos1cos2", "\\cos\\theta_{t,\\ell^{+}}\\cos\\theta_{t,\\ell^{-}}\\", 20, -1.0, 1.0);
     h_cos1cos2->Sumw2();
 
-    h_mtt_lF = new TH1D("mtt_lF", "m_{tt}^{F,l}", nbins, Emin, Emax);
+    h_mtt_lF = new TH1D("mtt_lF", "m_{tt}^{F,l}\\", nbins, Emin, Emax);
     h_mtt_lF->Sumw2();
-    h_mtt_lB = new TH1D("mtt_lB", "m_{tt}^{B,l}", nbins, Emin, Emax);
+    h_mtt_lB = new TH1D("mtt_lB", "m_{tt}^{B,l}\\", nbins, Emin, Emax);
     h_mtt_lB->Sumw2();
 
-    h_nElectrons = new TH1D("n_electrons", "n_{electrons}", 10, 0.0, 10.0);
+    h_nElectrons = new TH1D("n_electron", "n_{electron}\\", 10, 0.0, 10.0);
     h_nElectrons->Sumw2();
-    h_nMuons = new TH1D("n_muons", "n_{muons}", 10, 0.0, 10.0);
+    h_nMuons = new TH1D("n_muon", "n_{muon}\\", 10, 0.0, 10.0);
     h_nMuons->Sumw2();
-    h_nJets = new TH1D("n_jets", "n_{jets}", 10, 0.0, 10.0);
+    h_nJets = new TH1D("n_jet", "n_{jet}\\", 10, 0.0, 10.0);
     h_nJets->Sumw2();
 
-    h2_mtt_deltaPhi = new TH2D("mtt_deltaphi", "m_{tt} #Delta#phi_{l}", nbins, Emin, Emax, 10, 0.0, 1.0);
-    h2_mtt_deltaPhi->GetXaxis()->SetTitle("m_{tt}");
-    h2_mtt_deltaPhi->GetYaxis()->SetTitle("#Delta#phi_{l}");
+    h2_mtt_deltaPhi = new TH2D("mtt_deltaphi", "m_{tt} \\times \\Delta\\phi_{\\ell^{+}\\ell^{-}}\\", nbins, Emin, Emax, 10, 0.0, 1.0);
+    h2_mtt_deltaPhi->GetXaxis()->SetTitle("m_{tt}\\");
+    h2_mtt_deltaPhi->GetYaxis()->SetTitle("\\Delta\\phi_{\\ell^{+}\\ell^{-}}\\");
     h2_mtt_deltaPhi->Sumw2();
 
-    h2_mtt_cosTheta1 = new TH2D("mtt_costheta_tl1", "m_{tt} cos#theta_{t,l+}", nbins, Emin, Emax, 10, -1.0, 1.0);
-    h2_mtt_cosTheta1->GetXaxis()->SetTitle("m_{tt} [TeV]");
-    h2_mtt_cosTheta1->GetYaxis()->SetTitle("cos#theta_{l+}");
+    h2_mtt_cosTheta1 = new TH2D("mtt_costheta_tl1", "m_{tt} \\cos\\theta_{t,l+}\\", nbins, Emin, Emax, 10, -1.0, 1.0);
+    h2_mtt_cosTheta1->GetXaxis()->SetTitle("m_{tt}\\[TeV]");
+    h2_mtt_cosTheta1->GetYaxis()->SetTitle("\\cos\\theta_{\\ell^{+}}");
     h2_mtt_cosTheta1->Sumw2();
 
-    h2_mtt_cosTheta2 = new TH2D("mtt_costheta_tl2", "m_{tt} cos#theta_{t,l-}", nbins, Emin, Emax, 10, -1.0, 1.0);
-    h2_mtt_cosTheta2->GetXaxis()->SetTitle("m_{tt} [TeV]");
-    h2_mtt_cosTheta2->GetYaxis()->SetTitle("cos#theta_{l-}");
+    h2_mtt_cosTheta2 = new TH2D("mtt_costheta_tl2", "m_{tt} \\cos\\theta_{t,l-}", nbins, Emin, Emax, 10, -1.0, 1.0);
+    h2_mtt_cosTheta2->GetXaxis()->SetTitle("m_{tt}\\[TeV]");
+    h2_mtt_cosTheta2->GetYaxis()->SetTitle("\\cos\\theta_{\\ell^{-}}\\");
     h2_mtt_cosTheta2->Sumw2();
 
-    h2_mtt_cos1cos2 = new TH2D("mtt_cos1cos2", "m_{tt} cos#theta_{l+}cos#theta_{l-}", nbins, Emin, Emax, 20, -1.0, 1.0);
-    h2_mtt_cos1cos2->GetXaxis()->SetTitle("m_{tt}");
-    h2_mtt_cos1cos2->GetYaxis()->SetTitle("cos#theta_{l+}cos#theta_{l-}");
+    h2_mtt_cos1cos2 = new TH2D("mtt_cos1cos2", "m_{tt} \\cos\\theta_{\\ell^{+}}\\cos\\theta_{\\ell^{-}}\\", nbins, Emin, Emax, 20, -1.0, 1.0);
+    h2_mtt_cos1cos2->GetXaxis()->SetTitle("m_{tt}\\");
+    h2_mtt_cos1cos2->GetYaxis()->SetTitle("\\cos\\theta_{\\ell^{+}}\\cos\\theta_{\\ell^{-}}\\");
     h2_mtt_cos1cos2->Sumw2();
 
-    h2_HT_deltaPhi = new TH2D("HT_deltaphi", "H_{T} #Delta#phi_{l}", 40, 0.0, 4.0, 10, 0.0, 1.0);
-    h2_HT_deltaPhi->GetXaxis()->SetTitle("H_{T} [TeV]");
-    h2_HT_deltaPhi->GetYaxis()->SetTitle("#Delta#phi_{l} [rad] / #pi");
+    h2_HT_deltaPhi = new TH2D("HT_deltaphi", "H_{\\mathrm{T}} \\times \\Delta\\phi_{\\ell}", 40, 0.0, 4.0, 10, 0.0, 1.0);
+    h2_HT_deltaPhi->GetXaxis()->SetTitle("H_{\\mathrm{T}}\\[TeV]");
+    h2_HT_deltaPhi->GetYaxis()->SetTitle("\\Delta\\phi_{l}\\[rad/\\pi]");
     h2_HT_deltaPhi->Sumw2();
 
-    h2_mvis_deltaPhi = new TH2D("mvis_deltaphi", "m_{vis} #Delta#phi_{l}", 40, 0.0, 4.0, 10, 0.0, 1.0);
-    h2_mvis_deltaPhi->GetXaxis()->SetTitle("m_{vis} [TeV]");
-    h2_mvis_deltaPhi->GetYaxis()->SetTitle("#Delta#phi_{l} [rad] / #pi");
+    h2_mvis_deltaPhi = new TH2D("mvis_deltaphi", "m_{\\mathrm{vis}} \\Delta\\phi_{\\ell^{+}\\ell^{-}}", 40, 0.0, 4.0, 10, 0.0, 1.0);
+    h2_mvis_deltaPhi->GetXaxis()->SetTitle("m_{\\mathrm{vis}} [TeV]");
+    h2_mvis_deltaPhi->GetYaxis()->SetTitle("\\Delta\\phi_{\\ell^{+}\\ell^{-}}\\[rad/\\pi]");
     h2_mvis_deltaPhi->Sumw2();
 
-    h2_KT_deltaPhi = new TH2D("KT_deltaphi", "K_{T} #Delta#phi_{l}", 40, 0.0, 4.0, 10, 0.0, 1.0);
-    h2_KT_deltaPhi->GetXaxis()->SetTitle("K_{T} [TeV]");
-    h2_KT_deltaPhi->GetYaxis()->SetTitle("#Delta#phi_{l} [rad] / #pi");
+    h2_KT_deltaPhi = new TH2D("KT_deltaphi", "K_{\\mathrm{T}} \\Delta\\phi_{\\ell^{+}\\ell^{-}}\\", 40, 0.0, 4.0, 10, 0.0, 1.0);
+    h2_KT_deltaPhi->GetXaxis()->SetTitle("K_{\\mathrm{T}}\\[TeV]\\");
+    h2_KT_deltaPhi->GetYaxis()->SetTitle("\\Delta\\phi_{l}\\[rad/\\pi]\\");
     h2_KT_deltaPhi->Sumw2();
 
-    h_deltaR_tt = new TH1D("deltaR_tt", "#Delta R(t,#bar{t})", 100, 0.0, 5.0);
+    h_deltaR_tt = new TH1D("deltaR_tt", "\\Delta R(t,\\bar{t})\\", 100, 0.0, 5.0);
     h_deltaR_tt->Sumw2();
 
-    h_deltaR_bW = new TH1D("deltaR_bW", "#Delta R(b,W)", 100, 0.0, 5.0);
+    h_deltaR_bW = new TH1D("deltaR_bW", "\\Delta R(b,W)\\", 100, 0.0, 5.0);
     h_deltaR_bW->Sumw2();
-    h_deltaR_max = new TH1D("deltaR_max", "#Delta R_{max}", 100, 0.0, 5.0);
+    h_deltaR_max = new TH1D("deltaR_max", "\\Delta R_{\\mathrm{max}}\\\\", 100, 0.0, 5.0);
     h_deltaR_max->Sumw2();
 }
 
 
 void Analysis::MakeDistributions() {
     if (m_debug) cout << "Making distributions ...\n";
-    this->MakeDistribution1D(h_mtt, "TeV");
-    this->MakeDistribution1D(h_ytt, "");
 
-    this->MakeDistribution1D(h_mW1, "TeV");
-    this->MakeDistribution1D(h_mW2, "TeV");
-
-    this->MakeDistribution1D(h_Et, "GeV");
-    this->MakeDistribution1D(h_pTt, "GeV");
-    this->MakeDistribution1D(h_etat, "");
-    this->MakeDistribution1D(h_phit, "");
-    this->MakeDistribution1D(h_mt, "GeV");
-
-    this->MakeDistribution1D(h_Etbar, "GeV");
-    this->MakeDistribution1D(h_pTtbar, "GeV");
-    this->MakeDistribution1D(h_etatbar, "");
-    this->MakeDistribution1D(h_phitbar, "");
-    this->MakeDistribution1D(h_mtbar, "GeV");
-
-    this->MakeDistribution1D(h_pt_alljets, "GeV");
-    this->MakeDistribution1D(h_pt_allel, "GeV");
-    this->MakeDistribution1D(h_pt_allmu, "GeV");
-    this->MakeDistribution1D(h_eta_alljets, "");
-    this->MakeDistribution1D(h_eta_allel, "");
-    this->MakeDistribution1D(h_eta_allmu, "");
-
-    this->MakeDistribution1D(h_cosTheta, "");
-    this->MakeDistribution1D(h_cosThetaStar, "");
-    this->MakeDistribution1D(h_costheta_tt, "");
-
-    this->MakeDistribution1D(h_mtt_tF, "TeV");
-    this->MakeDistribution1D(h_mtt_tB, "TeV");
-
-    h_AtFB = this->Asymmetry("AtFB", "A^{t}_{FB^{*}}", h_mtt_tF, h_mtt_tB);
-    h_AtFB->GetYaxis()->SetTitle(h_AtFB->GetTitle());
-    h_AtFB->GetXaxis()->SetTitle("m_{tt} [TeV]");
-    h_AtFB->Write();
-
-    this->MakeDistribution1D(h_mtt_tCF, "TeV");
-    this->MakeDistribution1D(h_mtt_tCB, "TeV");
-
-    h_AtC = this->Asymmetry("AtC", "A^{t}_{C}", h_mtt_tCF, h_mtt_tCB);
-    h_AtC->GetYaxis()->SetTitle(h_AtC->GetTitle());
-    h_AtC->GetXaxis()->SetTitle("m_{tt} [TeV]");
-    h_AtC->Write();
-
-    this->MakeDistribution1D(h_pt_l1, "TeV");
-    this->MakeDistribution1D(h_eta_l1, "");
-    this->MakeDistribution1D(h_pt_l2, "TeV");
-    this->MakeDistribution1D(h_eta_l2, "");
-    this->MakeDistribution1D(h_pt_jets, "TeV");
-    this->MakeDistribution1D(h_eta_jets, "");
-    this->MakeDistribution1D(h_pt_bjets, "TeV");
-    this->MakeDistribution1D(h_eta_bjets, "");
-    this->MakeDistribution1D(h_pt_qjets, "TeV");
-    this->MakeDistribution1D(h_eta_qjets, "");
-
-    this->MakeDistribution1D(h_HT, "TeV");
-    this->MakeDistribution1D(h_KT, "TeV");
-    this->MakeDistribution1D(h_mvis, "TeV");
-
-    this->MakeDistribution1D(h_HT_all, "TeV");
-    this->MakeDistribution1D(h_KT_all, "TeV");
-    this->MakeDistribution1D(h_mvis_all, "TeV");
-
+    // count
     this->MakeDistribution1D(h_nElectrons, "");
     this->MakeDistribution1D(h_nMuons, "");
     this->MakeDistribution1D(h_nJets, "");
 
+    // pT
+    this->MakeDistribution1D(h_pt_allel, "GeV");
+    this->MakeDistribution1D(h_pt_allmu, "GeV");
+    this->MakeDistribution1D(h_pt_l1, "TeV");
+    this->MakeDistribution1D(h_pt_l2, "TeV");
+    this->MakeDistribution1D(h_pt_alljets, "GeV");
+    this->MakeDistribution1D(h_pt_jets, "TeV");
+    this->MakeDistribution1D(h_pt_bjets, "TeV");
+    this->MakeDistribution1D(h_pt_qjets, "TeV");
+    this->MakeDistribution1D(h_pTt, "GeV");
+    this->MakeDistribution1D(h_pTtbar, "GeV");
+
+    // pseudorapidity
+    this->MakeDistribution1D(h_eta_allel, "");
+    this->MakeDistribution1D(h_eta_allmu, "");
+    this->MakeDistribution1D(h_eta_l1, "");
+    this->MakeDistribution1D(h_eta_l2, "");
+    this->MakeDistribution1D(h_eta_alljets, "");
+    this->MakeDistribution1D(h_eta_jets, "");
+    this->MakeDistribution1D(h_eta_bjets, "");
+    this->MakeDistribution1D(h_eta_qjets, "");
+    this->MakeDistribution1D(h_etat, "");
+    this->MakeDistribution1D(h_etatbar, "");
+
+    // azimuthal angle
+    this->MakeDistribution1D(h_phit, "");
+    this->MakeDistribution1D(h_phitbar, "");
+    this->MakeDistribution1D(h_deltaPhi_ll, "rad / \\pi");
+
+    // energy
+    this->MakeDistribution1D(h_Et, "GeV");
+    this->MakeDistribution1D(h_Etbar, "GeV");
+
+    // transverse
+    this->MakeDistribution1D(h_HT_all, "TeV");
+    this->MakeDistribution1D(h_HT, "TeV");
+    this->MakeDistribution1D(h_KT_all, "TeV");
+    this->MakeDistribution1D(h_KT, "TeV");
+    this->MakeDistribution1D(h_mvis_all, "TeV");
+    this->MakeDistribution1D(h_mvis, "TeV");
+
+    // invarient mass
+    this->MakeDistribution1D(h_mW1, "TeV");
+    this->MakeDistribution1D(h_mW2, "TeV");
+    this->MakeDistribution1D(h_mt, "GeV");
+    this->MakeDistribution1D(h_mtbar, "GeV");
+    this->MakeDistribution1D(h_mtt, "TeV");
+
+    // rapidity
+    this->MakeDistribution1D(h_ytt, "");
+
+    // polar angle
+    this->MakeDistribution1D(h_cosTheta, "");
+    this->MakeDistribution1D(h_cosThetaStar, "");
+    this->MakeDistribution1D(h_costheta_tt, "");
     this->MakeDistribution1D(h_cosTheta1, "");
     this->MakeDistribution1D(h_cosTheta2, "");
     this->MakeDistribution1D(h_cos1cos2, "");
-    this->MakeDistribution1D(h_deltaPhi, "rad / #pi");
+
+    // asymmetries
+
+    this->MakeDistributionAL(h2_mtt_cosTheta1, "AL1", "A^{\\ell^{+}}_{L}");
+    this->MakeDistributionAL(h2_mtt_cosTheta2, "AL2", "A^{\\ell^{-}}_{L}");
+
+    this->MakeDistribution1D(h_mtt_tF, "TeV");
+    this->MakeDistribution1D(h_mtt_tB, "TeV");
+    this->Asymmetry("AtFB", "A^{t}_{FB^{*}}", h_mtt_tF, h_mtt_tB);
+
+    this->MakeDistribution1D(h_mtt_tCF, "TeV");
+    this->MakeDistribution1D(h_mtt_tCB, "TeV");
+    this->Asymmetry("AtC", "A^{t}_{C}", h_mtt_tCF, h_mtt_tCB);
 
     this->MakeDistribution1D(h_mtt_tlF, "TeV");
     this->MakeDistribution1D(h_mtt_tlB, "TeV");
-
-    h_AtlFB = this->Asymmetry("AtlFB", "A^{tl}_{FB^*}", h_mtt_tlF, h_mtt_tlB);
-    h_AtlFB->GetYaxis()->SetTitle(h_AtlFB->GetTitle());
-    h_AtlFB->GetXaxis()->SetTitle("m_{tt} [TeV]");
-    h_AtlFB->GetYaxis()->SetTitleOffset(0.9);
-    h_AtlFB->GetXaxis()->SetTitleOffset(0.95);
-    h_AtlFB->Write();
+    this->Asymmetry("AtlFB", "A^{tl}_{FB^*}", h_mtt_tlF, h_mtt_tlB);
 
     this->MakeDistribution1D(h_mtt_lF, "TeV");
     this->MakeDistribution1D(h_mtt_lB, "TeV");
+    this->Asymmetry("Ap", "A_{P}", h_mtt_lF, h_mtt_lB);
 
-    h_Ap = this->Asymmetry("Ap", "A_{P}", h_mtt_lF, h_mtt_lB);
-    h_Ap->GetYaxis()->SetTitle(h_Ap->GetTitle());
-    h_Ap->GetXaxis()->SetTitle("m_{tt} [TeV]");
-    h_Ap->GetYaxis()->SetTitleOffset(0.9);
-    h_Ap->GetXaxis()->SetTitleOffset(0.95);
-    h_Ap->Write();
+    this->MakeDistribution1D(h_mtt_c1c2F, "TeV");
+    this->MakeDistribution1D(h_mtt_c1c2B, "TeV");
+    this->Asymmetry("Ac1c2", "A_{c_{1}c_{2}}", h_mtt_lF, h_mtt_lB);
 
-    this->MakeDistribution2D(h2_HT_deltaPhi, "H_{T}", "GeV", "#Delta#phi", "");
-    this->MakeDistribution2D(h2_mvis_deltaPhi, "m_{vis}", "GeV", "#Delta#phi", "");
-    this->MakeDistribution2D(h2_KT_deltaPhi, "K_{T}", "GeV", "#Delta#phi", "");
+    this->MakeDistribution1D(h_mtt_DphiF, "TeV");
+    this->MakeDistribution1D(h_mtt_DphiB, "TeV");
+    this->Asymmetry("ADphi", "A_{\\Delta\\phi}", h_mtt_lF, h_mtt_lB);
 
-    this->MakeDistribution2D(h2_mtt_deltaPhi, "m_{tt}", "GeV", "cos#theta cos#theta", "");
-    this->MakeDistribution2D(h2_mtt_cosThetaStar, "m_{tt}", "GeV", "cos#theta^{*}", "");
-    this->MakeDistribution2D(h2_mtt_cosTheta1, "m_{tt}", "GeV", "cos#theta_{l^{+}}", "");
-    this->MakeDistribution2D(h2_mtt_cosTheta2, "m_{tt}", "GeV", "cos#theta_{l^{-}}", "");
+    this->MakeDistribution1D(h_mtt_cphiF, "TeV");
+    this->MakeDistribution1D(h_mtt_cphiB, "TeV");
+    this->Asymmetry("Acphi", "A_{\\cos\\varphi}", h_mtt_lF, h_mtt_lB);
 
-    this->MakeDistributionAL(h2_mtt_cosTheta1, "AL1");
-    this->MakeDistributionAL(h2_mtt_cosTheta2, "AL2");
+    // 2D distributions
+    this->MakeDistribution2D(h2_HT_deltaPhi,      "H_{\\mathrm{T}}", "GeV", "\\Delta\\phi_{\\ell^{+}\\ell^{-}}","");
+    this->MakeDistribution2D(h2_mvis_deltaPhi,    "m_{\\mathrm{vis}}", "GeV", "\\Delta\\phi_{\\ell^{+}\\ell^{-}}","");
+    this->MakeDistribution2D(h2_KT_deltaPhi,      "K_{\\mathrm{T}}", "GeV", "\\Delta\\phi_{\\ell^{+}\\ell^{-}}","");
+    this->MakeDistribution2D(h2_mtt_deltaPhi,     "m_{tt}\\", "GeV", "\\cos\\theta^{\\ell^{+}}\\cos\\theta^{\\ell^{-}}", "");
+    this->MakeDistribution2D(h2_mtt_cosThetaStar, "m_{tt}\\", "GeV", "\\cos\\theta^{*}",                      "");
+    this->MakeDistribution2D(h2_mtt_cosTheta1,    "m_{tt}\\", "GeV", "\\cos\\theta_{\\ell^{+}}",                  "");
+    this->MakeDistribution2D(h2_mtt_cosTheta2,    "m_{tt}\\", "GeV", "\\cos\\theta_{\\ell^{-}}",                  "");
 }
 
 
@@ -947,10 +971,10 @@ void Analysis::MakeDistribution1D(TH1D* h, const string& units) {
             ytitle = "Expected events";
         }
         else {
-            ytitle = "d#sigma / d" + (string) h->GetTitle();
+            ytitle = "d\\sigma / d" + (string) h->GetTitle();
             if (units != "") {
-                yunits = " [fb/" + units + "]";
-                xunits = " [" + units + "]";
+                yunits = " [\\mathrm{fb/" + units + "}]";
+                xunits = " [\\mathrm{" + units + "}]";
             }
             else {
                 yunits = "";
@@ -961,7 +985,7 @@ void Analysis::MakeDistribution1D(TH1D* h, const string& units) {
     else {
         ytitle = "Generated events";
     }
-    if (units != "") xunits = " [" + units + "]";
+    if (units != "") xunits = " [\\mathrm{" + units + "}]";
     else xunits = "";
     h->GetYaxis()->SetTitle((ytitle + yunits).data());
     h->GetXaxis()->SetTitle((h->GetTitle() + xunits).data());
@@ -986,17 +1010,17 @@ void Analysis::MakeDistribution2D(TH2D* h, string xtitle, string xunits, string 
         }
         ztitle = "d#sigma / d";
         if (xunits != "" and yunits != "") {
-            zunits = " [fb/" + xunits + "/" + yunits + "]";
-            xunits = " [" + xunits + "]";
-            yunits = " [" + yunits + "]";
+            zunits = " [\\mathrm{fb/" + xunits + "/" + yunits + "}]";
+            xunits = " [\\mathrm{" + xunits + "}]";
+            yunits = " [\\mathrm{" + yunits + "}]";
         }
         else if (xunits != "" and yunits == "") {
-            zunits = " [fb/" + xunits + "]";
-            xunits = " [" + xunits + "]";
+            zunits = " [\\mathrm{fb/" + xunits + "}]";
+            xunits = " [\\mathrm{" + xunits + "}]";
         }
         else if (xunits == "" and yunits != "") {
-            zunits = " [fb/" + yunits + "]";
-            yunits = " [" + yunits + "]";
+            zunits = " [\\mathrm{fb/" + yunits + "}]";
+            yunits = " [\\mathrm{" + yunits + "}]";
         }
         else {
             zunits = "";
@@ -1010,8 +1034,8 @@ void Analysis::MakeDistribution2D(TH2D* h, string xtitle, string xunits, string 
         else {
             ztitle = "Generated events";
         }
-        if (xunits != "") xunits = " [" + xunits + "]";
-        if (yunits != "") yunits = " [" + yunits + "]";
+        if (xunits != "") xunits = " [\\mathrm{" + xunits + "}]";
+        if (yunits != "") yunits = " [\\mathrm{" + yunits + "}]";
         h->GetZaxis()->SetTitle((ztitle).data());
     }
     h->GetYaxis()->SetTitle((ytitle + yunits).data());
@@ -1021,7 +1045,7 @@ void Analysis::MakeDistribution2D(TH2D* h, string xtitle, string xunits, string 
     h->Write();
 }
 
-void Analysis::MakeDistributionAL(TH2D* h, const string& name) {
+void Analysis::MakeDistributionAL(TH2D* h, const string& name, const string& title) {
     TF1* func = new TF1("func1", "[0]*x + [1]", -1, 1);
     TObjArray slices;
     this->NormalizeSliceY(h2_mtt_cosTheta2);
@@ -1029,10 +1053,10 @@ void Analysis::MakeDistributionAL(TH2D* h, const string& name) {
     for (auto slice : slices) slice->Write();
     TH1D* h_AL = (TH1D*) slices[0]->Clone(name.data());
     slices.Clear();
-    h_AL->Scale(2 / h2_mtt_cosTheta2->GetYaxis()->GetBinWidth(1));
-    h_AL->SetTitle("A_{L}");
-    h_AL->GetXaxis()->SetTitle("m_{tt} [TeV]");
-    h_AL->GetYaxis()->SetTitle("A_{L}");
+    h_AL->Scale(2.0 / h2_mtt_cosTheta2->GetYaxis()->GetBinWidth(1));
+    h_AL->SetTitle(title.data());
+    h_AL->GetXaxis()->SetTitle("m_{tt}\\[TeV]");
+    h_AL->GetYaxis()->SetTitle(title.data());
     m_output->cd();
     m_output->cd("/");
     h_AL->Write();
@@ -1342,6 +1366,20 @@ void Analysis::InitialiseCutflow() {
     m_cutNames[c_realSolutions]      = "Has real roots        ";
     m_cutNames[c_deltaR]             = "deltaR                ";
 
+    m_cutTitles = vector<string >(
+    m_cuts,                            "no name               ");
+    m_cutTitles[c_sufficientMET]      = "\\mathrm{Sufficient}\\, E^{\\mathrm{miss}}_{\\mathrm{T}}";
+    m_cutTitles[c_events]             = "Events                ";
+    m_cutTitles[c_twoLeptons]         = "Two leptons           ";
+    m_cutTitles[c_oppositeCharge]     = "Opposite Charge       ";
+    m_cutTitles[c_sufficientMll]      = "\\mathrm{Sufficient}\\, m_{\\ell\\ell}";
+    m_cutTitles[c_outsideZmassWindow] = "\\mathrm{Outside}\\,m_{Z}\\,window";
+    m_cutTitles[c_sufficientJets]     = "Sufficient jets       ";
+    m_cutTitles[c_sufficientBtags]    = "Sufficient b-tags     ";
+    m_cutTitles[c_sufficientHT]       = "\\mathrm{Sufficient}\\, H_{\\mathrm{T}}";
+    m_cutTitles[c_realSolutions]      = "Has real roots        ";
+    m_cutTitles[c_deltaR]             = "\\Delta R             ";
+
     h_cutflow = new TH1D("cutflow", "cutflow", m_cuts, 0.0, m_cuts);
 }
 
@@ -1358,7 +1396,7 @@ void Analysis::PrintCutflow() {
         if (m_cutflow[cut] == -999) continue;
 
         h_cutflow->SetBinContent(cut + 1, m_cutflow[cut]);
-        h_cutflow->GetXaxis()->SetBinLabel(cut + 1, m_cutNames[cut].c_str());
+        h_cutflow->GetXaxis()->SetBinLabel(cut + 1, m_cutTitles[cut].c_str());
 
         cout << m_cutNames[cut] << " " << m_cutflow[cut] << "\n";
     }
