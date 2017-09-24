@@ -3,6 +3,9 @@
 
 #include <fstream>
 #include <tuple>
+#include "boost/algorithm/string.hpp"
+#include "boost/filesystem.hpp"
+#include "boost/asio.hpp"
 #include "TH2.h"
 #include "TF1.h"
 #include "TSystem.h"
@@ -12,12 +15,8 @@
 #include "TVector2.h"
 #include "TClonesArray.h"
 #include "sys/stat.h"
-#include "boost/algorithm/string.hpp"
-#include "boost/filesystem.hpp"
-#include "boost/asio.hpp"
-#include "atlas-style.hpp"
-#include "solve-poly.hpp"
-#include "neutrino-weighting.hpp"
+#include "TTF.h"
+#include "TCanvas.h"
 
 #include "classes/DelphesClasses.h"
 #include "ExRootAnalysis/ExRootTreeReader.h"
@@ -184,6 +183,7 @@ private:
     TH1D* h_mvis_all;
 
     TH1D* h_deltaPhi_ll;
+    TH1D* h_cosPhi;
 
     TH1D* h_mW1;
     TH1D* h_mW2;
@@ -210,25 +210,50 @@ private:
 
     // tt
     TH1D* h_mtt;
+
+    // charge asymmetries
     TH1D* h_mtt_tF;
     TH1D* h_mtt_tB;
-    TH1D* h_mtt_tlF;
-    TH1D* h_mtt_tlB;
-    TH1D* h_mtt_tCF;
-    TH1D* h_mtt_tCB;
     TH1D* h_mtt_lF;
     TH1D* h_mtt_lB;
-    TH1D* h_mtt_philF;
-    TH1D* h_mtt_philB;
-    TH1D* h_mtt_ElF;
-    TH1D* h_mtt_ElB;
+    TH1D* h_HT_lF;
+    TH1D* h_HT_lB;
+    TH1D* h_KT_lF;
+    TH1D* h_KT_lB;
+    TH1D* h_mtt_tCF;
+    TH1D* h_mtt_tCB;
+    TH1D* h_mtt_lCF;
+    TH1D* h_mtt_lCB;
+    TH1D* h_HT_lCF;
+    TH1D* h_HT_lCB;
+    TH1D* h_KT_lCF;
+    TH1D* h_KT_lCB;
+
+    // TH1D* h_mtt_tlF;
+    // TH1D* h_mtt_tlB;
+
+    // top polarisation
+    TH1D* h_mtt_c1F;
+    TH1D* h_mtt_c1B;
+    TH1D* h_mtt_c2F;
+    TH1D* h_mtt_c2B;
+    // TH1D* h_mtt_philF;
+    // TH1D* h_mtt_philB;
+    // TH1D* h_mtt_ElF;
+    // TH1D* h_mtt_ElB;
+
+    // spin correlation
     TH1D* h_mtt_c1c2F;
     TH1D* h_mtt_c1c2B;
+    TH1D* h_mtt_cPhiF;
+    TH1D* h_mtt_cPhiB;
     TH1D* h_mtt_DphiF;
     TH1D* h_mtt_DphiB;
-    TH1D* h_mtt_cphiF;
-    TH1D* h_mtt_cphiB;
-    TH1D* h_mtt_ctctF;
+    TH1D* h_HT_DphiF;
+    TH1D* h_HT_DphiB;
+    TH1D* h_KT_DphiF;
+    TH1D* h_KT_DphiB;
+
     TH1D* h_ytt;
 
     TH1D* h_cosTheta;
@@ -236,8 +261,9 @@ private:
     TH1D* h_cosTheta2;
     TH1D* h_cos1cos2;
     TH1D* h_cosThetaStar;
-    TH1D* h_costheta_tt;
-
+    TH1D* h_cosTheta_tt;
+    TH1D* h_cosTheta_l;
+    TH1D* h_cosThetaStar_l;
     TH1D* h_deltaR_max;
     TH1D* h_deltaR_bW;
     TH1D* h_deltaR_tt;

@@ -1,5 +1,6 @@
 #include "analysis.hpp"
 #include "boost/program_options.hpp"
+#include "atlas-style.hpp"
 
 using namespace std;
 
