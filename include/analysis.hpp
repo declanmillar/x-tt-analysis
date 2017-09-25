@@ -82,7 +82,7 @@ protected:
     Long64_t TotalEvents();
     Long64_t IncrementEvent(Long64_t i);
     double TotalAsymmetry(TH1D* h_A, TH1D* h_B);
-    void Asymmetry(const string&, const string&, TH1D*, TH1D*);
+    void Asymmetry(const string&, const string&, const string&, TH1D*, TH1D*);
 
     // tuple
     TClonesArray* b_Jet;

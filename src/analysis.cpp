@@ -342,12 +342,12 @@ void Analysis::EachEvent(double weight) {
     h_mW2->Fill(p_W2.M(), weight);
 
     h_deltaPhi_ll->Fill(deltaPhi, weight);
-    if (deltaPhi > m_pi / 2) {
+    if (deltaPhi > 0.5) {
         h_mtt_DphiF->Fill(mtt, weight);
         h_HT_DphiF->Fill(HT, weight);
         h_KT_DphiF->Fill(KT, weight);
     }
-    if (deltaPhi < m_pi / 2) {
+    if (deltaPhi < 0.5) {
         h_mtt_DphiB->Fill(mtt, weight);
         h_HT_DphiB->Fill(HT, weight);
         h_KT_DphiB->Fill(KT, weight);
@@ -656,7 +656,7 @@ void Analysis::PostLoop() {
 }
 
 
-void Analysis::Asymmetry(const string& name, const string& title, TH1D* h1, TH1D* h2) {
+void Analysis::Asymmetry(const string& name, const string& title, const string& xtitle, TH1D* h1, TH1D* h2) {
     TH1D* h_numerator = (TH1D*) h1->Clone(name.data());
     TH1D* h_denominator = (TH1D*) h1->Clone();
     h_numerator->SetTitle(title.data());
@@ -666,7 +666,7 @@ void Analysis::Asymmetry(const string& name, const string& title, TH1D* h1, TH1D
     delete h_denominator;
     if (m_luminosity > 0) this->AsymmetryUncertainty(h_numerator, h1, h2);
     h_numerator->GetYaxis()->SetTitle(h_numerator->GetTitle());
-    h_numerator->GetXaxis()->SetTitle(h_numerator->GetXaxis()->GetTitle());
+    h_numerator->GetXaxis()->SetTitle(xtitle.data());
     h_numerator->Write();
 }
 
@@ -927,17 +927,17 @@ void Analysis::MakeHistograms() {
     h2_mtt_deltaPhi->GetYaxis()->SetTitle("\\Delta\\phi_{\\ell^{+}\\ell^{-}}\\;");
     h2_mtt_deltaPhi->Sumw2();
 
-    h2_mtt_cosTheta1 = new TH2D("mtt_costheta_tl1", "m_{t\\bar{t}}\\ \\times \\cos\\theta_{t,\\ell^{+}}", nbins, Emin, Emax, 10, -1.0, 1.0);
+    h2_mtt_cosTheta1 = new TH2D("mtt_costheta_tl1", "m_{t\\bar{t}}\\ \\times \\cos\\theta^{t}_{\\ell^{+}}", nbins, Emin, Emax, 10, -1.0, 1.0);
     h2_mtt_cosTheta1->GetXaxis()->SetTitle("m_{t\\bar{t}}\\;[TeV]");
     h2_mtt_cosTheta1->GetYaxis()->SetTitle("\\cos\\theta_{\\ell^{+}}");
     h2_mtt_cosTheta1->Sumw2();
 
-    h2_mtt_cosTheta2 = new TH2D("mtt_costheta_tl2", "m_{t\\bar{t}}\\ \\times \\cos\\theta_{t,\\ell^{-}}", nbins, Emin, Emax, 10, -1.0, 1.0);
+    h2_mtt_cosTheta2 = new TH2D("mtt_costheta_tl2", "m_{t\\bar{t}}\\ \\times \\cos\\theta^{\\bar{t}}_{\\ell^{-}}", nbins, Emin, Emax, 10, -1.0, 1.0);
     h2_mtt_cosTheta2->GetXaxis()->SetTitle("m_{t\\bar{t}}\\;[TeV]");
     h2_mtt_cosTheta2->GetYaxis()->SetTitle("\\cos\\theta_{\\ell^{-}}");
     h2_mtt_cosTheta2->Sumw2();
 
-    h2_mtt_cos1cos2 = new TH2D("mtt_cos1cos2", "m_{t\\bar{t}}\\ \\times \\cos\\theta_{\\ell^{+}}\\cos\\theta_{\\ell^{-}}", nbins, Emin, Emax, 20, -1.0, 1.0);
+    h2_mtt_cos1cos2 = new TH2D("mtt_cos1cos2", "m_{t\\bar{t}}\\ \\times \\cos\\theta^{t}_{\\ell^{+}}\\cos\\theta^{\\bar{t}}_{\\ell^{-}}", nbins, Emin, Emax, 20, -1.0, 1.0);
     h2_mtt_cos1cos2->GetXaxis()->SetTitle("m_{t\\bar{t}}");
     h2_mtt_cos1cos2->GetYaxis()->SetTitle("\\cos\\theta_{\\ell^{+}}\\cos\\theta_{\\ell^{-}}");
     h2_mtt_cos1cos2->Sumw2();
@@ -1043,67 +1043,67 @@ void Analysis::MakeDistributions() {
     // charge asymmetry
     this->MakeDistribution1D(h_mtt_tF, "TeV");
     this->MakeDistribution1D(h_mtt_tB, "TeV");
-    this->Asymmetry("AtFB", "A^{t}_{FB^{*}}\\", h_mtt_tF, h_mtt_tB);
+    this->Asymmetry("AtFB", "A^{t}_{FB^{*}}\\", "m_{t\\bar{t}}", h_mtt_tF, h_mtt_tB);
 
     this->MakeDistribution1D(h_mtt_lF, "TeV");
     this->MakeDistribution1D(h_mtt_lB, "TeV");
-    this->Asymmetry("AlFB", "A^{\\ell}_{FB^{*}}", h_mtt_lF, h_mtt_lB);
+    this->Asymmetry("AlFB", "A^{\\ell}_{FB^{*}}", "m_{t\\bar{t}}", h_mtt_lF, h_mtt_lB);
 
     this->MakeDistribution1D(h_HT_lF, "TeV");
     this->MakeDistribution1D(h_HT_lB, "TeV");
-    this->Asymmetry("AlFB_HT", "A^{\\ell}_{FB^{*}}", h_HT_lF, h_HT_lB);
+    this->Asymmetry("AlFB_HT", "A^{\\ell}_{FB^{*}}", "m_{t\\bar{t}}", h_HT_lF, h_HT_lB);
 
     this->MakeDistribution1D(h_KT_lF, "TeV");
     this->MakeDistribution1D(h_KT_lB, "TeV");
-    this->Asymmetry("AlFB_KT", "A^{\\ell}_{FB^{*}}", h_KT_lF, h_KT_lB);
+    this->Asymmetry("AlFB_KT", "A^{\\ell}_{FB^{*}}", "m_{t\\bar{t}}", h_KT_lF, h_KT_lB);
 
     this->MakeDistribution1D(h_mtt_tCF, "TeV");
     this->MakeDistribution1D(h_mtt_tCB, "TeV");
-    this->Asymmetry("AtC", "A^{t}_{C}\\", h_mtt_tCF, h_mtt_tCB);
+    this->Asymmetry("AtC", "A^{t}_{C}\\", "m_{t\\bar{t}}", h_mtt_tCF, h_mtt_tCB);
 
     this->MakeDistribution1D(h_mtt_lCF, "TeV");
     this->MakeDistribution1D(h_mtt_lCB, "TeV");
-    this->Asymmetry("AlC", "A^{\\ell}_{C}", h_mtt_lCF, h_mtt_lCB);
+    this->Asymmetry("AlC", "A^{\\ell}_{C}", "m_{t\\bar{t}}", h_mtt_lCF, h_mtt_lCB);
 
     this->MakeDistribution1D(h_HT_lCF, "TeV");
     this->MakeDistribution1D(h_HT_lCB, "TeV");
-    this->Asymmetry("AlC_HT", "A^{\\ell}_{C}\\;(H_{\\mathrm{T}})", h_HT_lCF, h_HT_lCB);
+    this->Asymmetry("AlC_HT", "A^{\\ell}_{C}\\;(H_{\\mathrm{T}})", "H_{\\mathrm{T}}", h_HT_lCF, h_HT_lCB);
 
     this->MakeDistribution1D(h_KT_lCF, "TeV");
     this->MakeDistribution1D(h_KT_lCB, "TeV");
-    this->Asymmetry("AlC_KT", "A^{\\ell}_{C}\\;(K_{\\mathrm{T}})", h_KT_lCF, h_KT_lCB);
+    this->Asymmetry("AlC_KT", "A^{\\ell}_{C}\\;(K_{\\mathrm{T}})", "K_{\\mathrm{T}}", h_KT_lCF, h_KT_lCB);
 
     // this->MakeDistribution1D(h_mtt_tlF, "TeV");
     // this->MakeDistribution1D(h_mtt_tlB, "TeV");
-    // this->Asymmetry("AtlFB", "A^{tl}_{FB^{*}}\\;", h_mtt_tlF, h_mtt_tlB);
+    // this->Asymmetry("AtlFB", "A^{tl}_{FB^{*}}\\;", "m_{t\\bar{t}}", h_mtt_tlF, h_mtt_tlB);
 
     this->MakeDistribution1D(h_mtt_c1F, "TeV");
     this->MakeDistribution1D(h_mtt_c1B, "TeV");
-    this->Asymmetry("Ac1", "A_{c_{1}}", h_mtt_c1F, h_mtt_c1B);
+    this->Asymmetry("Ac1", "A_{c_{1}}", "m_{t\\bar{t}}", h_mtt_c1F, h_mtt_c1B);
 
     this->MakeDistribution1D(h_mtt_c2F, "TeV");
     this->MakeDistribution1D(h_mtt_c2B, "TeV");
-    this->Asymmetry("Ac2", "A_{c_{2}}", h_mtt_c2F, h_mtt_c2B);
+    this->Asymmetry("Ac2", "A_{c_{2}}", "m_{t\\bar{t}}", h_mtt_c2F, h_mtt_c2B);
 
     this->MakeDistribution1D(h_mtt_c1c2F, "TeV");
     this->MakeDistribution1D(h_mtt_c1c2B, "TeV");
-    this->Asymmetry("Ac1c2", "A_{c_{1}c_{2}}", h_mtt_c1c2F, h_mtt_c1c2B);
+    this->Asymmetry("Ac1c2", "A_{c_{1}c_{2}}", "m_{t\\bar{t}}", h_mtt_c1c2F, h_mtt_c1c2B);
 
     this->MakeDistribution1D(h_mtt_cPhiF, "TeV");
     this->MakeDistribution1D(h_mtt_cPhiB, "TeV");
-    this->Asymmetry("AcPhi", "A_{\\cos\\varphi}", h_mtt_cPhiF, h_mtt_cPhiB);
+    this->Asymmetry("AcPhi", "A_{\\cos\\varphi}", "m_{t\\bar{t}}", h_mtt_cPhiF, h_mtt_cPhiB);
 
     this->MakeDistribution1D(h_mtt_DphiF, "TeV");
     this->MakeDistribution1D(h_mtt_DphiB, "TeV");
-    this->Asymmetry("ADPhi", "A_{\\Delta\\phi}", h_mtt_DphiF, h_mtt_DphiB);
+    this->Asymmetry("ADPhi", "A_{\\Delta\\phi}", "m_{t\\bar{t}}", h_mtt_DphiF, h_mtt_DphiB);
 
     this->MakeDistribution1D(h_HT_DphiF, "TeV");
     this->MakeDistribution1D(h_HT_DphiB, "TeV");
-    this->Asymmetry("ADphi_HT", "A_{\\Delta\\phi}", h_HT_DphiF, h_HT_DphiB);
+    this->Asymmetry("ADphi_HT", "A_{\\Delta\\phi}", "H_{\\mathrm{T}}", h_HT_DphiF, h_HT_DphiB);
 
     this->MakeDistribution1D(h_KT_DphiF, "TeV");
     this->MakeDistribution1D(h_KT_DphiB, "TeV");
-    this->Asymmetry("ADphi_KT", "A_{\\Delta\\phi}", h_KT_DphiF, h_KT_DphiB);
+    this->Asymmetry("ADphi_KT", "A_{\\Delta\\phi}", "K_{\\mathrm{T}}", h_KT_DphiF, h_KT_DphiB);
 
     // 2D distributions
     this->MakeDistribution2D(h2_HT_deltaPhi, "H_{\\mathrm{T}}", "GeV", "\\Delta\\phi_{\\ell^{+}\\ell^{-}}", "");
