@@ -280,12 +280,12 @@ std::vector< std::pair< TLorentzVector, TLorentzVector > > KinematicReconstructe
     if ( m_debug ) std::cout << "found " << nReal << " real solutions.\n";
     if ( nReal == 0 ) return p_v;
 
-    double zero_check;
-    for ( int i = 0; i < nReal; i++ )
-    {
-        zero_check = pow( x[i], 4 ) + a[0] * pow( x[i], 3 ) + a[1] * pow ( x[i], 2 ) + a[2] * x[i] + a[3];
-        if ( zero_check > 10e-4 ) std::cout << "Warning: solution " << i << " gives: " << zero_check << ", should be zero.\n";
-    }
+    // double zero_check;
+    // for ( int i = 0; i < nReal; i++ )
+    // {
+    //     zero_check = pow( x[i], 4 ) + a[0] * pow( x[i], 3 ) + a[1] * pow ( x[i], 2 ) + a[2] * x[i] + a[3];
+    //     if ( zero_check > 10e-4 ) std::cout << "Warning: solution " << i << " gives: " << zero_check << ", should be zero.\n";
+    // }
 
     if ( x[0] != x[0] or x[1] != x[1] or x[2] != x[2] or x[3] != x[3] ) std::cout << "Warning: NaN(s) in quartic solutions.\n";
 
