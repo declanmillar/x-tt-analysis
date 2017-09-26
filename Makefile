@@ -1,7 +1,7 @@
 # Makefile for zprime-top-delphes-analysis
 # declan.millar@cern.ch
 
-OBJ = atlas-style.o get-parameter.o solve-poly.o main.o highest-pt.o match-bjets-to-leps.o neutrino-weighter.o kinematic-reconstructer.o semilepton-reconstructer.o trim.o progress-bar.o bool-to-string.o analysis.o
+OBJ = atlas-style.o get-parameter.o solve-quartic.o solve-poly.o main.o highest-pt.o match-bjets-to-leps.o neutrino-weighter.o kinematic-reconstructer.o semilepton-reconstructer.o trim.o progress-bar.o bool-to-string.o analysis.o
 BIN = analysis
 LIB = lib
 SRC = src

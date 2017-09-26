@@ -77,7 +77,7 @@ public:
   void RecalculateEtas(double pos_lep_eta, double neg_lep_eta);
   void DoBothPairings(bool do_pairing){ m_do_both_pairings = do_pairing; };
   //void SetTrueParameters(double true_nu_eta, double true_nubar_eta, double true_top_m, double true_tbar_m, double true_wp_m, double true_wp_n);
-  float GetCrystalBallWeight(float jet_pt);
+  double GetCrystalBallWeight(double jet_pt);
 };
 
 #endif

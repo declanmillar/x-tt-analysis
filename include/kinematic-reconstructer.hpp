@@ -1,8 +1,10 @@
 #ifndef KINEMATIC_RECONSTRUCTER_H
 #define KINEMATIC_RECONSTRUCTER_H
 #include <iostream>
+#include <cmath>
 #include "TLorentzVector.h"
 #include "solve-poly.hpp"
+#include "solve-quartic.hpp"
 
 class KinematicReconstructer{
 

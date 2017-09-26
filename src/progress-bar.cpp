@@ -6,7 +6,7 @@ void ProgressBar( unsigned int x, unsigned int n, unsigned int w )
 {
     if ( ( x != n ) && ( x % ( n / 100 + 1 ) != 0 ) ) return;
 
-    float ratio = x / ( float ) n;
+    double ratio = x / ( double ) n;
     unsigned int c = ratio * w;
 
     std::cout << "[";
@@ -21,7 +21,7 @@ void ProgressPercentage( unsigned int x, unsigned int n, unsigned int w )
 {
     if ( ( x != n ) && ( x % ( n / 100 + 1 ) != 0 ) ) return;
 
-    float ratio = x / ( float ) n;
+    double ratio = x / ( double ) n;
     unsigned int c = ratio * w;
 
     std::cout << "progress: " << std::setw(3) << ( int )( ratio * 100 ) << "%";

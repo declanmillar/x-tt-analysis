@@ -172,9 +172,67 @@ void Analysis::EachEvent(double weight) {
     double pTvis = pvis.Pt();
     double KT = sqrt(mvis * mvis + pTvis * pTvis) + ETmiss;
 
-    h_HT->Fill(HT / 1000, weight);
-    h_mvis->Fill(mvis / 1000, weight);
-    h_KT->Fill(KT / 1000, weight);
+    mvis = mvis / 1000;
+    HT = HT / 1000;
+    KT = KT / 1000;
+
+    h_HT->Fill(HT, weight);
+    h_mvis->Fill(mvis, weight);
+    h_KT->Fill(KT, weight);
+
+    auto delta_abs_etal = abs(p_l.first.Eta()) - abs(p_l.second.Eta());
+
+    TLorentzVector p_ll = p_l.first + p_l.second;
+    auto yll = p_ll.Rapidity();
+    auto pll_l = p_l.first;
+    TVector3 v_ll = - (p_ll).BoostVector();
+    pll_l.Boost(v_ll);
+    double cosTheta_l = pll_l.CosTheta();
+    double cosThetaStar_l = int(yll / abs(yll)) * cosTheta_l;
+
+    double deltaPhi = p_l.first.DeltaPhi(p_l.second) / m_pi;
+
+    h_cosTheta_l->Fill(cosTheta_l, weight);
+    h_cosThetaStar_l->Fill(cosThetaStar_l, weight);
+
+    h_pt_l1->Fill(p_l.first.Pt(), weight);
+    h_pt_l2->Fill(p_l.second.Pt(), weight);
+    h_eta_l1->Fill(p_l.first.Eta(), weight);
+    h_eta_l2->Fill(p_l.second.Eta(), weight);
+
+    h_deltaPhi_ll->Fill(deltaPhi, weight);
+    if (deltaPhi > 0.5) {
+        h_HT_DphiF->Fill(HT, weight);
+        h_KT_DphiF->Fill(KT, weight);
+    }
+    if (deltaPhi < 0.5) {
+        h_HT_DphiB->Fill(HT, weight);
+        h_KT_DphiB->Fill(KT, weight);
+    }
+
+    h_cosThetaStar_l->Fill(cosThetaStar_l, weight);
+    if (cosThetaStar_l > 0) {
+        h_HT_lF->Fill(HT, weight);
+        h_KT_lF->Fill(KT, weight);
+    }
+    if (cosThetaStar_l < 0) {
+        h_HT_lB->Fill(HT, weight);
+        h_KT_lB->Fill(KT, weight);
+    }
+
+    h_delta_abs_etal->Fill(delta_abs_etal, weight);
+    if (delta_abs_etal > 0) {
+        h_HT_lCF->Fill(HT, weight);
+        h_KT_lCF->Fill(KT, weight);
+    }
+    if (delta_abs_etal < 0) {
+        h_HT_lCB->Fill(HT, weight);
+        h_KT_lCB->Fill(KT, weight);
+    }
+
+    h2_HT_deltaPhi->Fill(HT, deltaPhi, weight);
+    h2_mvis_deltaPhi->Fill(mvis, deltaPhi, weight);
+    h2_KT_deltaPhi->Fill(KT, deltaPhi, weight);
 
     if (m_debug) {
         cout << "p_l+   = "; p_l.first.Print();
@@ -294,34 +352,14 @@ void Analysis::EachEvent(double weight) {
     double cosTheta = pttbar_top.CosTheta();
     double cosThetaStar = int(ytt / abs(ytt)) * cosTheta;
 
-    TLorentzVector p_ll = p_l.first + p_l.second;
-    auto yll = p_ll.Rapidity();
-
-    auto delta_abs_etal = abs(p_l.first.Eta()) - abs(p_l.second.Eta());
-
-    auto pll_l = p_l.first;
-    TVector3 v_ll = - (p_ll).BoostVector();
-    pll_l.Boost(v_ll);
-    double cosTheta_l = pll_l.CosTheta();
-    double cosThetaStar_l = int(yll / abs(yll)) * cosTheta_l;
-
-    double deltaPhi = p_l.first.DeltaPhi(p_l.second) / m_pi;
     double cosPhi = cos(ptop_l.first.Phi() - ptbar_l.second.Phi());
 
     double cosTheta_tl1 = cos(ptop_l.first.Angle(pttbar_top.Vect()));
     double costheta_tl2 = cos(ptbar_l.second.Angle(pttbar_tbar.Vect()));
 
-    if (m_debug) cout << "Filling histograms ...\n";
+    if (m_debug) cout << "Filling reconstruction histograms ...\n";
 
     mtt = mtt / 1000;
-    mvis = mvis / 1000;
-    HT = HT / 1000;
-    KT = KT / 1000;
-
-    h_pt_l1->Fill(p_l.first.Pt(), weight);
-    h_pt_l2->Fill(p_l.second.Pt(), weight);
-    h_eta_l1->Fill(p_l.first.Eta(), weight);
-    h_eta_l2->Fill(p_l.second.Eta(), weight);
 
     h_Et->Fill(p_top.E(), weight);
     h_pTt->Fill(p_top.Pt(), weight);
@@ -341,57 +379,28 @@ void Analysis::EachEvent(double weight) {
     h_mW1->Fill(p_W1.M(), weight);
     h_mW2->Fill(p_W2.M(), weight);
 
-    h_deltaPhi_ll->Fill(deltaPhi, weight);
-    if (deltaPhi > 0.5) {
-        h_mtt_DphiF->Fill(mtt, weight);
-        h_HT_DphiF->Fill(HT, weight);
-        h_KT_DphiF->Fill(KT, weight);
-    }
-    if (deltaPhi < 0.5) {
-        h_mtt_DphiB->Fill(mtt, weight);
-        h_HT_DphiB->Fill(HT, weight);
-        h_KT_DphiB->Fill(KT, weight);
-    }
+    if (deltaPhi > 0.5) h_mtt_DphiF->Fill(mtt, weight);
+    if (deltaPhi < 0.5) h_mtt_DphiB->Fill(mtt, weight);
 
     h_cosPhi->Fill(cosPhi, weight);
     if (cosPhi > 0) h_mtt_cPhiF->Fill(mtt, weight);
     if (cosPhi < 0) h_mtt_cPhiB->Fill(mtt, weight);
 
-    h2_HT_deltaPhi->Fill(HT, deltaPhi, weight);
-    h2_mvis_deltaPhi->Fill(mvis, deltaPhi, weight);
-    h2_KT_deltaPhi->Fill(KT, deltaPhi, weight);
-
     h_cosTheta_tt->Fill(cosTheta_tt, weight);
     h_cosTheta->Fill(cosTheta, weight);
     h_cosThetaStar->Fill(cosThetaStar, weight);
-    h_cosTheta_l->Fill(cosTheta_l, weight);
-    h_cosThetaStar_l->Fill(cosThetaStar_l, weight);
-
     if (cosThetaStar > 0) h_mtt_tF->Fill(mtt, weight);
     if (cosThetaStar < 0) h_mtt_tB->Fill(mtt, weight);
 
-    if (cosThetaStar_l > 0) {
-        h_mtt_lF->Fill(mtt, weight);
-        h_HT_lF->Fill(HT, weight);
-        h_KT_lF->Fill(KT, weight);
-    }
-    if (cosThetaStar_l < 0) {
-        h_mtt_lB->Fill(mtt, weight);
-        h_HT_lB->Fill(HT, weight);
-        h_KT_lB->Fill(KT, weight);
-    }
+    h_cosThetaStar_l->Fill(cosThetaStar_l, weight);
+    if (cosThetaStar_l > 0) h_mtt_lF->Fill(mtt, weight);
+    if (cosThetaStar_l < 0) h_mtt_lB->Fill(mtt, weight);
 
-    if (delta_abs_etal > 0) {
-        h_mtt_lCF->Fill(mtt, weight);
-        h_HT_lCF->Fill(HT, weight);
-        h_KT_lCF->Fill(KT, weight);
-    }
-    if (delta_abs_etal < 0) {
-        h_mtt_lCB->Fill(mtt, weight);
-        h_HT_lCB->Fill(HT, weight);
-        h_KT_lCB->Fill(KT, weight);
-    }
+    h_delta_abs_etal->Fill(delta_abs_etal, weight);
+    if (delta_abs_etal > 0) h_mtt_lCF->Fill(mtt, weight);
+    if (delta_abs_etal < 0) h_mtt_lCB->Fill(mtt, weight);
 
+    h_delta_abs_yt->Fill(delta_abs_yt, weight);
     if (delta_abs_yt > 0) h_mtt_tCF->Fill(mtt, weight);
     if (delta_abs_yt < 0) h_mtt_tCB->Fill(mtt, weight);
 
@@ -721,9 +730,9 @@ void Analysis::MakeHistograms() {
     h_ytt = new TH1D("y_tt", "y_{t\\bar{t}}", 50, -2.5, 2.5);
     h_ytt->Sumw2();
 
-    h_mW1 = new TH1D("mW1", "m_{W^{+}}", 150, 0.0, 150.0);
+    h_mW1 = new TH1D("mW1", "m_{W^{+}}\\ ", 150, 0.0, 150.0);
     h_mW1->Sumw2();
-    h_mW2 = new TH1D("mW2", "m_{W^{-}}", 150, 0.0, 150.0);
+    h_mW2 = new TH1D("mW2", "m_{W^{-}}\\ ", 150, 0.0, 150.0);
     h_mW2->Sumw2();
 
     h_Et = new TH1D("E_t", "E_{t}", 100, 0.0, 5000.0);
@@ -874,6 +883,12 @@ void Analysis::MakeHistograms() {
     h_cosThetaStar_l = new TH1D("costheta_star_l", "\\cos\\theta^{*}_{\\ell}", nbins, -1.0, 1.0);
     h_cosThetaStar_l->Sumw2();
 
+    h_delta_abs_etal = new TH1D("delta_abs_etal", "\\Delta |\\eta_{\\ell}|", nbins, -10, 10);
+    h_delta_abs_etal->Sumw2();
+
+    h_delta_abs_yt = new TH1D("delta_abs_yt", "\\Delta |y_{t}|", nbins, -10, 10);
+    h_delta_abs_yt->Sumw2();
+
     h_HT_all = new TH1D("HT_all", "H^{\\mathrm{all}}_{\\mathrm{T}}", 50, 0.0, 6.0);
     h_HT_all->Sumw2();
     h_HT = new TH1D("HT", "H_{\\mathrm{T}}", 60, 0.0, 6.0);
@@ -998,6 +1013,7 @@ void Analysis::MakeDistributions() {
     this->MakeDistribution1D(h_eta_qjets, "");
     this->MakeDistribution1D(h_etat, "");
     this->MakeDistribution1D(h_etatbar, "");
+    this->MakeDistribution1D(h_delta_abs_etal, "");
 
     // azimuthal angle
     this->MakeDistribution1D(h_phit, "");
@@ -1026,6 +1042,7 @@ void Analysis::MakeDistributions() {
 
     // rapidity
     this->MakeDistribution1D(h_ytt, "");
+    this->MakeDistribution1D(h_delta_abs_yt, "");
 
     // polar angle
     this->MakeDistribution1D(h_cosTheta, "");
@@ -1034,6 +1051,8 @@ void Analysis::MakeDistributions() {
     this->MakeDistribution1D(h_cosTheta1, "");
     this->MakeDistribution1D(h_cosTheta2, "");
     this->MakeDistribution1D(h_cos1cos2, "");
+    this->MakeDistribution1D(h_cosTheta_l, "");
+    this->MakeDistribution1D(h_cosThetaStar_l, "");
 
     // asymmetries
     this->MakeDistributionAL(h2_mtt_cosTheta1, "AL1", "A^{\\ell^{+}}_{L}");
@@ -1109,6 +1128,7 @@ void Analysis::MakeDistributions() {
     this->MakeDistribution2D(h2_HT_deltaPhi, "H_{\\mathrm{T}}", "GeV", "\\Delta\\phi_{\\ell^{+}\\ell^{-}}", "");
     this->MakeDistribution2D(h2_mvis_deltaPhi, "m_{\\mathrm{vis}}", "GeV", "\\Delta\\phi_{\\ell^{+}\\ell^{-}}", "");
     this->MakeDistribution2D(h2_KT_deltaPhi, "K_{\\mathrm{T}}", "GeV", "\\Delta\\phi_{\\ell^{+}\\ell^{-}}", "");
+
     this->MakeDistribution2D(h2_mtt_deltaPhi, "m_{t\\bar{t}}\\ ", "GeV", "\\Delta\\phi_{\\ell^{+}\\ell^{-}}", "");
     this->MakeDistribution2D(h2_mtt_cosThetaStar, "m_{t\\bar{t}}\\ ", "GeV", "\\cos\\theta^{*}", "");
     this->MakeDistribution2D(h2_mtt_cosTheta1, "m_{t\\bar{t}}\\ ", "GeV", "\\cos\\theta_{\\ell^{+}}", "");

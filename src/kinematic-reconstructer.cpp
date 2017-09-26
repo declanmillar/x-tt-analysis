@@ -1,7 +1,7 @@
 #include "kinematic-reconstructer.hpp"
 
 
-KinematicReconstructer::KinematicReconstructer( double bMass, double WMass, double TopMass ):
+KinematicReconstructer::KinematicReconstructer(const double bMass, const double WMass, const double TopMass ):
     m_bMass( bMass ),
     m_WMass( WMass ),
     m_TopMass( TopMass )
@@ -45,7 +45,7 @@ bool KinematicReconstructer::Reconstruct(
             if ( i != j ) p_vsol.push_back( this->GetSolutions( p_l.first, p_l.second, p_b[i], p_b[j], p_miss ) );
 
     if ( m_debug ) std::cout << "selecting best solution ...\n";
-    if ( m_debug ) std::cout << "number b-combinations: " << p_vsol.size() << "\n";
+    if ( m_debug ) std::cout << "number of b-combinations: " << p_vsol.size() << "\n";
 
     int nsols = 0;
     for ( int i = 0; i < p_vsol.size(); i++ )
@@ -56,15 +56,8 @@ bool KinematicReconstructer::Reconstruct(
     if ( m_debug ) std::cout << "total number of solutions = " << nsols << "\n";
     if ( nsols == 0 ) return false;
 
-    // allow no events with null b-combinations
-    // bool no_sols = false;
-    // for ( int i = 0; i < p_vsol.size(); i++ )
-    // {
-    //     if ( p_vsol.at(i).size() == 0 ) no_sols = true;
-    // }
-    // if ( no_sols ) return p_bv;
-
     int I = 0, J = 0, K = 0, L = 0, l = 0;
+    // k = isol, l = combination of i and j
     double mtt_min = DBL_MAX;
     for ( int i = 0; i < n_b; i++ )
     {
@@ -75,12 +68,6 @@ bool KinematicReconstructer::Reconstruct(
                 for ( int k = 0; k < p_vsol.at(l).size(); k++ )
                 {
                     double mtt = ( p_l.first + p_l.second + p_b[i] + p_b[j] + p_vsol.at(l).at(k).first + p_vsol.at(l).at(k).second ).M();
-                    // double MT2 =  asymm_mt2_lester_bisect::get_mT2(
-                    //            0, p_l.first, pyA,
-                    //            0, pxB, pyB,
-                    //            pxMiss, pyMiss,
-                    //            0, 0,
-                    //            desiredPrecisionOnMt2 );
                     if ( mtt < mtt_min )
                     {
                         mtt_min = mtt;
@@ -92,34 +79,6 @@ bool KinematicReconstructer::Reconstruct(
         }
     }
 
-    double mW1 = ( p_l.first + p_vsol.at(L).at(K).first ).M();
-    double mW2 = ( p_l.second + p_vsol.at(L).at(K).second ).M();
-    double mt1 = ( p_l.first + p_b[I] + p_vsol.at(L).at(K).first ).M();
-    double mt2 = ( p_l.second + p_b[J] + p_vsol.at(L).at(K).second ).M();
-    double mtt = ( p_l.first + p_l.second + p_b[I] + p_b[J] + p_vsol.at(L).at(K).first + p_vsol.at(L).at(K).second ).M();
-
-    if ( false )
-    {
-        // std::cout << "selected a solution\n";
-        if ( std::abs( mW1 - m_WMass ) > 10.0 )
-        {
-            std::cout << "mW+   = " << mW1 << "\n";
-            p_l.first.Print();
-            p_vsol.at(L).at(K).first.Print();
-            std::cout << "number b-combinations: " << p_vsol.size() << "\n";
-            for ( int i = 0; i < p_vsol.size(); i++ )
-            {
-                std::cout << "number of real solutions for b-combo " << i << ": " << p_vsol.at(i).size() << "\n";
-            }
-            std::cout << "total number of solutions = " << nsols << "\n";
-            std::cout << "I = " << I << " J = " << J << " K = " << K << " L = "<<  L << "\n";
-        }
-        // if ( std::abs( mW2 - m_WMass ) > 1.0 ) std::cout << "mW-   = " << mW2 << "\n";
-        // if ( std::abs( mt1 - m_TopMass ) > 0.1 ) std::cout << "mt    = " << mt1 << "\n";
-        // if ( std::abs( mt2 - m_TopMass ) > 0.1 ) std::cout << "mtbar = " << mt2 << "\n";
-        // std::cout << "mtt   = " << mtt << "\n";
-    }
-
     m_nu = p_vsol.at(L).at(K).first;
     m_nubar = p_vsol.at(L).at(K).second;
     m_b = p_b.at(I);
@@ -127,6 +86,20 @@ bool KinematicReconstructer::Reconstruct(
     m_top = m_b + p_l.first + m_nu;
     m_tbar = m_bbar + p_l.second + m_nubar;
     m_ttbar = m_top + m_tbar;
+
+    // if (m_top.M() - m_TopMass > 1.0 or m_tbar.M() - m_TopMass > 1.0) {
+    //     std::cout << "tops      " << m_top.M() << " " << m_tbar.M() << "\n";
+    //     std::cout << "W bosons  " << (p_l.first + m_nu).M() << " " << (p_l.second + m_nubar).M() << "\n";
+    //     std::cout << "neutrinos " << m_nu.M() << " " << m_nubar.M() << "\n";
+    //     std::cout << "number b-combinations: " << p_vsol.size() << "\n";
+    //     for ( int i = 0; i < p_vsol.size(); i++ )
+    //     {
+    //         std::cout << "number of real solutions for b-combo " << i << ": " << p_vsol.at(i).size() << "\n";
+    //     }
+    //     std::cout << "total number of solutions = " << nsols << "\n";
+    //     std::cout << "I = " << I << " J = " << J << " K = " << K << " L = "<<  L << "\n";
+    //     std::cout << "\n";
+    // }
 
     if ( m_debug ) std::cout << "completed dilepton reconstruction.\n";
 
@@ -294,7 +267,8 @@ std::vector< std::pair< TLorentzVector, TLorentzVector > > KinematicReconstructe
         + c20 * d10 * ( c00 * d10 - c10 * d00 )
         + c20 * d00 * ( c20 * d00 - 2 * c00 * d20 );
 
-    float a[4] = { static_cast< float >( h1 / h0 ), static_cast< float >( h2 / h0 ), static_cast< float >( h3 / h0 ), static_cast< float >( h4 / h0 ) };
+    // double a[4] = { static_cast< double >( h1 / h0 ), static_cast< double >( h2 / h0 ), static_cast< double >( h3 / h0 ), static_cast< double >( h4 / h0 ) };
+    double a[4] = { h1 / h0, h2 / h0, h3 / h0, h4 / h0 };
 
     if ( m_debug ) std::cout << "solving quartic ...\n";
     double x[4];
@@ -310,7 +284,7 @@ std::vector< std::pair< TLorentzVector, TLorentzVector > > KinematicReconstructe
     for ( int i = 0; i < nReal; i++ )
     {
         zero_check = pow( x[i], 4 ) + a[0] * pow( x[i], 3 ) + a[1] * pow ( x[i], 2 ) + a[2] * x[i] + a[3];
-        if ( m_debug and zero_check > 10e-3 ) std::cout << "Warning: solution " << i << " gives: " << zero_check << ", should be zero.\n";
+        if ( zero_check > 10e-4 ) std::cout << "Warning: solution " << i << " gives: " << zero_check << ", should be zero.\n";
     }
 
     if ( x[0] != x[0] or x[1] != x[1] or x[2] != x[2] or x[3] != x[3] ) std::cout << "Warning: NaN(s) in quartic solutions.\n";
@@ -365,8 +339,8 @@ std::vector< std::pair< TLorentzVector, TLorentzVector > > KinematicReconstructe
         double pv1y = ( c0 * d2 - c2 * d0 ) / ( c1 * d0 - c0 * d1 );
         double pv2y = Emissy - pv1y;
 
-        double pv1z = -( a1 + a2 * pv1x + a3 * pv1y ) / a4;
-        double pv2z = -( b1 + b2 * pv2x + b3 * pv2y ) / b4;
+        double pv1z = - ( a1 + a2 * pv1x + a3 * pv1y ) / a4;
+        double pv2z = - ( b1 + b2 * pv2x + b3 * pv2y ) / b4;
 
         double Ev1 = sqrt( pv1x * pv1x + pv1y * pv1y + pv1z * pv1z );
         double Ev2 = sqrt( pv2x * pv2x + pv2y * pv2y + pv2z * pv2z );

@@ -267,12 +267,21 @@ private:
     TH1D* h_deltaR_max;
     TH1D* h_deltaR_bW;
     TH1D* h_deltaR_tt;
+    TH1D* h_delta_abs_yt;
+    TH1D* h_delta_abs_etal;
 
     TH1D* h_nElectrons;
     TH1D* h_nMuons;
     TH1D* h_nJets;
 
     TH2D* h2_mtt_cosThetaStar;
+    TH2D* h2_mtt_delta_yt;
+    TH2D* h2_mtt_cosThetaStar_ll;
+    TH2D* h2_mtt_delta_abs_etal;
+    TH2D* h2_HT_delta_abs_etal;
+    TH2D* h2_KT_delta_abs_yt;
+    TH2D* h2_HT_cosThetaStar_ll;
+    TH2D* h2_KT_cosThetaStar_ll;
     TH2D* h2_mtt_deltaPhi;
     TH2D* h2_mtt_cosTheta1;
     TH2D* h2_mtt_cosTheta2;

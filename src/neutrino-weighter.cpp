@@ -260,7 +260,7 @@ double NeutrinoWeighter::Reconstruct(TLorentzVector lepton_pos, TLorentzVector l
   return m_weight_max;
 }
 
-float NeutrinoWeighter::GetCrystalBallWeight(float jet_pt) {
+double NeutrinoWeighter::GetCrystalBallWeight(double jet_pt) {
 
   double scale = 1.;
 
