@@ -707,23 +707,31 @@ void Analysis::MakeHistograms() {
     h_pt_l1->Sumw2();
     h_pt_l2 = new TH1D("pT_l2", "p^{\\ell^{-}}_{\\mathrm{T}}", 40, 0.0, 1000.0);
     h_pt_l2->Sumw2();
-    h_eta_l1 = new TH1D("eta_l1", "\\eta_{\\ell^{+}}", 60, -3.0, 3.0);
-    h_eta_l1->Sumw2();
-    h_eta_l2 = new TH1D("eta_l2", "\\eta_{\\ell^{-}}", 60, -3.0, 3.0);
-    h_eta_l2->Sumw2();
-
     h_pt_jets = new TH1D("pT_jet", "p_{\\mathrm{T}}^{jet}", 40, 0.0, 5000.0);
     h_pt_jets->Sumw2();
-    h_eta_jets = new TH1D("eta_jet", "\\eta_{jet}", 60, -3.0, 3.0);
-    h_eta_jets->Sumw2();
     h_pt_bjets = new TH1D("pT_bjet", "p_{\\mathrm{T}}^{b-jet}", 40, 0.0, 5000.0);
     h_pt_bjets->Sumw2();
-    h_eta_bjets = new TH1D("eta_bjet", "\\eta_{b-jet}", 60, -3.0, 3.0);
-    h_eta_bjets->Sumw2();
     h_pt_qjets = new TH1D("pT_qjet", "p_{\\mathrm{T}}^{q-jet}", 40, 0.0, 5000.0);
     h_pt_qjets->Sumw2();
-    h_eta_qjets = new TH1D("eta_qjet", "\\eta_{q-jet}", 60, -3.0, 3.0);
+    h_pTt = new TH1D("pT_t", "p_{\\mathrm{T}}^{t}", 100, 0.0, 5000.0);
+    h_pTt->Sumw2();
+    h_pTtbar = new TH1D("pT_tbar", "p_{\\mathrm{T}}^{\\bar{t}}", 100, 0.0, 5000.0);
+    h_pTtbar->Sumw2();
+
+    h_eta_l1 = new TH1D("eta_l1", "\\eta_{\\ell^{+}}", 60, -5.0, 5.0);
+    h_eta_l1->Sumw2();
+    h_eta_l2 = new TH1D("eta_l2", "\\eta_{\\ell^{-}}", 60, -5.0, 5.0);
+    h_eta_l2->Sumw2();
+    h_eta_jets = new TH1D("eta_jet", "\\eta_{jet}", 60, -5.0, 5.0);
+    h_eta_jets->Sumw2();
+    h_eta_bjets = new TH1D("eta_bjet", "\\eta_{b-jet}", 60, -5.0, 5.0);
+    h_eta_bjets->Sumw2();
+    h_eta_qjets = new TH1D("eta_qjet", "\\eta_{q-jet}", 60, -5.0, 5.0);
     h_eta_qjets->Sumw2();
+    h_etat = new TH1D("eta_t", "\\eta_{t}", nbins, -5.0, 5.0);
+    h_etat->Sumw2();
+    h_etatbar = new TH1D("eta_tbar", "\\eta_{\\bar{t}}", nbins, 0.0, 10.0);
+    h_etatbar->Sumw2();
 
     h_mtt = new TH1D("m_tt", "m_{t\\bar{t}}", nbins, Emin, Emax);
     h_mtt->Sumw2();
@@ -735,27 +743,22 @@ void Analysis::MakeHistograms() {
     h_mW2 = new TH1D("mW2", "m_{W^{-}}\\ ", 150, 0.0, 150.0);
     h_mW2->Sumw2();
 
-    h_Et = new TH1D("E_t", "E_{t}", 100, 0.0, 5000.0);
-    h_Et->Sumw2();
-    h_pTt = new TH1D("pT_t", "p_{\\mathrm{T}}^{t}", 100, 0.0, 5000.0);
-    h_pTt->Sumw2();
-    h_etat = new TH1D("eta_t", "\\eta_{t}", nbins, 0.0, 10.0);
-    h_etat->Sumw2();
+
+
     h_phit = new TH1D("phi_t", "\\phi_{t}", nbins, -1.0, 1.0);
     h_phit->Sumw2();
-    h_mt = new TH1D("m_t", "m_{t}", 40, 100.0, 300.0);
-    h_mt->Sumw2();
-
-    h_Etbar = new TH1D("E_tbar", "E_{\\bar{t}}", 100, 0.0, 5000.0);
-    h_Etbar->Sumw2();
-    h_pTtbar = new TH1D("pT_tbar", "p_{\\mathrm{T}}^{\\bar{t}}", 100, 0.0, 5000.0);
-    h_pTtbar->Sumw2();
-    h_etatbar = new TH1D("eta_tbar", "\\eta_{\\bar{t}}", nbins, 0.0, 10.0);
-    h_etatbar->Sumw2();
     h_phitbar = new TH1D("phi_tbar", "\\phi_{\\bar{t}}", nbins, -1.0, 1.0);
     h_phitbar->Sumw2();
+
+    h_mt = new TH1D("m_t", "m_{t}", 40, 100.0, 300.0);
+    h_mt->Sumw2();
     h_mtbar = new TH1D("m_tbar", "m_{\\bar{t}}", 40, 100.0, 300.0);
     h_mtbar->Sumw2();
+
+    h_Et = new TH1D("E_t", "E_{t}", 100, 0.0, 5000.0);
+    h_Et->Sumw2();
+    h_Etbar = new TH1D("E_tbar", "E_{\\bar{t}}", 100, 0.0, 5000.0);
+    h_Etbar->Sumw2();
 
     // AtFB
     h_mtt_tF = new TH1D("mtt_tF", "m_{t\\bar{t}}^{tF}", nbins, Emin, Emax);
@@ -883,10 +886,10 @@ void Analysis::MakeHistograms() {
     h_cosThetaStar_l = new TH1D("costheta_star_l", "\\cos\\theta^{*}_{\\ell}", nbins, -1.0, 1.0);
     h_cosThetaStar_l->Sumw2();
 
-    h_delta_abs_etal = new TH1D("delta_abs_etal", "\\Delta |\\eta_{\\ell}|", nbins, -10, 10);
+    h_delta_abs_etal = new TH1D("delta_abs_etal", "\\Delta |\\eta_{\\ell}|", nbins, -5.0, 5.0);
     h_delta_abs_etal->Sumw2();
 
-    h_delta_abs_yt = new TH1D("delta_abs_yt", "\\Delta |y_{t}|", nbins, -10, 10);
+    h_delta_abs_yt = new TH1D("delta_abs_yt", "\\Delta |y_{t}|", nbins, -5.0, 5.0);
     h_delta_abs_yt->Sumw2();
 
     h_HT_all = new TH1D("HT_all", "H^{\\mathrm{all}}_{\\mathrm{T}}", 50, 0.0, 6.0);
@@ -910,11 +913,11 @@ void Analysis::MakeHistograms() {
     h_pt_allel->Sumw2();
     h_pt_allmu = new TH1D("pT_allmu", "p_{\\mathrm{T}}^{\\mu}", 1000, 0.0, 5000.0);
     h_pt_allmu->Sumw2();
-    h_eta_alljets = new TH1D("eta_alljets", "\\eta^{jet}", 500, 0.0, 5.0);
+    h_eta_alljets = new TH1D("eta_alljets", "\\eta^{jet}", 1000, -5.0, 5.0);
     h_eta_alljets->Sumw2();
-    h_eta_allel = new TH1D("eta_allel", "\\eta^{e}", 250, 0.0, 2.5);
+    h_eta_allel = new TH1D("eta_allel", "\\eta^{e}", 600, -3.0, 3.0);
     h_eta_allel->Sumw2();
-    h_eta_allmu = new TH1D("eta_allmu", "\\eta^{\\mu}", 250, 0.0, 2.5);
+    h_eta_allmu = new TH1D("eta_allmu", "\\eta^{\\mu}", 600, -3.0, 3.0);
     h_eta_allmu->Sumw2();
 
     h_cosPhi = new TH1D("cosPhi", "\\cos\\varphi", 10, -1.0, 1.0);
