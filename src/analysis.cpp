@@ -1523,7 +1523,7 @@ void Analysis::Loop() {
         }
         this->CleanUp();
         if (!m_debug) {
-            std::cout << "\e[A\e[A";
+            std::cout << "\e[A";
             ProgressBar2(i + 1, nfiles, 50);
         }
     }
