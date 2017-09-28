@@ -68,7 +68,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    cout << "Settings\n";
+    cout << "SETTINGS\n";
     cout << "Energy:         " << energy << " [TeV]\n";
     cout << "Process:        " << process << "\n";
     if (options != "") cout << "Options:        " << options << "\n";

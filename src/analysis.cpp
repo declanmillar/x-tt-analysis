@@ -500,7 +500,7 @@ void Analysis::SetupInputFiles() {
             // combine for file name
             filename = initial + intermediates + fin + "_" + model + "_" + E + "TeV" + "_" + m_pdf + options;
 
-            cout << "Adding:         " << filename << "*_pythia_delphes.root ...\n";
+            cout << "Adding:         " << m_dataDirectory << filename << "*_pythia_delphes.root ...\n";
 
             // loop over all matching files (e.g. *_01.root and *_02.root)
             boost::filesystem::directory_iterator end_itr; // Default ctor yields past-the-end
@@ -537,10 +537,12 @@ void Analysis::SetupInputFiles() {
                     nfiles_per_slice++;
                     tuple<string, int> input = make_tuple(m_dataDirectory + file, proc_id);
                     m_input->push_back(input);
-                    if (nfiles < 10) cout << "found " << nfiles << ":        " << get<0>(input);
-                    else if (nfiles < 100) cout << "found " << nfiles << ":       " << get<0>(input);
-                    else cout << "found " << nfiles << ":      " << get<0>(input);
-                    cout << ", process: " << get<1>(input) << "\n";
+                    if (m_debug) {
+                        if (nfiles < 10) cout << "found " << nfiles << ":        " << get<0>(input);
+                        else if (nfiles < 100) cout << "found " << nfiles << ":       " << get<0>(input);
+                        else cout << "found " << nfiles << ":      " << get<0>(input);
+                        cout << ", process: " << get<1>(input) << "\n";
+                    }
                 }
 
                 if (m_use_mass_slices and nfiles_per_slice == 0) {
@@ -548,7 +550,8 @@ void Analysis::SetupInputFiles() {
                     continue;
                 }
                 string proc_filename = m_dataDirectory + initial + intermediates + "-tt-bbllvv" + "_" + model + "_" + E + "TeV" + "_" + m_pdf + options + range + ".txt";
-                cout << "Adding process: " << proc_filename << " ...\n";
+                cout << "Process file:   " << proc_filename << " ...\n";
+                cout << "No. files:      " << nfiles << "\n";
                 tuple< string, int, int, double, double, double > process = make_tuple(proc_filename, proc_id, nfiles, -999, -999, -999);
                 m_processes->push_back(process);
                 proc_id++;
@@ -601,7 +604,7 @@ void Analysis::PostLoop() {
     this->PrintCutflow();
     this->MakeDistributions();
     m_output->Close();
-    cout << "\nOutput\n";
+    cout << "\nOUTPUT\n";
     cout << m_outputName << "\n";
 }
 
@@ -1173,14 +1176,15 @@ void Analysis::MakeDistribution2D(TH2D* h, string xtitle, string xunits, string 
 }
 
 void Analysis::MakeDistributionAL(TH2D* h, const string& name, const string& title) {
+    TH2D* hist = (TH2D*) h->Clone();
     TF1* func = new TF1("func1", "[0]*x + [1]", -1, 1);
     TObjArray slices;
-    this->NormalizeSliceY(h);
-    h->FitSlicesY(func, 0, -1, 0, "QRN", &slices);
+    this->NormalizeSliceY(hist);
+    hist->FitSlicesY(func, 0, -1, 0, "QRN", &slices);
     if (m_debug) for (auto slice : slices) slice->Write();
     TH1D* h_AL = (TH1D*) slices[0]->Clone(name.data());
     slices.Clear();
-    h_AL->Scale(2.0 / h->GetYaxis()->GetBinWidth(1));
+    h_AL->Scale(2.0 / hist->GetYaxis()->GetBinWidth(1));
     h_AL->SetTitle(title.data());
     h_AL->GetXaxis()->SetTitle("m_{t\\bar{t}}\\;[TeV]");
     h_AL->GetYaxis()->SetTitle(title.data());
@@ -1495,14 +1499,17 @@ void Analysis::GetProcessWeight(int proc_id) {
 
 
 void Analysis::Loop() {
+    cout << "PROGRESS\n";
+    int nfiles = m_input->size();
+    if (!m_debug) ProgressBar(0, nfiles, 50);
     for (itr_s it = m_input->begin(); it != m_input->end(); ++it) {
         int i = it - m_input->begin();
-        int nfiles = m_input->size();
-        if (nfiles < 10) cout << "  ";
-        else if (nfiles < 100) cout << " ";
-        cout << i + 1 << "/" << nfiles << ": ";
-        cout << get<0>(*it) << "\n";
+        // if (i + 1 < 10) cout << "  ";
+        // else if (i +1 < 100) cout << " ";
+        // cout << i + 1 << "/" << nfiles << ": ";
+        // cout << get<0>(*it) << "\n";
         this->EachFile(get<0>(*it));
+        std::cout << get<0>(*it) << "\n";
         m_nevents = this->TotalEvents();
         int proc_id = get<1>(m_input->at(i));
         this->GetGenerationCrossSection(proc_id);
@@ -1515,8 +1522,12 @@ void Analysis::Loop() {
             // if (!m_debug) ProgressBar(jevent, m_nevents - 1, 50);
         }
         this->CleanUp();
-        // cout << "\n";
+        if (!m_debug) {
+            std::cout << "\e[A\e[A";
+            ProgressBar2(i + 1, nfiles, 50);
+        }
     }
+    std::cout << "                                                                                 ";
 }
 
 
@@ -1611,7 +1622,7 @@ void Analysis::UpdateCutflow(const int cut, const bool passed) {
 
 
 void Analysis::PrintCutflow() {
-    cout << "\nCutflow:\n";
+    cout << "\nCUTFLOW\n";
     for (int cut = 0; cut < m_cuts; cut++) {
         if (m_cutflow[cut] == -999) continue;
 
