@@ -1501,12 +1501,12 @@ void Analysis::GetProcessWeight(int proc_id) {
 void Analysis::Loop() {
     cout << "PROGRESS\n";
     int nfiles = m_input->size();
-    if (!m_debug) ProgressBar(0, nfiles, 50);
+    // if (!m_debug) ProgressBar(0, nfiles, 50);
     for (itr_s it = m_input->begin(); it != m_input->end(); ++it) {
         int i = it - m_input->begin();
-        // if (i + 1 < 10) cout << "  ";
-        // else if (i +1 < 100) cout << " ";
-        // cout << i + 1 << "/" << nfiles << ": ";
+        if (i + 1 < 10) cout << "  ";
+        else if (i +1 < 100) cout << " ";
+        cout << i + 1 << "/" << nfiles << ": ";
         // cout << get<0>(*it) << "\n";
         this->EachFile(get<0>(*it));
         std::cout << get<0>(*it) << "\n";
@@ -1522,10 +1522,10 @@ void Analysis::Loop() {
             // if (!m_debug) ProgressBar(jevent, m_nevents - 1, 50);
         }
         this->CleanUp();
-        if (!m_debug) {
-            std::cout << "\e[A";
-            ProgressBar2(i + 1, nfiles, 50);
-        }
+        // if (!m_debug) {
+        //     std::cout << "\e[A";
+        //     ProgressBar2(i + 1, nfiles, 50);
+        // }
     }
     std::cout << "                                                                                 ";
 }
