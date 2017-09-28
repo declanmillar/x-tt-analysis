@@ -291,7 +291,8 @@ void Analysis::EachEvent(double weight) {
         double cosPhi = cos(ptop_l.first.Phi() - ptbar_l.second.Phi());
 
         double cosTheta_tl1 = cos(ptop_l.first.Angle(pttbar_top.Vect()));
-        double costheta_tl2 = cos(ptbar_l.second.Angle(pttbar_tbar.Vect()));
+        double cosTheta_tl2 = cos(ptbar_l.second.Angle(pttbar_tbar.Vect()));
+        double cos1cos2 = cosTheta_tl1 * cosTheta_tl2;
 
         if (m_debug) cout << "Filling reconstruction histograms ...\n";
 
@@ -340,17 +341,15 @@ void Analysis::EachEvent(double weight) {
         if (delta_abs_yt > 0) h_mtt_tCF->Fill(mtt, weight);
         if (delta_abs_yt < 0) h_mtt_tCB->Fill(mtt, weight);
 
-        double cos1cos2 = cosTheta_tl1 * costheta_tl2;
-
         h_cosTheta1->Fill(cosTheta_tl1, weight);
-        h_cosTheta2->Fill(costheta_tl2, weight);
+        h_cosTheta2->Fill(cosTheta_tl2, weight);
         h_cos1cos2->Fill(cos1cos2, weight);
 
         if (cosTheta_tl1 > 0) h_mtt_c1F->Fill(mtt, weight);
         if (cosTheta_tl1 < 0) h_mtt_c1B->Fill(mtt, weight);
 
-        if (costheta_tl2 > 0) h_mtt_c2F->Fill(mtt, weight);
-        if (costheta_tl2 < 0) h_mtt_c2B->Fill(mtt, weight);
+        if (cosTheta_tl2 > 0) h_mtt_c2F->Fill(mtt, weight);
+        if (cosTheta_tl2 < 0) h_mtt_c2B->Fill(mtt, weight);
 
         if (cos1cos2 > 0) h_mtt_c1c2F->Fill(mtt, weight);
         if (cos1cos2 < 0) h_mtt_c1c2B->Fill(mtt, weight);
@@ -358,7 +357,7 @@ void Analysis::EachEvent(double weight) {
         h2_mtt_cosThetaStar->Fill(mtt, cosThetaStar, weight);
         h2_mtt_deltaPhi->Fill(mtt, deltaPhi, weight);
         h2_mtt_cosTheta1->Fill(mtt, cosTheta_tl1, weight);
-        h2_mtt_cosTheta2->Fill(mtt, costheta_tl2, weight);
+        h2_mtt_cosTheta2->Fill(mtt, cosTheta_tl2, weight);
         h2_mtt_cos1cos2->Fill(mtt, cos1cos2, weight);
     }
     else {
@@ -868,7 +867,7 @@ void Analysis::MakeHistograms() {
 
     h_cosTheta1 = new TH1D("cosTheta_tl1", "\\cos\\theta^{t}_{\\ell^{+}}", 10, -1.0, 1.0);
     h_cosTheta1->Sumw2();
-    h_cosTheta2 = new TH1D("costheta_tl2", "\\cos\\theta^{\\bar{t}}_{\\ell^{-}}", 10, -1.0, 1.0);
+    h_cosTheta2 = new TH1D("cosTheta_tl2", "\\cos\\theta^{\\bar{t}}_{\\ell^{-}}", 10, -1.0, 1.0);
     h_cosTheta2->Sumw2();
     h_cos1cos2 = new TH1D("cos1cos2", "\\cos\\theta^{t}_{\\ell^{+}}\\cos\\theta^{\\bar{t}}_{\\ell^{-}}", 10, -1.0, 1.0);
     h_cos1cos2->Sumw2();
@@ -1176,12 +1175,12 @@ void Analysis::MakeDistribution2D(TH2D* h, string xtitle, string xunits, string 
 void Analysis::MakeDistributionAL(TH2D* h, const string& name, const string& title) {
     TF1* func = new TF1("func1", "[0]*x + [1]", -1, 1);
     TObjArray slices;
-    this->NormalizeSliceY(h2_mtt_cosTheta2);
-    h2_mtt_cosTheta2->FitSlicesY(func, 0, -1, 0, "QRN", &slices);
-    for (auto slice : slices) slice->Write();
+    this->NormalizeSliceY(h);
+    h->FitSlicesY(func, 0, -1, 0, "QRN", &slices);
+    if (m_debug) for (auto slice : slices) slice->Write();
     TH1D* h_AL = (TH1D*) slices[0]->Clone(name.data());
     slices.Clear();
-    h_AL->Scale(2.0 / h2_mtt_cosTheta2->GetYaxis()->GetBinWidth(1));
+    h_AL->Scale(2.0 / h->GetYaxis()->GetBinWidth(1));
     h_AL->SetTitle(title.data());
     h_AL->GetXaxis()->SetTitle("m_{t\\bar{t}}\\;[TeV]");
     h_AL->GetYaxis()->SetTitle(title.data());
