@@ -1504,8 +1504,9 @@ void Analysis::Loop() {
     // if (!m_debug) ProgressBar(0, nfiles, 50);
     for (itr_s it = m_input->begin(); it != m_input->end(); ++it) {
         int i = it - m_input->begin();
-        if (i + 1 < 10) cout << "  ";
-        else if (i +1 < 100) cout << " ";
+        if (i + 1 < 10) cout << "   ";
+        else if (i +1 < 100) cout << "  ";
+        else if (i +1 < 1000) cout << " ";
         cout << i + 1 << "/" << nfiles << ": ";
         // cout << get<0>(*it) << "\n";
         this->EachFile(get<0>(*it));
