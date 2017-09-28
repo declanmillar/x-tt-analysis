@@ -46,98 +46,32 @@ void Analysis::EachEvent(double weight) {
 
     if (m_debug) cout << "Starting EachEvent ...\n";
 
-    MissingET* missingET = (MissingET*) b_MissingET->At(0);
-    TLorentzVector p_miss;
-    double ETmiss = missingET->MET;
-    p_miss.SetPtEtaPhiM(ETmiss, missingET->Eta, missingET->Phi, 0.0);
-
-    if (!this->SufficientMET()) return;
-    if (!this->SufficientHT()) return;
-
-    m_electron = new vector<Electron*>;
-    for (int i = 0; i < b_Electron->GetEntries(); i++) {
-        bool passed = false;
-        Electron* electron = (Electron*) b_Electron->At(i);
-        if (electron->PT > 25.0 and electron->Eta < 2.47) passed = true;
-        if (passed) m_electron->push_back(electron);
-    }
-
-    m_muon = new vector<Muon*>;
-    for (int i = 0; i < b_Muon->GetEntries(); i++) {
-        bool passed = false;
-        Muon* muon = (Muon*) b_Muon->At(i);
-        if (muon->PT > 25.0 and muon->Eta < 2.5) passed = true;
-        if (passed) m_muon->push_back(muon);
-    }
-
+    // leptons
+    this->GetElectrons();
+    this->GetMuons();
     if (!this->ExactlyTwoLeptons()) return;
     this->AssignChannel();
     if (!this->OppositeCharge()) return;
-
-    pair< TLorentzVector, TLorentzVector> p_l;
-    if (m_channel == "ee") {
-        Electron *electron1 = m_electron->at(0);
-        Electron *electron2 = m_electron->at(1);
-
-        double charge = electron1->Charge;
-
-        if (charge > 0) {
-            p_l.first.SetPtEtaPhiM(electron1->PT, electron1->Eta, electron1->Phi, 0.0);
-            p_l.second.SetPtEtaPhiM(electron2->PT, electron2->Eta, electron2->Phi, 0.0);
-        }
-        else {
-            p_l.second.SetPtEtaPhiM(electron1->PT, electron1->Eta, electron1->Phi, 0.0);
-            p_l.first.SetPtEtaPhiM(electron2->PT, electron2->Eta, electron2->Phi, 0.0);
-        }
-    }
-    else if (m_channel == "mumu") {
-        Muon *muon1 = (Muon*) m_muon->at(0);
-        Muon *muon2 = (Muon*) m_muon->at(1);
-
-        double charge = muon1->Charge;
-
-        if (charge > 0) {
-            p_l.first.SetPtEtaPhiM(muon1->PT, muon1->Eta, muon1->Phi, 0.0);
-            p_l.second.SetPtEtaPhiM(muon2->PT, muon2->Eta, muon2->Phi, 0.0);
-        }
-        else {
-            p_l.second.SetPtEtaPhiM(muon1->PT, muon1->Eta, muon1->Phi, 0.0);
-            p_l.first.SetPtEtaPhiM(muon2->PT, muon2->Eta, muon2->Phi, 0.0);
-        }
-    }
-    else if (m_channel == "emu") {
-        Electron *electron = (Electron*) m_electron->at(0);
-        Muon *muon = (Muon*) m_muon->at(0);
-
-        double charge = electron->Charge;
-
-        if (charge > 0) {
-            p_l.first.SetPtEtaPhiM(electron->PT, electron->Eta, electron->Phi, 0.0);
-            p_l.second.SetPtEtaPhiM(muon->PT, muon->Eta, muon->Phi, 0.0);
-        }
-        else {
-            p_l.second.SetPtEtaPhiM(electron->PT, electron->Eta, electron->Phi, 0.0);
-            p_l.first.SetPtEtaPhiM(muon->PT, muon->Eta, muon->Phi, 0.0);
-        }
-    }
-    else cout << "Error: invalid channel\n";
-    if (m_debug) p_l.first.Print();
-    if (m_debug) p_l.second.Print();
-
+    pair<TLorentzVector, TLorentzVector> p_l = this->GetLeptonMomenta();
     if (!this->SufficientMll(p_l)) return;
     if (!this->OutsideZmassWindow(p_l)) return;
 
-    m_jet = new vector<Jet*>;
-    for (int i = 0; i < b_Jet->GetEntries(); i++) {
-        bool passed = false;
-        Jet *jet = (Jet*) b_Jet->At(i);
-        if (jet->PT > 25.0 and jet->Eta < 2.5) passed = true;
-        if (passed) m_jet->push_back(jet);
-    }
 
+    MissingET* missingET = (MissingET*) b_MissingET->At(0);
+    double ETmiss = missingET->MET;
+
+    if (!this->SufficientMET(ETmiss)) return;
+
+    TLorentzVector p_miss;
+    p_miss.SetPtEtaPhiM(ETmiss, missingET->Eta, missingET->Phi, 0.0);
+
+    if (!this->SufficientHT()) return;
+
+    this->GetJets();
     if (!this->SufficientJets()) return;
     if (!this->SufficientBtags()) return;
 
+    // Get jet momenta and sort by b-tag
     vector<TLorentzVector> p_j, p_b, p_q;
     for (int i = 0; i < m_jet->size(); i++) {
         Jet *jet = (Jet*) m_jet->at(i);
@@ -158,6 +92,20 @@ void Analysis::EachEvent(double weight) {
         p_j.push_back(p);
         h_pt_jets->Fill(p.Pt(), weight);
         h_eta_jets->Fill(p.Eta(), weight);
+    }
+
+    if (m_debug) {
+        cout << "p_l+   = "; p_l.first.Print();
+        cout << "p_l-   = "; p_l.second.Print();
+        for (int i = 0; i < p_b.size(); i++) {
+            cout << "p_b" << i << "   = ";
+            p_b.at(i).Print();
+        }
+        for (int i = 0; i < p_q.size(); i++) {
+            cout << "p_q" << i << "   = ";
+            p_q.at(i).Print();
+        }
+        cout << "p_miss = "; p_miss.Print();
     }
 
     // ScalarHT *scalarHT = (ScalarHT*) b_ScalarHT->At(0);
@@ -234,196 +182,188 @@ void Analysis::EachEvent(double weight) {
     h2_mvis_deltaPhi->Fill(mvis, deltaPhi, weight);
     h2_KT_deltaPhi->Fill(KT, deltaPhi, weight);
 
-    if (m_debug) {
-        cout << "p_l+   = "; p_l.first.Print();
-        cout << "p_l-   = "; p_l.second.Print();
-        for (int i = 0; i < p_b.size(); i++) {
-            cout << "p_b" << i << "   = ";
-            p_b.at(i).Print();
+    if (m_reconstruction == "KIN" or m_reconstruction == "NuW") {
+
+        pair< TLorentzVector, TLorentzVector> p_b_hypo;
+        if (m_btags >= 2) p_b_hypo = TwoHighestPt(p_b);
+        else if (m_btags == 0) p_b_hypo = TwoHighestPt(p_q);
+        else if (m_btags == 1) {
+            p_b_hypo.first = p_b.at(0);
+            p_b_hypo.second = HighestPt(p_q);
         }
-        for (int i = 0; i < p_q.size(); i++) {
-            cout << "p_q" << i << "   = ";
-            p_q.at(i).Print();
+
+        TLorentzVector p_top, p_tbar, p_ttbar, p_b1, p_b2, p_v1, p_v2;
+
+        if (m_debug) cout << "Reconstruction method: " << m_reconstruction << "\n";
+
+        if (m_reconstruction == "KIN") {
+            if (m_debug) cout << "Setting up kinematic reconstruction ...\n";
+            vector<TLorentzVector> p_b_hiPt = { p_b_hypo.first, p_b_hypo.second };
+            KinematicReconstructer KIN = KinematicReconstructer(m_bmass, m_Wmass, m_tmass);
+            bool isSolution = KIN.Reconstruct(p_l, p_b_hiPt, p_miss);
+            p_top = KIN.GetTop();
+            p_tbar = KIN.GetTbar();
+            p_ttbar = KIN.GetTtbar();
+            p_b1 = KIN.GetB();
+            p_b2 = KIN.GetBbar();
+            p_v1 = KIN.GetNu();
+            p_v2 = KIN.GetNubar();
+            if (isSolution) this->UpdateCutflow(c_realSolutions, true);
+            else {
+                this->UpdateCutflow(c_realSolutions, false);
+                return;
+            }
+            if (m_debug) cout << "Finished kinematic reconstruction\n";
         }
-        cout << "p_miss = "; p_miss.Print();
-    }
+        else if (m_reconstruction == "NuW") {
+            auto p_b_match = MatchBjetsToLeps(p_l, p_b_hypo);
 
-    pair< TLorentzVector, TLorentzVector> p_b_hypo;
-    if (m_btags >= 2) p_b_hypo = TwoHighestPt(p_b);
-    else if (m_btags == 0) p_b_hypo = TwoHighestPt(p_q);
-    else if (m_btags == 1) {
-        p_b_hypo.first = p_b.at(0);
-        p_b_hypo.second = HighestPt(p_q);
-    }
-
-    TLorentzVector p_top, p_tbar, p_ttbar, p_b1, p_b2, p_v1, p_v2;
-
-    if (m_debug) cout << "Reconstruction method: " << m_reconstruction << "\n";
-
-    if (m_reconstruction == "KIN") {
-        if (m_debug) cout << "Setting up kinematic reconstruction ...\n";
-        vector<TLorentzVector> p_b_hiPt = { p_b_hypo.first, p_b_hypo.second };
-        KinematicReconstructer KIN = KinematicReconstructer(m_bmass, m_Wmass, m_tmass);
-        bool isSolution = KIN.Reconstruct(p_l, p_b_hiPt, p_miss);
-        p_top = KIN.GetTop();
-        p_tbar = KIN.GetTbar();
-        p_ttbar = KIN.GetTtbar();
-        p_b1 = KIN.GetB();
-        p_b2 = KIN.GetBbar();
-        p_v1 = KIN.GetNu();
-        p_v2 = KIN.GetNubar();
-        if (isSolution) this->UpdateCutflow(c_realSolutions, true);
-        else {
-            this->UpdateCutflow(c_realSolutions, false);
-            return;
+            NeutrinoWeighter nuW = NeutrinoWeighter(1, p_l.first.Pt() + p_l.first.Phi()); // 2nd argument is random seed same for specific event
+            double weight_max = nuW.Reconstruct(p_l.first, p_l.second, p_b_match.first, p_b_match.second, p_miss.Px(), p_miss.Py(), p_miss.Phi());
+            if (weight_max > 0.0) {
+                p_top = nuW.GetTop();
+                p_tbar = nuW.GetTbar();
+                p_ttbar = nuW.GetTtbar();
+                p_b1 = nuW.GetB();
+                p_b2 = nuW.GetBbar();
+                p_v1 = nuW.GetNu();
+                p_v2 = nuW.GetNubar();
+            }
         }
-        if (m_debug) cout << "Finished kinematic reconstruction\n";
+        else cout << "Error: Reconstruction = {KIN, NuW}\n";
+
+        TLorentzVector p_W1 = p_l.first + p_v1;
+        TLorentzVector p_W2 = p_l.second + p_v2;
+
+        auto mtt = p_ttbar.M();
+        auto ytt = p_ttbar.Rapidity();
+        auto cosTheta_tt = cos(p_top.Angle(p_tbar.Vect()));
+        auto delta_abs_yt = abs(p_top.Rapidity()) - abs(p_tbar.Rapidity());
+
+        auto pttbar_top = p_top, pttbar_tbar = p_tbar, pttbar_ttbar = p_ttbar;
+        auto pttbar_b1 = p_b1, pttbar_b2 = p_b2, pttbar_v1 = p_v1, pttbar_v2 = p_v2;
+        auto pttbar_l = p_l;
+
+        TVector3 v_ttbar = - (p_ttbar).BoostVector();
+        pttbar_top.Boost(v_ttbar);
+        pttbar_tbar.Boost(v_ttbar);
+        pttbar_ttbar.Boost(v_ttbar);
+        pttbar_b1.Boost(v_ttbar);
+        pttbar_b2.Boost(v_ttbar);
+        pttbar_l.first.Boost(v_ttbar);
+        pttbar_l.second.Boost(v_ttbar);
+        pttbar_v1.Boost(v_ttbar);
+        pttbar_v2.Boost(v_ttbar);
+
+        auto ptop_top = p_top, ptop_tbar = p_tbar, ptop_ttbar = p_ttbar;
+        auto ptop_b1 = p_b1, ptop_b2 = p_b2, ptop_v1 = p_v1, ptop_v2 = p_v2;
+        auto ptop_l = p_l;
+
+        TVector3 v_top = - (p_top).BoostVector();
+        ptop_top.Boost(v_top);
+        ptop_tbar.Boost(v_top);
+        ptop_ttbar.Boost(v_top);
+        ptop_b1.Boost(v_top);
+        ptop_b2.Boost(v_top);
+        ptop_l.first.Boost(v_top);
+        ptop_l.second.Boost(v_top);
+        ptop_v1.Boost(v_top);
+        ptop_v2.Boost(v_top);
+
+        auto ptbar_top = p_top, ptbar_tbar = p_tbar, ptbar_ttbar = p_ttbar;
+        auto ptbar_b1 = p_b1, ptbar_b2 = p_b2, ptbar_v1 = p_v1, ptbar_v2 = p_v2;
+        auto ptbar_l = p_l;
+
+        TVector3 v_tbar = - (p_tbar).BoostVector();
+        ptbar_top.Boost(v_tbar);
+        ptbar_tbar.Boost(v_tbar);
+        ptbar_ttbar.Boost(v_tbar);
+        ptbar_b1.Boost(v_tbar);
+        ptbar_b2.Boost(v_tbar);
+        ptbar_l.first.Boost(v_tbar);
+        ptbar_l.second.Boost(v_tbar);
+        ptbar_v1.Boost(v_tbar);
+        ptbar_v2.Boost(v_tbar);
+
+        double cosTheta = pttbar_top.CosTheta();
+        double cosThetaStar = int(ytt / abs(ytt)) * cosTheta;
+
+        double cosPhi = cos(ptop_l.first.Phi() - ptbar_l.second.Phi());
+
+        double cosTheta_tl1 = cos(ptop_l.first.Angle(pttbar_top.Vect()));
+        double costheta_tl2 = cos(ptbar_l.second.Angle(pttbar_tbar.Vect()));
+
+        if (m_debug) cout << "Filling reconstruction histograms ...\n";
+
+        mtt = mtt / 1000;
+
+        h_Et->Fill(p_top.E(), weight);
+        h_pTt->Fill(p_top.Pt(), weight);
+        h_etat->Fill(p_top.Eta(), weight);
+        h_phit->Fill(p_top.Phi() / m_pi, weight);
+        h_mt->Fill(p_top.M(), weight);
+
+        h_Etbar->Fill(p_tbar.E(), weight);
+        h_pTtbar->Fill(p_tbar.Pt(), weight);
+        h_etatbar->Fill(p_tbar.Eta(), weight);
+        h_phitbar->Fill(p_tbar.Phi() / m_pi, weight);
+        h_mtbar->Fill(p_tbar.M(), weight);
+
+        h_mtt->Fill(mtt, weight);
+        h_ytt->Fill(ytt, weight);
+
+        h_mW1->Fill(p_W1.M(), weight);
+        h_mW2->Fill(p_W2.M(), weight);
+
+        if (deltaPhi > 0.5) h_mtt_DphiF->Fill(mtt, weight);
+        if (deltaPhi < 0.5) h_mtt_DphiB->Fill(mtt, weight);
+
+        h_cosPhi->Fill(cosPhi, weight);
+        if (cosPhi > 0) h_mtt_cPhiF->Fill(mtt, weight);
+        if (cosPhi < 0) h_mtt_cPhiB->Fill(mtt, weight);
+
+        h_cosTheta_tt->Fill(cosTheta_tt, weight);
+        h_cosTheta->Fill(cosTheta, weight);
+        h_cosThetaStar->Fill(cosThetaStar, weight);
+        if (cosThetaStar > 0) h_mtt_tF->Fill(mtt, weight);
+        if (cosThetaStar < 0) h_mtt_tB->Fill(mtt, weight);
+
+        h_cosThetaStar_l->Fill(cosThetaStar_l, weight);
+        if (cosThetaStar_l > 0) h_mtt_lF->Fill(mtt, weight);
+        if (cosThetaStar_l < 0) h_mtt_lB->Fill(mtt, weight);
+
+        h_delta_abs_etal->Fill(delta_abs_etal, weight);
+        if (delta_abs_etal > 0) h_mtt_lCF->Fill(mtt, weight);
+        if (delta_abs_etal < 0) h_mtt_lCB->Fill(mtt, weight);
+
+        h_delta_abs_yt->Fill(delta_abs_yt, weight);
+        if (delta_abs_yt > 0) h_mtt_tCF->Fill(mtt, weight);
+        if (delta_abs_yt < 0) h_mtt_tCB->Fill(mtt, weight);
+
+        double cos1cos2 = cosTheta_tl1 * costheta_tl2;
+
+        h_cosTheta1->Fill(cosTheta_tl1, weight);
+        h_cosTheta2->Fill(costheta_tl2, weight);
+        h_cos1cos2->Fill(cos1cos2, weight);
+
+        if (cosTheta_tl1 > 0) h_mtt_c1F->Fill(mtt, weight);
+        if (cosTheta_tl1 < 0) h_mtt_c1B->Fill(mtt, weight);
+
+        if (costheta_tl2 > 0) h_mtt_c2F->Fill(mtt, weight);
+        if (costheta_tl2 < 0) h_mtt_c2B->Fill(mtt, weight);
+
+        if (cos1cos2 > 0) h_mtt_c1c2F->Fill(mtt, weight);
+        if (cos1cos2 < 0) h_mtt_c1c2B->Fill(mtt, weight);
+
+        h2_mtt_cosThetaStar->Fill(mtt, cosThetaStar, weight);
+        h2_mtt_deltaPhi->Fill(mtt, deltaPhi, weight);
+        h2_mtt_cosTheta1->Fill(mtt, cosTheta_tl1, weight);
+        h2_mtt_cosTheta2->Fill(mtt, costheta_tl2, weight);
+        h2_mtt_cos1cos2->Fill(mtt, cos1cos2, weight);
     }
-    else if (m_reconstruction == "NuW") {
-        auto p_b_match = MatchBjetsToLeps(p_l, p_b_hypo);
-
-        NeutrinoWeighter nuW = NeutrinoWeighter(1, p_l.first.Pt() + p_l.first.Phi()); // 2nd argument is random seed same for specific event
-        double weight_max = nuW.Reconstruct(p_l.first, p_l.second, p_b_match.first, p_b_match.second, p_miss.Px(), p_miss.Py(), p_miss.Phi());
-        if (weight_max > 0.0) {
-            p_top = nuW.GetTop();
-            p_tbar = nuW.GetTbar();
-            p_ttbar = nuW.GetTtbar();
-            p_b1 = nuW.GetB();
-            p_b2 = nuW.GetBbar();
-            p_v1 = nuW.GetNu();
-            p_v2 = nuW.GetNubar();
-        }
+    else {
+        if (m_debug) cout << "Skipping reconstruction\n";
     }
-    else cout << "Error: Reconstruction = {KIN, NuW}\n";
-
-    TLorentzVector p_W1 = p_l.first + p_v1;
-    TLorentzVector p_W2 = p_l.second + p_v2;
-
-    auto mtt = p_ttbar.M();
-    auto ytt = p_ttbar.Rapidity();
-    auto cosTheta_tt = cos(p_top.Angle(p_tbar.Vect()));
-    auto delta_abs_yt = abs(p_top.Rapidity()) - abs(p_tbar.Rapidity());
-
-    auto pttbar_top = p_top, pttbar_tbar = p_tbar, pttbar_ttbar = p_ttbar;
-    auto pttbar_b1 = p_b1, pttbar_b2 = p_b2, pttbar_v1 = p_v1, pttbar_v2 = p_v2;
-    auto pttbar_l = p_l;
-
-    TVector3 v_ttbar = - (p_ttbar).BoostVector();
-    pttbar_top.Boost(v_ttbar);
-    pttbar_tbar.Boost(v_ttbar);
-    pttbar_ttbar.Boost(v_ttbar);
-    pttbar_b1.Boost(v_ttbar);
-    pttbar_b2.Boost(v_ttbar);
-    pttbar_l.first.Boost(v_ttbar);
-    pttbar_l.second.Boost(v_ttbar);
-    pttbar_v1.Boost(v_ttbar);
-    pttbar_v2.Boost(v_ttbar);
-
-    auto ptop_top = p_top, ptop_tbar = p_tbar, ptop_ttbar = p_ttbar;
-    auto ptop_b1 = p_b1, ptop_b2 = p_b2, ptop_v1 = p_v1, ptop_v2 = p_v2;
-    auto ptop_l = p_l;
-
-    TVector3 v_top = - (p_top).BoostVector();
-    ptop_top.Boost(v_top);
-    ptop_tbar.Boost(v_top);
-    ptop_ttbar.Boost(v_top);
-    ptop_b1.Boost(v_top);
-    ptop_b2.Boost(v_top);
-    ptop_l.first.Boost(v_top);
-    ptop_l.second.Boost(v_top);
-    ptop_v1.Boost(v_top);
-    ptop_v2.Boost(v_top);
-
-    auto ptbar_top = p_top, ptbar_tbar = p_tbar, ptbar_ttbar = p_ttbar;
-    auto ptbar_b1 = p_b1, ptbar_b2 = p_b2, ptbar_v1 = p_v1, ptbar_v2 = p_v2;
-    auto ptbar_l = p_l;
-
-    TVector3 v_tbar = - (p_tbar).BoostVector();
-    ptbar_top.Boost(v_tbar);
-    ptbar_tbar.Boost(v_tbar);
-    ptbar_ttbar.Boost(v_tbar);
-    ptbar_b1.Boost(v_tbar);
-    ptbar_b2.Boost(v_tbar);
-    ptbar_l.first.Boost(v_tbar);
-    ptbar_l.second.Boost(v_tbar);
-    ptbar_v1.Boost(v_tbar);
-    ptbar_v2.Boost(v_tbar);
-
-    double cosTheta = pttbar_top.CosTheta();
-    double cosThetaStar = int(ytt / abs(ytt)) * cosTheta;
-
-    double cosPhi = cos(ptop_l.first.Phi() - ptbar_l.second.Phi());
-
-    double cosTheta_tl1 = cos(ptop_l.first.Angle(pttbar_top.Vect()));
-    double costheta_tl2 = cos(ptbar_l.second.Angle(pttbar_tbar.Vect()));
-
-    if (m_debug) cout << "Filling reconstruction histograms ...\n";
-
-    mtt = mtt / 1000;
-
-    h_Et->Fill(p_top.E(), weight);
-    h_pTt->Fill(p_top.Pt(), weight);
-    h_etat->Fill(p_top.Eta(), weight);
-    h_phit->Fill(p_top.Phi() / m_pi, weight);
-    h_mt->Fill(p_top.M(), weight);
-
-    h_Etbar->Fill(p_tbar.E(), weight);
-    h_pTtbar->Fill(p_tbar.Pt(), weight);
-    h_etatbar->Fill(p_tbar.Eta(), weight);
-    h_phitbar->Fill(p_tbar.Phi() / m_pi, weight);
-    h_mtbar->Fill(p_tbar.M(), weight);
-
-    h_mtt->Fill(mtt, weight);
-    h_ytt->Fill(ytt, weight);
-
-    h_mW1->Fill(p_W1.M(), weight);
-    h_mW2->Fill(p_W2.M(), weight);
-
-    if (deltaPhi > 0.5) h_mtt_DphiF->Fill(mtt, weight);
-    if (deltaPhi < 0.5) h_mtt_DphiB->Fill(mtt, weight);
-
-    h_cosPhi->Fill(cosPhi, weight);
-    if (cosPhi > 0) h_mtt_cPhiF->Fill(mtt, weight);
-    if (cosPhi < 0) h_mtt_cPhiB->Fill(mtt, weight);
-
-    h_cosTheta_tt->Fill(cosTheta_tt, weight);
-    h_cosTheta->Fill(cosTheta, weight);
-    h_cosThetaStar->Fill(cosThetaStar, weight);
-    if (cosThetaStar > 0) h_mtt_tF->Fill(mtt, weight);
-    if (cosThetaStar < 0) h_mtt_tB->Fill(mtt, weight);
-
-    h_cosThetaStar_l->Fill(cosThetaStar_l, weight);
-    if (cosThetaStar_l > 0) h_mtt_lF->Fill(mtt, weight);
-    if (cosThetaStar_l < 0) h_mtt_lB->Fill(mtt, weight);
-
-    h_delta_abs_etal->Fill(delta_abs_etal, weight);
-    if (delta_abs_etal > 0) h_mtt_lCF->Fill(mtt, weight);
-    if (delta_abs_etal < 0) h_mtt_lCB->Fill(mtt, weight);
-
-    h_delta_abs_yt->Fill(delta_abs_yt, weight);
-    if (delta_abs_yt > 0) h_mtt_tCF->Fill(mtt, weight);
-    if (delta_abs_yt < 0) h_mtt_tCB->Fill(mtt, weight);
-
-    double cos1cos2 = cosTheta_tl1 * costheta_tl2;
-
-    h_cosTheta1->Fill(cosTheta_tl1, weight);
-    h_cosTheta2->Fill(costheta_tl2, weight);
-    h_cos1cos2->Fill(cos1cos2, weight);
-
-    if (cosTheta_tl1 > 0) h_mtt_c1F->Fill(mtt, weight);
-    if (cosTheta_tl1 < 0) h_mtt_c1B->Fill(mtt, weight);
-
-    if (costheta_tl2 > 0) h_mtt_c2F->Fill(mtt, weight);
-    if (costheta_tl2 < 0) h_mtt_c2B->Fill(mtt, weight);
-
-    if (cos1cos2 > 0) h_mtt_c1c2F->Fill(mtt, weight);
-    if (cos1cos2 < 0) h_mtt_c1c2B->Fill(mtt, weight);
-
-    h2_mtt_cosThetaStar->Fill(mtt, cosThetaStar, weight);
-    h2_mtt_deltaPhi->Fill(mtt, deltaPhi, weight);
-    h2_mtt_cosTheta1->Fill(mtt, cosTheta_tl1, weight);
-    h2_mtt_cosTheta2->Fill(mtt, costheta_tl2, weight);
-    h2_mtt_cos1cos2->Fill(mtt, cos1cos2, weight);
 
     if (m_debug) cout << "Finished filling histograms\n";
     this->CleanupEvent();
@@ -438,9 +378,10 @@ void Analysis::CleanupEvent() {
 }
 
 void Analysis::EveryEvent(double weight) {
+    // runs for every event with no event selection or cuts
+
     if (m_debug) cout << "Starting EveryEvent ...\n";
 
-    // runs for every event with no event selection or cuts
     h_nElectrons->Fill(b_Electron->GetEntries(), weight);
     h_nMuons->Fill(b_Muon->GetEntries(), weight);
     h_nJets->Fill(b_Jet->GetEntries(), weight);
@@ -584,6 +525,7 @@ void Analysis::SetupInputFiles() {
                     if (!boost::contains(file, filename)) continue;
                     if (boost::contains(file, "KIN")) continue;
                     if (boost::contains(file, "NuW")) continue;
+                    if (boost::contains(file, "TRN")) continue;
                     if (!boost::contains(file, "_pythia_delphes")) continue;
                     if (!boost::contains(file, range)) continue;
                     if (!boost::filesystem::is_regular_file(i->status())) continue;
@@ -701,21 +643,19 @@ void Analysis::MakeHistograms() {
     double nbins = (Emax - Emin) / binWidth;
      cout << "Plotting range: " << Emin << " - " << Emax << " [TeV]\n";
 
-    TMathText l;
-
-    h_pt_l1 = new TH1D("pT_l1", "p^{\\ell^{+}}_{\\mathrm{T}}", 40, 0.0, 1000.0);
+    h_pt_l1 = new TH1D("pT_l1", "p^{\\ell^{+}}_{\\mathrm{T}}", 200, 0.0, 2000.0);
     h_pt_l1->Sumw2();
-    h_pt_l2 = new TH1D("pT_l2", "p^{\\ell^{-}}_{\\mathrm{T}}", 40, 0.0, 1000.0);
+    h_pt_l2 = new TH1D("pT_l2", "p^{\\ell^{-}}_{\\mathrm{T}}", 200, 0.0, 2000.0);
     h_pt_l2->Sumw2();
-    h_pt_jets = new TH1D("pT_jet", "p_{\\mathrm{T}}^{jet}", 40, 0.0, 5000.0);
+    h_pt_jets = new TH1D("pT_jet", "p_{\\mathrm{T}}^{jet}", 200, 0.0, 2000.0);
     h_pt_jets->Sumw2();
-    h_pt_bjets = new TH1D("pT_bjet", "p_{\\mathrm{T}}^{b-jet}", 40, 0.0, 5000.0);
+    h_pt_bjets = new TH1D("pT_bjet", "p_{\\mathrm{T}}^{b-jet}", 200, 0.0, 2000.0);
     h_pt_bjets->Sumw2();
-    h_pt_qjets = new TH1D("pT_qjet", "p_{\\mathrm{T}}^{q-jet}", 40, 0.0, 5000.0);
+    h_pt_qjets = new TH1D("pT_qjet", "p_{\\mathrm{T}}^{q-jet}", 200, 0.0, 2000.0);
     h_pt_qjets->Sumw2();
-    h_pTt = new TH1D("pT_t", "p_{\\mathrm{T}}^{t}", 100, 0.0, 5000.0);
+    h_pTt = new TH1D("pT_t", "p_{\\mathrm{T}}^{t}", 200, 0.0, 2000.0);
     h_pTt->Sumw2();
-    h_pTtbar = new TH1D("pT_tbar", "p_{\\mathrm{T}}^{\\bar{t}}", 100, 0.0, 5000.0);
+    h_pTtbar = new TH1D("pT_tbar", "p_{\\mathrm{T}}^{\\bar{t}}", 200, 0.0, 2000.0);
     h_pTtbar->Sumw2();
 
     h_eta_l1 = new TH1D("eta_l1", "\\eta_{\\ell^{+}}", 60, -5.0, 5.0);
@@ -730,7 +670,7 @@ void Analysis::MakeHistograms() {
     h_eta_qjets->Sumw2();
     h_etat = new TH1D("eta_t", "\\eta_{t}", nbins, -5.0, 5.0);
     h_etat->Sumw2();
-    h_etatbar = new TH1D("eta_tbar", "\\eta_{\\bar{t}}", nbins, 0.0, 10.0);
+    h_etatbar = new TH1D("eta_tbar", "\\eta_{\\bar{t}}", nbins, -5.0, 5.0);
     h_etatbar->Sumw2();
 
     h_mtt = new TH1D("m_tt", "m_{t\\bar{t}}", nbins, Emin, Emax);
@@ -1002,8 +942,6 @@ void Analysis::MakeDistributions() {
     this->MakeDistribution1D(h_pt_jets, "TeV");
     this->MakeDistribution1D(h_pt_bjets, "TeV");
     this->MakeDistribution1D(h_pt_qjets, "TeV");
-    this->MakeDistribution1D(h_pTt, "GeV");
-    this->MakeDistribution1D(h_pTtbar, "GeV");
 
     // pseudorapidity
     this->MakeDistribution1D(h_eta_allel, "");
@@ -1014,14 +952,9 @@ void Analysis::MakeDistributions() {
     this->MakeDistribution1D(h_eta_jets, "");
     this->MakeDistribution1D(h_eta_bjets, "");
     this->MakeDistribution1D(h_eta_qjets, "");
-    this->MakeDistribution1D(h_etat, "");
-    this->MakeDistribution1D(h_etatbar, "");
     this->MakeDistribution1D(h_delta_abs_etal, "");
 
     // azimuthal angle
-    this->MakeDistribution1D(h_phit, "");
-    this->MakeDistribution1D(h_phitbar, "");
-    this->MakeDistribution1D(h_cosPhi, "");
     this->MakeDistribution1D(h_deltaPhi_ll, "rad / \\pi");
 
     // energy
@@ -1036,40 +969,8 @@ void Analysis::MakeDistributions() {
     this->MakeDistribution1D(h_mvis_all, "TeV");
     this->MakeDistribution1D(h_mvis, "TeV");
 
-    // invarient mass
-    this->MakeDistribution1D(h_mW1, "TeV");
-    this->MakeDistribution1D(h_mW2, "TeV");
-    this->MakeDistribution1D(h_mt, "GeV");
-    this->MakeDistribution1D(h_mtbar, "GeV");
-    this->MakeDistribution1D(h_mtt, "TeV");
-
-    // rapidity
-    this->MakeDistribution1D(h_ytt, "");
-    this->MakeDistribution1D(h_delta_abs_yt, "");
-
-    // polar angle
-    this->MakeDistribution1D(h_cosTheta, "");
-    this->MakeDistribution1D(h_cosThetaStar, "");
-    this->MakeDistribution1D(h_cosTheta_tt, "");
-    this->MakeDistribution1D(h_cosTheta1, "");
-    this->MakeDistribution1D(h_cosTheta2, "");
-    this->MakeDistribution1D(h_cos1cos2, "");
     this->MakeDistribution1D(h_cosTheta_l, "");
     this->MakeDistribution1D(h_cosThetaStar_l, "");
-
-    // asymmetries
-    this->MakeDistributionAL(h2_mtt_cosTheta1, "AL1", "A^{\\ell^{+}}_{L}");
-    this->MakeDistributionAL(h2_mtt_cosTheta2, "AL2", "A^{\\ell^{-}}_{L}");
-
-
-    // charge asymmetry
-    this->MakeDistribution1D(h_mtt_tF, "TeV");
-    this->MakeDistribution1D(h_mtt_tB, "TeV");
-    this->Asymmetry("AtFB", "A^{t}_{FB^{*}}\\", "m_{t\\bar{t}}", h_mtt_tF, h_mtt_tB);
-
-    this->MakeDistribution1D(h_mtt_lF, "TeV");
-    this->MakeDistribution1D(h_mtt_lB, "TeV");
-    this->Asymmetry("AlFB", "A^{\\ell}_{FB^{*}}", "m_{t\\bar{t}}", h_mtt_lF, h_mtt_lB);
 
     this->MakeDistribution1D(h_HT_lF, "TeV");
     this->MakeDistribution1D(h_HT_lB, "TeV");
@@ -1079,14 +980,6 @@ void Analysis::MakeDistributions() {
     this->MakeDistribution1D(h_KT_lB, "TeV");
     this->Asymmetry("AlFB_KT", "A^{\\ell}_{FB^{*}}", "m_{t\\bar{t}}", h_KT_lF, h_KT_lB);
 
-    this->MakeDistribution1D(h_mtt_tCF, "TeV");
-    this->MakeDistribution1D(h_mtt_tCB, "TeV");
-    this->Asymmetry("AtC", "A^{t}_{C}\\", "m_{t\\bar{t}}", h_mtt_tCF, h_mtt_tCB);
-
-    this->MakeDistribution1D(h_mtt_lCF, "TeV");
-    this->MakeDistribution1D(h_mtt_lCB, "TeV");
-    this->Asymmetry("AlC", "A^{\\ell}_{C}", "m_{t\\bar{t}}", h_mtt_lCF, h_mtt_lCB);
-
     this->MakeDistribution1D(h_HT_lCF, "TeV");
     this->MakeDistribution1D(h_HT_lCB, "TeV");
     this->Asymmetry("AlC_HT", "A^{\\ell}_{C}\\;(H_{\\mathrm{T}})", "H_{\\mathrm{T}}", h_HT_lCF, h_HT_lCB);
@@ -1094,30 +987,6 @@ void Analysis::MakeDistributions() {
     this->MakeDistribution1D(h_KT_lCF, "TeV");
     this->MakeDistribution1D(h_KT_lCB, "TeV");
     this->Asymmetry("AlC_KT", "A^{\\ell}_{C}\\;(K_{\\mathrm{T}})", "K_{\\mathrm{T}}", h_KT_lCF, h_KT_lCB);
-
-    // this->MakeDistribution1D(h_mtt_tlF, "TeV");
-    // this->MakeDistribution1D(h_mtt_tlB, "TeV");
-    // this->Asymmetry("AtlFB", "A^{tl}_{FB^{*}}\\;", "m_{t\\bar{t}}", h_mtt_tlF, h_mtt_tlB);
-
-    this->MakeDistribution1D(h_mtt_c1F, "TeV");
-    this->MakeDistribution1D(h_mtt_c1B, "TeV");
-    this->Asymmetry("Ac1", "A_{c_{1}}", "m_{t\\bar{t}}", h_mtt_c1F, h_mtt_c1B);
-
-    this->MakeDistribution1D(h_mtt_c2F, "TeV");
-    this->MakeDistribution1D(h_mtt_c2B, "TeV");
-    this->Asymmetry("Ac2", "A_{c_{2}}", "m_{t\\bar{t}}", h_mtt_c2F, h_mtt_c2B);
-
-    this->MakeDistribution1D(h_mtt_c1c2F, "TeV");
-    this->MakeDistribution1D(h_mtt_c1c2B, "TeV");
-    this->Asymmetry("Ac1c2", "A_{c_{1}c_{2}}", "m_{t\\bar{t}}", h_mtt_c1c2F, h_mtt_c1c2B);
-
-    this->MakeDistribution1D(h_mtt_cPhiF, "TeV");
-    this->MakeDistribution1D(h_mtt_cPhiB, "TeV");
-    this->Asymmetry("AcPhi", "A_{\\cos\\varphi}", "m_{t\\bar{t}}", h_mtt_cPhiF, h_mtt_cPhiB);
-
-    this->MakeDistribution1D(h_mtt_DphiF, "TeV");
-    this->MakeDistribution1D(h_mtt_DphiB, "TeV");
-    this->Asymmetry("ADPhi", "A_{\\Delta\\phi}", "m_{t\\bar{t}}", h_mtt_DphiF, h_mtt_DphiB);
 
     this->MakeDistribution1D(h_HT_DphiF, "TeV");
     this->MakeDistribution1D(h_HT_DphiB, "TeV");
@@ -1127,16 +996,92 @@ void Analysis::MakeDistributions() {
     this->MakeDistribution1D(h_KT_DphiB, "TeV");
     this->Asymmetry("ADphi_KT", "A_{\\Delta\\phi}", "K_{\\mathrm{T}}", h_KT_DphiF, h_KT_DphiB);
 
-    // 2D distributions
     this->MakeDistribution2D(h2_HT_deltaPhi, "H_{\\mathrm{T}}", "GeV", "\\Delta\\phi_{\\ell^{+}\\ell^{-}}", "");
     this->MakeDistribution2D(h2_mvis_deltaPhi, "m_{\\mathrm{vis}}", "GeV", "\\Delta\\phi_{\\ell^{+}\\ell^{-}}", "");
     this->MakeDistribution2D(h2_KT_deltaPhi, "K_{\\mathrm{T}}", "GeV", "\\Delta\\phi_{\\ell^{+}\\ell^{-}}", "");
 
-    this->MakeDistribution2D(h2_mtt_deltaPhi, "m_{t\\bar{t}}\\ ", "GeV", "\\Delta\\phi_{\\ell^{+}\\ell^{-}}", "");
-    this->MakeDistribution2D(h2_mtt_cosThetaStar, "m_{t\\bar{t}}\\ ", "GeV", "\\cos\\theta^{*}", "");
-    this->MakeDistribution2D(h2_mtt_cosTheta1, "m_{t\\bar{t}}\\ ", "GeV", "\\cos\\theta_{\\ell^{+}}", "");
-    this->MakeDistribution2D(h2_mtt_cosTheta2, "m_{t\\bar{t}}\\ ", "GeV", "\\cos\\theta_{\\ell^{-}}", "");
-    this->MakeDistribution2D(h2_mtt_cos1cos2, "m_{t\\bar{t}}\\ ", "GeV", "\\cos\\theta_{\\ell^{+}}\\cos\\theta_{\\ell^{-}}", "");
+    if (m_reconstruction == "KIN" or m_reconstruction == "NuW") {
+        this->MakeDistribution1D(h_pTt, "GeV");
+        this->MakeDistribution1D(h_pTtbar, "GeV");
+
+        this->MakeDistribution1D(h_etat, "");
+        this->MakeDistribution1D(h_etatbar, "");
+
+        this->MakeDistribution1D(h_phit, "");
+        this->MakeDistribution1D(h_phitbar, "");
+        this->MakeDistribution1D(h_cosPhi, "");
+
+        // invarient mass
+        this->MakeDistribution1D(h_mW1, "TeV");
+        this->MakeDistribution1D(h_mW2, "TeV");
+        this->MakeDistribution1D(h_mt, "GeV");
+        this->MakeDistribution1D(h_mtbar, "GeV");
+        this->MakeDistribution1D(h_mtt, "TeV");
+
+        // rapidity
+        this->MakeDistribution1D(h_ytt, "");
+        this->MakeDistribution1D(h_delta_abs_yt, "");
+
+        // polar angle
+        this->MakeDistribution1D(h_cosTheta, "");
+        this->MakeDistribution1D(h_cosThetaStar, "");
+        this->MakeDistribution1D(h_cosTheta_tt, "");
+        this->MakeDistribution1D(h_cosTheta1, "");
+        this->MakeDistribution1D(h_cosTheta2, "");
+        this->MakeDistribution1D(h_cos1cos2, "");
+
+        // asymmetries
+        this->MakeDistributionAL(h2_mtt_cosTheta1, "AL1", "A^{\\ell^{+}}_{L}");
+        this->MakeDistributionAL(h2_mtt_cosTheta2, "AL2", "A^{\\ell^{-}}_{L}");
+
+        // charge asymmetry
+        this->MakeDistribution1D(h_mtt_tF, "TeV");
+        this->MakeDistribution1D(h_mtt_tB, "TeV");
+        this->Asymmetry("AtFB", "A^{t}_{FB^{*}}\\", "m_{t\\bar{t}}", h_mtt_tF, h_mtt_tB);
+
+        this->MakeDistribution1D(h_mtt_lF, "TeV");
+        this->MakeDistribution1D(h_mtt_lB, "TeV");
+        this->Asymmetry("AlFB", "A^{\\ell}_{FB^{*}}", "m_{t\\bar{t}}", h_mtt_lF, h_mtt_lB);
+
+        this->MakeDistribution1D(h_mtt_tCF, "TeV");
+        this->MakeDistribution1D(h_mtt_tCB, "TeV");
+        this->Asymmetry("AtC", "A^{t}_{C}\\", "m_{t\\bar{t}}", h_mtt_tCF, h_mtt_tCB);
+
+        this->MakeDistribution1D(h_mtt_lCF, "TeV");
+        this->MakeDistribution1D(h_mtt_lCB, "TeV");
+        this->Asymmetry("AlC", "A^{\\ell}_{C}", "m_{t\\bar{t}}", h_mtt_lCF, h_mtt_lCB);
+
+        // this->MakeDistribution1D(h_mtt_tlF, "TeV");
+        // this->MakeDistribution1D(h_mtt_tlB, "TeV");
+        // this->Asymmetry("AtlFB", "A^{tl}_{FB^{*}}\\;", "m_{t\\bar{t}}", h_mtt_tlF, h_mtt_tlB);
+
+        this->MakeDistribution1D(h_mtt_c1F, "TeV");
+        this->MakeDistribution1D(h_mtt_c1B, "TeV");
+        this->Asymmetry("Ac1", "A_{c_{1}}", "m_{t\\bar{t}}", h_mtt_c1F, h_mtt_c1B);
+
+        this->MakeDistribution1D(h_mtt_c2F, "TeV");
+        this->MakeDistribution1D(h_mtt_c2B, "TeV");
+        this->Asymmetry("Ac2", "A_{c_{2}}", "m_{t\\bar{t}}", h_mtt_c2F, h_mtt_c2B);
+
+        this->MakeDistribution1D(h_mtt_c1c2F, "TeV");
+        this->MakeDistribution1D(h_mtt_c1c2B, "TeV");
+        this->Asymmetry("Ac1c2", "A_{c_{1}c_{2}}", "m_{t\\bar{t}}", h_mtt_c1c2F, h_mtt_c1c2B);
+
+        this->MakeDistribution1D(h_mtt_cPhiF, "TeV");
+        this->MakeDistribution1D(h_mtt_cPhiB, "TeV");
+        this->Asymmetry("AcPhi", "A_{\\cos\\varphi}", "m_{t\\bar{t}}", h_mtt_cPhiF, h_mtt_cPhiB);
+
+        this->MakeDistribution1D(h_mtt_DphiF, "TeV");
+        this->MakeDistribution1D(h_mtt_DphiB, "TeV");
+        this->Asymmetry("ADPhi", "A_{\\Delta\\phi}", "m_{t\\bar{t}}", h_mtt_DphiF, h_mtt_DphiB);
+
+        // 2D distributions
+        this->MakeDistribution2D(h2_mtt_deltaPhi, "m_{t\\bar{t}}\\ ", "GeV", "\\Delta\\phi_{\\ell^{+}\\ell^{-}}", "");
+        this->MakeDistribution2D(h2_mtt_cosThetaStar, "m_{t\\bar{t}}\\ ", "GeV", "\\cos\\theta^{*}", "");
+        this->MakeDistribution2D(h2_mtt_cosTheta1, "m_{t\\bar{t}}\\ ", "GeV", "\\cos\\theta_{\\ell^{+}}", "");
+        this->MakeDistribution2D(h2_mtt_cosTheta2, "m_{t\\bar{t}}\\ ", "GeV", "\\cos\\theta_{\\ell^{-}}", "");
+        this->MakeDistribution2D(h2_mtt_cos1cos2, "m_{t\\bar{t}}\\ ", "GeV", "\\cos\\theta_{\\ell^{+}}\\cos\\theta_{\\ell^{-}}", "");
+    }
 }
 
 
@@ -1259,6 +1204,35 @@ void Analysis::NormalizeSliceY(TH2D* h) {
     }
 }
 
+void Analysis::GetElectrons() {
+    m_electron = new vector<Electron*>;
+    for (int i = 0; i < b_Electron->GetEntries(); i++) {
+        bool passed = false;
+        Electron* electron = (Electron*) b_Electron->At(i);
+        if (electron->PT > 25.0 and electron->Eta < 2.47) passed = true;
+        if (passed) m_electron->push_back(electron);
+    }
+}
+
+void Analysis::GetMuons() {
+    m_muon = new vector<Muon*>;
+    for (int i = 0; i < b_Muon->GetEntries(); i++) {
+        bool passed = false;
+        Muon* muon = (Muon*) b_Muon->At(i);
+        if (muon->PT > 25.0 and muon->Eta < 2.5) passed = true;
+        if (passed) m_muon->push_back(muon);
+    }
+}
+
+void Analysis::GetJets() {
+    m_jet = new vector<Jet*>;
+    for (int i = 0; i < b_Jet->GetEntries(); i++) {
+        bool passed = false;
+        Jet *jet = (Jet*) b_Jet->At(i);
+        if (jet->PT > 25.0 and jet->Eta < 2.5) passed = true;
+        if (passed) m_jet->push_back(jet);
+    }
+}
 
 bool Analysis::ExactlyTwoLeptons() {
     bool twoLeptons;
@@ -1312,6 +1286,64 @@ bool Analysis::OppositeCharge() {
     return oppositeCharge;
 }
 
+pair<TLorentzVector, TLorentzVector> Analysis::GetLeptonMomenta() {
+
+    pair<TLorentzVector, TLorentzVector> p_l;
+
+    if (m_channel == "ee") {
+        Electron *electron1 = m_electron->at(0);
+        Electron *electron2 = m_electron->at(1);
+
+        double charge = electron1->Charge;
+
+        if (charge > 0) {
+            p_l.first.SetPtEtaPhiM(electron1->PT, electron1->Eta, electron1->Phi, 0.0);
+            p_l.second.SetPtEtaPhiM(electron2->PT, electron2->Eta, electron2->Phi, 0.0);
+        }
+        else {
+            p_l.second.SetPtEtaPhiM(electron1->PT, electron1->Eta, electron1->Phi, 0.0);
+            p_l.first.SetPtEtaPhiM(electron2->PT, electron2->Eta, electron2->Phi, 0.0);
+        }
+    }
+    else if (m_channel == "mumu") {
+        Muon *muon1 = (Muon*) m_muon->at(0);
+        Muon *muon2 = (Muon*) m_muon->at(1);
+
+        double charge = muon1->Charge;
+
+        if (charge > 0) {
+            p_l.first.SetPtEtaPhiM(muon1->PT, muon1->Eta, muon1->Phi, 0.0);
+            p_l.second.SetPtEtaPhiM(muon2->PT, muon2->Eta, muon2->Phi, 0.0);
+        }
+        else {
+            p_l.second.SetPtEtaPhiM(muon1->PT, muon1->Eta, muon1->Phi, 0.0);
+            p_l.first.SetPtEtaPhiM(muon2->PT, muon2->Eta, muon2->Phi, 0.0);
+        }
+    }
+    else if (m_channel == "emu") {
+        Electron *electron = (Electron*) m_electron->at(0);
+        Muon *muon = (Muon*) m_muon->at(0);
+
+        double charge = electron->Charge;
+
+        if (charge > 0) {
+            p_l.first.SetPtEtaPhiM(electron->PT, electron->Eta, electron->Phi, 0.0);
+            p_l.second.SetPtEtaPhiM(muon->PT, muon->Eta, muon->Phi, 0.0);
+        }
+        else {
+            p_l.second.SetPtEtaPhiM(electron->PT, electron->Eta, electron->Phi, 0.0);
+            p_l.first.SetPtEtaPhiM(muon->PT, muon->Eta, muon->Phi, 0.0);
+        }
+    }
+    else {
+        cout << "Error: invalid channel\n";
+    }
+
+    if (m_debug) p_l.first.Print();
+    if (m_debug) p_l.second.Print();
+
+    return p_l;
+}
 
 bool Analysis::SufficientMll(const pair<TLorentzVector, TLorentzVector>& p_l) {
     // suppress hadronic background, e.g. $J/Psi$
@@ -1354,15 +1386,16 @@ bool Analysis::SufficientBtags() {
 }
 
 
-bool Analysis::SufficientMET() {
+bool Analysis::SufficientMET(double ETmiss) {
     // account for the neutrinos
     // further reduce DY background (no cut for e-mu)
-    bool sufficientMET;
-    MissingET* missingET = (MissingET*) b_MissingET->At(0);
-    double ETmiss = missingET->MET;
-    if (ETmiss > 60) sufficientMET = true;
-    else sufficientMET = false;
+    bool sufficientMET = false;
     if (m_channel == "emu") sufficientMET = true;
+    else if (m_channel == "ee" or m_channel == "mumu") {
+        if (ETmiss > 60.0) sufficientMET = true;
+        else sufficientMET = false;
+    }
+    else cout << "ERROR: invalid channel\n";
     this->UpdateCutflow(c_sufficientMET, sufficientMET);
     return sufficientMET;
 }
@@ -1370,12 +1403,17 @@ bool Analysis::SufficientMET() {
 
 bool Analysis::SufficientHT() {
     // suppress Z/gamma* ( \tau^+ \tau^-) + jets$
-    bool sufficientHT;
-    ScalarHT *scalarHT = (ScalarHT*) b_ScalarHT->At(0);
-    double HT = scalarHT->HT;
-    if (HT > 130) sufficientHT = true;
-    else sufficientHT = false;
-    if (m_channel == "ee" or m_channel == "mumu") sufficientHT = true;
+    bool sufficientHT = false;
+    if (m_channel == "ee" or m_channel == "mumu") {
+        sufficientHT = true;
+    }
+    else if (m_channel == "emu") {
+        ScalarHT *scalarHT = (ScalarHT*) b_ScalarHT->At(0);
+        double HT = scalarHT->HT;
+        if (HT > 130.0) sufficientHT = true;
+        else sufficientHT = false;
+    }
+    else cout << "ERROR: invalid channel\n";
     this->UpdateCutflow(c_sufficientHT, sufficientHT);
     return sufficientHT;
 }
@@ -1547,7 +1585,7 @@ void Analysis::InitialiseCutflow() {
     m_cutNames[c_sufficientBtags]    = "Sufficient b-tags     ";
     m_cutNames[c_sufficientHT]       = "Sufficient HT         ";
     m_cutNames[c_realSolutions]      = "Has real roots        ";
-    m_cutNames[c_deltaR]             = "deltaR                ";
+    // m_cutNames[c_deltaR]             = "deltaR                ";
 
     m_cutTitles = vector<string>(
     m_cuts,                            "no name");
@@ -1561,7 +1599,7 @@ void Analysis::InitialiseCutflow() {
     m_cutTitles[c_sufficientBtags]    = "\\mathrm{Sufficient}\\; b\\mathrm{-tags}";
     m_cutTitles[c_sufficientHT]       = "\\mathrm{Sufficient}\\; H_{\\mathrm{T}}";
     m_cutTitles[c_realSolutions]      = "Has real roots";
-    m_cutTitles[c_deltaR]             = "\\Delta R";
+    // m_cutTitles[c_deltaR]             = "\\Delta R";
 
     h_cutflow = new TH1D("cutflow", "cutflow", m_cuts, 0.0, m_cuts);
 }

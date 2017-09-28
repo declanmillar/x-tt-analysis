@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
     ("luminosity,L",     po::value<double>()->default_value(-1))
     ("minimumBtags,b",   po::value<int>()->default_value(2))
     ("options,o",        po::value<string>()->default_value(""))
-    ("reconstruction,r", po::value<string>()->default_value("NuW"))
+    ("reconstruction,r", po::value<string>()->default_value("TRN"))
     ("tag,t",            po::value<string>()->default_value(""))
     ("slice,s",          po::value<bool>()->default_value(false)->implicit_value(true))
     ;
@@ -62,6 +62,11 @@ int main(int argc, char* argv[]) {
     }
 
     auto process = initial_state + intermediates + final_state;
+
+    if (reconstruction != "TRN" and reconstruction != "KIN" and reconstruction != "NuW") {
+        cout << "ERROR: invalid reconstruction \"" << reconstruction << "\"\n";
+        return 0;
+    }
 
     cout << "Settings\n";
     cout << "Energy:         " << energy << " [TeV]\n";

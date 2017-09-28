@@ -46,7 +46,11 @@ protected:
     void EachEvent(double);
     void EveryEvent(double);
     void CleanupEvent();
+    void GetElectrons();
+    void GetMuons();
+    void GetJets();
     void AssignChannel();
+    pair<TLorentzVector, TLorentzVector> GetLeptonMomenta();
 
     // histograms
     void MakeHistograms();
@@ -68,6 +72,7 @@ protected:
     void PrintCutflow();
     void UpdateCutflow(int, bool);
 
+
     // event selection
     bool PassesEventSelection();
     bool ExactlyTwoLeptons();
@@ -75,7 +80,7 @@ protected:
     bool SufficientJets();
     bool SufficientBtags();
     bool SufficientHT();
-    bool SufficientMET();
+    bool SufficientMET(double);
     bool SufficientMll(const pair<TLorentzVector, TLorentzVector>&);
     bool OutsideZmassWindow(const pair<TLorentzVector, TLorentzVector>&);
 
@@ -113,7 +118,7 @@ private:
     string m_pdf = "CT14LL";
     bool m_use_mass_slices = false;
 
-    bool m_xsec = false;
+    bool m_xsec = true;
     const string m_reconstruction;
     bool m_useLumi;
     const bool m_debug;
@@ -134,16 +139,16 @@ private:
     vector<string> m_cutTitles;
     enum m_cutlist{
         c_events,
-        c_sufficientMET,
-        c_sufficientHT,
         c_twoLeptons,
         c_oppositeCharge,
         c_sufficientMll,
         c_outsideZmassWindow,
+        c_sufficientMET,
+        c_sufficientHT,
         c_sufficientJets,
         c_sufficientBtags,
         c_realSolutions,
-        c_deltaR,
+        // c_deltaR,
         m_cuts // Keep as last entry
     };
 
