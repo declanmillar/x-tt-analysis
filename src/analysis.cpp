@@ -594,6 +594,9 @@ void Analysis::SetupOutputFiles() {
     m_outputName = m_dataDirectory + m_process + "_" + m_model + "_" + E + "_" + m_pdf + m_options;
     m_outputName += "_pythia_delphes";
     if (m_use_mass_slices) m_outputName += "_sliced";
+    if (m_minimumBtags != 2) {
+        m_outputName += "_b" + to_string(m_minimumBtags);
+    }
     m_outputName += "_" + m_reconstruction + m_tag;
     if (m_luminosity > 0) m_outputName += L;
     m_outputName += ".root";
