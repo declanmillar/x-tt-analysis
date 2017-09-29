@@ -663,19 +663,19 @@ void Analysis::MakeHistograms() {
     h_pTtbar = new TH1D("pT_tbar", "p_{\\mathrm{T}}^{\\bar{t}}", 200, 0.0, 2000.0);
     h_pTtbar->Sumw2();
 
-    h_eta_l1 = new TH1D("eta_l1", "\\eta_{\\ell^{+}}", 60, -5.0, 5.0);
+    h_eta_l1 = new TH1D("eta_l1", "\\eta_{\\ell^{+}}", 200, -5.0, 5.0);
     h_eta_l1->Sumw2();
-    h_eta_l2 = new TH1D("eta_l2", "\\eta_{\\ell^{-}}", 60, -5.0, 5.0);
+    h_eta_l2 = new TH1D("eta_l2", "\\eta_{\\ell^{-}}", 200, -5.0, 5.0);
     h_eta_l2->Sumw2();
-    h_eta_jets = new TH1D("eta_jet", "\\eta_{jet}", 60, -5.0, 5.0);
+    h_eta_jets = new TH1D("eta_jet", "\\eta_{jet}", 200, -5.0, 5.0);
     h_eta_jets->Sumw2();
-    h_eta_bjets = new TH1D("eta_bjet", "\\eta_{b-jet}", 60, -5.0, 5.0);
+    h_eta_bjets = new TH1D("eta_bjet", "\\eta_{b-jet}", 200, -5.0, 5.0);
     h_eta_bjets->Sumw2();
-    h_eta_qjets = new TH1D("eta_qjet", "\\eta_{q-jet}", 60, -5.0, 5.0);
+    h_eta_qjets = new TH1D("eta_qjet", "\\eta_{q-jet}", 200, -5.0, 5.0);
     h_eta_qjets->Sumw2();
-    h_etat = new TH1D("eta_t", "\\eta_{t}", nbins, -5.0, 5.0);
+    h_etat = new TH1D("eta_t", "\\eta_{t}", 200, -5.0, 5.0);
     h_etat->Sumw2();
-    h_etatbar = new TH1D("eta_tbar", "\\eta_{\\bar{t}}", nbins, -5.0, 5.0);
+    h_etatbar = new TH1D("eta_tbar", "\\eta_{\\bar{t}}", 200, -5.0, 5.0);
     h_etatbar->Sumw2();
 
     h_mtt = new TH1D("m_tt", "m_{t\\bar{t}}", nbins, Emin, Emax);
@@ -858,11 +858,11 @@ void Analysis::MakeHistograms() {
     h_pt_allel->Sumw2();
     h_pt_allmu = new TH1D("pT_allmu", "p_{\\mathrm{T}}^{\\mu}", 1000, 0.0, 5000.0);
     h_pt_allmu->Sumw2();
-    h_eta_alljets = new TH1D("eta_alljets", "\\eta^{jet}", 1000, -5.0, 5.0);
+    h_eta_alljets = new TH1D("eta_alljets", "\\eta^{jet}", 200, -5.0, 5.0);
     h_eta_alljets->Sumw2();
-    h_eta_allel = new TH1D("eta_allel", "\\eta^{e}", 600, -3.0, 3.0);
+    h_eta_allel = new TH1D("eta_allel", "\\eta^{e}", 200, -5.0, 5.0);
     h_eta_allel->Sumw2();
-    h_eta_allmu = new TH1D("eta_allmu", "\\eta^{\\mu}", 600, -3.0, 3.0);
+    h_eta_allmu = new TH1D("eta_allmu", "\\eta^{\\mu}", 200, -5.0, 5.0);
     h_eta_allmu->Sumw2();
 
     h_cosPhi = new TH1D("cosPhi", "\\cos\\varphi", 10, -1.0, 1.0);
@@ -1215,7 +1215,7 @@ void Analysis::GetElectrons() {
     for (int i = 0; i < b_Electron->GetEntries(); i++) {
         bool passed = false;
         Electron* electron = (Electron*) b_Electron->At(i);
-        if (electron->PT > 25.0 and electron->Eta < 2.47) passed = true;
+        if (electron->PT > 25.0 and abs(electron->Eta) < 2.47) passed = true;
         if (passed) m_electron->push_back(electron);
     }
 }
@@ -1225,7 +1225,7 @@ void Analysis::GetMuons() {
     for (int i = 0; i < b_Muon->GetEntries(); i++) {
         bool passed = false;
         Muon* muon = (Muon*) b_Muon->At(i);
-        if (muon->PT > 25.0 and muon->Eta < 2.5) passed = true;
+        if (muon->PT > 25.0 and abs(muon->Eta) < 2.5) passed = true;
         if (passed) m_muon->push_back(muon);
     }
 }
@@ -1235,7 +1235,7 @@ void Analysis::GetJets() {
     for (int i = 0; i < b_Jet->GetEntries(); i++) {
         bool passed = false;
         Jet *jet = (Jet*) b_Jet->At(i);
-        if (jet->PT > 25.0 and jet->Eta < 2.5) passed = true;
+        if (jet->PT > 25.0 and abs(jet->Eta) < 2.5) passed = true;
         if (passed) m_jet->push_back(jet);
     }
 }
