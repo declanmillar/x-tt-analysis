@@ -14,25 +14,47 @@
 #include <exception>
 #include <regex>
 
-Analysis::Analysis(const string& model, const string& process, const string& options, const int energy, const int luminosity, const int minimumBtags, const string& reconstruction, const string& tag, bool slice):
-    m_model(model),
-    m_process(process),
-    m_options(options),
-    m_energy(energy),
-    m_luminosity(luminosity),
-    m_minimumBtags(minimumBtags),
-    m_reconstruction(reconstruction),
-    m_tag(tag),
-    m_use_mass_slices(slice),
-    m_debug(false),
-    m_output(nullptr),
-    m_input(nullptr),
-    m_processes(nullptr),
-    m_chain(nullptr),
-    m_tree(nullptr)
-{
-    this->PreLoop();
-}
+// Analysis::Analysis(const string& model, const string& process, const string& options, const int energy, const int luminosity, const int minimumBtags, const string& reconstruction, const string& tag, bool slice):
+//     m_inputfile(""),
+//     m_model(model),
+//     m_process(process),
+//     m_options(options),
+//     m_energy(energy),
+//     m_luminosity(luminosity),
+//     m_minimumBtags(minimumBtags),
+//     m_reconstruction(reconstruction),
+//     m_tag(tag),
+//     m_use_mass_slices(slice),
+//     m_debug(false),
+//     m_output(nullptr),
+//     m_input(nullptr),
+//     m_processes(nullptr),
+//     m_chain(nullptr),
+//     m_tree(nullptr)
+// {
+//     this->PreLoop();
+// }
+//
+// Analysis::Analysis(const string& inputfilename, const int energy, const int luminosity, const int minimumBtags, const string& reconstruction, const string& tag, bool slice):
+//     m_inputfile(inputfilename),
+//     m_model(""),
+//     m_process(""),
+//     m_options(""),
+//     m_energy(""),
+//     m_luminosity(luminosity),
+//     m_minimumBtags(minimumBtags),
+//     m_reconstruction(reconstruction),
+//     m_tag(tag),
+//     m_use_mass_slices(slice),
+//     m_debug(false),
+//     m_output(nullptr),
+//     m_input(nullptr),
+//     m_processes(nullptr),
+//     m_chain(nullptr),
+//     m_tree(nullptr)
+// {
+//     this->PreLoop();
+// }
 
 
 void Analysis::Run() {
@@ -452,6 +474,14 @@ void Analysis::EveryEvent(double weight) {
     if (m_debug) cout << "Finished EveryEvent ...\n";
 }
 
+void Analysis::SetupInputFile() {
+    m_input = new vector< tuple<string, int> >;
+    m_processes = new vector< tuple<string, int, int, double, double, double> >;
+    tuple<string, int> input = make_tuple(m_dataDirectory + m_inputfilename, 0);
+    m_input->push_back(input);
+    tuple< string, int, int, double, double, double > process = make_tuple(m_processfilename, 0, 1, -999, -999, -999);
+    m_processes->push_back(process);
+}
 
 void Analysis::SetupInputFiles() {
     m_input = new vector< tuple<string, int> >;
@@ -586,6 +616,10 @@ void Analysis::SetupInputFiles() {
     }
 }
 
+void Analysis::SetupOutputFile() {
+    m_outputName = m_dataDirectory + m_inputfilename.substr(0,m_inputfilename.size() - 5);
+    m_output = new TFile(m_outputName.c_str(), "RECREATE");
+}
 
 void Analysis::SetupOutputFiles() {
     string E = to_string(m_energy) + "TeV";
@@ -1438,6 +1472,15 @@ void Analysis::PreLoop() {
     this->SetDataDirectory();
     this->SetupInputFiles();
     this->SetupOutputFiles();
+    this->InitialiseCutflow();
+    this->MakeHistograms();
+    cout << "\n";
+}
+
+void Analysis::PreLoopSingle() {
+    this->SetDataDirectory();
+    this->SetupInputFile();
+    this->SetupOutputFile();
     this->InitialiseCutflow();
     this->MakeHistograms();
     cout << "\n";

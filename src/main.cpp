@@ -24,6 +24,8 @@ int main(int argc, char* argv[]) {
     ("reconstruction,r", po::value<string>()->default_value("TRN"))
     ("tag,t",            po::value<string>()->default_value(""))
     ("slice,s",          po::value<bool>()->default_value(false)->implicit_value(true))
+    ("inputfilename,i",  po::value<string>()->default_value(""))
+    ("processfilename,p",po::value<string>()->default_value(""))
     ;
     po::variables_map opt;
     po::store(po::parse_command_line(argc, argv, desc), opt);
@@ -39,6 +41,8 @@ int main(int argc, char* argv[]) {
     if (dd) initial_state += "dd";
     if (uu) initial_state += "uu";
     auto final_state = opt["final_state"].as<string>();
+    auto inputfilename = opt["inputfilename"].as<string>();
+    auto processfilename = opt["processfilename"].as<string>();
     auto options = opt["options"].as<string>();
     auto energy = opt["energy"].as<int>();
     auto luminosity = opt["luminosity"].as<double>();
@@ -75,6 +79,13 @@ int main(int argc, char* argv[]) {
     if (options != -1) cout << "Luminosity:     " << luminosity << " [fb-1]\n";
     cout << "Reconstruction: " << reconstruction << "\n";
 
-    auto analysis = new Analysis(model, process, options, energy, luminosity, minimumBtags, reconstruction, tag, slice);
-    analysis->Run();
+    if (inputfilename != "") {
+        auto analysis = new Analysis(model, process, options, energy, luminosity, minimumBtags, reconstruction, tag, slice);
+        analysis->Run();
+    }
+    else {
+        auto analysis = new Analysis(inputfilename, process, options, energy, luminosity, minimumBtags, reconstruction, tag, slice);
+        analysis->Run();
+    }
+
 }

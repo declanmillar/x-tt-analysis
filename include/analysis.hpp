@@ -28,73 +28,6 @@
 using namespace std;
 
 class Analysis {
-public:
-    Analysis(const string& model, const string& process, const string& options, const int energy, const int luminosity, const int minimumBtags, const string& reconstruction, const string& tag, const bool);
-    virtual ~Analysis();
-    void Run();
-
-protected:
-    void SetupTreesForNewFile(const string&);
-    void CleanUp();
-    void SetupInputFiles();
-    void SetupOutputFiles();
-
-    void PreLoop();
-    void Loop();
-    void PostLoop();
-
-    void EachEvent(double);
-    void EveryEvent(double);
-    void CleanupEvent();
-    void GetElectrons();
-    void GetMuons();
-    void GetJets();
-    void AssignChannel();
-    pair<TLorentzVector, TLorentzVector> GetLeptonMomenta();
-
-    // histograms
-    void MakeHistograms();
-    void MakeDistributions();
-    void MakeDistribution1D(TH1D*, const string&);
-    void MakeDistribution2D(TH2D*, string, string, string, string);
-    void MakeDistributionAL(TH2D*, const string&, const string&);
-    void NormalizeSliceY(TH2D*);
-
-    void GetGenerationCrossSection(int);
-    void GetProcessWeight(int);
-    void SetDataDirectory();
-    void AsymmetryUncertainty(TH1D*, TH1D*, TH1D*);
-    void GetBranches();
-    void EachFile(const string&);
-
-    // cutflow
-    void InitialiseCutflow();
-    void PrintCutflow();
-    void UpdateCutflow(int, bool);
-
-
-    // event selection
-    bool PassesEventSelection();
-    bool ExactlyTwoLeptons();
-    bool OppositeCharge();
-    bool SufficientJets();
-    bool SufficientBtags();
-    bool SufficientHT();
-    bool SufficientMET(double);
-    bool SufficientMll(const pair<TLorentzVector, TLorentzVector>&);
-    bool OutsideZmassWindow(const pair<TLorentzVector, TLorentzVector>&);
-
-    Long64_t TotalEvents();
-    Long64_t IncrementEvent(Long64_t i);
-    double TotalAsymmetry(TH1D* h_A, TH1D* h_B);
-    void Asymmetry(const string&, const string&, const string&, TH1D*, TH1D*);
-
-    // tuple
-    TClonesArray* b_Jet;
-    TClonesArray* b_Electron;
-    TClonesArray* b_Muon;
-    TClonesArray* b_MissingET;
-    TClonesArray* b_ScalarHT;
 
 private:
     Analysis();
@@ -109,6 +42,8 @@ private:
     vector<Muon*>* m_muon;
     vector<Jet*>* m_jet;
 
+    string m_inputfilename;
+    string m_processfilename;
     string m_model;
     string m_process;
     string m_options;
@@ -117,6 +52,7 @@ private:
     string m_tag;
     string m_pdf = "CT14LL";
     bool m_use_mass_slices = false;
+    bool m_parallel;
 
     bool m_xsec = true;
     const string m_reconstruction;
@@ -294,5 +230,121 @@ private:
     TH2D* h2_mvis_deltaPhi;
     TH2D* h2_HT_deltaPhi;
     TH2D* h2_KT_deltaPhi;
+
+protected:
+    void SetupTreesForNewFile(const string&);
+    void CleanUp();
+    void SetupInputFiles();
+    void SetupOutputFiles();
+
+    void SetupInputFile();
+    void SetupOutputFile();
+
+    void PreLoop();
+    void PreLoopSingle();
+    void Loop();
+    void PostLoop();
+
+    void EachEvent(double);
+    void EveryEvent(double);
+    void CleanupEvent();
+    void GetElectrons();
+    void GetMuons();
+    void GetJets();
+    void AssignChannel();
+    pair<TLorentzVector, TLorentzVector> GetLeptonMomenta();
+
+    // histograms
+    void MakeHistograms();
+    void MakeDistributions();
+    void MakeDistribution1D(TH1D*, const string&);
+    void MakeDistribution2D(TH2D*, string, string, string, string);
+    void MakeDistributionAL(TH2D*, const string&, const string&);
+    void NormalizeSliceY(TH2D*);
+
+    void GetGenerationCrossSection(int);
+    void GetProcessWeight(int);
+    void SetDataDirectory();
+    void AsymmetryUncertainty(TH1D*, TH1D*, TH1D*);
+    void GetBranches();
+    void EachFile(const string&);
+
+    // cutflow
+    void InitialiseCutflow();
+    void PrintCutflow();
+    void UpdateCutflow(int, bool);
+
+
+    // event selection
+    bool PassesEventSelection();
+    bool ExactlyTwoLeptons();
+    bool OppositeCharge();
+    bool SufficientJets();
+    bool SufficientBtags();
+    bool SufficientHT();
+    bool SufficientMET(double);
+    bool SufficientMll(const pair<TLorentzVector, TLorentzVector>&);
+    bool OutsideZmassWindow(const pair<TLorentzVector, TLorentzVector>&);
+
+    Long64_t TotalEvents();
+    Long64_t IncrementEvent(Long64_t i);
+    double TotalAsymmetry(TH1D* h_A, TH1D* h_B);
+    void Asymmetry(const string&, const string&, const string&, TH1D*, TH1D*);
+
+    // tuple
+    TClonesArray* b_Jet;
+    TClonesArray* b_Electron;
+    TClonesArray* b_Muon;
+    TClonesArray* b_MissingET;
+    TClonesArray* b_ScalarHT;
+
+public:
+    Analysis(const string& model, const string& process, const string& options, const int energy, const int luminosity, const int minimumBtags, const string& reconstruction, const string& tag, const bool slice):
+        m_inputfilename(""),
+        m_processfilename(""),
+        m_model(model),
+        m_process(process),
+        m_options(options),
+        m_energy(energy),
+        m_luminosity(luminosity),
+        m_minimumBtags(minimumBtags),
+        m_reconstruction(reconstruction),
+        m_tag(tag),
+        m_use_mass_slices(slice),
+        m_debug(false),
+        m_output(nullptr),
+        m_input(nullptr),
+        m_processes(nullptr),
+        m_chain(nullptr),
+        m_tree(nullptr),
+        m_parallel(false)
+    {
+        this->PreLoop();
+    }
+
+    Analysis(const string& inputfilename, const string& processfilename, const int luminosity, const int minimumBtags, const string& reconstruction, const string& tag, const bool slice):
+        m_inputfilename(inputfilename),
+        m_processfilename(inputfilename),
+        m_model(""),
+        m_process(""),
+        m_options(""),
+        m_energy(0),
+        m_luminosity(luminosity),
+        m_minimumBtags(minimumBtags),
+        m_reconstruction(reconstruction),
+        m_tag(tag),
+        m_use_mass_slices(slice),
+        m_debug(false),
+        m_output(nullptr),
+        m_input(nullptr),
+        m_processes(nullptr),
+        m_chain(nullptr),
+        m_tree(nullptr),
+        m_parallel(true)
+    {
+        this->PreLoopSingle();
+    }
+    virtual ~Analysis();
+    void Run();
 };
 #endif
