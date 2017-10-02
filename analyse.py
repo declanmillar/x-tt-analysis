@@ -18,8 +18,6 @@ parser.add_argument("-q", "--qq",             default = False, action = "store_t
 parser.add_argument("-u", "--uu",             default = False, action = "store_true")
 parser.add_argument("-d", "--dd",             default = False, action = "store_true")
 parser.add_argument("-f", "--final_state",    default = "tt-bbeevv")
-parser.add_argument("-G", "--add_gg",         default = False, action = "store_true")
-parser.add_argument("-Q", "--add_qq",         default = False, action = "store_true")
 parser.add_argument("-E", "--energy",         default = 13)
 parser.add_argument("-L", "--luminosity",     default = -1)
 parser.add_argument("-b", "--minimumBtags",   default = 2)
