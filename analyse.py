@@ -8,7 +8,7 @@ executable = "analysis"
 # queue = "1nw"
 
 parser = argparse.ArgumentParser(description="generate ttbar events")
-parser.add_argument("-a", "--arguments", help = "argument list to be passed to C++ program", default = "")
+parser.add_argument("-a", "--arguments", help = "argument list to be passed to C++ program", default = "", action = "store")
 parser.add_argument("-w", "--walltime", help = "cut off time for job completion", default = "60:00:00")
 parser.add_argument("-Q", "--queue", help = "queue to join", default = "1nw")
 parser.add_argument("-P", "--parallel", help = "submit each input file as an individual job", default = True,  action = "store_false")
@@ -80,4 +80,4 @@ except IOERROR:
 subprocess.call("chmod a+x %s" % handler_name, shell = True)
 print "Submitting batch job."
 if "lxplus" in hostname: subprocess.call('bsub -q %s %s/%s' % (queue, run_directory, handler_name), shell = True)
-elif "cyan03" in hostname: subprocess.call('qsub -l walltime=%s %s/%s' % (walltime, run_directory, handler_name), shell = True)
+elif "cyan03" in hostname: subprocess.call('qsub -l walltime=%s %s/%s' % (args.walltime, run_directory, handler_name), shell = True)
