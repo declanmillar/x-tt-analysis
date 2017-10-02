@@ -479,8 +479,11 @@ void Analysis::SetupInputFile() {
     m_processes = new vector< tuple<string, int, int, double, double, double> >;
     tuple<string, int> input = make_tuple(m_dataDirectory + m_inputfilename, 0);
     m_input->push_back(input);
-    tuple< string, int, int, double, double, double > process = make_tuple(m_processfilename, 0, 1, -999, -999, -999);
+    if (m_input->size() != 1) cout << "no input file found\n";
+    tuple< string, int, int, double, double, double > process = make_tuple(m_dataDirectory + m_processfilename, 0, 1, -999, -999, -999);
     m_processes->push_back(process);
+
+    if (m_debug) cout << "Finished SetupInputFile ...\n";
 }
 
 void Analysis::SetupInputFiles() {
@@ -617,7 +620,7 @@ void Analysis::SetupInputFiles() {
 }
 
 void Analysis::SetupOutputFile() {
-    m_outputName = m_dataDirectory + m_inputfilename.substr(0,m_inputfilename.size() - 5);
+    m_outputName = m_dataDirectory + m_inputfilename.substr(0,m_inputfilename.size() - 5) + "_" + m_reconstruction + ".root";
     m_output = new TFile(m_outputName.c_str(), "RECREATE");
 }
 
@@ -1520,11 +1523,11 @@ void Analysis::GetGenerationCrossSection(int proc_id) {
     if (m_debug) cout << "Getting generation cross section ...\n";
     string proc_filename = get<0>(m_processes->at(proc_id));
     if (m_debug) cout << "Process ID = " << proc_id << "\n";
-    if (m_debug) cout << "File = " << proc_filename << "\n";
+    if (m_debug) cout << "Process File = " << proc_filename << "\n";
 
     ifstream proc_file;
     proc_file.open(proc_filename);
-    if (!proc_file.is_open()) cout << "Error: Unable to open file.";
+    if (!proc_file.is_open()) cout << "Error: Unable to open file.\n";
     if (m_debug) cout << "m_processes size = " << m_processes->size() << "\n";
     get<3>(m_processes->at(proc_id)) = get_parameter(&proc_file);
     get<4>(m_processes->at(proc_id)) = get_parameter(&proc_file);
@@ -1547,7 +1550,6 @@ void Analysis::GetProcessWeight(int proc_id) {
 void Analysis::Loop() {
     cout << "PROGRESS\n";
     int nfiles = m_input->size();
-    // if (!m_debug) ProgressBar(0, nfiles, 50);
     for (itr_s it = m_input->begin(); it != m_input->end(); ++it) {
         int i = it - m_input->begin();
         if (i + 1 < 10) cout << "   ";
@@ -1569,12 +1571,7 @@ void Analysis::Loop() {
             // if (!m_debug) ProgressBar(jevent, m_nevents - 1, 50);
         }
         this->CleanUp();
-        // if (!m_debug) {
-        //     std::cout << "\e[A";
-        //     ProgressBar2(i + 1, nfiles, 50);
-        // }
     }
-    std::cout << "                                                                                 ";
 }
 
 

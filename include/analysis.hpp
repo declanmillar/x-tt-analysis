@@ -319,12 +319,13 @@ public:
         m_tree(nullptr),
         m_parallel(false)
     {
+        cout << "parallel: " << m_parallel << "\n";
         this->PreLoop();
     }
 
     Analysis(const string& inputfilename, const string& processfilename, const int luminosity, const int minimumBtags, const string& reconstruction, const string& tag, const bool slice):
         m_inputfilename(inputfilename),
-        m_processfilename(inputfilename),
+        m_processfilename(processfilename),
         m_model(""),
         m_process(""),
         m_options(""),
@@ -342,6 +343,7 @@ public:
         m_tree(nullptr),
         m_parallel(true)
     {
+        cout << "parallel: " << m_parallel << "\n";
         this->PreLoopSingle();
     }
     virtual ~Analysis();
