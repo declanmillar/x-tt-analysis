@@ -10,7 +10,7 @@ executable = "analysis"
 parser = argparse.ArgumentParser(description="generate ttbar events")
 parser.add_argument("-a", "--arguments", help = "argument list to be passed to C++ program", default = "")
 parser.add_argument("-w", "--walltime", help = "cut off time for job completion", default = "60:00:00")
-parser.add_argument("-q", "--queue", help = "queue to join", default = "1nw")
+parser.add_argument("-Q", "--queue", help = "queue to join", default = "1nw")
 parser.add_argument("-p", "--parallel", help = "submit each input file as an individual job", default = True,  action = "store_false")
 parser.add_argument("-m", "--model",          default = "SM")
 parser.add_argument("-g", "--gg",             default = False, action = "store_true")
