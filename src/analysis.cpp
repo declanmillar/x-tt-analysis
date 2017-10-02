@@ -1527,7 +1527,7 @@ void Analysis::GetGenerationCrossSection(int proc_id) {
 
     ifstream proc_file;
     proc_file.open(proc_filename);
-    if (!proc_file.is_open()) cout << "Error: Unable to open file.\n";
+    if (!proc_file.is_open()) cout << "Error: Unable to open " << proc_filename << "\n";
     if (m_debug) cout << "m_processes size = " << m_processes->size() << "\n";
     get<3>(m_processes->at(proc_id)) = get_parameter(&proc_file);
     get<4>(m_processes->at(proc_id)) = get_parameter(&proc_file);
