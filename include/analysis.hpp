@@ -54,7 +54,7 @@ private:
     bool m_use_mass_slices = false;
     bool m_parallel;
 
-    bool m_xsec = true;
+    bool m_xsec = false;
     const string m_reconstruction;
     bool m_useLumi;
     const bool m_debug;

@@ -1541,8 +1541,11 @@ void Analysis::GetProcessWeight(int proc_id) {
     if (m_debug) cout << "nproc = " << nproc << "\n";
     int nevents = m_nevents;
     if (nevents != 10000) cout << nevents << " events\n";
-    get<5>(m_processes->at(proc_id)) = 1.0 * get<3>(m_processes->at(proc_id)) / (nevents * nproc);
-    if (m_luminosity > 0) get<5>(m_processes->at(proc_id)) *= m_luminosity;
+    if (m_xsec) {
+        get<5>(m_processes->at(proc_id)) = 1.0 * get<3>(m_processes->at(proc_id)) / (nevents * nproc);
+        if (m_luminosity > 0) get<5>(m_processes->at(proc_id)) *= m_luminosity;
+    }
+    else get<5>(m_processes->at(proc_id)) = 1.0;
     if (m_debug) cout << "Event weight = "<< get<5>(m_processes->at(proc_id)) << "\n";
 }
 
