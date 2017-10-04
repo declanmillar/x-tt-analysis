@@ -75,6 +75,7 @@ int main(int argc, char* argv[]) {
     cout << "SETTINGS\n";
     cout << "Energy:           " << energy << " [TeV]\n";
     cout << "Process:          " << process << "\n";
+    cout << "minimum b-tags:   " << minimumBtags << "\n";
     if (options != "") cout << "Options:          " << options << "\n";
     if (options != -1) cout << "Luminosity:       " << luminosity << " [fb-1]\n";
     cout << "Reconstruction:   " << reconstruction << "\n";
