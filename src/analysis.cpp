@@ -576,7 +576,13 @@ void Analysis::SetupInputFiles() {
 }
 
 void Analysis::SetupOutputFile() {
-    m_outputName = m_dataDirectory + m_inputfilename.substr(0,m_inputfilename.size() - 5) + "_" + m_reconstruction + ".root";
+    string E = to_string(m_energy) + "TeV";
+    string L = to_string(m_luminosity) + "fb-1";
+
+    m_outputName = m_dataDirectory + m_inputfilename.substr(0,m_inputfilename.size() - 5) + "_" + m_reconstruction;
+    if (m_minimumBtags != 2) m_outputName += "_b" + to_string(m_minimumBtags);
+    if (m_luminosity > 0) m_outputName += L;
+    m_outputName + ".root";
     m_output = new TFile(m_outputName.c_str(), "RECREATE");
 }
 
@@ -587,10 +593,8 @@ void Analysis::SetupOutputFiles() {
     m_outputName = m_dataDirectory + m_process + "_" + m_model + "_" + E + "_" + m_pdf + m_options;
     m_outputName += "_pythia_delphes";
     if (m_use_mass_slices) m_outputName += "_sliced";
-    if (m_minimumBtags != 2) {
-        m_outputName += "_b" + to_string(m_minimumBtags);
-    }
     m_outputName += "_" + m_reconstruction + m_tag;
+    if (m_minimumBtags != 2) m_outputName += "_b" + to_string(m_minimumBtags);
     if (m_luminosity > 0) m_outputName += L;
     m_outputName += ".root";
     m_output = new TFile(m_outputName.c_str(), "RECREATE");
