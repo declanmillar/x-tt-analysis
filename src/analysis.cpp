@@ -14,59 +14,16 @@
 #include <exception>
 #include <regex>
 
-// Analysis::Analysis(const string& model, const string& process, const string& options, const int energy, const int luminosity, const int minimumBtags, const string& reconstruction, const string& tag, bool slice):
-//     m_inputfile(""),
-//     m_model(model),
-//     m_process(process),
-//     m_options(options),
-//     m_energy(energy),
-//     m_luminosity(luminosity),
-//     m_minimumBtags(minimumBtags),
-//     m_reconstruction(reconstruction),
-//     m_tag(tag),
-//     m_use_mass_slices(slice),
-//     m_debug(false),
-//     m_output(nullptr),
-//     m_input(nullptr),
-//     m_processes(nullptr),
-//     m_chain(nullptr),
-//     m_tree(nullptr)
-// {
-//     this->PreLoop();
-// }
-//
-// Analysis::Analysis(const string& inputfilename, const int energy, const int luminosity, const int minimumBtags, const string& reconstruction, const string& tag, bool slice):
-//     m_inputfile(inputfilename),
-//     m_model(""),
-//     m_process(""),
-//     m_options(""),
-//     m_energy(""),
-//     m_luminosity(luminosity),
-//     m_minimumBtags(minimumBtags),
-//     m_reconstruction(reconstruction),
-//     m_tag(tag),
-//     m_use_mass_slices(slice),
-//     m_debug(false),
-//     m_output(nullptr),
-//     m_input(nullptr),
-//     m_processes(nullptr),
-//     m_chain(nullptr),
-//     m_tree(nullptr)
-// {
-//     this->PreLoop();
-// }
-
-
 void Analysis::Run() {
     this->Loop();
     this->PostLoop();
 }
 
-
 void Analysis::EachEvent(double weight) {
     UpdateCutflow(c_events, true);
 
     if (m_debug) cout << "Starting EachEvent ...\n";
+    if (m_debug) cout << "event weight = " << weight << "\n";
 
     // leptons
     this->GetElectrons();
@@ -77,7 +34,6 @@ void Analysis::EachEvent(double weight) {
     pair<TLorentzVector, TLorentzVector> p_l = this->GetLeptonMomenta();
     if (!this->SufficientMll(p_l)) return;
     if (!this->OutsideZmassWindow(p_l)) return;
-
 
     MissingET* missingET = (MissingET*) b_MissingET->At(0);
     double ETmiss = missingET->MET;
