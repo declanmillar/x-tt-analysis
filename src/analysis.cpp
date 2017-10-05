@@ -582,7 +582,7 @@ void Analysis::SetupOutputFile() {
     m_outputName = m_dataDirectory + m_inputfilename.substr(0,m_inputfilename.size() - 5) + "_" + m_reconstruction;
     if (m_minimumBtags != 2) m_outputName += "_b" + to_string(m_minimumBtags);
     if (m_luminosity > 0) m_outputName += L;
-    m_outputName + ".root";
+    m_outputName += ".root";
     m_output = new TFile(m_outputName.c_str(), "RECREATE");
 }
 
