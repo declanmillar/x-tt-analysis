@@ -51,19 +51,19 @@ if "cyan" or "blue" in hostname:
     print >> handler, "echo 'running code ...'"
     print >> handler, "%s/%s %s > %s/%s" % (run_directory, executable, argstring, run_directory, logfile)
 else:
-    sys.exit("Error: Unrecognised hostname")
+    sys.exit("ERROR: Unrecognised hostname")
 
 # write handler
 try:
     with open('%s' % handler_name, 'w') as handler_file:
         handler_file.write(handler.getvalue())
-    print "Handler file written to %s." % handler_name
-    print "Log written to %s." % logfile
+    print "handler file: %s" % handler_name
+    print "log file:     %s" % logfile
 except IOERROR:
-    sys.exit("ERROR! Cannot write handler file.")
+    sys.exit("ERROR: Cannot write handler file.")
 
 # run command
 subprocess.call("chmod a+x %s" % handler_name, shell = True)
-print "Submitting batch job."
+print "submitting batch job ..."
 if "lxplus" in hostname: subprocess.call('bsub -q %s %s/%s' % (queue, run_directory, handler_name), shell = True)
 elif "cyan03" in hostname: subprocess.call('qsub -l walltime=%s %s/%s' % (walltime, run_directory, handler_name), shell = True)
