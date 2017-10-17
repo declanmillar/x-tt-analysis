@@ -38,9 +38,21 @@ private:
     vector<tuple<string, int>>* m_input;
     vector<tuple<string, int, int, double, double, double>>* m_processes;
 
-    vector<Electron*>* m_electron;
-    vector<Muon*>* m_muon;
-    vector<Jet*>* m_jet;
+    vector<Electron*>* m_electrons;
+    vector<GenParticle*>* m_truthElectrons;
+    vector<Muon*>* m_muons;
+    vector<GenParticle*>* m_truthMuons;
+    vector<Jet*>* m_jets;
+    vector<GenParticle*>* m_truthBquarks;
+
+    GenParticle* m_hardTop;
+    GenParticle* m_hardTbar;
+    GenParticle* m_hardB;
+    GenParticle* m_hardBbar;
+    GenParticle* m_hardLepP;
+    GenParticle* m_hardLepM;
+    GenParticle* m_hardNu;
+    GenParticle* m_hardNuBar;
 
     string m_inputfilename;
     string m_processfilename;
@@ -54,11 +66,12 @@ private:
     bool m_use_mass_slices = false;
     bool m_parallel;
 
-    bool m_xsec = false;
+    bool m_xSec = false;
     const string m_reconstruction;
     bool m_useLumi;
     const bool m_debug;
     string m_channel;
+    bool m_truth;
 
     double m_crossSection;
     Long64_t m_nevents;
@@ -91,8 +104,8 @@ private:
     const double m_pi = 3.14159265358979323846;
     const double m_bmass = 4.18, m_Wmass = 80.4, m_zmass = 91.19, m_tmass = 172.5;
 
-    const int m_minimumBtags;
-    int m_btags;
+    const int m_minBtags;
+    int m_bTags;
 
     // Histograms
     TH1D* h_cutflow;
@@ -151,6 +164,7 @@ private:
 
     // tt
     TH1D* h_mtt;
+    TH1D* h_mttTruth;
 
     // charge asymmetries
     TH1D* h_mtt_tF;
@@ -211,9 +225,19 @@ private:
     TH1D* h_delta_abs_yt;
     TH1D* h_delta_abs_etal;
 
+    TH1D* h_nTruthElectrons;
+    TH1D* h_nTruthMuons;
+    TH1D* h_nTruthBquarks;
+
+    TH1D* h_nPassElectrons;
+    TH1D* h_nPassMuons;
+    TH1D* h_nPassJets;
+    TH1D* h_nPassBjets;
+
     TH1D* h_nElectrons;
     TH1D* h_nMuons;
     TH1D* h_nJets;
+    TH1D* h_nBjets;
 
     TH2D* h2_mtt_cosThetaStar;
     TH2D* h2_mtt_delta_yt;
@@ -248,6 +272,8 @@ protected:
     void EachEvent(double);
     void EveryEvent(double);
     void CleanupEvent();
+    void GetHardParticles();
+    void GetTruthParticles();
     void GetElectrons();
     void GetMuons();
     void GetJets();
@@ -292,6 +318,7 @@ protected:
     void Asymmetry(const string&, const string&, const string&, TH1D*, TH1D*);
 
     // tuple
+    TClonesArray* b_Particle;
     TClonesArray* b_Jet;
     TClonesArray* b_Electron;
     TClonesArray* b_Muon;
@@ -299,7 +326,7 @@ protected:
     TClonesArray* b_ScalarHT;
 
 public:
-    Analysis(const string& model, const string& process, const string& options, const int energy, const int luminosity, const int minimumBtags, const string& reconstruction, const string& tag, const bool slice):
+    Analysis(const string& model, const string& process, const string& options, const int energy, const int luminosity, const int minBtags, const string& reconstruction, const string& tag, const bool slice):
         m_inputfilename(""),
         m_processfilename(""),
         m_model(model),
@@ -307,10 +334,11 @@ public:
         m_options(options),
         m_energy(energy),
         m_luminosity(luminosity),
-        m_minimumBtags(minimumBtags),
+        m_minBtags(minBtags),
         m_reconstruction(reconstruction),
         m_tag(tag),
         m_use_mass_slices(slice),
+        m_truth(true),
         m_debug(false),
         m_output(nullptr),
         m_input(nullptr),
@@ -323,7 +351,7 @@ public:
         this->PreLoop();
     }
 
-    Analysis(const string& inputfilename, const string& processfilename, const int luminosity, const int minimumBtags, const string& reconstruction, const string& tag, const bool slice):
+    Analysis(const string& inputfilename, const string& processfilename, const int luminosity, const int minBtags, const string& reconstruction, const string& tag, const bool slice):
         m_inputfilename(inputfilename),
         m_processfilename(processfilename),
         m_model(""),
@@ -331,11 +359,12 @@ public:
         m_options(""),
         m_energy(0),
         m_luminosity(luminosity),
-        m_minimumBtags(minimumBtags),
+        m_minBtags(minBtags),
         m_reconstruction(reconstruction),
         m_tag(tag),
         m_use_mass_slices(slice),
-        m_debug(true),
+        m_truth(true),
+        m_debug(false),
         m_output(nullptr),
         m_input(nullptr),
         m_processes(nullptr),

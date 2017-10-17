@@ -1,7 +1,7 @@
-p="qq-tt-bbllvv_SM_13TeV_CT14LL.txt"
+p="uu-AZX-tt-bbllvv_GLR-R-3_13TeV_CT14LL.txt"
 r="NuW"
 b="2"
-for f in $(ls -1 /scratch/dam1g09/zprime/qq-tt-bbmuevv_SM_13TeV_CT14LL_???.lhef.gz)
+for f in $(ls -1 /scratch/dam1g09/zprime/uu-AZX-tt-bbemuvv_GLR-R-3_13TeV_CT14LL_???.lhef.gz)
 do
     c=$(echo $f | cut -d '/' -f 5)
     k=$(echo $c | cut -d '.' -f 1)

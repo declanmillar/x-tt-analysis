@@ -14,16 +14,30 @@
 #include <exception>
 #include <regex>
 
-void Analysis::Run() {
+void Analysis::Run()
+{
     this->Loop();
     this->PostLoop();
 }
 
-void Analysis::EachEvent(double weight) {
+void Analysis::EachEvent(double weight)
+{
     UpdateCutflow(c_events, true);
 
     if (m_debug) cout << "Starting EachEvent ...\n";
     if (m_debug) cout << "event weight = " << weight << "\n";
+
+    // hard process particles
+    this->GetHardParticles();
+    double mttTruth = (m_hardTop->P4() + m_hardTbar->P4()).M() / 1000;
+    h_mttTruth->Fill(mttTruth, weight);
+
+    // truth
+    this->GetTruthParticles();
+
+    h_nTruthElectrons->Fill(m_truthElectrons->size(), weight);
+    h_nTruthMuons->Fill(m_truthMuons->size(), weight);
+    h_nTruthBquarks->Fill(m_truthBquarks->size(), weight);
 
     // leptons
     this->GetElectrons();
@@ -49,20 +63,28 @@ void Analysis::EachEvent(double weight) {
     if (!this->SufficientJets()) return;
     if (!this->SufficientBtags()) return;
 
+    h_nPassElectrons->Fill(m_electrons->size(), weight);
+    h_nPassMuons->Fill(m_muons->size(), weight);
+    h_nPassJets->Fill(m_jets->size(), weight);
+    h_nPassBjets->Fill(m_bTags, weight);
+
     // Get jet momenta and sort by b-tag
     vector<TLorentzVector> p_j, p_b, p_q;
-    for (int i = 0; i < m_jet->size(); i++) {
-        Jet *jet = (Jet*) m_jet->at(i);
+    for (int i = 0; i < m_jets->size(); i++)
+    {
+        Jet *jet = (Jet*) m_jets->at(i);
         TLorentzVector p;
         p.SetPtEtaPhiM(jet->PT, jet->Eta, jet->Phi, jet->Mass);
         // if (jet->BTag & (1 << i))
-        if (jet->BTag > 0) {
+        if (jet->BTag > 0)
+        {
             if (m_debug) cout << "b-jet pT = " << p.Pt() << "\n";
             p_b.push_back(p);
             h_pt_bjets->Fill(p.Pt(), weight);
             h_eta_bjets->Fill(p.Eta(), weight);
         }
-        else {
+        else
+        {
             p_q.push_back(p);
             h_pt_qjets->Fill(p.Pt(), weight);
             h_eta_qjets->Fill(p.Eta(), weight);
@@ -72,14 +94,17 @@ void Analysis::EachEvent(double weight) {
         h_eta_jets->Fill(p.Eta(), weight);
     }
 
-    if (m_debug) {
+    if (m_debug)
+    {
         cout << "p_l+   = "; p_l.first.Print();
         cout << "p_l-   = "; p_l.second.Print();
-        for (int i = 0; i < p_b.size(); i++) {
+        for (int i = 0; i < p_b.size(); i++)
+        {
             cout << "p_b" << i << "   = ";
             p_b.at(i).Print();
         }
-        for (int i = 0; i < p_q.size(); i++) {
+        for (int i = 0; i < p_q.size(); i++)
+        {
             cout << "p_q" << i << "   = ";
             p_q.at(i).Print();
         }
@@ -127,31 +152,37 @@ void Analysis::EachEvent(double weight) {
     h_eta_l2->Fill(p_l.second.Eta(), weight);
 
     h_deltaPhi_ll->Fill(deltaPhi, weight);
-    if (deltaPhi > 0.5) {
+    if (deltaPhi > 0.5)
+    {
         h_HT_DphiF->Fill(HT, weight);
         h_KT_DphiF->Fill(KT, weight);
     }
-    if (deltaPhi < 0.5) {
+    if (deltaPhi < 0.5)
+    {
         h_HT_DphiB->Fill(HT, weight);
         h_KT_DphiB->Fill(KT, weight);
     }
 
     h_cosThetaStar_l->Fill(cosThetaStar_l, weight);
-    if (cosThetaStar_l > 0) {
+    if (cosThetaStar_l > 0)
+    {
         h_HT_lF->Fill(HT, weight);
         h_KT_lF->Fill(KT, weight);
     }
-    if (cosThetaStar_l < 0) {
+    if (cosThetaStar_l < 0)
+    {
         h_HT_lB->Fill(HT, weight);
         h_KT_lB->Fill(KT, weight);
     }
 
     h_delta_abs_etal->Fill(delta_abs_etal, weight);
-    if (delta_abs_etal > 0) {
+    if (delta_abs_etal > 0)
+    {
         h_HT_lCF->Fill(HT, weight);
         h_KT_lCF->Fill(KT, weight);
     }
-    if (delta_abs_etal < 0) {
+    if (delta_abs_etal < 0)
+    {
         h_HT_lCB->Fill(HT, weight);
         h_KT_lCB->Fill(KT, weight);
     }
@@ -160,12 +191,14 @@ void Analysis::EachEvent(double weight) {
     h2_mvis_deltaPhi->Fill(mvis, deltaPhi, weight);
     h2_KT_deltaPhi->Fill(KT, deltaPhi, weight);
 
-    if (m_reconstruction == "KIN" or m_reconstruction == "NuW") {
+    if (m_reconstruction == "KIN" or m_reconstruction == "NuW")
+    {
 
         pair< TLorentzVector, TLorentzVector> p_b_hypo;
-        if (m_btags >= 2) p_b_hypo = TwoHighestPt(p_b);
-        else if (m_btags == 0) p_b_hypo = TwoHighestPt(p_q);
-        else if (m_btags == 1) {
+        if (m_bTags >= 2) p_b_hypo = TwoHighestPt(p_b);
+        else if (m_bTags == 0) p_b_hypo = TwoHighestPt(p_q);
+        else if (m_bTags == 1)
+        {
             p_b_hypo.first = p_b.at(0);
             p_b_hypo.second = HighestPt(p_q);
         }
@@ -174,7 +207,8 @@ void Analysis::EachEvent(double weight) {
 
         if (m_debug) cout << "Reconstruction method: " << m_reconstruction << "\n";
 
-        if (m_reconstruction == "KIN") {
+        if (m_reconstruction == "KIN")
+        {
             if (m_debug) cout << "Setting up kinematic reconstruction ...\n";
             vector<TLorentzVector> p_b_hiPt = { p_b_hypo.first, p_b_hypo.second };
             KinematicReconstructer KIN = KinematicReconstructer(m_bmass, m_Wmass, m_tmass);
@@ -187,18 +221,21 @@ void Analysis::EachEvent(double weight) {
             p_v1 = KIN.GetNu();
             p_v2 = KIN.GetNubar();
             if (isSolution) this->UpdateCutflow(c_realSolutions, true);
-            else {
+            else
+            {
                 this->UpdateCutflow(c_realSolutions, false);
                 return;
             }
             if (m_debug) cout << "Finished kinematic reconstruction\n";
         }
-        else if (m_reconstruction == "NuW") {
+        else if (m_reconstruction == "NuW")
+        {
             auto p_b_match = MatchBjetsToLeps(p_l, p_b_hypo);
 
             NeutrinoWeighter nuW = NeutrinoWeighter(1, p_l.first.Pt() + p_l.first.Phi()); // 2nd argument is random seed same for specific event
             double weight_max = nuW.Reconstruct(p_l.first, p_l.second, p_b_match.first, p_b_match.second, p_miss.Px(), p_miss.Py(), p_miss.Phi());
-            if (weight_max > 0.0) {
+            if (weight_max > 0.0)
+            {
                 p_top = nuW.GetTop();
                 p_tbar = nuW.GetTbar();
                 p_ttbar = nuW.GetTtbar();
@@ -338,7 +375,8 @@ void Analysis::EachEvent(double weight) {
         h2_mtt_cosTheta2->Fill(mtt, cosTheta_tl2, weight);
         h2_mtt_cos1cos2->Fill(mtt, cos1cos2, weight);
     }
-    else {
+    else
+    {
         if (m_debug) cout << "Skipping reconstruction\n";
     }
 
@@ -346,15 +384,28 @@ void Analysis::EachEvent(double weight) {
     this->CleanupEvent();
 }
 
-void Analysis::CleanupEvent() {
-    if (m_debug) cout << "Cleaning up event\n";
-    delete m_electron;
-    delete m_muon;
-    delete m_jet;
+void Analysis::CleanupEvent()
+{
+    if (m_debug) cout << "Cleaning up event ...\n";
+    delete m_electrons;
+    delete m_muons;
+    delete m_jets;
+    delete m_truthElectrons;
+    delete m_truthMuons;
+    delete m_truthBquarks;
+    m_hardTop = nullptr;
+    m_hardTbar = nullptr;
+    m_hardB = nullptr;
+    m_hardBbar = nullptr;
+    m_hardLepP = nullptr;
+    m_hardLepM = nullptr;
+    m_hardNu = nullptr;
+    m_hardNuBar = nullptr;
     if (m_debug) cout << "Finished cleaning up event\n";
 }
 
-void Analysis::EveryEvent(double weight) {
+void Analysis::EveryEvent(double weight)
+{
     // runs for every event with no event selection or cuts
 
     if (m_debug) cout << "Starting EveryEvent ...\n";
@@ -365,8 +416,11 @@ void Analysis::EveryEvent(double weight) {
 
     if (m_debug) cout << "Fetching all jets ...\n";
     vector<TLorentzVector> p_j;
-    for (int i = 0; i < b_Jet->GetEntries(); i++) {
+    m_bTags = 0;
+    for (int i = 0; i < b_Jet->GetEntries(); i++)
+    {
         Jet *jet = (Jet*) b_Jet->At(i);
+        if (jet->BTag > 0) m_bTags++;
         TLorentzVector p;
         p.SetPtEtaPhiM(jet->PT, jet->Eta, jet->Phi, jet->Mass);
         h_pt_alljets->Fill(p.Pt(), weight);
@@ -374,9 +428,12 @@ void Analysis::EveryEvent(double weight) {
         p_j.push_back(p);
     }
 
+    h_nBjets->Fill(m_bTags, weight);
+
     if (m_debug) cout << "Fetching all electrons ...\n";
     vector<TLorentzVector> p_el;
-    for (int i = 0; i < b_Electron->GetEntries(); i++) {
+    for (int i = 0; i < b_Electron->GetEntries(); i++)
+    {
         Electron *electron = (Electron*) b_Electron->At(i);
         TLorentzVector p;
         p.SetPtEtaPhiM(electron->PT, electron->Eta, electron->Phi, 0.0);
@@ -387,7 +444,8 @@ void Analysis::EveryEvent(double weight) {
 
     if (m_debug) cout << "Fetching all muons ...\n";
     vector<TLorentzVector> p_mu;
-    for (int i = 0; i < b_Muon->GetEntries(); i++) {
+    for (int i = 0; i < b_Muon->GetEntries(); i++)
+    {
         Muon *muon = (Muon*) b_Muon->At(i);
         TLorentzVector p;
         p.SetPtEtaPhiM(muon->PT, muon->Eta, muon->Phi, 0.0);
@@ -430,7 +488,9 @@ void Analysis::EveryEvent(double weight) {
     if (m_debug) cout << "Finished EveryEvent ...\n";
 }
 
-void Analysis::SetupInputFile() {
+void Analysis::SetupInputFile()
+{
+    if (m_debug) cout << "Starting SetupInputFile ...\n";
     m_input = new vector< tuple<string, int> >;
     m_processes = new vector< tuple<string, int, int, double, double, double> >;
     tuple<string, int> input = make_tuple(m_dataDirectory + m_inputfilename, 0);
@@ -439,10 +499,11 @@ void Analysis::SetupInputFile() {
     tuple< string, int, int, double, double, double > process = make_tuple(m_dataDirectory + m_processfilename, 0, 1, -999, -999, -999);
     m_processes->push_back(process);
 
-    if (m_debug) cout << "Finished SetupInputFile ...\n";
+    if (m_debug) cout << "Finished SetupInputFile\n";
 }
 
-void Analysis::SetupInputFiles() {
+void Analysis::SetupInputFiles()
+{
     m_input = new vector< tuple<string, int> >;
     m_processes = new vector< tuple<string, int, int, double, double, double> >;
     string filename;
@@ -453,7 +514,8 @@ void Analysis::SetupInputFiles() {
 
     vector<string> finals;
     size_t pos = m_process.find("-tt");
-    if (pos == std::string::npos) {
+    if (pos == std::string::npos)
+    {
         cout << "Error: final state doesn't contain -tt\n";
         exit(false);
     }
@@ -463,8 +525,10 @@ void Analysis::SetupInputFiles() {
 
     int proc_id = 0;
 
-    for (auto fin : finals) {
-        for (auto initial : initials) {
+    for (auto fin : finals)
+    {
+        for (auto initial : initials)
+        {
 
             // check initial state has been specified for analysis
             if (!boost::contains(m_process, initial)) continue;
@@ -476,7 +540,8 @@ void Analysis::SetupInputFiles() {
 
             // infer intermediate EW sector bosons based on model and intial states
             string intermediates = "";
-            if (initial == "uu" or initial == "dd") {
+            if (initial == "uu" or initial == "dd")
+            {
                 intermediates = intermediates + "-AZ";
                 if (m_model != "SM") intermediates = intermediates + "X";
                 // intermediates = "-X";
@@ -500,12 +565,14 @@ void Analysis::SetupInputFiles() {
             int end = 1;
             if (m_use_mass_slices) end =  m_energy;
 
-            for (int j = 0; j < end; j++) {
+            for (int j = 0; j < end; j++)
+            {
                 string range = "";
                 if (m_use_mass_slices) range = "_" + to_string(j) + "-" + to_string(j + 1);
 
                 int nfiles_per_slice = 0;
-                for (boost::filesystem::directory_iterator i(m_dataDirectory); i != end_itr; ++i) {
+                for (boost::filesystem::directory_iterator i(m_dataDirectory); i != end_itr; ++i)
+                {
 
                     string file = i->path().filename().string();
 
@@ -526,7 +593,8 @@ void Analysis::SetupInputFiles() {
                     nfiles_per_slice++;
                     tuple<string, int> input = make_tuple(m_dataDirectory + file, proc_id);
                     m_input->push_back(input);
-                    if (m_debug) {
+                    if (m_debug)
+                    {
                         if (nfiles < 10) cout << "found " << nfiles << ":        " << get<0>(input);
                         else if (nfiles < 100) cout << "found " << nfiles << ":       " << get<0>(input);
                         else cout << "found " << nfiles << ":      " << get<0>(input);
@@ -534,7 +602,8 @@ void Analysis::SetupInputFiles() {
                     }
                 }
 
-                if (m_use_mass_slices and nfiles_per_slice == 0) {
+                if (m_use_mass_slices and nfiles_per_slice == 0)
+                {
                     cout << "no files in energy range " << range << " [TeV]\n";
                     continue;
                 }
@@ -550,43 +619,53 @@ void Analysis::SetupInputFiles() {
     }
 
     // check some input files have been specified
-    if (m_input->size() < 1) {
+    if (m_input->size() < 1)
+    {
         cout << "Error: no input files found.";
         exit(false);
     }
 
     // check all input files exist
-    for (auto input : *m_input) {
+    for (auto input : *m_input)
+    {
         struct stat buffer;
         bool exists = stat((get<0>(input)).c_str(), &buffer) == 0;
-        if (exists == false) {
+        if (exists == false)
+        {
             cout << "Error: no " << get<0>(input) << "\n";
             exit(exists);
         }
     }
 
-    for (auto process : *m_processes) {
+    for (auto process : *m_processes)
+    {
         struct stat buffer;
         bool exists = stat((get<0>(process)).c_str(), &buffer) == 0;
-        if (exists == false) {
+        if (exists == false)
+        {
             cout << "Error: no " << get<0>(process) << "\n";
             exit(exists);
         }
     }
 }
 
-void Analysis::SetupOutputFile() {
+void Analysis::SetupOutputFile()
+{
+    if (m_debug) cout << "Starting SetupOutputFile ...\n";
+
     string E = to_string(m_energy) + "TeV";
     string L = to_string(m_luminosity) + "fb-1";
 
     m_outputName = m_dataDirectory + m_inputfilename.substr(0,m_inputfilename.size() - 5) + "_" + m_reconstruction;
-    if (m_minimumBtags != 2) m_outputName += "_b" + to_string(m_minimumBtags);
+    if (m_minBtags != 2) m_outputName += "_b" + to_string(m_minBtags);
     if (m_luminosity > 0) m_outputName += L;
     m_outputName += ".root";
     m_output = new TFile(m_outputName.c_str(), "RECREATE");
+    if (m_debug) cout << "Finished SetupOutputFile.\n";
 }
 
-void Analysis::SetupOutputFiles() {
+void Analysis::SetupOutputFiles()
+{
     string E = to_string(m_energy) + "TeV";
     string L = to_string(m_luminosity) + "fb-1";
 
@@ -594,13 +673,14 @@ void Analysis::SetupOutputFiles() {
     m_outputName += "_pythia_delphes";
     if (m_use_mass_slices) m_outputName += "_sliced";
     m_outputName += "_" + m_reconstruction + m_tag;
-    if (m_minimumBtags != 2) m_outputName += "_b" + to_string(m_minimumBtags);
+    if (m_minBtags != 2) m_outputName += "_b" + to_string(m_minBtags);
     if (m_luminosity > 0) m_outputName += L;
     m_outputName += ".root";
     m_output = new TFile(m_outputName.c_str(), "RECREATE");
 }
 
-void Analysis::PostLoop() {
+void Analysis::PostLoop()
+{
     this->PrintCutflow();
     this->MakeDistributions();
     m_output->Close();
@@ -609,7 +689,8 @@ void Analysis::PostLoop() {
 }
 
 
-void Analysis::Asymmetry(const string& name, const string& title, const string& xtitle, TH1D* h1, TH1D* h2) {
+void Analysis::Asymmetry(const string& name, const string& title, const string& xtitle, TH1D* h1, TH1D* h2)
+{
     TH1D* h_numerator = (TH1D*) h1->Clone(name.data());
     TH1D* h_denominator = (TH1D*) h1->Clone();
     h_numerator->SetTitle(title.data());
@@ -624,9 +705,11 @@ void Analysis::Asymmetry(const string& name, const string& title, const string& 
 }
 
 
-void Analysis::AsymmetryUncertainty(TH1D* hA, TH1D* h1, TH1D* h2) {
+void Analysis::AsymmetryUncertainty(TH1D* hA, TH1D* h1, TH1D* h2)
+{
     double A, dA, N, N1, N2;
-    for (int i = 1; i < hA->GetNbinsX() + 1; i++) {
+    for (int i = 1; i < hA->GetNbinsX() + 1; i++)
+    {
         A = hA->GetBinContent(i);
         N1 = h1->GetBinContent(i);
         N2 = h2->GetBinContent(i);
@@ -638,7 +721,8 @@ void Analysis::AsymmetryUncertainty(TH1D* hA, TH1D* h1, TH1D* h2) {
 }
 
 
-void Analysis::MakeHistograms() {
+void Analysis::MakeHistograms()
+{
     double binWidth = 0.25;
     double Emin = 0.05;
     double Emax = 12.95;
@@ -675,9 +759,11 @@ void Analysis::MakeHistograms() {
     h_etatbar = new TH1D("eta_tbar", "\\eta_{\\bar{t}}", 200, -5.0, 5.0);
     h_etatbar->Sumw2();
 
-    h_mtt = new TH1D("m_tt", "m_{t\\bar{t}}", nbins, Emin, Emax);
+    h_mtt = new TH1D("m_tt", "m_{t\\bar{t}}\\ ", nbins, Emin, Emax);
     h_mtt->Sumw2();
-    h_ytt = new TH1D("y_tt", "y_{t\\bar{t}}", 50, -2.5, 2.5);
+    h_mttTruth = new TH1D("m_tt_truth", "m^{truth}_{t\\bar{t}}\\ ", nbins, Emin, Emax);
+    h_mttTruth->Sumw2();
+    h_ytt = new TH1D("y_tt", "y_{t\\bar{t}}\\ ", 50, -2.5, 2.5);
     h_ytt->Sumw2();
 
     h_mW1 = new TH1D("mW1", "m_{W^{+}}\\ ", 150, 0.0, 150.0);
@@ -685,17 +771,15 @@ void Analysis::MakeHistograms() {
     h_mW2 = new TH1D("mW2", "m_{W^{-}}\\ ", 150, 0.0, 150.0);
     h_mW2->Sumw2();
 
-
+    h_mt = new TH1D("m_t", "m_{t}\\ ", 40, 100.0, 300.0);
+    h_mt->Sumw2();
+    h_mtbar = new TH1D("m_tbar", "m_{\\bar{t}}\\ ", 40, 100.0, 300.0);
+    h_mtbar->Sumw2();
 
     h_phit = new TH1D("phi_t", "\\phi_{t}", nbins, -1.0, 1.0);
     h_phit->Sumw2();
     h_phitbar = new TH1D("phi_tbar", "\\phi_{\\bar{t}}", nbins, -1.0, 1.0);
     h_phitbar->Sumw2();
-
-    h_mt = new TH1D("m_t", "m_{t}", 40, 100.0, 300.0);
-    h_mt->Sumw2();
-    h_mtbar = new TH1D("m_tbar", "m_{\\bar{t}}", 40, 100.0, 300.0);
-    h_mtbar->Sumw2();
 
     h_Et = new TH1D("E_t", "E_{t}", 100, 0.0, 5000.0);
     h_Et->Sumw2();
@@ -875,12 +959,30 @@ void Analysis::MakeHistograms() {
     h_cos1cos2 = new TH1D("cos1cos2", "\\cos\\theta^{t}_{\\ell^{+}}\\cos\\theta^{\\bar{t}}_{\\ell^{-}}", 10, -1.0, 1.0);
     h_cos1cos2->Sumw2();
 
-    h_nElectrons = new TH1D("n_electron", "n_{electron}\\", 10, 0.0, 10.0);
+    h_nTruthElectrons = new TH1D("n_truth_electrons", "n_{e}\\ ", 10, 0.0, 10.0);
+    h_nTruthElectrons->Sumw2();
+    h_nTruthMuons = new TH1D("n_truth_muons", "n_{\\mu}\\ ", 10, 0.0, 10.0);
+    h_nTruthMuons->Sumw2();
+    h_nTruthBquarks = new TH1D("n_truth_bQuarks", "n_{b}\\ ", 10, 0.0, 10.0);
+    h_nTruthBquarks->Sumw2();
+
+    h_nElectrons = new TH1D("n_electrons", "n_{e}\\ ", 10, 0.0, 10.0);
     h_nElectrons->Sumw2();
-    h_nMuons = new TH1D("n_muon", "n_{muon}\\", 10, 0.0, 10.0);
+    h_nMuons = new TH1D("n_muons", "n_{\\mu}\\ ", 10, 0.0, 10.0);
     h_nMuons->Sumw2();
-    h_nJets = new TH1D("n_jet", "n_{jet}\\", 10, 0.0, 10.0);
+    h_nJets = new TH1D("n_jets", "n_{jet}\\ ", 10, 0.0, 10.0);
     h_nJets->Sumw2();
+    h_nBjets = new TH1D("n_bJets", "n_{b-jet}\\ ", 10, 0.0, 10.0);
+    h_nBjets->Sumw2();
+
+    h_nPassElectrons = new TH1D("n_pass_electrons", "n_{e}\\ ", 10, 0.0, 10.0);
+    h_nPassElectrons->Sumw2();
+    h_nPassMuons = new TH1D("n_pass_muons", "n_{\\mu}\\ ", 10, 0.0, 10.0);
+    h_nPassMuons->Sumw2();
+    h_nPassJets = new TH1D("n_pass_jets", "n_{jet}\\ ", 10, 0.0, 10.0);
+    h_nPassJets->Sumw2();
+    h_nPassBjets = new TH1D("n_pass_bJets", "n_{b-jet}\\ ", 10, 0.0, 10.0);
+    h_nPassBjets->Sumw2();
 
     h2_mtt_deltaPhi = new TH2D("mtt_deltaphi", "m_{t\\bar{t}}\\ \\times \\Delta\\phi_{\\ell^{+}\\ell^{-}}", nbins, Emin, Emax, 10, 0.0, 1.0);
     h2_mtt_deltaPhi->GetXaxis()->SetTitle("m_{t\\bar{t}}\\;");
@@ -927,13 +1029,22 @@ void Analysis::MakeHistograms() {
 }
 
 
-void Analysis::MakeDistributions() {
+void Analysis::MakeDistributions()
+{
     if (m_debug) cout << "Making distributions ...\n";
 
     // count
+    this->MakeDistribution1D(h_nTruthElectrons, "");
+    this->MakeDistribution1D(h_nTruthMuons, "");
+    this->MakeDistribution1D(h_nTruthBquarks, "");
     this->MakeDistribution1D(h_nElectrons, "");
     this->MakeDistribution1D(h_nMuons, "");
     this->MakeDistribution1D(h_nJets, "");
+    this->MakeDistribution1D(h_nBjets, "");
+    this->MakeDistribution1D(h_nPassElectrons, "");
+    this->MakeDistribution1D(h_nPassMuons, "");
+    this->MakeDistribution1D(h_nPassJets, "");
+    this->MakeDistribution1D(h_nPassBjets, "");
 
     // pT
     this->MakeDistribution1D(h_pt_allel, "GeV");
@@ -1002,7 +1113,8 @@ void Analysis::MakeDistributions() {
     this->MakeDistribution2D(h2_mvis_deltaPhi, "m_{\\mathrm{vis}}", "GeV", "\\Delta\\phi_{\\ell^{+}\\ell^{-}}", "");
     this->MakeDistribution2D(h2_KT_deltaPhi, "K_{\\mathrm{T}}", "GeV", "\\Delta\\phi_{\\ell^{+}\\ell^{-}}", "");
 
-    if (m_reconstruction == "KIN" or m_reconstruction == "NuW") {
+    if (m_reconstruction == "KIN" or m_reconstruction == "NuW")
+    {
         this->MakeDistribution1D(h_pTt, "GeV");
         this->MakeDistribution1D(h_pTtbar, "GeV");
 
@@ -1019,6 +1131,7 @@ void Analysis::MakeDistributions() {
         this->MakeDistribution1D(h_mt, "GeV");
         this->MakeDistribution1D(h_mtbar, "GeV");
         this->MakeDistribution1D(h_mtt, "TeV");
+        this->MakeDistribution1D(h_mttTruth, "TeV");
 
         // rapidity
         this->MakeDistribution1D(h_ytt, "");
@@ -1087,30 +1200,38 @@ void Analysis::MakeDistributions() {
 }
 
 
-void Analysis::MakeDistribution1D(TH1D* h, const string& units) {
+void Analysis::MakeDistribution1D(TH1D* h, const string& units)
+{
     string ytitle, yunits, xunits;
-    if (m_xsec) {
-        if (m_luminosity > 0) {
-            for (int i = 1; i < h->GetNbinsX() + 1; i++) {
+    if (m_xSec)
+    {
+        if (m_luminosity > 0)
+        {
+            for (int i = 1; i < h->GetNbinsX() + 1; i++)
+            {
                 h->SetBinError(i, sqrt(h->GetBinContent(i)));
                 // cout << "N  = " << "" << h->GetBinContent(i) << "\n";
                 // cout << "dN = " << "" << h->GetBinError(i) << "\n";
             }
             ytitle = "Expected events";
         }
-        else {
+        else
+        {
             ytitle = "d\\sigma / d" + (string) h->GetTitle();
-            if (units != "") {
+            if (units != "")
+            {
                 yunits = "\\;[\\mathrm{fb/" + units + "}]";
                 xunits = "\\;[\\mathrm{" + units + "}]";
             }
-            else {
+            else
+            {
                 yunits = "";
                 xunits = "";
             }
         }
     }
-    else {
+    else
+    {
         ytitle = "Generated events";
     }
     if (units != "") xunits = "\\;[\\mathrm{" + units + "}]";
@@ -1125,41 +1246,53 @@ void Analysis::MakeDistribution1D(TH1D* h, const string& units) {
 }
 
 
-void Analysis::MakeDistribution2D(TH2D* h, string xtitle, string xunits, string ytitle, string yunits) {
+void Analysis::MakeDistribution2D(TH2D* h, string xtitle, string xunits, string ytitle, string yunits)
+{
     string ztitle, zunits;
-    if (m_xsec) {
-        if (m_luminosity > 0) {
-            for (int i = 1; i < h->GetNbinsX() + 1; i++) {
-                for (int j = 1; j < h->GetNbinsY() + 1; j++) {
+    if (m_xSec)
+    {
+        if (m_luminosity > 0)
+        {
+            for (int i = 1; i < h->GetNbinsX() + 1; i++)
+            {
+                for (int j = 1; j < h->GetNbinsY() + 1; j++)
+                {
                     h->SetBinError(i, j, sqrt(h->GetBinContent(i, j)));
                 }
             }
             ztitle = "Expected events";
         }
         ztitle = "d\\sigma / d";
-        if (xunits != "" and yunits != "") {
+        if (xunits != "" and yunits != "")
+        {
             zunits = "\\;[\\mathrm{fb/" + xunits + "/" + yunits + "}]";
             xunits = "\\;[\\mathrm{" + xunits + "}]";
             yunits = "\\;[\\mathrm{" + yunits + "}]";
         }
-        else if (xunits != "" and yunits == "") {
+        else if (xunits != "" and yunits == "")
+        {
             zunits = "\\;[\\mathrm{fb/" + xunits + "}]";
             xunits = "\\;[\\mathrm{" + xunits + "}]";
         }
-        else if (xunits == "" and yunits != "") {
+        else if (xunits == "" and yunits != "")
+        {
             zunits = "\\;[\\mathrm{fb/" + yunits + "}]";
             yunits = "\\;[\\mathrm{" + yunits + "}]";
         }
-        else {
+        else
+        {
             zunits = "";
         }
         h->GetZaxis()->SetTitle((ztitle + h->GetTitle() + zunits).data());
     }
-    else {
-        if (m_luminosity > 0) {
+    else
+    {
+        if (m_luminosity > 0)
+        {
             ztitle = "Expected events";
         }
-        else {
+        else
+        {
             ztitle = "Generated events";
         }
         if (xunits != "") xunits = "\\;[\\mathrm{" + xunits + "}]";
@@ -1175,7 +1308,8 @@ void Analysis::MakeDistribution2D(TH2D* h, string xtitle, string xunits, string 
     h->Write();
 }
 
-void Analysis::MakeDistributionAL(TH2D* h, const string& name, const string& title) {
+void Analysis::MakeDistributionAL(TH2D* h, const string& name, const string& title)
+{
     TH2D* hist = (TH2D*) h->Clone();
     TF1* func = new TF1("func1", "[0]*x + [1]", -1, 1);
     TObjArray slices;
@@ -1194,12 +1328,15 @@ void Analysis::MakeDistributionAL(TH2D* h, const string& name, const string& tit
 }
 
 
-void Analysis::NormalizeSliceY(TH2D* h) {
+void Analysis::NormalizeSliceY(TH2D* h)
+{
     double integral = 1;
     int k;
-    for (int i = 1; i < h->GetNbinsX() + 1; i++) {
+    for (int i = 1; i < h->GetNbinsX() + 1; i++)
+    {
         integral = h->Integral(i, i, 1, h->GetNbinsY());
-        for (int j = 1; j < h->GetNbinsY() + 1; j++) {
+        for (int j = 1; j < h->GetNbinsY() + 1; j++)
+        {
             k = h->GetBin(i, j);
             h->SetBinContent(k, h->GetBinContent(k) / integral);
             h->SetBinError(k, h->GetBinError(k) / integral);
@@ -1207,73 +1344,235 @@ void Analysis::NormalizeSliceY(TH2D* h) {
     }
 }
 
-void Analysis::GetElectrons() {
-    m_electron = new vector<Electron*>;
-    for (int i = 0; i < b_Electron->GetEntries(); i++) {
+void Analysis::GetElectrons()
+{
+    m_electrons = new vector<Electron*>;
+    for (int i = 0; i < b_Electron->GetEntries(); i++)
+    {
         bool passed = false;
         Electron* electron = (Electron*) b_Electron->At(i);
         if (electron->PT > 25.0 and abs(electron->Eta) < 2.47) passed = true;
-        if (passed) m_electron->push_back(electron);
+        if (passed) m_electrons->push_back(electron);
     }
 }
 
-void Analysis::GetMuons() {
-    m_muon = new vector<Muon*>;
-    for (int i = 0; i < b_Muon->GetEntries(); i++) {
+
+void Analysis::GetHardParticles()
+{
+    if (m_debug) cout << "Fetching truth particles ..." << "\n";
+    GenParticle *particle;
+    int iTop = -999, iTbar = -999, iWp = -999, iWm = -999;
+    for (int i = 0; i < b_Particle->GetEntriesFast(); i++)
+    {
+        particle = (GenParticle*) b_Particle->At(i);
+
+        if (particle->PID == 6)
+        {
+            if (particle->M1 == 0 and particle->M2 == 1)
+            {
+                m_hardTop = particle;
+                if (m_debug) cout << "found hard top\n";
+            }
+            iTop = i;
+        }
+
+        if (particle->PID == -6)
+        {
+            if (particle->M1 == 0 and particle->M2 == 1)
+            {
+                m_hardTbar = particle;
+                if (m_debug) cout << "found hard tbar\n";
+            }
+            iTbar = i;
+        }
+
+        if (particle->PID == 24 and particle->M1 == iTop)
+        {
+            m_hardTop = particle;
+            iWp = i;
+            if (m_debug) cout << "found hard W+\n";
+        }
+
+        if (particle->PID == 24 and particle->M1 == iWp)
+        {
+            iWp = i;
+        }
+
+        if (particle->PID == 5 and particle->M1 == iTop)
+        {
+            m_hardB = particle;
+            if (m_debug) cout << "found hard b\n";
+        }
+
+        if (particle->PID == -24 and particle->M1 == iTbar)
+        {
+            iWm = i;
+            if (m_debug) cout << "found hard W-\n";
+        }
+
+        if (particle->PID == -24 and particle->M1 == iWm)
+        {
+            iWm = i;
+        }
+
+        if (particle->PID == -5 and particle->M1 == iTbar)
+        {
+            m_hardBbar = particle;
+            if (m_debug) cout << "found hard bbar\n";
+        }
+
+        if ((particle->PID == -11 or particle->PID == -13) and particle->M1 == iWp)
+        {
+            m_hardLepP = particle;
+            if (m_debug) cout << "found hard l+\n";
+        }
+
+        if ((particle->PID == 11 or particle->PID == 13) and particle->M1 == iWm)
+        {
+            m_hardNu = particle;
+            if (m_debug) cout << "found hard l-\n";
+        }
+
+        if ((particle->PID == 12 or particle->PID == 14) and particle->M1 == iWp)
+        {
+            m_hardLepM = particle;
+            if (m_debug) cout << "found hard nu\n";
+        }
+
+        if ((particle->PID == -12 or particle->PID == -14) and particle->M1 == iWm)
+        {
+            m_hardNuBar = particle;
+            if (m_debug) cout << "found hard nubar\n";
+        }
+    }
+
+    // for (int i = 0; i < b_Particle->GetEntriesFast(); i++)
+    // {
+    //     particle = (GenParticle*) b_Particle->At(i);
+    //
+    //     if ((particle->PID == -11 or particle->PID == -13) and particle->M1 == iWp)
+    //     {
+    //         cout << "found l+\n";
+    //     }
+    //
+    //     if ((particle->PID == 11 or particle->PID == 13) and particle->M1 == iWm)
+    //     {
+    //         cout << "found l-\n";
+    //     }
+    //
+    //     if ((particle->PID == 12 or particle->PID == 14) and particle->M1 == iWp)
+    //     {
+    //         cout << "found nu\n";
+    //     }
+    //
+    //     if ((particle->PID == -12 or particle->PID == -14) and particle->M1 == iWm)
+    //     {
+    //         cout << "found nubar\n";
+    //     }
+    //
+    // }
+    if (m_debug) cout << "Fetched truth particles." << "\n";
+}
+
+void Analysis::GetTruthParticles()
+{
+    if (m_debug) cout << "Fetching truth particles ..." << "\n";
+    GenParticle *particle;
+    m_truthElectrons = new vector<GenParticle*>;
+    m_truthMuons = new vector<GenParticle*>;
+    m_truthBquarks = new vector<GenParticle*>;
+    for (int i = 0; i < b_Particle->GetEntriesFast(); i++)
+    {
+        particle = (GenParticle*) b_Particle->At(i);
+
+        // demand that this is a stable particle
+        if (particle->Status != 1) continue;
+
+        if (abs(particle->PID) == 11 and particle->PT > 25.0 and abs(particle->Eta) < 2.5)
+        {
+            m_truthElectrons->push_back(particle);
+        }
+
+        if (abs(particle->PID) == 13 and particle->PT > 25.0 and abs(particle->Eta) < 2.5)
+        {
+            m_truthMuons->push_back(particle);
+        }
+
+        if (abs(particle->PID) == 5 and particle->PT > 25.0 and abs(particle->Eta) < 2.5)
+        {
+            m_truthBquarks->push_back(particle);
+        }
+    }
+    if (m_debug) cout << "Fetched truth particles." << "\n";
+}
+
+void Analysis::GetMuons()
+{
+    m_muons = new vector<Muon*>;
+    for (int i = 0; i < b_Muon->GetEntries(); i++)
+    {
         bool passed = false;
         Muon* muon = (Muon*) b_Muon->At(i);
         if (muon->PT > 25.0 and abs(muon->Eta) < 2.5) passed = true;
-        if (passed) m_muon->push_back(muon);
+        if (passed) m_muons->push_back(muon);
     }
 }
 
-void Analysis::GetJets() {
-    m_jet = new vector<Jet*>;
-    for (int i = 0; i < b_Jet->GetEntries(); i++) {
+void Analysis::GetJets()
+{
+    m_jets = new vector<Jet*>;
+    for (int i = 0; i < b_Jet->GetEntries(); i++)
+    {
         bool passed = false;
         Jet *jet = (Jet*) b_Jet->At(i);
         if (jet->PT > 25.0 and abs(jet->Eta) < 2.5) passed = true;
-        if (passed) m_jet->push_back(jet);
+        if (passed) m_jets->push_back(jet);
     }
 }
 
-bool Analysis::ExactlyTwoLeptons() {
+bool Analysis::ExactlyTwoLeptons()
+{
     bool twoLeptons;
-    if (m_electron->size() + m_muon->size() == 2) twoLeptons = true;
+    if (m_electrons->size() + m_muons->size() == 2) twoLeptons = true;
     else twoLeptons = false;
     this->UpdateCutflow(c_twoLeptons, twoLeptons);
     return twoLeptons;
 }
 
 
-void Analysis::AssignChannel() {
-    if (m_electron->size() == 2) m_channel = "ee";
-    else if (m_muon->size() == 2) m_channel = "mumu";
-    else if (m_electron->size() == 1 and m_muon->size() == 1) m_channel = "emu";
+void Analysis::AssignChannel()
+{
+    if (m_electrons->size() == 2) m_channel = "ee";
+    else if (m_muons->size() == 2) m_channel = "mumu";
+    else if (m_electrons->size() == 1 and m_muons->size() == 1) m_channel = "emu";
     else cout << "Error: can't assign channel\n";
     if (m_debug) cout << "Channel assigned: " << m_channel << "\n";
 }
 
 
-bool Analysis::OppositeCharge() {
+bool Analysis::OppositeCharge()
+{
     double charge1, charge2;
-    if (m_channel == "ee") {
-        Electron *electron1 = (Electron*) m_electron->at(0);
-        Electron *electron2 = (Electron*) m_electron->at(1);
+    if (m_channel == "ee")
+    {
+        Electron *electron1 = (Electron*) m_electrons->at(0);
+        Electron *electron2 = (Electron*) m_electrons->at(1);
 
         charge1 = electron1->Charge;
         charge2 = electron2->Charge;
     }
-    else if (m_channel == "mumu") {
-        Muon *muon1 = (Muon*) m_muon->at(0);
-        Muon *muon2 = (Muon*) m_muon->at(1);
+    else if (m_channel == "mumu")
+    {
+        Muon *muon1 = (Muon*) m_muons->at(0);
+        Muon *muon2 = (Muon*) m_muons->at(1);
 
         charge1 = muon1->Charge;
         charge2 = muon2->Charge;
     }
-    else if (m_channel == "emu") {
-        Muon *muon = (Muon*) m_muon->at(0);
-        Electron *electron = (Electron*) m_electron->at(0);
+    else if (m_channel == "emu")
+    {
+        Muon *muon = (Muon*) m_muons->at(0);
+        Electron *electron = (Electron*) m_electrons->at(0);
 
         charge1 = muon->Charge;
         charge2 = electron->Charge;
@@ -1289,56 +1588,67 @@ bool Analysis::OppositeCharge() {
     return oppositeCharge;
 }
 
-pair<TLorentzVector, TLorentzVector> Analysis::GetLeptonMomenta() {
+pair<TLorentzVector, TLorentzVector> Analysis::GetLeptonMomenta()
+{
 
     pair<TLorentzVector, TLorentzVector> p_l;
 
-    if (m_channel == "ee") {
-        Electron *electron1 = m_electron->at(0);
-        Electron *electron2 = m_electron->at(1);
+    if (m_channel == "ee")
+    {
+        Electron *electron1 = m_electrons->at(0);
+        Electron *electron2 = m_electrons->at(1);
 
         double charge = electron1->Charge;
 
-        if (charge > 0) {
+        if (charge > 0)
+        {
             p_l.first.SetPtEtaPhiM(electron1->PT, electron1->Eta, electron1->Phi, 0.0);
             p_l.second.SetPtEtaPhiM(electron2->PT, electron2->Eta, electron2->Phi, 0.0);
         }
-        else {
+        else
+        {
             p_l.second.SetPtEtaPhiM(electron1->PT, electron1->Eta, electron1->Phi, 0.0);
             p_l.first.SetPtEtaPhiM(electron2->PT, electron2->Eta, electron2->Phi, 0.0);
         }
     }
-    else if (m_channel == "mumu") {
-        Muon *muon1 = (Muon*) m_muon->at(0);
-        Muon *muon2 = (Muon*) m_muon->at(1);
+    else if (m_channel == "mumu")
+    {
+        Muon *muon1 = (Muon*) m_muons->at(0);
+        Muon *muon2 = (Muon*) m_muons->at(1);
 
         double charge = muon1->Charge;
 
-        if (charge > 0) {
+        if (charge > 0)
+        {
             p_l.first.SetPtEtaPhiM(muon1->PT, muon1->Eta, muon1->Phi, 0.0);
             p_l.second.SetPtEtaPhiM(muon2->PT, muon2->Eta, muon2->Phi, 0.0);
         }
-        else {
+        else
+        {
             p_l.second.SetPtEtaPhiM(muon1->PT, muon1->Eta, muon1->Phi, 0.0);
             p_l.first.SetPtEtaPhiM(muon2->PT, muon2->Eta, muon2->Phi, 0.0);
         }
     }
-    else if (m_channel == "emu") {
-        Electron *electron = (Electron*) m_electron->at(0);
-        Muon *muon = (Muon*) m_muon->at(0);
+    else if (m_channel == "emu")
+    {
+        Electron *electron = (Electron*) m_electrons->at(0);
+        Muon *muon = (Muon*) m_muons->at(0);
 
         double charge = electron->Charge;
 
-        if (charge > 0) {
+        if (charge > 0)
+        {
             p_l.first.SetPtEtaPhiM(electron->PT, electron->Eta, electron->Phi, 0.0);
             p_l.second.SetPtEtaPhiM(muon->PT, muon->Eta, muon->Phi, 0.0);
         }
-        else {
+        else
+        {
             p_l.second.SetPtEtaPhiM(electron->PT, electron->Eta, electron->Phi, 0.0);
             p_l.first.SetPtEtaPhiM(muon->PT, muon->Eta, muon->Phi, 0.0);
         }
     }
-    else {
+    else
+    {
         cout << "Error: invalid channel\n";
     }
 
@@ -1348,7 +1658,8 @@ pair<TLorentzVector, TLorentzVector> Analysis::GetLeptonMomenta() {
     return p_l;
 }
 
-bool Analysis::SufficientMll(const pair<TLorentzVector, TLorentzVector>& p_l) {
+bool Analysis::SufficientMll(const pair<TLorentzVector, TLorentzVector>& p_l)
+{
     // suppress hadronic background, e.g. $J/Psi$
     if (m_debug) cout << "cutting on mll...\n";
     bool sufficientMll;
@@ -1361,7 +1672,8 @@ bool Analysis::SufficientMll(const pair<TLorentzVector, TLorentzVector>& p_l) {
 }
 
 
-bool Analysis::OutsideZmassWindow(const pair<TLorentzVector, TLorentzVector>& p_l) {
+bool Analysis::OutsideZmassWindow(const pair<TLorentzVector, TLorentzVector>& p_l)
+{
     // suppress DY+jets background
     if (m_debug) cout << "cutting on |mll - mZ| > 10 ...\n";
     bool outsideZmassWindow;
@@ -1375,26 +1687,31 @@ bool Analysis::OutsideZmassWindow(const pair<TLorentzVector, TLorentzVector>& p_
 }
 
 
-bool Analysis::SufficientBtags() {
+bool Analysis::SufficientBtags()
+{
     bool sufficientBtags;
-    m_btags = 0;
-    for (int i = 0; i < m_jet->size(); i++) {
-        Jet *jet = (Jet*) m_jet->at(i);
-        if (jet->BTag > 0) m_btags++;
-    }
-    if (m_btags >= m_minimumBtags) sufficientBtags = true;
+    // m_bTags = 0;
+    // for (int i = 0; i < m_jets->size(); i++)
+    // {
+    //     Jet *jet = (Jet*) m_jets->at(i);
+    //     if (jet->BTag > 0) m_bTags++;
+    // }
+    // h_nBjets->Fill(m_bTags, 1.0);
+    if (m_bTags >= m_minBtags) sufficientBtags = true;
     else sufficientBtags = false;
     this->UpdateCutflow(c_sufficientBtags, sufficientBtags);
     return sufficientBtags;
 }
 
 
-bool Analysis::SufficientMET(double ETmiss) {
+bool Analysis::SufficientMET(double ETmiss)
+{
     // account for the neutrinos
     // further reduce DY background (no cut for e-mu)
     bool sufficientMET = false;
     if (m_channel == "emu") sufficientMET = true;
-    else if (m_channel == "ee" or m_channel == "mumu") {
+    else if (m_channel == "ee" or m_channel == "mumu")
+    {
         if (ETmiss > 60.0) sufficientMET = true;
         else sufficientMET = false;
     }
@@ -1404,13 +1721,16 @@ bool Analysis::SufficientMET(double ETmiss) {
 }
 
 
-bool Analysis::SufficientHT() {
+bool Analysis::SufficientHT()
+{
     // suppress Z/gamma* ( \tau^+ \tau^-) + jets$
     bool sufficientHT = false;
-    if (m_channel == "ee" or m_channel == "mumu") {
+    if (m_channel == "ee" or m_channel == "mumu")
+    {
         sufficientHT = true;
     }
-    else if (m_channel == "emu") {
+    else if (m_channel == "emu")
+    {
         ScalarHT *scalarHT = (ScalarHT*) b_ScalarHT->At(0);
         double HT = scalarHT->HT;
         if (HT > 130.0) sufficientHT = true;
@@ -1422,16 +1742,18 @@ bool Analysis::SufficientHT() {
 }
 
 
-bool Analysis::SufficientJets() {
+bool Analysis::SufficientJets()
+{
     bool sufficientJets;
-    if (m_jet->size() >= 2) sufficientJets = true;
+    if (m_jets->size() >= 2) sufficientJets = true;
     else sufficientJets = false;
     this->UpdateCutflow(c_sufficientJets, sufficientJets);
     return sufficientJets;
 }
 
 
-void Analysis::PreLoop() {
+void Analysis::PreLoop()
+{
     this->SetDataDirectory();
     this->SetupInputFiles();
     this->SetupOutputFiles();
@@ -1440,7 +1762,8 @@ void Analysis::PreLoop() {
     cout << "\n";
 }
 
-void Analysis::PreLoopSingle() {
+void Analysis::PreLoopSingle()
+{
     this->SetDataDirectory();
     this->SetupInputFile();
     this->SetupOutputFile();
@@ -1450,7 +1773,8 @@ void Analysis::PreLoopSingle() {
 }
 
 
-void Analysis::SetDataDirectory() {
+void Analysis::SetDataDirectory()
+{
     // sets directory based on hostname
 
     char hostname[1024];
@@ -1469,8 +1793,9 @@ void Analysis::SetDataDirectory() {
 }
 
 
-void Analysis::GetBranches() {
-    if (m_debug) cout << "Fetching branches ...\n";
+void Analysis::GetBranches()
+{
+    b_Particle = m_tree->UseBranch("Particle");
     b_Jet = m_tree->UseBranch("Jet");
     b_Electron = m_tree->UseBranch("Electron");
     b_Muon = m_tree->UseBranch("Muon");
@@ -1479,7 +1804,10 @@ void Analysis::GetBranches() {
 }
 
 
-void Analysis::GetGenerationCrossSection(int proc_id) {
+
+
+void Analysis::GetGenerationCrossSection(int proc_id)
+{
     if (m_debug) cout << "Getting generation cross section ...\n";
     string proc_filename = get<0>(m_processes->at(proc_id));
     if (m_debug) cout << "Process ID = " << proc_id << "\n";
@@ -1496,12 +1824,14 @@ void Analysis::GetGenerationCrossSection(int proc_id) {
 }
 
 
-void Analysis::GetProcessWeight(int proc_id) {
+void Analysis::GetProcessWeight(int proc_id)
+{
     int nproc = get<2>(m_processes->at(proc_id));
     if (m_debug) cout << "nproc = " << nproc << "\n";
     int nevents = m_nevents;
     if (nevents != 10000) cout << nevents << " events\n";
-    if (m_xsec) {
+    if (m_xSec)
+    {
         get<5>(m_processes->at(proc_id)) = 1.0 * get<3>(m_processes->at(proc_id)) / (nevents * nproc);
         if (m_luminosity > 0) get<5>(m_processes->at(proc_id)) *= m_luminosity;
     }
@@ -1510,77 +1840,91 @@ void Analysis::GetProcessWeight(int proc_id) {
 }
 
 
-void Analysis::Loop() {
+void Analysis::Loop()
+{
     cout << "PROGRESS\n";
     int nfiles = m_input->size();
-    for (itr_s it = m_input->begin(); it != m_input->end(); ++it) {
+    for (itr_s it = m_input->begin(); it != m_input->end(); ++it)
+    {
         int i = it - m_input->begin();
         if (i + 1 < 10) cout << "   ";
         else if (i + 1 < 100) cout << "  ";
         else if (i + 1 < 1000) cout << " ";
         cout << i + 1 << "/" << nfiles << ": ";
-        // cout << get<0>(*it) << "\n";
         this->EachFile(get<0>(*it));
         std::cout << get<0>(*it) << "\n";
         m_nevents = this->TotalEvents();
         int proc_id = get<1>(m_input->at(i));
         this->GetGenerationCrossSection(proc_id);
         this->GetProcessWeight(proc_id);
-        for (Long64_t jevent = 0; jevent < m_nevents; ++jevent) {
+        for (Long64_t jevent = 0; jevent < m_nevents; ++jevent)
+        {
             Long64_t ievent = this->IncrementEvent(jevent);
             if (ievent < 0) break;
+            if (m_debug) cout << "\n------------------------------\n";
+            if (m_debug) cout << "EVENT " << jevent + 1 << "\n";
             this->EveryEvent(get<5>(m_processes->at(proc_id)));
             this->EachEvent(get<5>(m_processes->at(proc_id)));
-            // if (!m_debug) ProgressBar(jevent, m_nevents - 1, 50);
+            if (m_debug) cout << "------------------------------\n";
         }
         this->CleanUp();
     }
 }
 
 
-void Analysis::EachFile (const string& filename) {
+void Analysis::EachFile (const string& filename)
+{
     this->SetupTreesForNewFile(filename);
     this->GetBranches();
 }
 
 
-Analysis::~Analysis() {
+Analysis::~Analysis()
+{
     delete m_input;
     delete m_output;
 }
 
 
-Long64_t Analysis::TotalEvents() {
+Long64_t Analysis::TotalEvents()
+{
     if (m_tree != 0) return m_tree->GetEntries();
     return -999;
 }
 
 
-Long64_t Analysis::IncrementEvent(Long64_t i) {
+Long64_t Analysis::IncrementEvent(Long64_t i)
+{
     Long64_t ev(-1);
     if (m_tree != 0) ev = m_tree->ReadEntry(i);
     return ev;
 }
 
 
-void Analysis::SetupTreesForNewFile(const string& s) {
-    string treeToUse = "Delphes";
-    m_chain = new TChain (treeToUse.data(), "");
-    string TStringNtuple = s + "/" + treeToUse;
-    m_chain->Add(TStringNtuple.data(), 0);
+void Analysis::SetupTreesForNewFile(const string& filename)
+{
+
+    string tree = "Delphes";
+
+    m_chain = new TChain(tree.data(), "");
+    string path = filename + "/" + tree;
+    m_chain->Add(path.data(), 0);
+
     m_tree = new ExRootTreeReader(m_chain);
-    Long64_t numberOfEntries = m_tree->GetEntries();
+    // Long64_t numberOfEntries = m_tree->GetEntries();
     // cout << "Number of entries = " << numberOfEntries << "\n";
 }
 
 
-void Analysis::CleanUp() {
+void Analysis::CleanUp()
+{
     delete m_chain;
     delete m_tree;
 }
 
 
-double Analysis::TotalAsymmetry(TH1D* h_A, TH1D* h_B) {
+double Analysis::TotalAsymmetry(TH1D* h_A, TH1D* h_B)
+{
     double A = h_A->Integral("width");
     double B = h_B->Integral("width");
     double Atot = (A - B) / (A + B);
@@ -1588,7 +1932,10 @@ double Analysis::TotalAsymmetry(TH1D* h_A, TH1D* h_B) {
 }
 
 
-void Analysis::InitialiseCutflow() {
+void Analysis::InitialiseCutflow()
+{
+
+    if (m_debug) cout << "Initialising cutflow\n";
     m_cutflow = vector<int>(m_cuts, -999);
     m_cutNames = vector<string>(
     m_cuts,                            "no name               ");
@@ -1619,18 +1966,23 @@ void Analysis::InitialiseCutflow() {
     // m_cutTitles[c_deltaR]             = "\\Delta R";
 
     h_cutflow = new TH1D("cutflow", "cutflow", m_cuts, 0.0, m_cuts);
+
+    if (m_debug) cout << "Initialised cutflow\n";
 }
 
 
-void Analysis::UpdateCutflow(const int cut, const bool passed) {
+void Analysis::UpdateCutflow(const int cut, const bool passed)
+{
     if (m_cutflow[cut] == -999) m_cutflow[cut] = 0;
     if (passed) m_cutflow[cut] += 1;
 }
 
 
-void Analysis::PrintCutflow() {
+void Analysis::PrintCutflow()
+{
     cout << "\nCUTFLOW\n";
-    for (int cut = 0; cut < m_cuts; cut++) {
+    for (int cut = 0; cut < m_cuts; cut++)
+    {
         if (m_cutflow[cut] == -999) continue;
 
         h_cutflow->SetBinContent(cut + 1, m_cutflow[cut]);
