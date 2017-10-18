@@ -1,10 +1,11 @@
 #include "neutrino-weighter.hpp"
 #include <iostream>
-#include <string>
 #include <ctime>
 #include "TObject.h"
 #include "TRandom3.h"
 #include "TLorentzVector.h"
+#include <string>
+
 
 
 void NeutrinoWeighter::Reset(){
@@ -183,11 +184,6 @@ NeutrinoWeighter::NeutrinoWeighter( int setting, int event_number ){
 
 }
 
-NeutrinoWeighter::~NeutrinoWeighter()
-{
-    ;
-}
-
 double NeutrinoWeighter::Reconstruct(TLorentzVector lepton_pos, TLorentzVector lepton_neg, TLorentzVector jet_1, TLorentzVector jet_2, double met_ex, double met_ey, double met_phi){
 
   //m_mt2 = mt2(jet_1, jet_2, leptons[0], leptons[1], m_met_et, 30);
@@ -261,7 +257,7 @@ double NeutrinoWeighter::Reconstruct(TLorentzVector lepton_pos, TLorentzVector l
   return m_weight_max;
 }
 
-double NeutrinoWeighter::GetCrystalBallWeight(double jet_pt) {
+float NeutrinoWeighter::GetCrystalBallWeight(float jet_pt) {
 
   double scale = 1.;
 

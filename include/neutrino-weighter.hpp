@@ -8,7 +8,7 @@
 #include "TH1F.h"
 
 class NeutrinoWeighter {
-
+  ClassDef(NeutrinoWeighter,1);
 private:
 
   std::vector< double > m_nu_eta;
@@ -56,7 +56,7 @@ public:
   void SetWMass(std::vector< double > W_mass){ m_W_smears = W_mass;};
 
   NeutrinoWeighter(int setting, int event_number);
-  virtual ~NeutrinoWeighter();
+  virtual ~NeutrinoWeighter(){};
   double Reconstruct(TLorentzVector lepton_pos, TLorentzVector lepton_neg, TLorentzVector jet_1, TLorentzVector jet_2, double met_ex, double met_ey, double met_phi);
   void calculateWeight(TLorentzVector lepton_pos, TLorentzVector lepton_neg, TLorentzVector b1, TLorentzVector b2, double met_ex, double met_ey, double met_phi, double mtop, double mtbar, double mWp, double mWn);
   std::vector<TLorentzVector> solveForNeutrinoEta(TLorentzVector* lepton, TLorentzVector* bJet, int index, int index_type, double mtop, double mW);
@@ -77,7 +77,7 @@ public:
   void RecalculateEtas(double pos_lep_eta, double neg_lep_eta);
   void DoBothPairings(bool do_pairing){ m_do_both_pairings = do_pairing; };
   //void SetTrueParameters(double true_nu_eta, double true_nubar_eta, double true_top_m, double true_tbar_m, double true_wp_m, double true_wp_n);
-  double GetCrystalBallWeight(double jet_pt);
+  float GetCrystalBallWeight(float jet_pt);
 };
 
 #endif
