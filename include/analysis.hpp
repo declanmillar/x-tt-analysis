@@ -162,6 +162,23 @@ private:
     TH1D* h_phitbar;
     TH1D* h_mtbar;
 
+    // TH1D* h_pxt_truth;
+    // TH1D* h_pyt_truth;
+    // TH1D* h_pzt_truth;
+    // TH1D* h_Et_truth;
+    TH1D* h_pTt_truth;
+    TH1D* h_etat_truth;
+    TH1D* h_phit_truth;
+    TH1D* h_mt_truth;
+    // TH1D* h_pxtbar_truth;
+    // TH1D* h_pytbar_truth;
+    // TH1D* h_pztbar_truth;
+    // TH1D* h_Etbar_truth;
+    TH1D* h_pTtbar_truth;
+    TH1D* h_etatbar_truth;
+    TH1D* h_phitbar_truth;
+    TH1D* h_mtbar_truth;
+
     // tt
     TH1D* h_mtt;
     TH1D* h_mttTruth;

@@ -36,6 +36,15 @@ void Analysis::EachEvent(double weight)
     double mttTruth = (ptruth_top + ptruth_tbar).M() / 1000;
     h_mttTruth->Fill(mttTruth, weight);
 
+    h_pTt_truth->Fill(ptruth_top.Pt());
+    h_etat_truth->Fill(ptruth_top.Eta());
+    h_phit_truth->Fill(ptruth_top.Phi());
+    h_mt_truth->Fill(ptruth_top.M());
+    h_pTtbar_truth->Fill(ptruth_tbar.Pt());
+    h_etatbar_truth->Fill(ptruth_tbar.Eta());
+    h_phitbar_truth->Fill(ptruth_tbar.Phi());
+    h_mtbar_truth->Fill(ptruth_tbar.M());
+
     // truth
     this->GetTruthParticles();
 
@@ -747,6 +756,10 @@ void Analysis::MakeHistograms()
     h_pTt->Sumw2();
     h_pTtbar = new TH1D("pT_tbar", "p_{\\mathrm{T}}^{\\bar{t}}", 200, 0.0, 2000.0);
     h_pTtbar->Sumw2();
+    h_pTt_truth = new TH1D("pT_t_truth", "p^{truth}_{\\mathrm{T}}^{t}", 200, 0.0, 2000.0);
+    h_pTt_truth->Sumw2();
+    h_pTtbar_truth = new TH1D("pT_tbar_truth", "p^{truth}_{\\mathrm{T}}^{\\bar{t}}", 200, 0.0, 2000.0);
+    h_pTtbar_truth->Sumw2();
 
     h_eta_l1 = new TH1D("eta_l1", "\\eta_{\\ell^{+}}", 200, -5.0, 5.0);
     h_eta_l1->Sumw2();
@@ -762,6 +775,10 @@ void Analysis::MakeHistograms()
     h_etat->Sumw2();
     h_etatbar = new TH1D("eta_tbar", "\\eta_{\\bar{t}}", 200, -5.0, 5.0);
     h_etatbar->Sumw2();
+    h_etat_truth = new TH1D("eta_t_truth", "\\eta_{t}^{truth}", 200, -5.0, 5.0);
+    h_etat_truth->Sumw2();
+    h_etatbar_truth = new TH1D("eta_tbar_truth", "\\eta^{truth}_{\\bar{t}}", 200, -5.0, 5.0);
+    h_etatbar_truth->Sumw2();
 
     h_mtt = new TH1D("m_tt", "m_{t\\bar{t}}\\ ", nbins, Emin, Emax);
     h_mtt->Sumw2();
@@ -779,11 +796,19 @@ void Analysis::MakeHistograms()
     h_mt->Sumw2();
     h_mtbar = new TH1D("m_tbar", "m_{\\bar{t}}\\ ", 40, 100.0, 300.0);
     h_mtbar->Sumw2();
+    h_mt_truth = new TH1D("m_t_truth", "m^{truth}_{t}\\ ", 40, 100.0, 300.0);
+    h_mt_truth->Sumw2();
+    h_mtbar_truth = new TH1D("m_tbar_truth", "m^{truth}_{\\bar{t}}\\ ", 40, 100.0, 300.0);
+    h_mtbar_truth->Sumw2();
 
     h_phit = new TH1D("phi_t", "\\phi_{t}", nbins, -1.0, 1.0);
     h_phit->Sumw2();
     h_phitbar = new TH1D("phi_tbar", "\\phi_{\\bar{t}}", nbins, -1.0, 1.0);
     h_phitbar->Sumw2();
+    h_phit_truth = new TH1D("phi_t_truth", "\\phi^{truth}_{t}", nbins, -1.0, 1.0);
+    h_phit_truth->Sumw2();
+    h_phitbar_truth = new TH1D("phi_tbar_truth", "\\phi^{truth}_{\\bar{t}}", nbins, -1.0, 1.0);
+    h_phitbar_truth->Sumw2();
 
     h_Et = new TH1D("E_t", "E_{t}", 100, 0.0, 5000.0);
     h_Et->Sumw2();
@@ -1121,12 +1146,18 @@ void Analysis::MakeDistributions()
     {
         this->MakeDistribution1D(h_pTt, "GeV");
         this->MakeDistribution1D(h_pTtbar, "GeV");
+        this->MakeDistribution1D(h_pTt_truth, "GeV");
+        this->MakeDistribution1D(h_pTtbar_truth, "GeV");
 
         this->MakeDistribution1D(h_etat, "");
         this->MakeDistribution1D(h_etatbar, "");
+        this->MakeDistribution1D(h_etat_truth, "");
+        this->MakeDistribution1D(h_etatbar_truth, "");
 
         this->MakeDistribution1D(h_phit, "");
         this->MakeDistribution1D(h_phitbar, "");
+        this->MakeDistribution1D(h_phit_truth, "");
+        this->MakeDistribution1D(h_phitbar_truth, "");
         this->MakeDistribution1D(h_cosPhi, "");
 
         // invarient mass
@@ -1134,6 +1165,8 @@ void Analysis::MakeDistributions()
         this->MakeDistribution1D(h_mW2, "TeV");
         this->MakeDistribution1D(h_mt, "GeV");
         this->MakeDistribution1D(h_mtbar, "GeV");
+        this->MakeDistribution1D(h_mt_truth, "GeV");
+        this->MakeDistribution1D(h_mtbar_truth, "GeV");
         this->MakeDistribution1D(h_mtt, "TeV");
         this->MakeDistribution1D(h_mttTruth, "TeV");
 
@@ -1392,7 +1425,6 @@ void Analysis::GetHardParticles()
 
         if (particle->PID == 24 and particle->M1 == iTop)
         {
-            m_hardTop = particle;
             iWp = i;
             if (m_debug) cout << "found hard W+\n";
         }
