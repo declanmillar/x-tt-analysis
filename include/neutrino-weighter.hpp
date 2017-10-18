@@ -8,7 +8,7 @@
 #include "TH1F.h"
 
 class NeutrinoWeighter {
-  ClassDef(NeutrinoWeighter,1);
+  // ClassDef(NeutrinoWeighter,1);
 private:
 
   std::vector< double > m_nu_eta;
@@ -56,7 +56,7 @@ public:
   void SetWMass(std::vector< double > W_mass){ m_W_smears = W_mass;};
 
   NeutrinoWeighter(int setting, int event_number);
-  virtual ~NeutrinoWeighter(){};
+  virtual ~NeutrinoWeighter();
   double Reconstruct(TLorentzVector lepton_pos, TLorentzVector lepton_neg, TLorentzVector jet_1, TLorentzVector jet_2, double met_ex, double met_ey, double met_phi);
   void calculateWeight(TLorentzVector lepton_pos, TLorentzVector lepton_neg, TLorentzVector b1, TLorentzVector b2, double met_ex, double met_ey, double met_phi, double mtop, double mtbar, double mWp, double mWn);
   std::vector<TLorentzVector> solveForNeutrinoEta(TLorentzVector* lepton, TLorentzVector* bJet, int index, int index_type, double mtop, double mW);

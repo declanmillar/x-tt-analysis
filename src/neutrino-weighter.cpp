@@ -629,3 +629,8 @@ std::vector<TLorentzVector> NeutrinoWeighter::solveForNeutrinoEta(TLorentzVector
   return mt2_result;
 
   }*/
+
+NeutrinoWeighter::~NeutrinoWeighter()
+{
+    ;
+}
