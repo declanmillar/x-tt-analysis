@@ -29,7 +29,11 @@ void Analysis::EachEvent(double weight)
 
     // hard process particles
     this->GetHardParticles();
-    double mttTruth = (m_hardTop->P4() + m_hardTbar->P4()).M() / 1000;
+
+    TLorentzVector ptruth_top = m_hardTop->P4();
+    TLorentzVector ptruth_tbar = m_hardTbar->P4();
+
+    double mttTruth = (ptruth_top + ptruth_tbar).M() / 1000;
     h_mttTruth->Fill(mttTruth, weight);
 
     // truth
