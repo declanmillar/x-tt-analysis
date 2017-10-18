@@ -77,7 +77,7 @@ void NeutrinoWeighter::RecalculateEtas(double pos_lep_eta, double neg_lep_eta){
   }
 }
 
-NeutrinoWeighter::NeutrinoWeighter( int setting, int event_number ){
+NeutrinoWeighter::NeutrinoWeighter( int setting, int event_number, double bmass ){
 
   //std::cout << "Initialising Class" << std::endl;
 
@@ -91,6 +91,7 @@ NeutrinoWeighter::NeutrinoWeighter( int setting, int event_number ){
   m_random.SetSeed(105200);
   m_weight_max = -99.;
   m_do_both_pairings = false;
+  m_bmass = bmass;
 
   m_include_x     = true;  /// Use MET ex in weight function
   m_include_y     = true;  /// Use MET ey in weight function
@@ -136,11 +137,11 @@ NeutrinoWeighter::NeutrinoWeighter( int setting, int event_number ){
   m_top_smears.push_back(174.0);
   //m_top_smears.push_back(174.5);
 
-  //m_W_smears.push_back(80.3);
-  //m_W_smears.push_back(80.35);
+  // m_W_smears.push_back(80.3);
+  m_W_smears.push_back(80.35);
   m_W_smears.push_back(80.4);
-  //m_W_smears.push_back(80.45);
-  //m_W_smears.push_back(80.5);
+  m_W_smears.push_back(80.45);
+  // m_W_smears.push_back(80.5);
 
   ///-- Crystal Ball Setup --///
 
@@ -217,8 +218,8 @@ double NeutrinoWeighter::Reconstruct(TLorentzVector lepton_pos, TLorentzVector l
 	    calculateWeight(lepton_pos, lepton_neg, jet_2, jet_1, met_ex, met_ey, met_phi, m_top_smears[mtop_counter], m_top_smears[mtbar_counter], m_W_smears[mWp_counter], m_W_smears[mWn_counter]);
 
 	  ///-- Jet Smearing --///
-	  //for (int smears = 0; smears < 15; ++smears){
-	  for (int smears = 0; smears < 5; ++smears){
+	//   for (int smears = 0; smears < 15; ++smears){
+	for (int smears = 0; smears < 5; ++smears){
 	    TLorentzVector jet_1_smeared, jet_2_smeared;
 
 	    jet_1_smeared = jet_1;
@@ -532,7 +533,10 @@ std::vector<TLorentzVector> NeutrinoWeighter::solveForNeutrinoEta(TLorentzVector
 
   //double Wmass2 = 80.4*80.4;
   double Wmass2 = mW*mW;
-  double bmass = 4.5;
+  // double bmass = 4.5;
+  // double bmass = m_bmass;
+  double bmass = bJet->M();
+  // std::cout << "bmass = " << bmass << "\n";
   double Elprime = lepton->E() * nu_cosh - lepton->Pz() * nu_sinh;
   double Ebprime = bJet->E()   * nu_cosh - bJet->Pz()   * nu_sinh;
 

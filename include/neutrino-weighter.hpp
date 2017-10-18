@@ -39,6 +39,7 @@ private:
   bool m_include_mWn;
   bool m_include_mtop;
   bool m_include_mtbar;
+  double m_bmass;
 
   TH1F pt_25_50;
   TH1F pt_50_100;
@@ -55,7 +56,7 @@ public:
   void SetTopMass(std::vector< double > top_mass){ m_top_smears = top_mass;};
   void SetWMass(std::vector< double > W_mass){ m_W_smears = W_mass;};
 
-  NeutrinoWeighter(int setting, int event_number);
+  NeutrinoWeighter(int setting, int event_number, double bmass);
   virtual ~NeutrinoWeighter();
   double Reconstruct(TLorentzVector lepton_pos, TLorentzVector lepton_neg, TLorentzVector jet_1, TLorentzVector jet_2, double met_ex, double met_ey, double met_phi);
   void calculateWeight(TLorentzVector lepton_pos, TLorentzVector lepton_neg, TLorentzVector b1, TLorentzVector b2, double met_ex, double met_ey, double met_phi, double mtop, double mtbar, double mWp, double mWn);

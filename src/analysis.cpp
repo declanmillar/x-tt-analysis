@@ -31,8 +31,9 @@ void Analysis::EachEvent(double weight)
 
     TLorentzVector ptruth_top = m_hardTop->P4();
     TLorentzVector ptruth_tbar = m_hardTbar->P4();
+    TLorentzVector ptruth_ttbar = ptruth_top + ptruth_tbar;
 
-    double mttTruth = (ptruth_top + ptruth_tbar).M() / 1000;
+    double mttTruth = ptruth_ttbar.M() / 1000;
     h_mttTruth->Fill(mttTruth, weight);
 
     h_pTt_truth->Fill(ptruth_top.Pt());
@@ -232,10 +233,10 @@ void Analysis::EachEvent(double weight)
             p_b2 = KIN.GetBbar();
             p_v1 = KIN.GetNu();
             p_v2 = KIN.GetNubar();
-            if (isSolution) this->UpdateCutflow(c_realSolutions, true);
+            if (isSolution) this->UpdateCutflow(c_validSolution, true);
             else
             {
-                this->UpdateCutflow(c_realSolutions, false);
+                this->UpdateCutflow(c_validSolution, false);
                 return;
             }
             if (m_debug) cout << "Finished kinematic reconstruction\n";
@@ -244,10 +245,11 @@ void Analysis::EachEvent(double weight)
         {
             auto p_b_match = MatchBjetsToLeps(p_l, p_b_hypo);
 
-            NeutrinoWeighter nuW = NeutrinoWeighter(1, p_l.first.Pt() + p_l.first.Phi()); // 2nd argument is random seed same for specific event
+            NeutrinoWeighter nuW = NeutrinoWeighter(1, p_l.first.Pt() + p_l.first.Phi(), m_bmass); // 2nd argument is random seed same for specific event
             double weight_max = nuW.Reconstruct(p_l.first, p_l.second, p_b_match.first, p_b_match.second, p_miss.Px(), p_miss.Py(), p_miss.Phi());
             if (weight_max > 0.0)
             {
+                this->UpdateCutflow(c_validSolution, true);
                 p_top = nuW.GetTop();
                 p_tbar = nuW.GetTbar();
                 p_ttbar = nuW.GetTtbar();
@@ -256,6 +258,22 @@ void Analysis::EachEvent(double weight)
                 p_v1 = nuW.GetNu();
                 p_v2 = nuW.GetNubar();
             }
+            else {
+                // cout << "mtt truth = " << mttTruth << "\n";
+                this->UpdateCutflow(c_validSolution, false);
+                return;
+            }
+
+            // if (p_top.Eta() == 0 or p_tbar.Eta() == 0)
+            // {
+            //     cout << "mtt truth = " << mttTruth << "\n";
+            //     this->UpdateCutflow(c_validSolution, false);
+            //     return;
+            // }
+            // else
+            // {
+            //     this->UpdateCutflow(c_validSolution, true);
+            // }
         }
         else cout << "Error: Reconstruction = {KIN, NuW}\n";
 
@@ -339,6 +357,13 @@ void Analysis::EachEvent(double weight)
 
         h_mtt->Fill(mtt, weight);
         h_ytt->Fill(ytt, weight);
+
+        double dR_top = p_top.DeltaR(ptruth_top);
+        h_dR_top->Fill(dR_top, weight);
+        double dR_tbar = p_tbar.DeltaR(ptruth_tbar);
+        h_dR_tbar->Fill(dR_tbar, weight);
+        double dR_ttbar = p_tbar.DeltaR(ptruth_ttbar);
+        h_dR_ttbar->Fill(dR_ttbar, weight);
 
         h_mW1->Fill(p_W1.M(), weight);
         h_mW2->Fill(p_W2.M(), weight);
@@ -783,6 +808,11 @@ void Analysis::MakeHistograms()
     h_mtt->Sumw2();
     h_mttTruth = new TH1D("m_tt_truth", "m^{truth}_{t\\bar{t}}\\ ", nbins, Emin, Emax);
     h_mttTruth->Sumw2();
+
+    h_dR_top = new TH1D("dR_top", "\\Delta R(t_{truth},t_{reco})", 100, 0.0, 40.0);
+    h_dR_tbar = new TH1D("dR_tbar", "\\Delta R(\\bar{t}_{truth},\\bar{t}_{reco})", 100, 0.0, 40.0);
+    h_dR_ttbar = new TH1D("dR_ttbar", "\\Delta R(t\\bar{t}_{truth}, t\\bar{t}_{reco})", 100, 0.0, 40.0);
+
     h_ytt = new TH1D("y_tt", "y_{t\\bar{t}}\\ ", 50, -2.5, 2.5);
     h_ytt->Sumw2();
 
@@ -1168,6 +1198,10 @@ void Analysis::MakeDistributions()
         this->MakeDistribution1D(h_mtbar_truth, "GeV");
         this->MakeDistribution1D(h_mtt, "TeV");
         this->MakeDistribution1D(h_mttTruth, "TeV");
+
+        this->MakeDistribution1D(h_dR_top, "");
+        this->MakeDistribution1D(h_dR_tbar, "");
+        this->MakeDistribution1D(h_dR_ttbar, "");
 
         // rapidity
         this->MakeDistribution1D(h_ytt, "");
@@ -1983,7 +2017,7 @@ void Analysis::InitialiseCutflow()
     m_cutNames[c_sufficientJets]     = "Sufficient jets       ";
     m_cutNames[c_sufficientBtags]    = "Sufficient b-tags     ";
     m_cutNames[c_sufficientHT]       = "Sufficient HT         ";
-    m_cutNames[c_realSolutions]      = "Has real roots        ";
+    m_cutNames[c_validSolution]      = "Valid Reconstruction  ";
     // m_cutNames[c_deltaR]             = "deltaR                ";
 
     m_cutTitles = vector<string>(
@@ -1997,7 +2031,7 @@ void Analysis::InitialiseCutflow()
     m_cutTitles[c_sufficientJets]     = "Sufficient jets";
     m_cutTitles[c_sufficientBtags]    = "\\mathrm{Sufficient}\\; b\\mathrm{-tags}";
     m_cutTitles[c_sufficientHT]       = "\\mathrm{Sufficient}\\; H_{\\mathrm{T}}";
-    m_cutTitles[c_realSolutions]      = "Has real roots";
+    m_cutTitles[c_validSolution]      = "Valid Reconstruction";
     // m_cutTitles[c_deltaR]             = "\\Delta R";
 
     h_cutflow = new TH1D("cutflow", "cutflow", m_cuts, 0.0, m_cuts);

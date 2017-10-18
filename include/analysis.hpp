@@ -96,7 +96,7 @@ private:
         c_sufficientHT,
         c_sufficientJets,
         c_sufficientBtags,
-        c_realSolutions,
+        c_validSolution,
         // c_deltaR,
         m_cuts // Keep as last entry
     };
@@ -182,6 +182,11 @@ private:
     // tt
     TH1D* h_mtt;
     TH1D* h_mttTruth;
+
+    // dR between truth and reco
+    TH1D* h_dR_top;
+    TH1D* h_dR_tbar;
+    TH1D* h_dR_ttbar;
 
     // charge asymmetries
     TH1D* h_mtt_tF;
