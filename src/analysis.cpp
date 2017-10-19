@@ -32,6 +32,12 @@ void Analysis::EachEvent(double weight)
     TLorentzVector ptruth_top = m_hardTop->P4();
     TLorentzVector ptruth_tbar = m_hardTbar->P4();
     TLorentzVector ptruth_ttbar = ptruth_top + ptruth_tbar;
+    // cout << "top = ";
+    // ptruth_top.Print();
+    // cout << "tbar = ";
+    // ptruth_tbar.Print();
+    // cout << "ttbar = ";
+    // ptruth_ttbar.Print();
 
     double mttTruth = ptruth_ttbar.M() / 1000;
     h_mttTruth->Fill(mttTruth, weight);
@@ -277,6 +283,8 @@ void Analysis::EachEvent(double weight)
         }
         else cout << "Error: Reconstruction = {KIN, NuW}\n";
 
+        // p_ttbar.Print();
+
         TLorentzVector p_W1 = p_l.first + p_v1;
         TLorentzVector p_W2 = p_l.second + p_v2;
 
@@ -360,9 +368,14 @@ void Analysis::EachEvent(double weight)
 
         double dR_top = p_top.DeltaR(ptruth_top);
         h_dR_top->Fill(dR_top, weight);
+
         double dR_tbar = p_tbar.DeltaR(ptruth_tbar);
         h_dR_tbar->Fill(dR_tbar, weight);
-        double dR_ttbar = p_tbar.DeltaR(ptruth_ttbar);
+
+        // p_ttbar.Print();
+        // ptruth_ttbar.Print();
+        double dR_ttbar = p_ttbar.DeltaR(ptruth_ttbar);
+        // cout << "dR_ttbar = " << dR_ttbar << "\n";
         h_dR_ttbar->Fill(dR_ttbar, weight);
 
         h_mW1->Fill(p_W1.M(), weight);
@@ -809,9 +822,9 @@ void Analysis::MakeHistograms()
     h_mttTruth = new TH1D("m_tt_truth", "m^{truth}_{t\\bar{t}}\\ ", nbins, Emin, Emax);
     h_mttTruth->Sumw2();
 
-    h_dR_top = new TH1D("dR_top", "\\Delta R(t_{truth},t_{reco})", 100, 0.0, 40.0);
-    h_dR_tbar = new TH1D("dR_tbar", "\\Delta R(\\bar{t}_{truth},\\bar{t}_{reco})", 100, 0.0, 40.0);
-    h_dR_ttbar = new TH1D("dR_ttbar", "\\Delta R(t\\bar{t}_{truth}, t\\bar{t}_{reco})", 100, 0.0, 40.0);
+    h_dR_top = new TH1D("dR_top", "\\Delta R(t_{truth},t_{reco})", 50, 0.0, 20.0);
+    h_dR_tbar = new TH1D("dR_tbar", "\\Delta R(\\bar{t}_{truth},\\bar{t}_{reco})", 50, 0.0, 20.0);
+    h_dR_ttbar = new TH1D("dR_ttbar", "\\Delta R(t\\bar{t}_{truth}, t\\bar{t}_{reco})", 50, 0.0, 20.0);
 
     h_ytt = new TH1D("y_tt", "y_{t\\bar{t}}\\ ", 50, -2.5, 2.5);
     h_ytt->Sumw2();
@@ -1199,9 +1212,9 @@ void Analysis::MakeDistributions()
         this->MakeDistribution1D(h_mtt, "TeV");
         this->MakeDistribution1D(h_mttTruth, "TeV");
 
-        this->MakeDistribution1D(h_dR_top, "");
-        this->MakeDistribution1D(h_dR_tbar, "");
-        this->MakeDistribution1D(h_dR_ttbar, "");
+        this->MakeDistribution1D(h_dR_top, "", true);
+        this->MakeDistribution1D(h_dR_tbar, "", true);
+        this->MakeDistribution1D(h_dR_ttbar, "", true);
 
         // rapidity
         this->MakeDistribution1D(h_ytt, "");
@@ -1270,7 +1283,7 @@ void Analysis::MakeDistributions()
 }
 
 
-void Analysis::MakeDistribution1D(TH1D* h, const string& units)
+void Analysis::MakeDistribution1D(TH1D* h, const string& units, bool normalise)
 {
     string ytitle, yunits, xunits;
     if (m_xSec)
@@ -1306,6 +1319,10 @@ void Analysis::MakeDistribution1D(TH1D* h, const string& units)
     }
     if (units != "") xunits = "\\;[\\mathrm{" + units + "}]";
     else xunits = "";
+    if (normalise) {
+        h->Scale(1.0 / h->Integral());
+        ytitle = "Normalised";
+    }
     h->GetYaxis()->SetTitle((ytitle + yunits).data());
     h->GetXaxis()->SetTitle((h->GetTitle() + xunits).data());
     h->GetYaxis()->SetTitleOffset(0.9);
@@ -1438,21 +1455,21 @@ void Analysis::GetHardParticles()
 
         if (particle->PID == 6)
         {
-            if (particle->M1 == 0 and particle->M2 == 1)
-            {
-                m_hardTop = particle;
-                if (m_debug) cout << "found hard top\n";
-            }
+            // if (particle->M1 == 0 and particle->M2 == 1)
+            // {
+            m_hardTop = particle;
+            if (m_debug) cout << "found hard top\n";
+            // }
             iTop = i;
         }
 
         if (particle->PID == -6)
         {
-            if (particle->M1 == 0 and particle->M2 == 1)
-            {
-                m_hardTbar = particle;
-                if (m_debug) cout << "found hard tbar\n";
-            }
+            // if (particle->M1 == 0 and particle->M2 == 1)
+            // {
+            m_hardTbar = particle;
+            if (m_debug) cout << "found hard tbar\n";
+            // }
             iTbar = i;
         }
 

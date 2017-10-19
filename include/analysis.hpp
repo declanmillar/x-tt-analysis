@@ -305,7 +305,7 @@ protected:
     // histograms
     void MakeHistograms();
     void MakeDistributions();
-    void MakeDistribution1D(TH1D*, const string&);
+    void MakeDistribution1D(TH1D*, const string&, bool normalise = false);
     void MakeDistribution2D(TH2D*, string, string, string, string);
     void MakeDistributionAL(TH2D*, const string&, const string&);
     void NormalizeSliceY(TH2D*);

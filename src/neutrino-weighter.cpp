@@ -138,9 +138,9 @@ NeutrinoWeighter::NeutrinoWeighter( int setting, int event_number, double bmass 
   //m_top_smears.push_back(174.5);
 
   // m_W_smears.push_back(80.3);
-  m_W_smears.push_back(80.35);
+  // m_W_smears.push_back(80.35);
   m_W_smears.push_back(80.4);
-  m_W_smears.push_back(80.45);
+  // m_W_smears.push_back(80.45);
   // m_W_smears.push_back(80.5);
 
   ///-- Crystal Ball Setup --///
