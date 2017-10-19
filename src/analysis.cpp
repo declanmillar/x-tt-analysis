@@ -213,14 +213,29 @@ void Analysis::EachEvent(double weight)
     if (m_reconstruction == "KIN" or m_reconstruction == "NuW")
     {
 
+        if (m_debug) cout << "starting reconstruction ...\n";
+
         pair< TLorentzVector, TLorentzVector> p_b_hypo;
-        if (m_bTags >= 2) p_b_hypo = TwoHighestPt(p_b);
-        else if (m_bTags == 0) p_b_hypo = TwoHighestPt(p_q);
+        if (m_bTags >= 2)
+        {
+            if (m_debug) cout << "selecting two b-tagged jets with highest pT ...\n";
+            if (m_debug) cout << "p_b size = " << p_b.size() << "\n";
+            p_b_hypo = TwoHighestPt(p_b);
+            if (m_debug) cout << "BORK ...\n";
+        }
+        else if (m_bTags == 0)
+        {
+            if (m_debug) cout << "selecting two jets with highest pT ...\n";
+            p_b_hypo = TwoHighestPt(p_q);
+        }
         else if (m_bTags == 1)
         {
+            if (m_debug) cout << "select b-tagged jet and jet with highest pT\n";
             p_b_hypo.first = p_b.at(0);
             p_b_hypo.second = HighestPt(p_q);
         }
+
+        if (m_debug) cout << "collect p_b hypo\n";
 
         TLorentzVector p_top, p_tbar, p_ttbar, p_b1, p_b2, p_v1, p_v2;
 
@@ -466,11 +481,11 @@ void Analysis::EveryEvent(double weight)
 
     if (m_debug) cout << "Fetching all jets ...\n";
     vector<TLorentzVector> p_j;
-    m_bTags = 0;
+    int bTags = 0;
     for (int i = 0; i < b_Jet->GetEntries(); i++)
     {
         Jet *jet = (Jet*) b_Jet->At(i);
-        if (jet->BTag > 0) m_bTags++;
+        if (jet->BTag > 0) bTags++;
         TLorentzVector p;
         p.SetPtEtaPhiM(jet->PT, jet->Eta, jet->Phi, jet->Mass);
         h_pt_alljets->Fill(p.Pt(), weight);
@@ -478,7 +493,7 @@ void Analysis::EveryEvent(double weight)
         p_j.push_back(p);
     }
 
-    h_nBjets->Fill(m_bTags, weight);
+    h_nBjets->Fill(bTags, weight);
 
     if (m_debug) cout << "Fetching all electrons ...\n";
     vector<TLorentzVector> p_el;
@@ -1776,12 +1791,12 @@ bool Analysis::OutsideZmassWindow(const pair<TLorentzVector, TLorentzVector>& p_
 bool Analysis::SufficientBtags()
 {
     bool sufficientBtags;
-    // m_bTags = 0;
-    // for (int i = 0; i < m_jets->size(); i++)
-    // {
-    //     Jet *jet = (Jet*) m_jets->at(i);
-    //     if (jet->BTag > 0) m_bTags++;
-    // }
+    m_bTags = 0;
+    for (int i = 0; i < m_jets->size(); i++)
+    {
+        Jet *jet = (Jet*) m_jets->at(i);
+        if (jet->BTag > 0) m_bTags++;
+    }
     // h_nBjets->Fill(m_bTags, 1.0);
     if (m_bTags >= m_minBtags) sufficientBtags = true;
     else sufficientBtags = false;
