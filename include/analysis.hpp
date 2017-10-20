@@ -386,7 +386,7 @@ public:
         m_tag(tag),
         m_use_mass_slices(slice),
         m_truth(true),
-        m_debug(true),
+        m_debug(false),
         m_output(nullptr),
         m_input(nullptr),
         m_processes(nullptr),

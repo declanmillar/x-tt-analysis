@@ -18,15 +18,16 @@ private:
     TLorentzVector m_nubar;
     const double m_bMass;
     const double m_WMass;
-    const double m_TopMass;
+    double m_TopMass;
     const bool m_debug = false;
     std::vector<std::pair<TLorentzVector, TLorentzVector> > GetSolutions(const TLorentzVector& p_l1, const TLorentzVector& p_l2, const TLorentzVector& p_b1, const TLorentzVector& p_b2, const TLorentzVector& p_miss);
     void Reset();
 
 public:
-    KinematicReconstructer(double, double, double);
+    KinematicReconstructer(const double, const double);
     virtual ~KinematicReconstructer();
-    bool Reconstruct(const std::pair<TLorentzVector, TLorentzVector>&, const std::vector<TLorentzVector>&, const TLorentzVector&);
+    bool Reconstruct(const std::pair<TLorentzVector, TLorentzVector>&, const std::pair<TLorentzVector, TLorentzVector>&, const TLorentzVector&, const double);
+    bool ReconstructMulti(const std::pair<TLorentzVector, TLorentzVector>&, const std::vector<TLorentzVector>&, const TLorentzVector&, const double);
     TLorentzVector GetTop(){   return m_top;   };
     TLorentzVector GetTbar(){  return m_tbar;  };
     TLorentzVector GetTtbar(){ return m_ttbar; };

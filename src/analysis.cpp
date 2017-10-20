@@ -212,49 +212,69 @@ void Analysis::EachEvent(double weight)
 
     if (m_reconstruction == "KIN" or m_reconstruction == "NuW")
     {
-
-        if (m_debug) cout << "starting reconstruction ...\n";
+        if (m_debug) cout << "Starting reconstruction ...\n";
 
         pair< TLorentzVector, TLorentzVector> p_b_hypo;
         if (m_bTags >= 2)
         {
-            if (m_debug) cout << "selecting two b-tagged jets with highest pT ...\n";
-            if (m_debug) cout << "p_b size = " << p_b.size() << "\n";
+            if (m_debug) cout << "Selecting two b-tagged jets with highest pT ...\n";
             p_b_hypo = TwoHighestPt(p_b);
-            if (m_debug) cout << "BORK ...\n";
         }
         else if (m_bTags == 0)
         {
-            if (m_debug) cout << "selecting two jets with highest pT ...\n";
+            if (m_debug) cout << "Selecting two jets with highest pT ...\n";
             p_b_hypo = TwoHighestPt(p_q);
         }
         else if (m_bTags == 1)
         {
-            if (m_debug) cout << "select b-tagged jet and jet with highest pT\n";
+            if (m_debug) cout << "Selecting b-tagged jet and jet with highest pT\n";
             p_b_hypo.first = p_b.at(0);
             p_b_hypo.second = HighestPt(p_q);
         }
+        else
+        {
+            cout << "ERROR: invalid b-tags\n";
+        }
 
-        if (m_debug) cout << "collect p_b hypo\n";
+        if (m_debug) cout << "Collected hypothetical b-quark jets.\n";
 
         TLorentzVector p_top, p_tbar, p_ttbar, p_b1, p_b2, p_v1, p_v2;
 
-        if (m_debug) cout << "Reconstruction method: " << m_reconstruction << "\n";
+        if (m_debug) cout << "Matching b-jets to leptons ...\n";
+        auto p_b_match = MatchBjetsToLeps(p_l, p_b_hypo);
 
         if (m_reconstruction == "KIN")
         {
             if (m_debug) cout << "Setting up kinematic reconstruction ...\n";
-            vector<TLorentzVector> p_b_hiPt = { p_b_hypo.first, p_b_hypo.second };
-            KinematicReconstructer KIN = KinematicReconstructer(m_bmass, m_Wmass, m_tmass);
-            bool isSolution = KIN.Reconstruct(p_l, p_b_hiPt, p_miss);
-            p_top = KIN.GetTop();
-            p_tbar = KIN.GetTbar();
-            p_ttbar = KIN.GetTtbar();
-            p_b1 = KIN.GetB();
-            p_b2 = KIN.GetBbar();
-            p_v1 = KIN.GetNu();
-            p_v2 = KIN.GetNubar();
-            if (isSolution) this->UpdateCutflow(c_validSolution, true);
+            KinematicReconstructer KIN = KinematicReconstructer(m_bmass, m_Wmass);
+            bool isSolution = KIN.Reconstruct(p_l, p_b_match, p_miss, m_tmass);
+            if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_match, p_miss, m_tmass - 0.5);
+            if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_match, p_miss, m_tmass + 0.5);
+            if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_match, p_miss, m_tmass - 1.0);
+            if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_match, p_miss, m_tmass + 1.0);
+            if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_match, p_miss, m_tmass - 1.5);
+            if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_match, p_miss, m_tmass + 1.5);
+
+            // std::pair<TLorentzVector, TLorentzVector> p_b_rmatch = std::make_pair(p_b_match.second, p_b_match.first);
+            // if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_rmatch, p_miss, m_tmass);
+            // if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_rmatch, p_miss, m_tmass - 0.5);
+            // if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_rmatch, p_miss, m_tmass + 0.5);
+            // if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_rmatch, p_miss, m_tmass - 1.0);
+            // if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_rmatch, p_miss, m_tmass + 1.0);
+            // if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_rmatch, p_miss, m_tmass - 1.5);
+            // if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_rmatch, p_miss, m_tmass + 1.5);
+
+            if (isSolution)
+            {
+                this->UpdateCutflow(c_validSolution, true);
+                p_top = KIN.GetTop();
+                p_tbar = KIN.GetTbar();
+                p_ttbar = KIN.GetTtbar();
+                p_b1 = KIN.GetB();
+                p_b2 = KIN.GetBbar();
+                p_v1 = KIN.GetNu();
+                p_v2 = KIN.GetNubar();
+            }
             else
             {
                 this->UpdateCutflow(c_validSolution, false);
@@ -264,10 +284,10 @@ void Analysis::EachEvent(double weight)
         }
         else if (m_reconstruction == "NuW")
         {
-            auto p_b_match = MatchBjetsToLeps(p_l, p_b_hypo);
-
+            if (m_debug) cout << "Setting up NuW reconstruction ...\n";
             NeutrinoWeighter nuW = NeutrinoWeighter(1, p_l.first.Pt() + p_l.first.Phi(), m_bmass); // 2nd argument is random seed same for specific event
             double weight_max = nuW.Reconstruct(p_l.first, p_l.second, p_b_match.first, p_b_match.second, p_miss.Px(), p_miss.Py(), p_miss.Phi());
+            // if (weight_max <= 0.0) weight_max = nuW.Reconstruct(p_l.first, p_l.second, p_b_match.second, p_b_match.first, p_miss.Px(), p_miss.Py(), p_miss.Phi());
             if (weight_max > 0.0)
             {
                 this->UpdateCutflow(c_validSolution, true);
@@ -279,26 +299,17 @@ void Analysis::EachEvent(double weight)
                 p_v1 = nuW.GetNu();
                 p_v2 = nuW.GetNubar();
             }
-            else {
-                // cout << "mtt truth = " << mttTruth << "\n";
+            else
+            {
                 this->UpdateCutflow(c_validSolution, false);
                 return;
             }
-
-            // if (p_top.Eta() == 0 or p_tbar.Eta() == 0)
-            // {
-            //     cout << "mtt truth = " << mttTruth << "\n";
-            //     this->UpdateCutflow(c_validSolution, false);
-            //     return;
-            // }
-            // else
-            // {
-            //     this->UpdateCutflow(c_validSolution, true);
-            // }
+            if (m_debug) cout << "Finished NuW reconstruction\n";
         }
-        else cout << "Error: Reconstruction = {KIN, NuW}\n";
-
-        // p_ttbar.Print();
+        else
+        {
+            cout << "Error: Reconstruction = {KIN, NuW}\n";
+        }
 
         TLorentzVector p_W1 = p_l.first + p_v1;
         TLorentzVector p_W2 = p_l.second + p_v2;
