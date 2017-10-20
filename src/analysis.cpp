@@ -29,27 +29,21 @@ void Analysis::EachEvent(double weight)
     // hard process particles
     this->GetHardParticles();
 
-    TLorentzVector ptruth_top = m_hardTop->P4();
-    TLorentzVector ptruth_tbar = m_hardTbar->P4();
-    TLorentzVector ptruth_ttbar = ptruth_top + ptruth_tbar;
-    // cout << "top = ";
-    // ptruth_top.Print();
-    // cout << "tbar = ";
-    // ptruth_tbar.Print();
-    // cout << "ttbar = ";
-    // ptruth_ttbar.Print();
+    TLorentzVector p_top_truth = m_hardTop->P4();
+    TLorentzVector p_tbar_truth = m_hardTbar->P4();
+    TLorentzVector p_ttbar_truth = p_top_truth + p_tbar_truth;
 
-    double mttTruth = ptruth_ttbar.M() / 1000;
-    h_mttTruth->Fill(mttTruth, weight);
+    double mass_ttbar_truth = p_ttbar_truth.M() / 1000;
+    h_mass_ttbar_truth->Fill(mass_ttbar_truth, weight);
 
-    h_pTt_truth->Fill(ptruth_top.Pt());
-    h_etat_truth->Fill(ptruth_top.Eta());
-    h_phit_truth->Fill(ptruth_top.Phi());
-    h_mt_truth->Fill(ptruth_top.M());
-    h_pTtbar_truth->Fill(ptruth_tbar.Pt());
-    h_etatbar_truth->Fill(ptruth_tbar.Eta());
-    h_phitbar_truth->Fill(ptruth_tbar.Phi());
-    h_mtbar_truth->Fill(ptruth_tbar.M());
+    h_pT_top_truth->Fill(p_top_truth.Pt());
+    h_eta_top_truth->Fill(p_top_truth.Eta());
+    h_phi_top_truth->Fill(p_top_truth.Phi());
+    h_mass_top_truth->Fill(p_top_truth.M());
+    h_pT_tbar_truth->Fill(p_tbar_truth.Pt());
+    h_eta_tbar_truth->Fill(p_tbar_truth.Eta());
+    h_phi_tbar_truth->Fill(p_tbar_truth.Phi());
+    h_mass_tbar_truth->Fill(p_tbar_truth.M());
 
     // truth
     this->GetTruthParticles();
@@ -69,12 +63,12 @@ void Analysis::EachEvent(double weight)
     if (!this->OutsideZmassWindow(p_l)) return;
 
     MissingET* missingET = (MissingET*) b_MissingET->At(0);
-    double ETmiss = missingET->MET;
+    double ET_miss = missingET->MET;
 
-    if (!this->SufficientMET(ETmiss)) return;
+    if (!this->SufficientMET(ET_miss)) return;
 
     TLorentzVector p_miss;
-    p_miss.SetPtEtaPhiM(ETmiss, missingET->Eta, missingET->Phi, 0.0);
+    p_miss.SetPtEtaPhiM(ET_miss, missingET->Eta, missingET->Phi, 0.0);
 
     if (!this->SufficientHT()) return;
 
@@ -99,17 +93,17 @@ void Analysis::EachEvent(double weight)
         {
             if (m_debug) cout << "b-jet pT = " << p.Pt() << "\n";
             p_b.push_back(p);
-            h_pt_bjets->Fill(p.Pt(), weight);
+            h_pT_bjets->Fill(p.Pt(), weight);
             h_eta_bjets->Fill(p.Eta(), weight);
         }
         else
         {
             p_q.push_back(p);
-            h_pt_qjets->Fill(p.Pt(), weight);
+            h_pT_qjets->Fill(p.Pt(), weight);
             h_eta_qjets->Fill(p.Eta(), weight);
         }
         p_j.push_back(p);
-        h_pt_jets->Fill(p.Pt(), weight);
+        h_pT_jets->Fill(p.Pt(), weight);
         h_eta_jets->Fill(p.Eta(), weight);
     }
 
@@ -132,22 +126,22 @@ void Analysis::EachEvent(double weight)
 
     // ScalarHT *scalarHT = (ScalarHT*) b_ScalarHT->At(0);
     // double HT = scalarHT->HT;
-    double HT = p_l.first.Pt() + p_l.second.Pt() + ETmiss;
+    double HT = p_l.first.Pt() + p_l.second.Pt() + ET_miss;
     for (auto& p : p_b) HT += p.Pt();
     for (auto& p : p_q) HT += p.Pt();
 
     TLorentzVector pvis = p_l.first + p_l.second;
     for (auto& p : p_j) pvis += p;
-    double mvis = pvis.M();
-    double pTvis = pvis.Pt();
-    double KT = sqrt(mvis * mvis + pTvis * pTvis) + ETmiss;
+    double mass_vis = pvis.M();
+    double pT_vis = pvis.Pt();
+    double KT = sqrt(mass_vis * mass_vis + pT_vis * pT_vis) + ET_miss;
 
-    mvis = mvis / 1000;
+    mass_vis = mass_vis / 1000;
     HT = HT / 1000;
     KT = KT / 1000;
 
     h_HT->Fill(HT, weight);
-    h_mvis->Fill(mvis, weight);
+    h_mass_vis->Fill(mass_vis, weight);
     h_KT->Fill(KT, weight);
 
     auto delta_abs_etal = abs(p_l.first.Eta()) - abs(p_l.second.Eta());
@@ -165,8 +159,8 @@ void Analysis::EachEvent(double weight)
     h_cosTheta_l->Fill(cosTheta_l, weight);
     h_cosThetaStar_l->Fill(cosThetaStar_l, weight);
 
-    h_pt_l1->Fill(p_l.first.Pt(), weight);
-    h_pt_l2->Fill(p_l.second.Pt(), weight);
+    h_pT_l1->Fill(p_l.first.Pt(), weight);
+    h_pT_l2->Fill(p_l.second.Pt(), weight);
     h_eta_l1->Fill(p_l.first.Eta(), weight);
     h_eta_l2->Fill(p_l.second.Eta(), weight);
 
@@ -194,7 +188,7 @@ void Analysis::EachEvent(double weight)
         h_KT_lB->Fill(KT, weight);
     }
 
-    h_delta_abs_etal->Fill(delta_abs_etal, weight);
+    h_deltaEta_l->Fill(delta_abs_etal, weight);
     if (delta_abs_etal > 0)
     {
         h_HT_lCF->Fill(HT, weight);
@@ -207,7 +201,7 @@ void Analysis::EachEvent(double weight)
     }
 
     h2_HT_deltaPhi->Fill(HT, deltaPhi, weight);
-    h2_mvis_deltaPhi->Fill(mvis, deltaPhi, weight);
+    h2_mvis_deltaPhi->Fill(mass_vis, deltaPhi, weight);
     h2_KT_deltaPhi->Fill(KT, deltaPhi, weight);
 
     if (m_reconstruction == "KIN" or m_reconstruction == "NuW")
@@ -246,23 +240,23 @@ void Analysis::EachEvent(double weight)
         if (m_reconstruction == "KIN")
         {
             if (m_debug) cout << "Setting up kinematic reconstruction ...\n";
-            KinematicReconstructer KIN = KinematicReconstructer(m_bmass, m_Wmass);
-            bool isSolution = KIN.Reconstruct(p_l, p_b_match, p_miss, m_tmass);
-            if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_match, p_miss, m_tmass - 0.5);
-            if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_match, p_miss, m_tmass + 0.5);
-            if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_match, p_miss, m_tmass - 1.0);
-            if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_match, p_miss, m_tmass + 1.0);
-            if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_match, p_miss, m_tmass - 1.5);
-            if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_match, p_miss, m_tmass + 1.5);
+            KinematicReconstructer KIN = KinematicReconstructer(m_mass_b, m_mass_W);
+            bool isSolution = KIN.Reconstruct(p_l, p_b_match, p_miss, m_mass_top);
+            if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_match, p_miss, m_mass_top - 0.5);
+            if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_match, p_miss, m_mass_top + 0.5);
+            if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_match, p_miss, m_mass_top - 1.0);
+            if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_match, p_miss, m_mass_top + 1.0);
+            if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_match, p_miss, m_mass_top - 1.5);
+            if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_match, p_miss, m_mass_top + 1.5);
 
             // std::pair<TLorentzVector, TLorentzVector> p_b_rmatch = std::make_pair(p_b_match.second, p_b_match.first);
-            // if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_rmatch, p_miss, m_tmass);
-            // if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_rmatch, p_miss, m_tmass - 0.5);
-            // if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_rmatch, p_miss, m_tmass + 0.5);
-            // if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_rmatch, p_miss, m_tmass - 1.0);
-            // if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_rmatch, p_miss, m_tmass + 1.0);
-            // if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_rmatch, p_miss, m_tmass - 1.5);
-            // if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_rmatch, p_miss, m_tmass + 1.5);
+            // if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_rmatch, p_miss, m_mass_top);
+            // if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_rmatch, p_miss, m_mass_top - 0.5);
+            // if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_rmatch, p_miss, m_mass_top + 0.5);
+            // if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_rmatch, p_miss, m_mass_top - 1.0);
+            // if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_rmatch, p_miss, m_mass_top + 1.0);
+            // if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_rmatch, p_miss, m_mass_top - 1.5);
+            // if (!isSolution) isSolution = KIN.Reconstruct(p_l, p_b_rmatch, p_miss, m_mass_top + 1.5);
 
             if (isSolution)
             {
@@ -285,7 +279,7 @@ void Analysis::EachEvent(double weight)
         else if (m_reconstruction == "NuW")
         {
             if (m_debug) cout << "Setting up NuW reconstruction ...\n";
-            NeutrinoWeighter nuW = NeutrinoWeighter(1, p_l.first.Pt() + p_l.first.Phi(), m_bmass); // 2nd argument is random seed same for specific event
+            NeutrinoWeighter nuW = NeutrinoWeighter(1, p_l.first.Pt() + p_l.first.Phi(), m_mass_b); // 2nd argument is random seed same for specific event
             double weight_max = nuW.Reconstruct(p_l.first, p_l.second, p_b_match.first, p_b_match.second, p_miss.Px(), p_miss.Py(), p_miss.Phi());
             // if (weight_max <= 0.0) weight_max = nuW.Reconstruct(p_l.first, p_l.second, p_b_match.second, p_b_match.first, p_miss.Px(), p_miss.Py(), p_miss.Phi());
             if (weight_max > 0.0)
@@ -314,10 +308,10 @@ void Analysis::EachEvent(double weight)
         TLorentzVector p_W1 = p_l.first + p_v1;
         TLorentzVector p_W2 = p_l.second + p_v2;
 
-        auto mtt = p_ttbar.M();
-        auto ytt = p_ttbar.Rapidity();
-        auto cosTheta_tt = cos(p_top.Angle(p_tbar.Vect()));
-        auto delta_abs_yt = abs(p_top.Rapidity()) - abs(p_tbar.Rapidity());
+        auto mass_ttbar = p_ttbar.M();
+        auto y_ttbar = p_ttbar.Rapidity();
+        auto cosTheta_ttbar = cos(p_top.Angle(p_tbar.Vect()));
+        auto DeltaY_top = abs(p_top.Rapidity()) - abs(p_tbar.Rapidity());
 
         auto pttbar_top = p_top, pttbar_tbar = p_tbar, pttbar_ttbar = p_ttbar;
         auto pttbar_b1 = p_b1, pttbar_b2 = p_b2, pttbar_v1 = p_v1, pttbar_v2 = p_v2;
@@ -365,7 +359,7 @@ void Analysis::EachEvent(double weight)
         ptbar_v2.Boost(v_tbar);
 
         double cosTheta = pttbar_top.CosTheta();
-        double cosThetaStar = int(ytt / abs(ytt)) * cosTheta;
+        double cosThetaStar = int(y_ttbar / abs(y_ttbar)) * cosTheta;
 
         double cosPhi = cos(ptop_l.first.Phi() - ptbar_l.second.Phi());
 
@@ -375,81 +369,111 @@ void Analysis::EachEvent(double weight)
 
         if (m_debug) cout << "Filling reconstruction histograms ...\n";
 
-        mtt = mtt / 1000;
+        mass_ttbar = mass_ttbar / 1000;
 
-        h_Et->Fill(p_top.E(), weight);
-        h_pTt->Fill(p_top.Pt(), weight);
-        h_etat->Fill(p_top.Eta(), weight);
-        h_phit->Fill(p_top.Phi() / m_pi, weight);
-        h_mt->Fill(p_top.M(), weight);
+        h_E_top->Fill(p_top.E(), weight);
+        h_pT_top->Fill(p_top.Pt(), weight);
+        h_eta_top->Fill(p_top.Eta(), weight);
+        h_phi_top->Fill(p_top.Phi() / m_pi, weight);
+        h_mass_top->Fill(p_top.M(), weight);
 
-        h_Etbar->Fill(p_tbar.E(), weight);
-        h_pTtbar->Fill(p_tbar.Pt(), weight);
-        h_etatbar->Fill(p_tbar.Eta(), weight);
-        h_phitbar->Fill(p_tbar.Phi() / m_pi, weight);
-        h_mtbar->Fill(p_tbar.M(), weight);
+        h_E_tbar->Fill(p_tbar.E(), weight);
+        h_pT_tbar->Fill(p_tbar.Pt(), weight);
+        h_eta_tbar->Fill(p_tbar.Eta(), weight);
+        h_phi_tbar->Fill(p_tbar.Phi() / m_pi, weight);
+        h_mass_tbar->Fill(p_tbar.M(), weight);
 
-        h_mtt->Fill(mtt, weight);
-        h_ytt->Fill(ytt, weight);
+        h_mass_ttbar->Fill(mass_ttbar, weight);
+        h_y_ttbar->Fill(y_ttbar, weight);
 
-        double dR_top = p_top.DeltaR(ptruth_top);
+        double dR_top = p_top.DeltaR(p_top_truth);
         h_dR_top->Fill(dR_top, weight);
 
-        double dR_tbar = p_tbar.DeltaR(ptruth_tbar);
+        double dR_tbar = p_tbar.DeltaR(p_tbar_truth);
         h_dR_tbar->Fill(dR_tbar, weight);
 
         // p_ttbar.Print();
-        // ptruth_ttbar.Print();
-        double dR_ttbar = p_ttbar.DeltaR(ptruth_ttbar);
+        // p_ttbar_truth.Print();
+        double dR_ttbar = p_ttbar.DeltaR(p_ttbar_truth);
         // cout << "dR_ttbar = " << dR_ttbar << "\n";
         h_dR_ttbar->Fill(dR_ttbar, weight);
 
-        h_mW1->Fill(p_W1.M(), weight);
-        h_mW2->Fill(p_W2.M(), weight);
+        h_perf_pT_top->Fill((p_top_truth.Pt() - p_top.Pt()) / p_top_truth.Pt(), weight);
+        h_perf_eta_top->Fill((p_top_truth.Eta() - p_top.Eta()) / p_top_truth.Eta(), weight);
+        h_perf_phi_top->Fill((p_top_truth.Phi() - p_top.Phi()) / p_top_truth.Phi(), weight);
+        h_perf_mass_top->Fill((p_top_truth.M() - p_top.M()) / p_top.M(), weight);
 
-        if (deltaPhi > 0.5) h_mtt_DphiF->Fill(mtt, weight);
-        if (deltaPhi < 0.5) h_mtt_DphiB->Fill(mtt, weight);
+        h_perf_pT_tbar->Fill((p_tbar_truth.Pt() - p_tbar.Pt()) / p_tbar_truth.Pt(), weight);
+        h_perf_eta_tbar->Fill((p_tbar_truth.Eta() - p_tbar.Eta()) / p_tbar_truth.Eta(), weight);
+        h_perf_phi_tbar->Fill((p_tbar_truth.Phi() - p_tbar.Phi()) / p_tbar_truth.Phi(), weight);
+        h_perf_mass_tbar->Fill((p_tbar_truth.M() - p_tbar.M()) / p_tbar.M(), weight);
+
+        h_perf_pT_ttbar->Fill((p_ttbar_truth.Pt() - p_ttbar.Pt()) / p_ttbar_truth.Pt(), weight);
+        h_perf_eta_ttbar->Fill((p_ttbar_truth.Eta() - p_ttbar.Eta()) / p_ttbar_truth.Eta(), weight);
+        h_perf_phi_ttbar->Fill((p_ttbar_truth.Phi() - p_ttbar.Phi()) / p_ttbar_truth.Phi(), weight);
+        h_perf_mass_ttbar->Fill((mass_ttbar_truth - mass_ttbar) / mass_ttbar_truth, weight);
+
+        h2_perf_pT_top->Fill(p_top.Pt(), p_top_truth.Pt(), weight);
+        h2_perf_eta_top->Fill(p_top.Eta(), p_top_truth.Eta(), weight);
+        h2_perf_phi_top->Fill(p_top.Phi(), p_top_truth.Phi(), weight);
+        h2_perf_mass_top->Fill(p_top.M(), p_top_truth.M(), weight);
+
+        h2_perf_pT_tbar->Fill(p_tbar.Pt(), p_tbar_truth.Pt(), weight);
+        h2_perf_eta_tbar->Fill(p_tbar.Eta(), p_tbar_truth.Eta(), weight);
+        h2_perf_phi_tbar->Fill(p_tbar.Phi(), p_tbar_truth.Phi(), weight);
+        h2_perf_mass_tbar->Fill(p_tbar.M(), p_tbar_truth.M(), weight);
+
+        h2_perf_pT_ttbar->Fill(p_ttbar.Pt(), p_ttbar_truth.Pt(), weight);
+        h2_perf_eta_ttbar->Fill(p_ttbar.Eta(), p_ttbar_truth.Eta(), weight);
+        h2_perf_phi_ttbar->Fill(p_ttbar.Phi(), p_ttbar_truth.Phi(), weight);
+        h2_perf_mass_ttbar->Fill(p_ttbar.M(), p_ttbar_truth.M(), weight);
+
+        h_mass_W1->Fill(p_W1.M(), weight);
+        h_mass_W2->Fill(p_W2.M(), weight);
+
+        if (deltaPhi > 0.5) h_mtt_DphiF->Fill(mass_ttbar, weight);
+        if (deltaPhi < 0.5) h_mtt_DphiB->Fill(mass_ttbar, weight);
 
         h_cosPhi->Fill(cosPhi, weight);
-        if (cosPhi > 0) h_mtt_cPhiF->Fill(mtt, weight);
-        if (cosPhi < 0) h_mtt_cPhiB->Fill(mtt, weight);
+        if (cosPhi > 0) h_mtt_cPhiF->Fill(mass_ttbar, weight);
+        if (cosPhi < 0) h_mtt_cPhiB->Fill(mass_ttbar, weight);
 
-        h_cosTheta_tt->Fill(cosTheta_tt, weight);
+        h_cosTheta_ttbar->Fill(cosTheta_ttbar, weight);
         h_cosTheta->Fill(cosTheta, weight);
         h_cosThetaStar->Fill(cosThetaStar, weight);
-        if (cosThetaStar > 0) h_mtt_tF->Fill(mtt, weight);
-        if (cosThetaStar < 0) h_mtt_tB->Fill(mtt, weight);
+        if (cosThetaStar > 0) h_mtt_tF->Fill(mass_ttbar, weight);
+        if (cosThetaStar < 0) h_mtt_tB->Fill(mass_ttbar, weight);
 
         h_cosThetaStar_l->Fill(cosThetaStar_l, weight);
-        if (cosThetaStar_l > 0) h_mtt_lF->Fill(mtt, weight);
-        if (cosThetaStar_l < 0) h_mtt_lB->Fill(mtt, weight);
+        if (cosThetaStar_l > 0) h_mtt_lF->Fill(mass_ttbar, weight);
+        if (cosThetaStar_l < 0) h_mtt_lB->Fill(mass_ttbar, weight);
 
-        h_delta_abs_etal->Fill(delta_abs_etal, weight);
-        if (delta_abs_etal > 0) h_mtt_lCF->Fill(mtt, weight);
-        if (delta_abs_etal < 0) h_mtt_lCB->Fill(mtt, weight);
+        h_deltaEta_l->Fill(delta_abs_etal, weight);
+        if (delta_abs_etal > 0) h_mtt_lCF->Fill(mass_ttbar, weight);
+        if (delta_abs_etal < 0) h_mtt_lCB->Fill(mass_ttbar, weight);
 
-        h_delta_abs_yt->Fill(delta_abs_yt, weight);
-        if (delta_abs_yt > 0) h_mtt_tCF->Fill(mtt, weight);
-        if (delta_abs_yt < 0) h_mtt_tCB->Fill(mtt, weight);
+        h_deltaY_top->Fill(DeltaY_top, weight);
+        if (DeltaY_top > 0) h_mtt_tCF->Fill(mass_ttbar, weight);
+        if (DeltaY_top < 0) h_mtt_tCB->Fill(mass_ttbar, weight);
 
         h_cosTheta1->Fill(cosTheta_tl1, weight);
         h_cosTheta2->Fill(cosTheta_tl2, weight);
         h_cos1cos2->Fill(cos1cos2, weight);
 
-        if (cosTheta_tl1 > 0) h_mtt_c1F->Fill(mtt, weight);
-        if (cosTheta_tl1 < 0) h_mtt_c1B->Fill(mtt, weight);
+        if (cosTheta_tl1 > 0) h_mtt_c1F->Fill(mass_ttbar, weight);
+        if (cosTheta_tl1 < 0) h_mtt_c1B->Fill(mass_ttbar, weight);
 
-        if (cosTheta_tl2 > 0) h_mtt_c2F->Fill(mtt, weight);
-        if (cosTheta_tl2 < 0) h_mtt_c2B->Fill(mtt, weight);
+        if (cosTheta_tl2 > 0) h_mtt_c2F->Fill(mass_ttbar, weight);
+        if (cosTheta_tl2 < 0) h_mtt_c2B->Fill(mass_ttbar, weight);
 
-        if (cos1cos2 > 0) h_mtt_c1c2F->Fill(mtt, weight);
-        if (cos1cos2 < 0) h_mtt_c1c2B->Fill(mtt, weight);
+        if (cos1cos2 > 0) h_mtt_c1c2F->Fill(mass_ttbar, weight);
+        if (cos1cos2 < 0) h_mtt_c1c2B->Fill(mass_ttbar, weight);
 
-        h2_mtt_cosThetaStar->Fill(mtt, cosThetaStar, weight);
-        h2_mtt_deltaPhi->Fill(mtt, deltaPhi, weight);
-        h2_mtt_cosTheta1->Fill(mtt, cosTheta_tl1, weight);
-        h2_mtt_cosTheta2->Fill(mtt, cosTheta_tl2, weight);
-        h2_mtt_cos1cos2->Fill(mtt, cos1cos2, weight);
+        h2_mtt_cosThetaStar->Fill(mass_ttbar, cosThetaStar, weight);
+        h2_mtt_deltaPhi->Fill(mass_ttbar, deltaPhi, weight);
+        h2_mtt_cosTheta1->Fill(mass_ttbar, cosTheta_tl1, weight);
+        h2_mtt_cosTheta2->Fill(mass_ttbar, cosTheta_tl2, weight);
+        h2_mtt_cos1cos2->Fill(mass_ttbar, cos1cos2, weight);
     }
     else
     {
@@ -499,7 +523,7 @@ void Analysis::EveryEvent(double weight)
         if (jet->BTag > 0) bTags++;
         TLorentzVector p;
         p.SetPtEtaPhiM(jet->PT, jet->Eta, jet->Phi, jet->Mass);
-        h_pt_alljets->Fill(p.Pt(), weight);
+        h_pT_alljets->Fill(p.Pt(), weight);
         h_eta_alljets->Fill(p.Eta(), weight);
         p_j.push_back(p);
     }
@@ -513,7 +537,7 @@ void Analysis::EveryEvent(double weight)
         Electron *electron = (Electron*) b_Electron->At(i);
         TLorentzVector p;
         p.SetPtEtaPhiM(electron->PT, electron->Eta, electron->Phi, 0.0);
-        h_pt_allel->Fill(p.Pt(), weight);
+        h_pT_allel->Fill(p.Pt(), weight);
         h_eta_allel->Fill(p.Eta(), weight);
         p_el.push_back(p);
     }
@@ -525,7 +549,7 @@ void Analysis::EveryEvent(double weight)
         Muon *muon = (Muon*) b_Muon->At(i);
         TLorentzVector p;
         p.SetPtEtaPhiM(muon->PT, muon->Eta, muon->Phi, 0.0);
-        h_pt_allmu->Fill(p.Pt(), weight);
+        h_pT_allmu->Fill(p.Pt(), weight);
         h_eta_allmu->Fill(p.Eta(), weight);
         p_mu.push_back(p);
     }
@@ -533,14 +557,14 @@ void Analysis::EveryEvent(double weight)
     if (m_debug) cout << "Fetching missing ET ...\n";
     MissingET *missingET = (MissingET*) b_MissingET->At(0);
     TLorentzVector p_miss;
-    double ETmiss = missingET->MET;
+    double ET_miss = missingET->MET;
 
     if (m_debug) cout << "Calculating HT ...\n";
     double HT = 0;
     for (auto p : p_j) HT += p.Pt();
     for (auto p : p_el) HT += p.Pt();
     for (auto p : p_mu) HT += p.Pt();
-    HT += ETmiss;
+    HT += ET_miss;
     HT = HT / 1000;
     h_HT_all->Fill(HT, weight);
 
@@ -550,14 +574,14 @@ void Analysis::EveryEvent(double weight)
     for (auto p : p_el) pvis += p;
     for (auto p : p_mu) pvis += p;
 
-    if (m_debug) cout << "Calculating mvis ...\n";
-    double mvis = pvis.M();
-    mvis = mvis / 1000;
-    h_mvis_all->Fill(mvis, weight);
+    if (m_debug) cout << "Calculating mass_vis ...\n";
+    double mass_vis = pvis.M();
+    mass_vis = mass_vis / 1000;
+    h_mass_vis_all->Fill(mass_vis, weight);
 
     if (m_debug) cout << "Calculating KT ...\n";
-    double pTvis = pvis.Pt();
-    double KT = sqrt(mvis * mvis + pTvis * pTvis) + ETmiss;
+    double pT_vis = pvis.Pt();
+    double KT = sqrt(mass_vis * mass_vis + pT_vis * pT_vis) + ET_miss;
     KT = KT / 1000;
     h_KT_all->Fill(KT, weight);
 
@@ -805,24 +829,28 @@ void Analysis::MakeHistograms()
     double nbins = (Emax - Emin) / binWidth;
      cout << "Plotting range: " << Emin << " - " << Emax << " [TeV]\n";
 
-    h_pt_l1 = new TH1D("pT_l1", "p^{\\ell^{+}}_{\\mathrm{T}}", 200, 0.0, 2000.0);
-    h_pt_l1->Sumw2();
-    h_pt_l2 = new TH1D("pT_l2", "p^{\\ell^{-}}_{\\mathrm{T}}", 200, 0.0, 2000.0);
-    h_pt_l2->Sumw2();
-    h_pt_jets = new TH1D("pT_jet", "p_{\\mathrm{T}}^{jet}", 200, 0.0, 2000.0);
-    h_pt_jets->Sumw2();
-    h_pt_bjets = new TH1D("pT_bjet", "p_{\\mathrm{T}}^{b-jet}", 200, 0.0, 2000.0);
-    h_pt_bjets->Sumw2();
-    h_pt_qjets = new TH1D("pT_qjet", "p_{\\mathrm{T}}^{q-jet}", 200, 0.0, 2000.0);
-    h_pt_qjets->Sumw2();
-    h_pTt = new TH1D("pT_t", "p_{\\mathrm{T}}^{t}", 200, 0.0, 2000.0);
-    h_pTt->Sumw2();
-    h_pTtbar = new TH1D("pT_tbar", "p_{\\mathrm{T}}^{\\bar{t}}", 200, 0.0, 2000.0);
-    h_pTtbar->Sumw2();
-    h_pTt_truth = new TH1D("pT_t_truth", "p^{truth}_{\\mathrm{T}}^{t}", 200, 0.0, 2000.0);
-    h_pTt_truth->Sumw2();
-    h_pTtbar_truth = new TH1D("pT_tbar_truth", "p^{truth}_{\\mathrm{T}}^{\\bar{t}}", 200, 0.0, 2000.0);
-    h_pTtbar_truth->Sumw2();
+    h_pT_l1 = new TH1D("pT_l1", "p^{\\ell^{+}}_{\\mathrm{T}}", 200, 0.0, 2000.0);
+    h_pT_l1->Sumw2();
+    h_pT_l2 = new TH1D("pT_l2", "p^{\\ell^{-}}_{\\mathrm{T}}", 200, 0.0, 2000.0);
+    h_pT_l2->Sumw2();
+    h_pT_jets = new TH1D("pT_jet", "p_{\\mathrm{T}}^{jet}", 200, 0.0, 2000.0);
+    h_pT_jets->Sumw2();
+    h_pT_bjets = new TH1D("pT_bjet", "p_{\\mathrm{T}}^{b-jet}", 200, 0.0, 2000.0);
+    h_pT_bjets->Sumw2();
+    h_pT_qjets = new TH1D("pT_qjet", "p_{\\mathrm{T}}^{q-jet}", 200, 0.0, 2000.0);
+    h_pT_qjets->Sumw2();
+    h_pT_top = new TH1D("pT_t", "p_{\\mathrm{T}}^{t}", 200, 0.0, 2000.0);
+    h_pT_top->Sumw2();
+    h_pT_tbar = new TH1D("pT_tbar", "p_{\\mathrm{T}}^{\\bar{t}}", 200, 0.0, 2000.0);
+    h_pT_tbar->Sumw2();
+    h_pT_ttbar = new TH1D("pT_ttbar", "p_{\\mathrm{T}}^{t\\bar{t}}", 200, 0.0, 2000.0);
+    h_pT_ttbar->Sumw2();
+    h_pT_top_truth = new TH1D("pT_top_truth", "p^{truth}_{\\mathrm{T}}^{t}", 200, 0.0, 2000.0);
+    h_pT_top_truth->Sumw2();
+    h_pT_tbar_truth = new TH1D("pT_tbar_truth", "p^{truth}_{\\mathrm{T}}^{\\bar{t}}", 200, 0.0, 2000.0);
+    h_pT_tbar_truth->Sumw2();
+    h_pT_ttbar_truth = new TH1D("pT_ttbar_truth", "p^{truth}_{\\mathrm{T}}^{t\\bar{t}}", 200, 0.0, 2000.0);
+    h_pT_ttbar_truth->Sumw2();
 
     h_eta_l1 = new TH1D("eta_l1", "\\eta_{\\ell^{+}}", 200, -5.0, 5.0);
     h_eta_l1->Sumw2();
@@ -834,54 +862,50 @@ void Analysis::MakeHistograms()
     h_eta_bjets->Sumw2();
     h_eta_qjets = new TH1D("eta_qjet", "\\eta_{q-jet}", 200, -5.0, 5.0);
     h_eta_qjets->Sumw2();
-    h_etat = new TH1D("eta_t", "\\eta_{t}", 200, -5.0, 5.0);
-    h_etat->Sumw2();
-    h_etatbar = new TH1D("eta_tbar", "\\eta_{\\bar{t}}", 200, -5.0, 5.0);
-    h_etatbar->Sumw2();
-    h_etat_truth = new TH1D("eta_t_truth", "\\eta_{t}^{truth}", 200, -5.0, 5.0);
-    h_etat_truth->Sumw2();
-    h_etatbar_truth = new TH1D("eta_tbar_truth", "\\eta^{truth}_{\\bar{t}}", 200, -5.0, 5.0);
-    h_etatbar_truth->Sumw2();
+    h_eta_top = new TH1D("eta_top", "\\eta_{t}", 200, -5.0, 5.0);
+    h_eta_top->Sumw2();
+    h_eta_top_truth = new TH1D("eta_t_truth", "\\eta_{t}^{truth}", 200, -5.0, 5.0);
+    h_eta_top_truth->Sumw2();
+    h_eta_tbar = new TH1D("eta_tbar", "\\eta_{\\bar{t}}", 200, -5.0, 5.0);
+    h_eta_tbar->Sumw2();
+    h_eta_tbar_truth = new TH1D("eta_tbar_truth", "\\eta^{truth}_{\\bar{t}}", 200, -5.0, 5.0);
+    h_eta_tbar_truth->Sumw2();
+    h_y_ttbar = new TH1D("y_tt", "y_{t\\bar{t}}\\ ", 50, -2.5, 2.5);
+    h_y_ttbar->Sumw2();
+    h_y_ttbar_truth = new TH1D("y_tt_truth", "y^{truth}_{t\\bar{t}}\\ ", 50, -2.5, 2.5);
+    h_y_ttbar_truth->Sumw2();
 
-    h_mtt = new TH1D("m_tt", "m_{t\\bar{t}}\\ ", nbins, Emin, Emax);
-    h_mtt->Sumw2();
-    h_mttTruth = new TH1D("m_tt_truth", "m^{truth}_{t\\bar{t}}\\ ", nbins, Emin, Emax);
-    h_mttTruth->Sumw2();
+    h_phi_top = new TH1D("phi_t", "\\phi_{t}", 200, -1.0, 1.0);
+    h_phi_top->Sumw2();
+    h_phi_tbar = new TH1D("phi_tbar", "\\phi_{\\bar{t}}", 200, -1.0, 1.0);
+    h_phi_tbar->Sumw2();
+    h_phi_top_truth = new TH1D("phi_t_truth", "\\phi^{truth}_{t}", 200, -1.0, 1.0);
+    h_phi_top_truth->Sumw2();
+    h_phi_tbar_truth = new TH1D("phi_tbar_truth", "\\phi^{truth}_{\\bar{t}}", 200, -1.0, 1.0);
+    h_phi_tbar_truth->Sumw2();
 
-    h_dR_top = new TH1D("dR_top", "\\Delta R(t_{truth},t_{reco})", 50, 0.0, 20.0);
-    h_dR_tbar = new TH1D("dR_tbar", "\\Delta R(\\bar{t}_{truth},\\bar{t}_{reco})", 50, 0.0, 20.0);
-    h_dR_ttbar = new TH1D("dR_ttbar", "\\Delta R(t\\bar{t}_{truth}, t\\bar{t}_{reco})", 50, 0.0, 20.0);
+    h_mass_W1 = new TH1D("mass_W1", "m_{W^{+}}\\ ", 150, 0.0, 150.0);
+    h_mass_W1->Sumw2();
+    h_mass_W2 = new TH1D("mass_W2", "m_{W^{-}}\\ ", 150, 0.0, 150.0);
+    h_mass_W2->Sumw2();
+    h_mass_top = new TH1D("mass_top", "m_{t}\\ ", 40, 100.0, 300.0);
+    h_mass_top->Sumw2();
+    h_mass_top_truth = new TH1D("mass_top_truth", "m^{truth}_{t}\\ ", 40, 100.0, 300.0);
+    h_mass_top_truth->Sumw2();
+    h_mass_tbar = new TH1D("mass_tbar", "m_{\\bar{t}}\\ ", 40, 100.0, 300.0);
+    h_mass_tbar->Sumw2();
+    h_mass_tbar_truth = new TH1D("mass_tbar_truth", "m^{truth}_{\\bar{t}}\\ ", 40, 100.0, 300.0);
+    h_mass_tbar_truth->Sumw2();
+    h_mass_ttbar = new TH1D("mass_ttbar", "m_{t\\bar{t}}\\ ", nbins, Emin, Emax);
+    h_mass_ttbar->Sumw2();
+    h_mass_ttbar_truth = new TH1D("mass_ttbar_truth", "m^{truth}_{t\\bar{t}}\\ ", nbins, Emin, Emax);
+    h_mass_ttbar_truth->Sumw2();
 
-    h_ytt = new TH1D("y_tt", "y_{t\\bar{t}}\\ ", 50, -2.5, 2.5);
-    h_ytt->Sumw2();
 
-    h_mW1 = new TH1D("mW1", "m_{W^{+}}\\ ", 150, 0.0, 150.0);
-    h_mW1->Sumw2();
-    h_mW2 = new TH1D("mW2", "m_{W^{-}}\\ ", 150, 0.0, 150.0);
-    h_mW2->Sumw2();
-
-    h_mt = new TH1D("m_t", "m_{t}\\ ", 40, 100.0, 300.0);
-    h_mt->Sumw2();
-    h_mtbar = new TH1D("m_tbar", "m_{\\bar{t}}\\ ", 40, 100.0, 300.0);
-    h_mtbar->Sumw2();
-    h_mt_truth = new TH1D("m_t_truth", "m^{truth}_{t}\\ ", 40, 100.0, 300.0);
-    h_mt_truth->Sumw2();
-    h_mtbar_truth = new TH1D("m_tbar_truth", "m^{truth}_{\\bar{t}}\\ ", 40, 100.0, 300.0);
-    h_mtbar_truth->Sumw2();
-
-    h_phit = new TH1D("phi_t", "\\phi_{t}", nbins, -1.0, 1.0);
-    h_phit->Sumw2();
-    h_phitbar = new TH1D("phi_tbar", "\\phi_{\\bar{t}}", nbins, -1.0, 1.0);
-    h_phitbar->Sumw2();
-    h_phit_truth = new TH1D("phi_t_truth", "\\phi^{truth}_{t}", nbins, -1.0, 1.0);
-    h_phit_truth->Sumw2();
-    h_phitbar_truth = new TH1D("phi_tbar_truth", "\\phi^{truth}_{\\bar{t}}", nbins, -1.0, 1.0);
-    h_phitbar_truth->Sumw2();
-
-    h_Et = new TH1D("E_t", "E_{t}", 100, 0.0, 5000.0);
-    h_Et->Sumw2();
-    h_Etbar = new TH1D("E_tbar", "E_{\\bar{t}}", 100, 0.0, 5000.0);
-    h_Etbar->Sumw2();
+    h_E_top = new TH1D("E_t", "E_{t}", 100, 0.0, 5000.0);
+    h_E_top->Sumw2();
+    h_E_tbar = new TH1D("E_tbar", "E_{\\bar{t}}", 100, 0.0, 5000.0);
+    h_E_tbar->Sumw2();
 
     // AtFB
     h_mtt_tF = new TH1D("mtt_tF", "m_{t\\bar{t}}^{tF}", nbins, Emin, Emax);
@@ -978,8 +1002,8 @@ void Analysis::MakeHistograms()
     h2_mtt_cosThetaStar->GetYaxis()->SetTitle("\\cos\\theta^{*}");
     h2_mtt_cosThetaStar->Sumw2();
 
-    h_cosTheta_tt = new TH1D("costheta_tt", "\\cos\\theta_{t,\\bar{t}}", 20, -1.0, 1.0);
-    h_cosTheta_tt->Sumw2();
+    h_cosTheta_ttbar = new TH1D("costheta_tt", "\\cos\\theta_{t,\\bar{t}}", 20, -1.0, 1.0);
+    h_cosTheta_ttbar->Sumw2();
 
     // AtlFB
     // h_mtt_tlF = new TH1D("mtt_tlF", "m_{t\\bar{t}}^{t\\ell F}\\;", nbins, Emin, Emax);
@@ -999,21 +1023,21 @@ void Analysis::MakeHistograms()
     // h_mtt_ElB = new TH1D("mtt_ElB", "m_{t\\bar{t}}^{E_{\\ell} B}\\;", nbins, Emin, Emax);
     // h_mtt_ElB->Sumw2();
 
-    h_cosTheta = new TH1D("costheta", "\\cos\\theta", nbins, -1.0, 1.0);
+    h_cosTheta = new TH1D("costheta", "\\cos\\theta", 200, -1.0, 1.0);
     h_cosTheta->Sumw2();
-    h_cosThetaStar = new TH1D("costheta_star", "\\cos\\theta^{*}", nbins, -1.0, 1.0);
+    h_cosThetaStar = new TH1D("costheta_star", "\\cos\\theta^{*}", 200, -1.0, 1.0);
     h_cosThetaStar->Sumw2();
 
-    h_cosTheta_l = new TH1D("costheta_l", "\\cos\\theta_{\\ell}", nbins, -1.0, 1.0);
+    h_cosTheta_l = new TH1D("costheta_l", "\\cos\\theta_{\\ell}", 200, -1.0, 1.0);
     h_cosTheta_l->Sumw2();
-    h_cosThetaStar_l = new TH1D("costheta_star_l", "\\cos\\theta^{*}_{\\ell}", nbins, -1.0, 1.0);
+    h_cosThetaStar_l = new TH1D("costheta_star_l", "\\cos\\theta^{*}_{\\ell}", 200, -1.0, 1.0);
     h_cosThetaStar_l->Sumw2();
 
-    h_delta_abs_etal = new TH1D("delta_abs_etal", "\\Delta |\\eta_{\\ell}|", nbins, -5.0, 5.0);
-    h_delta_abs_etal->Sumw2();
+    h_deltaEta_l = new TH1D("deltaEta_l", "\\Delta |\\eta_{\\ell}|", 200, -5.0, 5.0);
+    h_deltaEta_l->Sumw2();
 
-    h_delta_abs_yt = new TH1D("delta_abs_yt", "\\Delta |y_{t}|", nbins, -5.0, 5.0);
-    h_delta_abs_yt->Sumw2();
+    h_deltaY_top = new TH1D("DeltaY_top", "\\Delta |y_{t}|", 200, -5.0, 5.0);
+    h_deltaY_top->Sumw2();
 
     h_HT_all = new TH1D("HT_all", "H^{\\mathrm{all}}_{\\mathrm{T}}", 50, 0.0, 6.0);
     h_HT_all->Sumw2();
@@ -1025,17 +1049,17 @@ void Analysis::MakeHistograms()
     h_KT = new TH1D("KT", "K_{\\mathrm{T}}", 60, 0.0, 6.0);
     h_KT->Sumw2();
 
-    h_mvis_all = new TH1D("mvis_all", "m^{\\mathrm{\\mathrm{all}}}_{\\mathrm{vis}}", 60, 0.0, 6.0);
-    h_mvis_all->Sumw2();
-    h_mvis = new TH1D("mvis", "m_{\\mathrm{vis}}", 60, 0.0, 6.0);
-    h_mvis->Sumw2();
+    h_mass_vis_all = new TH1D("mvis_all", "m^{\\mathrm{\\mathrm{all}}}_{\\mathrm{vis}}", 60, 0.0, 6.0);
+    h_mass_vis_all->Sumw2();
+    h_mass_vis = new TH1D("mass_vis", "m_{\\mathrm{vis}}", 60, 0.0, 6.0);
+    h_mass_vis->Sumw2();
 
-    h_pt_alljets = new TH1D("pT_alljets", "p_{\\mathrm{T}}^{jet}", 1000, 0.0, 5000.0);
-    h_pt_alljets->Sumw2();
-    h_pt_allel = new TH1D("pT_allel", "p_{\\mathrm{T}}^{e}", 1000, 0.0, 5000.0);
-    h_pt_allel->Sumw2();
-    h_pt_allmu = new TH1D("pT_allmu", "p_{\\mathrm{T}}^{\\mu}", 1000, 0.0, 5000.0);
-    h_pt_allmu->Sumw2();
+    h_pT_alljets = new TH1D("pT_alljets", "p_{\\mathrm{T}}^{jet}", 1000, 0.0, 5000.0);
+    h_pT_alljets->Sumw2();
+    h_pT_allel = new TH1D("pT_allel", "p_{\\mathrm{T}}^{e}", 1000, 0.0, 5000.0);
+    h_pT_allel->Sumw2();
+    h_pT_allmu = new TH1D("pT_allmu", "p_{\\mathrm{T}}^{\\mu}", 1000, 0.0, 5000.0);
+    h_pT_allmu->Sumw2();
     h_eta_alljets = new TH1D("eta_alljets", "\\eta^{jet}", 200, -5.0, 5.0);
     h_eta_alljets->Sumw2();
     h_eta_allel = new TH1D("eta_allel", "\\eta^{e}", 200, -5.0, 5.0);
@@ -1116,13 +1140,37 @@ void Analysis::MakeHistograms()
     h2_KT_deltaPhi->GetYaxis()->SetTitle("\\Delta\\phi_{\\ell^{+}\\ell^{-}}\\;[rad/\\pi]");
     h2_KT_deltaPhi->Sumw2();
 
-    h_deltaR_tt = new TH1D("deltaR_tt", "\\Delta R(t,\\bar{t})", 100, 0.0, 5.0);
-    h_deltaR_tt->Sumw2();
+    h_dR_top = new TH1D("dR_top", "\\Delta R(t_{truth},t_{reco})", 50, 0.0, 20.0);
+    h_dR_tbar = new TH1D("dR_tbar", "\\Delta R(\\bar{t}_{truth},\\bar{t}_{reco})", 50, 0.0, 20.0);
+    h_dR_ttbar = new TH1D("dR_ttbar", "\\Delta R(t\\bar{t}_{truth}, t\\bar{t}_{reco})", 50, 0.0, 20.0);
 
-    h_deltaR_bW = new TH1D("deltaR_bW", "\\Delta R(b,W)", 100, 0.0, 5.0);
-    h_deltaR_bW->Sumw2();
-    h_deltaR_max = new TH1D("deltaR_max", "\\Delta R_{\\mathrm{max}}", 100, 0.0, 5.0);
-    h_deltaR_max->Sumw2();
+    h_perf_mass_top = new TH1D("perf_mass_top", "perf_mass_top", 100, -2, 2);
+    h_perf_pT_top = new TH1D("perf_pT_top", "perf_pT_top", 100, -2, 2);
+    h_perf_eta_top = new TH1D("perf_eta_top", "perf_eta_top", 100, -2, 2);
+    h_perf_phi_top = new TH1D("perf_phi_top", "perf_phi_top", 100, -2, 2);
+    h_perf_mass_tbar = new TH1D("perf_mass_tbar", "perf_mass_tbar", 100, -2, 2);
+    h_perf_pT_tbar = new TH1D("perf_pT_tbar", "perf_pT_tbar", 100, -2, 2);
+    h_perf_eta_tbar = new TH1D("perf_eta_tbar", "perf_eta_tbar", 100, -2, 2);
+    h_perf_phi_tbar = new TH1D("perf_phi_tbar", "perf_phi_tbar", 100, -2, 2);
+    h_perf_mass_ttbar = new TH1D("perf_mass_ttbar", "perf_mass_ttbar", 100, -2, 2);
+    h_perf_pT_ttbar = new TH1D("perf_pT_ttbar", "perf_pT_ttbar", 100, -2, 2);
+    h_perf_eta_ttbar = new TH1D("perf_eta_ttbar", "perf_eta_ttbar", 100, -2, 2);
+    h_perf_phi_ttbar = new TH1D("perf_phi_ttbar", "perf_phi_ttbar", 100, -2, 2);
+
+    h2_perf_mass_top = new TH2D("perf2_mass_top", "perf2_mass_top", 40, 100.0, 300.0, 40, 100.0, 300.0);
+    h2_perf_pT_top = new TH2D("perf2_pT_top", "perf2_pT_top", 200, 0.0, 2000.0, 200, 0.0, 2000.0);
+    h2_perf_eta_top = new TH2D("perf2_eta_top", "perf2_eta_top", 200, -5.0, 5.0, 200, -5.0, 5.0);
+    h2_perf_phi_top = new TH2D("perf2_phi_top", "perf2_phi_top", 200, 0, -1.0, 200, 0, 1.0);
+
+    h2_perf_mass_tbar = new TH2D("perf2_mass_tbar", "perf2_mass_tbar", 40, 100.0, 300.0, 40, 100.0, 300.0);
+    h2_perf_pT_tbar = new TH2D("perf2_pT_tbar", "perf2_pT_tbar", 200, 0.0, 2000.0, 200, 0.0, 2000.0);
+    h2_perf_eta_tbar = new TH2D("perf2_eta_tbar", "perf2_eta_tbar", 200, -5.0, 5.0, 200, -5.0, 5.0);
+    h2_perf_phi_tbar = new TH2D("perf2_phi_tbar", "perf2_phi_tbar", 200, 0, -1.0, 200, 0, 1.0);
+
+    h2_perf_mass_ttbar = new TH2D("perf2_mass_ttbar", "perf2_mass_ttbar", nbins, Emin, Emax, nbins, Emin, Emax);
+    h2_perf_pT_ttbar = new TH2D("perf2_pT_ttbar", "perf2_pT_ttbar", nbins, Emin, Emax, nbins, Emin, Emax);
+    h2_perf_eta_ttbar = new TH2D("perf2_eta_ttbar", "perf2_eta_ttbar", 200, -5.0, 5.0, 200, -5.0, 5.0);
+    h2_perf_phi_ttbar = new TH2D("perf2_phi_ttbar", "perf2_phi_ttbar", 200, 0, -1.0, 200, 0, 1.0);
 }
 
 
@@ -1144,14 +1192,14 @@ void Analysis::MakeDistributions()
     this->MakeDistribution1D(h_nPassBjets, "");
 
     // pT
-    this->MakeDistribution1D(h_pt_allel, "GeV");
-    this->MakeDistribution1D(h_pt_allmu, "GeV");
-    this->MakeDistribution1D(h_pt_l1, "TeV");
-    this->MakeDistribution1D(h_pt_l2, "TeV");
-    this->MakeDistribution1D(h_pt_alljets, "GeV");
-    this->MakeDistribution1D(h_pt_jets, "TeV");
-    this->MakeDistribution1D(h_pt_bjets, "TeV");
-    this->MakeDistribution1D(h_pt_qjets, "TeV");
+    this->MakeDistribution1D(h_pT_allel, "GeV");
+    this->MakeDistribution1D(h_pT_allmu, "GeV");
+    this->MakeDistribution1D(h_pT_l1, "TeV");
+    this->MakeDistribution1D(h_pT_l2, "TeV");
+    this->MakeDistribution1D(h_pT_alljets, "GeV");
+    this->MakeDistribution1D(h_pT_jets, "TeV");
+    this->MakeDistribution1D(h_pT_bjets, "TeV");
+    this->MakeDistribution1D(h_pT_qjets, "TeV");
 
     // pseudorapidity
     this->MakeDistribution1D(h_eta_allel, "");
@@ -1162,22 +1210,22 @@ void Analysis::MakeDistributions()
     this->MakeDistribution1D(h_eta_jets, "");
     this->MakeDistribution1D(h_eta_bjets, "");
     this->MakeDistribution1D(h_eta_qjets, "");
-    this->MakeDistribution1D(h_delta_abs_etal, "");
+    this->MakeDistribution1D(h_deltaEta_l, "");
 
     // azimuthal angle
     this->MakeDistribution1D(h_deltaPhi_ll, "rad / \\pi");
 
     // energy
-    this->MakeDistribution1D(h_Et, "GeV");
-    this->MakeDistribution1D(h_Etbar, "GeV");
+    this->MakeDistribution1D(h_E_top, "GeV");
+    this->MakeDistribution1D(h_E_tbar, "GeV");
 
     // transverse
     this->MakeDistribution1D(h_HT_all, "TeV");
     this->MakeDistribution1D(h_HT, "TeV");
     this->MakeDistribution1D(h_KT_all, "TeV");
     this->MakeDistribution1D(h_KT, "TeV");
-    this->MakeDistribution1D(h_mvis_all, "TeV");
-    this->MakeDistribution1D(h_mvis, "TeV");
+    this->MakeDistribution1D(h_mass_vis_all, "TeV");
+    this->MakeDistribution1D(h_mass_vis, "TeV");
 
     this->MakeDistribution1D(h_cosTheta_l, "");
     this->MakeDistribution1D(h_cosThetaStar_l, "");
@@ -1212,44 +1260,57 @@ void Analysis::MakeDistributions()
 
     if (m_reconstruction == "KIN" or m_reconstruction == "NuW")
     {
-        this->MakeDistribution1D(h_pTt, "GeV");
-        this->MakeDistribution1D(h_pTtbar, "GeV");
-        this->MakeDistribution1D(h_pTt_truth, "GeV");
-        this->MakeDistribution1D(h_pTtbar_truth, "GeV");
+        this->MakeDistribution1D(h_pT_top, "GeV");
+        this->MakeDistribution1D(h_pT_tbar, "GeV");
+        this->MakeDistribution1D(h_pT_top_truth, "GeV");
+        this->MakeDistribution1D(h_pT_tbar_truth, "GeV");
 
-        this->MakeDistribution1D(h_etat, "");
-        this->MakeDistribution1D(h_etatbar, "");
-        this->MakeDistribution1D(h_etat_truth, "");
-        this->MakeDistribution1D(h_etatbar_truth, "");
+        this->MakeDistribution1D(h_eta_top, "");
+        this->MakeDistribution1D(h_eta_tbar, "");
+        this->MakeDistribution1D(h_eta_top_truth, "");
+        this->MakeDistribution1D(h_eta_tbar_truth, "");
 
-        this->MakeDistribution1D(h_phit, "");
-        this->MakeDistribution1D(h_phitbar, "");
-        this->MakeDistribution1D(h_phit_truth, "");
-        this->MakeDistribution1D(h_phitbar_truth, "");
+        this->MakeDistribution1D(h_phi_top, "");
+        this->MakeDistribution1D(h_phi_tbar, "");
+        this->MakeDistribution1D(h_phi_top_truth, "");
+        this->MakeDistribution1D(h_phi_tbar_truth, "");
         this->MakeDistribution1D(h_cosPhi, "");
 
         // invarient mass
-        this->MakeDistribution1D(h_mW1, "TeV");
-        this->MakeDistribution1D(h_mW2, "TeV");
-        this->MakeDistribution1D(h_mt, "GeV");
-        this->MakeDistribution1D(h_mtbar, "GeV");
-        this->MakeDistribution1D(h_mt_truth, "GeV");
-        this->MakeDistribution1D(h_mtbar_truth, "GeV");
-        this->MakeDistribution1D(h_mtt, "TeV");
-        this->MakeDistribution1D(h_mttTruth, "TeV");
+        this->MakeDistribution1D(h_mass_W1, "TeV");
+        this->MakeDistribution1D(h_mass_W2, "TeV");
+        this->MakeDistribution1D(h_mass_top, "GeV");
+        this->MakeDistribution1D(h_mass_tbar, "GeV");
+        this->MakeDistribution1D(h_mass_top_truth, "GeV");
+        this->MakeDistribution1D(h_mass_tbar_truth, "GeV");
+        this->MakeDistribution1D(h_mass_ttbar, "TeV");
+        this->MakeDistribution1D(h_mass_ttbar_truth, "TeV");
 
         this->MakeDistribution1D(h_dR_top, "", true);
         this->MakeDistribution1D(h_dR_tbar, "", true);
         this->MakeDistribution1D(h_dR_ttbar, "", true);
 
+        this->MakeDistribution1D(h_perf_mass_top, "");
+        this->MakeDistribution1D(h_perf_pT_top, "");
+        this->MakeDistribution1D(h_perf_eta_top, "");
+        this->MakeDistribution1D(h_perf_phi_top, "");
+        this->MakeDistribution1D(h_perf_mass_tbar, "");
+        this->MakeDistribution1D(h_perf_pT_tbar, "");
+        this->MakeDistribution1D(h_perf_eta_tbar, "");
+        this->MakeDistribution1D(h_perf_phi_tbar, "");
+        this->MakeDistribution1D(h_perf_mass_ttbar, "");
+        this->MakeDistribution1D(h_perf_pT_ttbar, "");
+        this->MakeDistribution1D(h_perf_eta_ttbar, "");
+        this->MakeDistribution1D(h_perf_phi_ttbar, "");
+
         // rapidity
-        this->MakeDistribution1D(h_ytt, "");
-        this->MakeDistribution1D(h_delta_abs_yt, "");
+        this->MakeDistribution1D(h_y_ttbar, "");
+        this->MakeDistribution1D(h_deltaY_top, "");
 
         // polar angle
         this->MakeDistribution1D(h_cosTheta, "");
         this->MakeDistribution1D(h_cosThetaStar, "");
-        this->MakeDistribution1D(h_cosTheta_tt, "");
+        this->MakeDistribution1D(h_cosTheta_ttbar, "");
         this->MakeDistribution1D(h_cosTheta1, "");
         this->MakeDistribution1D(h_cosTheta2, "");
         this->MakeDistribution1D(h_cos1cos2, "");
@@ -1305,6 +1366,19 @@ void Analysis::MakeDistributions()
         this->MakeDistribution2D(h2_mtt_cosTheta1, "m_{t\\bar{t}}\\ ", "GeV", "\\cos\\theta_{\\ell^{+}}", "");
         this->MakeDistribution2D(h2_mtt_cosTheta2, "m_{t\\bar{t}}\\ ", "GeV", "\\cos\\theta_{\\ell^{-}}", "");
         this->MakeDistribution2D(h2_mtt_cos1cos2, "m_{t\\bar{t}}\\ ", "GeV", "\\cos\\theta_{\\ell^{+}}\\cos\\theta_{\\ell^{-}}", "");
+
+        this->MakeDistribution2D(h2_perf_mass_top, "m_{t}\\ ", "TeV", "m^{truth}_{t}\\ ", "TeV");
+        this->MakeDistribution2D(h2_perf_pT_top, "p^{t}_{\\mathrm{T}}\\ ", "GeV", "p^{truth,t}_{\\mathrm{T}}\\ ", "GeV");
+        this->MakeDistribution2D(h2_perf_eta_top, "\\eta_{t}\\ ", "", "\\eta^{truth}_{t}\\ ", "");
+        this->MakeDistribution2D(h2_perf_phi_top, "\\phi_{t}\\ ", "", "\\phi^{truth}_{t}\\ ", "");
+        this->MakeDistribution2D(h2_perf_mass_tbar, "m_{\\bar{t}}\\ ", "TeV", "m^{truth}_{\\bar{t}}\\ ", "TeV");
+        this->MakeDistribution2D(h2_perf_pT_tbar, "p^{\\bar{t}}_{\\mathrm{T}}\\ ", "GeV", "p^{truth,\\bar{t}}_{\\mathrm{T}}\\ ", "GeV");
+        this->MakeDistribution2D(h2_perf_eta_tbar, "\\eta_{\\bar{t}}\\ ", "", "\\eta^{truth}_{\\bar{t}}\\ ", "");
+        this->MakeDistribution2D(h2_perf_phi_tbar, "\\phi_{\\bar{t}}\\ ", "", "\\phi^{truth}_{\\bar{t}}\\ ", "");
+        this->MakeDistribution2D(h2_perf_mass_ttbar, "m_{t\\bar{t}}\\ ", "TeV", "m^{truth}_{t\\bar{t}}\\ ", "TeV");
+        this->MakeDistribution2D(h2_perf_pT_ttbar, "p^{t\\bar{t}}_{\\mathrm{T}}\\ ", "GeV", "p^{truth,t\\bar{t}}_{\\mathrm{T}}\\ ", "GeV");
+        this->MakeDistribution2D(h2_perf_eta_ttbar, "\\eta_{t\\bar{t}}\\ ", "", "\\eta^{truth}_{t\\bar{t}}\\ ", "");
+        this->MakeDistribution2D(h2_perf_phi_ttbar, "\\phi_{t\\bar{t}}\\ ", "", "\\phi^{truth}_{t\\bar{t}}\\ ", "");
     }
 }
 
@@ -1790,7 +1864,7 @@ bool Analysis::OutsideZmassWindow(const pair<TLorentzVector, TLorentzVector>& p_
     if (m_debug) cout << "cutting on |mll - mZ| > 10 ...\n";
     bool outsideZmassWindow;
     double mll = (p_l.first + p_l.second).M();
-    if ((abs(mll - m_zmass)) > 10.0) outsideZmassWindow = true;
+    if ((abs(mll - m_mass_Z)) > 10.0) outsideZmassWindow = true;
     else outsideZmassWindow = false;
     if (m_channel == "emu") outsideZmassWindow = true;
     this->UpdateCutflow (c_outsideZmassWindow, outsideZmassWindow);
@@ -1816,7 +1890,7 @@ bool Analysis::SufficientBtags()
 }
 
 
-bool Analysis::SufficientMET(double ETmiss)
+bool Analysis::SufficientMET(double ET_miss)
 {
     // account for the neutrinos
     // further reduce DY background (no cut for e-mu)
@@ -1824,7 +1898,7 @@ bool Analysis::SufficientMET(double ETmiss)
     if (m_channel == "emu") sufficientMET = true;
     else if (m_channel == "ee" or m_channel == "mumu")
     {
-        if (ETmiss > 60.0) sufficientMET = true;
+        if (ET_miss > 60.0) sufficientMET = true;
         else sufficientMET = false;
     }
     else cout << "ERROR: invalid channel\n";

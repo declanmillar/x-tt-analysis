@@ -102,7 +102,7 @@ private:
     };
 
     const double m_pi = 3.14159265358979323846;
-    const double m_bmass = 4.18, m_Wmass = 80.4, m_zmass = 91.19, m_tmass = 172.5;
+    const double m_mass_b = 4.18, m_mass_W = 80.4, m_mass_Z = 91.19, m_mass_top = 172.5;
 
     const int m_minBtags;
     int m_bTags;
@@ -110,83 +110,98 @@ private:
     // Histograms
     TH1D* h_cutflow;
 
-    TH1D* h_pt_l1;
+    TH1D* h_pT_l1;
     TH1D* h_eta_l1;
-    TH1D* h_pt_l2;
+    TH1D* h_pT_l2;
     TH1D* h_eta_l2;
 
-    TH1D* h_pt_jets;
+    TH1D* h_pT_jets;
     TH1D* h_eta_jets;
-    TH1D* h_pt_bjets;
+    TH1D* h_pT_bjets;
     TH1D* h_eta_bjets;
-    TH1D* h_pt_qjets;
+    TH1D* h_pT_qjets;
     TH1D* h_eta_qjets;
 
-    TH1D* h_pt_alljets;
-    TH1D* h_pt_allel;
-    TH1D* h_pt_allmu;
+    TH1D* h_pT_alljets;
+    TH1D* h_pT_allel;
+    TH1D* h_pT_allmu;
     TH1D* h_eta_alljets;
     TH1D* h_eta_allel;
     TH1D* h_eta_allmu;
 
     TH1D* h_HT;
     TH1D* h_KT;
-    TH1D* h_mvis;
+    TH1D* h_mass_vis;
     TH1D* h_HT_all;
     TH1D* h_KT_all;
-    TH1D* h_mvis_all;
+    TH1D* h_mass_vis_all;
 
     TH1D* h_deltaPhi_ll;
     TH1D* h_cosPhi;
 
-    TH1D* h_mW1;
-    TH1D* h_mW2;
+    TH1D* h_mass_W1;
+    TH1D* h_mass_W2;
 
     // t
-    TH1D* h_pxt;
-    TH1D* h_pyt;
-    TH1D* h_pzt;
-    TH1D* h_Et;
-    TH1D* h_pTt;
-    TH1D* h_etat;
-    TH1D* h_phit;
-    TH1D* h_mt;
+    TH1D* h_pT_top;
+    TH1D* h_eta_top;
+    TH1D* h_phi_top;
+    TH1D* h_mass_top;
+    TH1D* h_E_top;
 
     // tbar
-    TH1D* h_pxtbar;
-    TH1D* h_pytbar;
-    TH1D* h_pztbar;
-    TH1D* h_Etbar;
-    TH1D* h_pTtbar;
-    TH1D* h_etatbar;
-    TH1D* h_phitbar;
-    TH1D* h_mtbar;
+    TH1D* h_pT_tbar;
+    TH1D* h_eta_tbar;
+    TH1D* h_phi_tbar;
+    TH1D* h_mass_tbar;
+    TH1D* h_E_tbar;
 
-    // TH1D* h_pxt_truth;
-    // TH1D* h_pyt_truth;
-    // TH1D* h_pzt_truth;
-    // TH1D* h_Et_truth;
-    TH1D* h_pTt_truth;
-    TH1D* h_etat_truth;
-    TH1D* h_phit_truth;
-    TH1D* h_mt_truth;
-    // TH1D* h_pxtbar_truth;
-    // TH1D* h_pytbar_truth;
-    // TH1D* h_pztbar_truth;
-    // TH1D* h_Etbar_truth;
-    TH1D* h_pTtbar_truth;
-    TH1D* h_etatbar_truth;
-    TH1D* h_phitbar_truth;
-    TH1D* h_mtbar_truth;
+    TH1D* h_pT_top_truth;
+    TH1D* h_eta_top_truth;
+    TH1D* h_phi_top_truth;
+    TH1D* h_mass_top_truth;
+    TH1D* h_pT_tbar_truth;
+    TH1D* h_eta_tbar_truth;
+    TH1D* h_phi_tbar_truth;
+    TH1D* h_mass_tbar_truth;
 
     // tt
-    TH1D* h_mtt;
-    TH1D* h_mttTruth;
+    TH1D* h_pT_ttbar;
+    TH1D* h_pT_ttbar_truth;
+    TH1D* h_mass_ttbar;
+    TH1D* h_mass_ttbar_truth;
 
     // dR between truth and reco
     TH1D* h_dR_top;
     TH1D* h_dR_tbar;
     TH1D* h_dR_ttbar;
+
+    // dR between truth and reco
+    TH1D* h_perf_mass_top;
+    TH1D* h_perf_pT_top;
+    TH1D* h_perf_eta_top;
+    TH1D* h_perf_phi_top;
+    TH1D* h_perf_mass_tbar;
+    TH1D* h_perf_pT_tbar;
+    TH1D* h_perf_eta_tbar;
+    TH1D* h_perf_phi_tbar;
+    TH1D* h_perf_mass_ttbar;
+    TH1D* h_perf_pT_ttbar;
+    TH1D* h_perf_eta_ttbar;
+    TH1D* h_perf_phi_ttbar;
+
+    TH2D* h2_perf_mass_top;
+    TH2D* h2_perf_pT_top;
+    TH2D* h2_perf_eta_top;
+    TH2D* h2_perf_phi_top;
+    TH2D* h2_perf_mass_tbar;
+    TH2D* h2_perf_pT_tbar;
+    TH2D* h2_perf_eta_tbar;
+    TH2D* h2_perf_phi_tbar;
+    TH2D* h2_perf_mass_ttbar;
+    TH2D* h2_perf_pT_ttbar;
+    TH2D* h2_perf_eta_ttbar;
+    TH2D* h2_perf_phi_ttbar;
 
     // charge asymmetries
     TH1D* h_mtt_tF;
@@ -231,21 +246,19 @@ private:
     TH1D* h_KT_DphiF;
     TH1D* h_KT_DphiB;
 
-    TH1D* h_ytt;
+    TH1D* h_y_ttbar;
+    TH1D* h_y_ttbar_truth;
 
     TH1D* h_cosTheta;
     TH1D* h_cosTheta1;
     TH1D* h_cosTheta2;
     TH1D* h_cos1cos2;
     TH1D* h_cosThetaStar;
-    TH1D* h_cosTheta_tt;
+    TH1D* h_cosTheta_ttbar;
     TH1D* h_cosTheta_l;
     TH1D* h_cosThetaStar_l;
-    TH1D* h_deltaR_max;
-    TH1D* h_deltaR_bW;
-    TH1D* h_deltaR_tt;
-    TH1D* h_delta_abs_yt;
-    TH1D* h_delta_abs_etal;
+    TH1D* h_deltaY_top;
+    TH1D* h_deltaEta_l;
 
     TH1D* h_nTruthElectrons;
     TH1D* h_nTruthMuons;
