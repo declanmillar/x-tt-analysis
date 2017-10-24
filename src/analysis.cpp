@@ -32,18 +32,21 @@ void Analysis::EachEvent(double weight)
     TLorentzVector p_top_truth = m_hardTop->P4();
     TLorentzVector p_tbar_truth = m_hardTbar->P4();
     TLorentzVector p_ttbar_truth = p_top_truth + p_tbar_truth;
-
     double mass_ttbar_truth = p_ttbar_truth.M() / 1000;
-    h_mass_ttbar_truth->Fill(mass_ttbar_truth, weight);
 
-    h_pT_top_truth->Fill(p_top_truth.Pt());
-    h_eta_top_truth->Fill(p_top_truth.Eta());
-    h_phi_top_truth->Fill(p_top_truth.Phi());
-    h_mass_top_truth->Fill(p_top_truth.M());
-    h_pT_tbar_truth->Fill(p_tbar_truth.Pt());
-    h_eta_tbar_truth->Fill(p_tbar_truth.Eta());
-    h_phi_tbar_truth->Fill(p_tbar_truth.Phi());
-    h_mass_tbar_truth->Fill(p_tbar_truth.M());
+    h_pT_top_truth->Fill(p_top_truth.Pt(), weight);
+    h_eta_top_truth->Fill(p_top_truth.Eta(), weight);
+    h_phi_top_truth->Fill(p_top_truth.Phi(), weight);
+    h_mass_top_truth->Fill(p_top_truth.M(), weight);
+    h_pT_tbar_truth->Fill(p_tbar_truth.Pt(), weight);
+    h_eta_tbar_truth->Fill(p_tbar_truth.Eta(), weight);
+    h_phi_tbar_truth->Fill(p_tbar_truth.Phi(), weight);
+    h_mass_tbar_truth->Fill(p_tbar_truth.M(), weight);
+    h_pT_ttbar_truth->Fill(p_ttbar_truth.Pt(), weight);
+    h_eta_ttbar_truth->Fill(p_ttbar_truth.Eta(), weight);
+    h_phi_ttbar_truth->Fill(p_ttbar_truth.Phi(), weight);
+    h_mass_ttbar_truth->Fill(mass_ttbar_truth, weight);
+    h_y_ttbar_truth->Fill(p_ttbar_truth.Rapidity(), weight);
 
     // truth
     this->GetTruthParticles();
@@ -388,7 +391,6 @@ void Analysis::EachEvent(double weight)
         h_phi_ttbar->Fill(p_ttbar.Phi() / m_pi, weight);
         h_mass_ttbar->Fill(mass_ttbar, weight);
         h_y_ttbar->Fill(y_ttbar, weight);
-        h_y_ttbar_truth->Fill(y_ttbar_truth, weight);
 
         double dR_top = p_top.DeltaR(p_top_truth);
         h_dR_top->Fill(dR_top, weight);
