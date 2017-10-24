@@ -388,6 +388,7 @@ void Analysis::EachEvent(double weight)
         h_phi_ttbar->Fill(p_ttbar.Phi() / m_pi, weight);
         h_mass_ttbar->Fill(mass_ttbar, weight);
         h_y_ttbar->Fill(y_ttbar, weight);
+        h_y_ttbar_truth->Fill(y_ttbar_truth, weight);
 
         double dR_top = p_top.DeltaR(p_top_truth);
         h_dR_top->Fill(dR_top, weight);
@@ -1311,6 +1312,7 @@ void Analysis::MakeDistributions()
 
         // rapidity
         this->MakeDistribution1D(h_y_ttbar, "");
+        this->MakeDistribution1D(h_y_ttbar_truth, "");
         this->MakeDistribution1D(h_deltaY_top, "");
 
         // polar angle
