@@ -1160,17 +1160,17 @@ void Analysis::MakeHistograms()
     h2_perf_mass_top = new TH2D("perf2_mass_top", "perf2_mass_top", 40, 100.0, 300.0, 40, 100.0, 300.0);
     h2_perf_pT_top = new TH2D("perf2_pT_top", "perf2_pT_top", 200, 0.0, 2000.0, 200, 0.0, 2000.0);
     h2_perf_eta_top = new TH2D("perf2_eta_top", "perf2_eta_top", 200, -5.0, 5.0, 200, -5.0, 5.0);
-    h2_perf_phi_top = new TH2D("perf2_phi_top", "perf2_phi_top", 200, 0, -1.0, 200, 0, 1.0);
+    h2_perf_phi_top = new TH2D("perf2_phi_top", "perf2_phi_top", 200, -m_pi, m_pi, 200, -m_pi, m_pi);
 
     h2_perf_mass_tbar = new TH2D("perf2_mass_tbar", "perf2_mass_tbar", 40, 100.0, 300.0, 40, 100.0, 300.0);
     h2_perf_pT_tbar = new TH2D("perf2_pT_tbar", "perf2_pT_tbar", 200, 0.0, 2000.0, 200, 0.0, 2000.0);
     h2_perf_eta_tbar = new TH2D("perf2_eta_tbar", "perf2_eta_tbar", 200, -5.0, 5.0, 200, -5.0, 5.0);
-    h2_perf_phi_tbar = new TH2D("perf2_phi_tbar", "perf2_phi_tbar", 200, 0, -1.0, 200, 0, 1.0);
+    h2_perf_phi_tbar = new TH2D("perf2_phi_tbar", "perf2_phi_tbar", 200, -m_pi, m_pi, 200, -m_pi, m_pi);
 
     h2_perf_mass_ttbar = new TH2D("perf2_mass_ttbar", "perf2_mass_ttbar", nbins, Emin, Emax, nbins, Emin, Emax);
     h2_perf_pT_ttbar = new TH2D("perf2_pT_ttbar", "perf2_pT_ttbar", nbins, Emin, Emax, nbins, Emin, Emax);
     h2_perf_eta_ttbar = new TH2D("perf2_eta_ttbar", "perf2_eta_ttbar", 200, -5.0, 5.0, 200, -5.0, 5.0);
-    h2_perf_phi_ttbar = new TH2D("perf2_phi_ttbar", "perf2_phi_ttbar", 200, 0, -1.0, 200, 0, 1.0);
+    h2_perf_phi_ttbar = new TH2D("perf2_phi_ttbar", "perf2_phi_ttbar", 200, -m_pi, m_pi, 200, -m_pi, m_pi);
 }
 
 

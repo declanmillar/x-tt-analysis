@@ -518,7 +518,6 @@ double NeutrinoWeighter::neutrino_weight(TLorentzVector neutrino1, TLorentzVecto
     double denominator_mtop  = 2. * m_sigma_mtop * m_sigma_mtop;
     double denominator_mtbar = 2. * m_sigma_mtbar*m_sigma_mtbar;
 
-
     double exp_x = exp(numerator_x / denominator_x);
     double exp_y = exp(numerator_y / denominator_y);
     double exp_phi = 1.;
@@ -573,7 +572,9 @@ std::vector<TLorentzVector> NeutrinoWeighter::solveForNeutrinoEta(TLorentzVector
     {
         nu_cosh = m_nu_cosh.at(index);
         nu_sinh = m_nu_sinh.at(index);
-    } else {
+    }
+    else
+    {
         nu_cosh = m_nubar_cosh.at(index);
         nu_sinh = m_nubar_sinh.at(index);
     }
@@ -597,7 +598,6 @@ std::vector<TLorentzVector> NeutrinoWeighter::solveForNeutrinoEta(TLorentzVector
     double F = B * B - par2 * par2;
     double det = D * D - 4. * C * F;
 
-
     std::vector<TLorentzVector> sol;
 
     ///-- 0 solutions case --///
@@ -616,8 +616,7 @@ std::vector<TLorentzVector> NeutrinoWeighter::solveForNeutrinoEta(TLorentzVector
 
         TLorentzVector a1(px1, py1, pz1, sqrt(pT2_1 + pz1 * pz1));
 
-        if (!TMath::IsNaN(a1.E()) )
-        sol.push_back(a1);
+        if (!TMath::IsNaN(a1.E()) ) sol.push_back(a1);
         return sol;
     }
 
