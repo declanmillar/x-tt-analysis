@@ -383,6 +383,9 @@ void Analysis::EachEvent(double weight)
         h_phi_tbar->Fill(p_tbar.Phi() / m_pi, weight);
         h_mass_tbar->Fill(p_tbar.M(), weight);
 
+        h_pT_ttbar->Fill(p_ttbar.Pt(), weight);
+        h_eta_ttbar->Fill(p_ttbar.Eta(), weight);
+        h_phi_ttbar->Fill(p_ttbar.Phi() / m_pi, weight);
         h_mass_ttbar->Fill(mass_ttbar, weight);
         h_y_ttbar->Fill(y_ttbar, weight);
 
@@ -392,10 +395,7 @@ void Analysis::EachEvent(double weight)
         double dR_tbar = p_tbar.DeltaR(p_tbar_truth);
         h_dR_tbar->Fill(dR_tbar, weight);
 
-        // p_ttbar.Print();
-        // p_ttbar_truth.Print();
         double dR_ttbar = p_ttbar.DeltaR(p_ttbar_truth);
-        // cout << "dR_ttbar = " << dR_ttbar << "\n";
         h_dR_ttbar->Fill(dR_ttbar, weight);
 
         h_perf_pT_top->Fill((p_top_truth.Pt() - p_top.Pt()) / p_top_truth.Pt(), weight);
@@ -839,7 +839,7 @@ void Analysis::MakeHistograms()
     h_pT_bjets->Sumw2();
     h_pT_qjets = new TH1D("pT_qjet", "p_{\\mathrm{T}}^{q-jet}", 200, 0.0, 2000.0);
     h_pT_qjets->Sumw2();
-    h_pT_top = new TH1D("pT_t", "p_{\\mathrm{T}}^{t}", 200, 0.0, 2000.0);
+    h_pT_top = new TH1D("pT_top", "p_{\\mathrm{T}}^{t}", 200, 0.0, 2000.0);
     h_pT_top->Sumw2();
     h_pT_tbar = new TH1D("pT_tbar", "p_{\\mathrm{T}}^{\\bar{t}}", 200, 0.0, 2000.0);
     h_pT_tbar->Sumw2();
@@ -864,22 +864,22 @@ void Analysis::MakeHistograms()
     h_eta_qjets->Sumw2();
     h_eta_top = new TH1D("eta_top", "\\eta_{t}", 200, -5.0, 5.0);
     h_eta_top->Sumw2();
-    h_eta_top_truth = new TH1D("eta_t_truth", "\\eta_{t}^{truth}", 200, -5.0, 5.0);
+    h_eta_top_truth = new TH1D("eta_top_truth", "\\eta_{t}^{truth}", 200, -5.0, 5.0);
     h_eta_top_truth->Sumw2();
     h_eta_tbar = new TH1D("eta_tbar", "\\eta_{\\bar{t}}", 200, -5.0, 5.0);
     h_eta_tbar->Sumw2();
     h_eta_tbar_truth = new TH1D("eta_tbar_truth", "\\eta^{truth}_{\\bar{t}}", 200, -5.0, 5.0);
     h_eta_tbar_truth->Sumw2();
-    h_y_ttbar = new TH1D("y_tt", "y_{t\\bar{t}}\\ ", 50, -2.5, 2.5);
+    h_y_ttbar = new TH1D("y_ttbar", "y_{t\\bar{t}}\\ ", 50, -2.5, 2.5);
     h_y_ttbar->Sumw2();
-    h_y_ttbar_truth = new TH1D("y_tt_truth", "y^{truth}_{t\\bar{t}}\\ ", 50, -2.5, 2.5);
+    h_y_ttbar_truth = new TH1D("y_ttbar_truth", "y^{truth}_{t\\bar{t}}\\ ", 50, -2.5, 2.5);
     h_y_ttbar_truth->Sumw2();
 
-    h_phi_top = new TH1D("phi_t", "\\phi_{t}", 200, -1.0, 1.0);
+    h_phi_top = new TH1D("phi_top", "\\phi_{t}", 200, -1.0, 1.0);
     h_phi_top->Sumw2();
     h_phi_tbar = new TH1D("phi_tbar", "\\phi_{\\bar{t}}", 200, -1.0, 1.0);
     h_phi_tbar->Sumw2();
-    h_phi_top_truth = new TH1D("phi_t_truth", "\\phi^{truth}_{t}", 200, -1.0, 1.0);
+    h_phi_top_truth = new TH1D("phi_top_truth", "\\phi^{truth}_{t}", 200, -1.0, 1.0);
     h_phi_top_truth->Sumw2();
     h_phi_tbar_truth = new TH1D("phi_tbar_truth", "\\phi^{truth}_{\\bar{t}}", 200, -1.0, 1.0);
     h_phi_tbar_truth->Sumw2();
@@ -902,7 +902,7 @@ void Analysis::MakeHistograms()
     h_mass_ttbar_truth->Sumw2();
 
 
-    h_E_top = new TH1D("E_t", "E_{t}", 100, 0.0, 5000.0);
+    h_E_top = new TH1D("E_top", "E_{t}", 100, 0.0, 5000.0);
     h_E_top->Sumw2();
     h_E_tbar = new TH1D("E_tbar", "E_{\\bar{t}}", 100, 0.0, 5000.0);
     h_E_tbar->Sumw2();
@@ -1261,27 +1261,33 @@ void Analysis::MakeDistributions()
     if (m_reconstruction == "KIN" or m_reconstruction == "NuW")
     {
         this->MakeDistribution1D(h_pT_top, "GeV");
-        this->MakeDistribution1D(h_pT_tbar, "GeV");
         this->MakeDistribution1D(h_pT_top_truth, "GeV");
+        this->MakeDistribution1D(h_pT_tbar, "GeV");
         this->MakeDistribution1D(h_pT_tbar_truth, "GeV");
+        this->MakeDistribution1D(h_pT_ttbar, "GeV");
+        this->MakeDistribution1D(h_pT_ttbar_truth, "GeV");
 
         this->MakeDistribution1D(h_eta_top, "");
-        this->MakeDistribution1D(h_eta_tbar, "");
         this->MakeDistribution1D(h_eta_top_truth, "");
+        this->MakeDistribution1D(h_eta_tbar, "");
         this->MakeDistribution1D(h_eta_tbar_truth, "");
+        this->MakeDistribution1D(h_eta_ttbar, "");
+        this->MakeDistribution1D(h_eta_ttbar_truth, "");
 
         this->MakeDistribution1D(h_phi_top, "");
-        this->MakeDistribution1D(h_phi_tbar, "");
         this->MakeDistribution1D(h_phi_top_truth, "");
+        this->MakeDistribution1D(h_phi_tbar, "");
         this->MakeDistribution1D(h_phi_tbar_truth, "");
+        this->MakeDistribution1D(h_phi_ttbar, "");
+        this->MakeDistribution1D(h_phi_ttbar_truth, "");
         this->MakeDistribution1D(h_cosPhi, "");
 
         // invarient mass
-        this->MakeDistribution1D(h_mass_W1, "TeV");
-        this->MakeDistribution1D(h_mass_W2, "TeV");
+        this->MakeDistribution1D(h_mass_W1, "GeV");
+        this->MakeDistribution1D(h_mass_W2, "GeV");
         this->MakeDistribution1D(h_mass_top, "GeV");
-        this->MakeDistribution1D(h_mass_tbar, "GeV");
         this->MakeDistribution1D(h_mass_top_truth, "GeV");
+        this->MakeDistribution1D(h_mass_tbar, "GeV");
         this->MakeDistribution1D(h_mass_tbar_truth, "GeV");
         this->MakeDistribution1D(h_mass_ttbar, "TeV");
         this->MakeDistribution1D(h_mass_ttbar_truth, "TeV");

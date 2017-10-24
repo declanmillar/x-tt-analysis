@@ -142,12 +142,16 @@ private:
     TH1D* h_mass_W1;
     TH1D* h_mass_W2;
 
-    // t
+    // top
     TH1D* h_pT_top;
     TH1D* h_eta_top;
     TH1D* h_phi_top;
     TH1D* h_mass_top;
     TH1D* h_E_top;
+    TH1D* h_pT_top_truth;
+    TH1D* h_eta_top_truth;
+    TH1D* h_phi_top_truth;
+    TH1D* h_mass_top_truth;
 
     // tbar
     TH1D* h_pT_tbar;
@@ -155,21 +159,22 @@ private:
     TH1D* h_phi_tbar;
     TH1D* h_mass_tbar;
     TH1D* h_E_tbar;
-
-    TH1D* h_pT_top_truth;
-    TH1D* h_eta_top_truth;
-    TH1D* h_phi_top_truth;
-    TH1D* h_mass_top_truth;
     TH1D* h_pT_tbar_truth;
     TH1D* h_eta_tbar_truth;
     TH1D* h_phi_tbar_truth;
     TH1D* h_mass_tbar_truth;
 
-    // tt
+    // ttbar
     TH1D* h_pT_ttbar;
     TH1D* h_pT_ttbar_truth;
+    TH1D* h_eta_ttbar;
+    TH1D* h_eta_ttbar_truth;
+    TH1D* h_phi_ttbar;
+    TH1D* h_phi_ttbar_truth;
     TH1D* h_mass_ttbar;
     TH1D* h_mass_ttbar_truth;
+    TH1D* h_y_ttbar;
+    TH1D* h_y_ttbar_truth;
 
     // dR between truth and reco
     TH1D* h_dR_top;
@@ -245,9 +250,6 @@ private:
     TH1D* h_HT_DphiB;
     TH1D* h_KT_DphiF;
     TH1D* h_KT_DphiB;
-
-    TH1D* h_y_ttbar;
-    TH1D* h_y_ttbar_truth;
 
     TH1D* h_cosTheta;
     TH1D* h_cosTheta1;
