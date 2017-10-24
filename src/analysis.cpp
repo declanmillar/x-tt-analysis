@@ -1286,9 +1286,9 @@ void Analysis::MakeDistributions()
         this->MakeDistribution1D(h_mass_ttbar, "TeV");
         this->MakeDistribution1D(h_mass_ttbar_truth, "TeV");
 
-        this->MakeDistribution1D(h_dR_top, "", true);
-        this->MakeDistribution1D(h_dR_tbar, "", true);
-        this->MakeDistribution1D(h_dR_ttbar, "", true);
+        this->MakeDistribution1D(h_dR_top, "");
+        this->MakeDistribution1D(h_dR_tbar, "");
+        this->MakeDistribution1D(h_dR_ttbar, "");
 
         this->MakeDistribution1D(h_perf_mass_top, "");
         this->MakeDistribution1D(h_perf_pT_top, "");
