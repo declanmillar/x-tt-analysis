@@ -415,22 +415,24 @@ void Analysis::EachEvent(double weight)
         h_perf_pT_ttbar->Fill((p_ttbar_truth.Pt() - p_ttbar.Pt()) / p_ttbar_truth.Pt(), weight);
         h_perf_eta_ttbar->Fill((p_ttbar_truth.Eta() - p_ttbar.Eta()) / p_ttbar_truth.Eta(), weight);
         h_perf_phi_ttbar->Fill((p_ttbar_truth.Phi() - p_ttbar.Phi()) / p_ttbar_truth.Phi(), weight);
-        h_perf_mass_ttbar->Fill((mass_ttbar_truth - mass_ttbar) / mass_ttbar_truth, weight);
+        double perf_mass_ttbar = (mass_ttbar_truth - mass_ttbar) / mass_ttbar_truth;
+        h_perf_mass_ttbar->Fill(perf_mass_ttbar, weight);
+        h2_perf_mass_ttbar->Fill(mass_ttbar_truth, perf_mass_ttbar, weight);
 
-        h2_perf_pT_top->Fill(p_top.Pt(), p_top_truth.Pt(), weight);
-        h2_perf_eta_top->Fill(p_top.Eta(), p_top_truth.Eta(), weight);
-        h2_perf_phi_top->Fill(p_top.Phi(), p_top_truth.Phi(), weight);
-        h2_perf_mass_top->Fill(p_top.M(), p_top_truth.M(), weight);
+        h2_pT_top_TvR->Fill(p_top.Pt(), p_top_truth.Pt(), weight);
+        h2_eta_top_TvR->Fill(p_top.Eta(), p_top_truth.Eta(), weight);
+        h2_phi_top_TvR->Fill(p_top.Phi(), p_top_truth.Phi(), weight);
+        h2_mass_top_TvR->Fill(p_top.M(), p_top_truth.M(), weight);
 
-        h2_perf_pT_tbar->Fill(p_tbar.Pt(), p_tbar_truth.Pt(), weight);
-        h2_perf_eta_tbar->Fill(p_tbar.Eta(), p_tbar_truth.Eta(), weight);
-        h2_perf_phi_tbar->Fill(p_tbar.Phi(), p_tbar_truth.Phi(), weight);
-        h2_perf_mass_tbar->Fill(p_tbar.M(), p_tbar_truth.M(), weight);
+        h2_pT_tbar_TvR->Fill(p_tbar.Pt(), p_tbar_truth.Pt(), weight);
+        h2_eta_tbar_TvR->Fill(p_tbar.Eta(), p_tbar_truth.Eta(), weight);
+        h2_phi_tbar_TvR->Fill(p_tbar.Phi(), p_tbar_truth.Phi(), weight);
+        h2_mass_tbar_TvR->Fill(p_tbar.M(), p_tbar_truth.M(), weight);
 
-        h2_perf_pT_ttbar->Fill(p_ttbar.Pt(), p_ttbar_truth.Pt(), weight);
-        h2_perf_eta_ttbar->Fill(p_ttbar.Eta(), p_ttbar_truth.Eta(), weight);
-        h2_perf_phi_ttbar->Fill(p_ttbar.Phi(), p_ttbar_truth.Phi(), weight);
-        h2_perf_mass_ttbar->Fill(p_ttbar.M(), p_ttbar_truth.M(), weight);
+        h2_pT_ttbar_TvR->Fill(p_ttbar.Pt(), p_ttbar_truth.Pt(), weight);
+        h2_eta_ttbar_TvR->Fill(p_ttbar.Eta(), p_ttbar_truth.Eta(), weight);
+        h2_phi_ttbar_TvR->Fill(p_ttbar.Phi(), p_ttbar_truth.Phi(), weight);
+        h2_mass_ttbar_TvR->Fill(p_ttbar.M(), p_ttbar_truth.M(), weight);
 
         h_mass_W1->Fill(p_W1.M(), weight);
         h_mass_W2->Fill(p_W2.M(), weight);
@@ -1152,9 +1154,9 @@ void Analysis::MakeHistograms()
     h2_KT_deltaPhi->GetYaxis()->SetTitle("\\Delta\\phi_{\\ell^{+}\\ell^{-}}\\;[rad/\\pi]");
     h2_KT_deltaPhi->Sumw2();
 
-    h_dR_top = new TH1D("dR_top", "\\Delta R(t_{truth},t_{reco})", 50, 0.0, 20.0);
-    h_dR_tbar = new TH1D("dR_tbar", "\\Delta R(\\bar{t}_{truth},\\bar{t}_{reco})", 50, 0.0, 20.0);
-    h_dR_ttbar = new TH1D("dR_ttbar", "\\Delta R(t\\bar{t}_{truth}, t\\bar{t}_{reco})", 50, 0.0, 20.0);
+    h_dR_top = new TH1D("dR_top", "\\Delta R\\left(t_{truth},t_{reco}\\right)", 25, 0.0, 10.0);
+    h_dR_tbar = new TH1D("dR_tbar", "\\Delta R\\left(\\bar{t}_{truth},\\bar{t}_{reco}\\right)", 25, 0.0, 10.0);
+    h_dR_ttbar = new TH1D("dR_ttbar", "\\Delta R\\left(t\\bar{t}_{truth}, t\\bar{t}_{reco}\\right)", 25, 0.0, 10.0);
 
     h_perf_mass_top = new TH1D("perf_mass_top", "perf_mass_top", 100, -2, 2);
     h_perf_pT_top = new TH1D("perf_pT_top", "perf_pT_top", 100, -2, 2);
@@ -1169,20 +1171,22 @@ void Analysis::MakeHistograms()
     h_perf_eta_ttbar = new TH1D("perf_eta_ttbar", "perf_eta_ttbar", 100, -2, 2);
     h_perf_phi_ttbar = new TH1D("perf_phi_ttbar", "perf_phi_ttbar", 100, -2, 2);
 
-    h2_perf_mass_top = new TH2D("perf2_mass_top", "perf2_mass_top", 40, 100.0, 300.0, 40, 100.0, 300.0);
-    h2_perf_pT_top = new TH2D("perf2_pT_top", "perf2_pT_top", 200, 0.0, 2000.0, 200, 0.0, 2000.0);
-    h2_perf_eta_top = new TH2D("perf2_eta_top", "perf2_eta_top", 200, -5.0, 5.0, 200, -5.0, 5.0);
-    h2_perf_phi_top = new TH2D("perf2_phi_top", "perf2_phi_top", 200, -m_pi, m_pi, 200, -m_pi, m_pi);
+    h2_perf_mass_ttbar = new TH2D("perf2_mass_ttbar", "perf2_mass_ttbar", nbins, Emin, Emax, 100, -2, 2);
 
-    h2_perf_mass_tbar = new TH2D("perf2_mass_tbar", "perf2_mass_tbar", 40, 100.0, 300.0, 40, 100.0, 300.0);
-    h2_perf_pT_tbar = new TH2D("perf2_pT_tbar", "perf2_pT_tbar", 200, 0.0, 2000.0, 200, 0.0, 2000.0);
-    h2_perf_eta_tbar = new TH2D("perf2_eta_tbar", "perf2_eta_tbar", 200, -5.0, 5.0, 200, -5.0, 5.0);
-    h2_perf_phi_tbar = new TH2D("perf2_phi_tbar", "perf2_phi_tbar", 200, -m_pi, m_pi, 200, -m_pi, m_pi);
+    h2_mass_top_TvR = new TH2D("mass_top_TvR", "mass_top_TvR", 40, 100.0, 300.0, 40, 100.0, 300.0);
+    h2_pT_top_TvR = new TH2D("pT_top_TvR", "pT_top_TvR", 200, 0.0, 2000.0, 200, 0.0, 2000.0);
+    h2_eta_top_TvR = new TH2D("eta_top_TvR", "eta_top_TvR", 200, -5.0, 5.0, 200, -5.0, 5.0);
+    h2_phi_top_TvR = new TH2D("phi_top_TvR", "phi_top_TvR", 200, -m_pi, m_pi, 200, -m_pi, m_pi);
 
-    h2_perf_mass_ttbar = new TH2D("perf2_mass_ttbar", "perf2_mass_ttbar", nbins, Emin, Emax, nbins, Emin, Emax);
-    h2_perf_pT_ttbar = new TH2D("perf2_pT_ttbar", "perf2_pT_ttbar", nbins, Emin, Emax, nbins, Emin, Emax);
-    h2_perf_eta_ttbar = new TH2D("perf2_eta_ttbar", "perf2_eta_ttbar", 200, -5.0, 5.0, 200, -5.0, 5.0);
-    h2_perf_phi_ttbar = new TH2D("perf2_phi_ttbar", "perf2_phi_ttbar", 200, -m_pi, m_pi, 200, -m_pi, m_pi);
+    h2_mass_tbar_TvR = new TH2D("mass_tbar_TvR", "mass_tbar_TvR", 40, 100.0, 300.0, 40, 100.0, 300.0);
+    h2_pT_tbar_TvR = new TH2D("pT_tbar_TvR", "pT_tbar_TvR", 200, 0.0, 2000.0, 200, 0.0, 2000.0);
+    h2_eta_tbar_TvR = new TH2D("eta_tbar_TvR", "eta_tbar_TvR", 200, -5.0, 5.0, 200, -5.0, 5.0);
+    h2_phi_tbar_TvR = new TH2D("phi_tbar_TvR", "phi_tbar_TvR", 200, -m_pi, m_pi, 200, -m_pi, m_pi);
+
+    h2_mass_ttbar_TvR = new TH2D("mass_ttbar_TvR", "mass_ttbar_TvR", nbins, Emin, Emax, nbins, Emin, Emax);
+    h2_pT_ttbar_TvR = new TH2D("pT_ttbar_TvR", "pT_ttbar_TvR", nbins, Emin, Emax, nbins, Emin, Emax);
+    h2_eta_ttbar_TvR = new TH2D("eta_ttbar_TvR", "eta_ttbar_TvR", 200, -5.0, 5.0, 200, -5.0, 5.0);
+    h2_phi_ttbar_TvR = new TH2D("phi_ttbar_TvR", "phi_ttbar_TvR", 200, -m_pi, m_pi, 200, -m_pi, m_pi);
 }
 
 
@@ -1320,6 +1324,7 @@ void Analysis::MakeDistributions()
         this->MakeDistribution1D(h_perf_pT_ttbar, "");
         this->MakeDistribution1D(h_perf_eta_ttbar, "");
         this->MakeDistribution1D(h_perf_phi_ttbar, "");
+        this->MakeDistribution2D(h2_perf_mass_ttbar, "m_{t\\bar{t}}\\ ", "TeV", "m^{truth}_{t\\bar{t}} - m^{reco}_{t\\bar{t}} / m^{truth}_{t\\bar{t}}\\ ", "");
 
         // rapidity
         this->MakeDistribution1D(h_y_ttbar, "");
@@ -1386,18 +1391,18 @@ void Analysis::MakeDistributions()
         this->MakeDistribution2D(h2_mtt_cosTheta2, "m_{t\\bar{t}}\\ ", "GeV", "\\cos\\theta_{\\ell^{-}}", "");
         this->MakeDistribution2D(h2_mtt_cos1cos2, "m_{t\\bar{t}}\\ ", "GeV", "\\cos\\theta_{\\ell^{+}}\\cos\\theta_{\\ell^{-}}", "");
 
-        this->MakeDistribution2D(h2_perf_mass_top, "m_{t}\\ ", "TeV", "m^{truth}_{t}\\ ", "TeV");
-        this->MakeDistribution2D(h2_perf_pT_top, "p^{t}_{\\mathrm{T}}\\ ", "GeV", "p^{truth,t}_{\\mathrm{T}}\\ ", "GeV");
-        this->MakeDistribution2D(h2_perf_eta_top, "\\eta_{t}\\ ", "", "\\eta^{truth}_{t}\\ ", "");
-        this->MakeDistribution2D(h2_perf_phi_top, "\\phi_{t}\\ ", "", "\\phi^{truth}_{t}\\ ", "");
-        this->MakeDistribution2D(h2_perf_mass_tbar, "m_{\\bar{t}}\\ ", "TeV", "m^{truth}_{\\bar{t}}\\ ", "TeV");
-        this->MakeDistribution2D(h2_perf_pT_tbar, "p^{\\bar{t}}_{\\mathrm{T}}\\ ", "GeV", "p^{truth,\\bar{t}}_{\\mathrm{T}}\\ ", "GeV");
-        this->MakeDistribution2D(h2_perf_eta_tbar, "\\eta_{\\bar{t}}\\ ", "", "\\eta^{truth}_{\\bar{t}}\\ ", "");
-        this->MakeDistribution2D(h2_perf_phi_tbar, "\\phi_{\\bar{t}}\\ ", "", "\\phi^{truth}_{\\bar{t}}\\ ", "");
-        this->MakeDistribution2D(h2_perf_mass_ttbar, "m_{t\\bar{t}}\\ ", "TeV", "m^{truth}_{t\\bar{t}}\\ ", "TeV");
-        this->MakeDistribution2D(h2_perf_pT_ttbar, "p^{t\\bar{t}}_{\\mathrm{T}}\\ ", "GeV", "p^{truth,t\\bar{t}}_{\\mathrm{T}}\\ ", "GeV");
-        this->MakeDistribution2D(h2_perf_eta_ttbar, "\\eta_{t\\bar{t}}\\ ", "", "\\eta^{truth}_{t\\bar{t}}\\ ", "");
-        this->MakeDistribution2D(h2_perf_phi_ttbar, "\\phi_{t\\bar{t}}\\ ", "", "\\phi^{truth}_{t\\bar{t}}\\ ", "");
+        this->MakeDistribution2D(h2_mass_top_TvR, "m_{t}\\ ", "TeV", "m^{truth}_{t}\\ ", "TeV");
+        this->MakeDistribution2D(h2_pT_top_TvR, "p^{t}_{\\mathrm{T}}\\ ", "GeV", "p^{truth,t}_{\\mathrm{T}}\\ ", "GeV");
+        this->MakeDistribution2D(h2_eta_top_TvR, "\\eta_{t}\\ ", "", "\\eta^{truth}_{t}\\ ", "");
+        this->MakeDistribution2D(h2_phi_top_TvR, "\\phi_{t}\\ ", "", "\\phi^{truth}_{t}\\ ", "");
+        this->MakeDistribution2D(h2_mass_tbar_TvR, "m_{\\bar{t}}\\ ", "TeV", "m^{truth}_{\\bar{t}}\\ ", "TeV");
+        this->MakeDistribution2D(h2_pT_tbar_TvR, "p^{\\bar{t}}_{\\mathrm{T}}\\ ", "GeV", "p^{truth,\\bar{t}}_{\\mathrm{T}}\\ ", "GeV");
+        this->MakeDistribution2D(h2_eta_tbar_TvR, "\\eta_{\\bar{t}}\\ ", "", "\\eta^{truth}_{\\bar{t}}\\ ", "");
+        this->MakeDistribution2D(h2_phi_tbar_TvR, "\\phi_{\\bar{t}}\\ ", "", "\\phi^{truth}_{\\bar{t}}\\ ", "");
+        this->MakeDistribution2D(h2_mass_ttbar_TvR, "m_{t\\bar{t}}\\ ", "TeV", "m^{truth}_{t\\bar{t}}\\ ", "TeV");
+        this->MakeDistribution2D(h2_pT_ttbar_TvR, "p^{t\\bar{t}}_{\\mathrm{T}}\\ ", "GeV", "p^{truth,t\\bar{t}}_{\\mathrm{T}}\\ ", "GeV");
+        this->MakeDistribution2D(h2_eta_ttbar_TvR, "\\eta_{t\\bar{t}}\\ ", "", "\\eta^{truth}_{t\\bar{t}}\\ ", "");
+        this->MakeDistribution2D(h2_phi_ttbar_TvR, "\\phi_{t\\bar{t}}\\ ", "", "\\phi^{truth}_{t\\bar{t}}\\ ", "");
     }
 }
 

@@ -194,19 +194,20 @@ private:
     TH1D* h_perf_pT_ttbar;
     TH1D* h_perf_eta_ttbar;
     TH1D* h_perf_phi_ttbar;
-
-    TH2D* h2_perf_mass_top;
-    TH2D* h2_perf_pT_top;
-    TH2D* h2_perf_eta_top;
-    TH2D* h2_perf_phi_top;
-    TH2D* h2_perf_mass_tbar;
-    TH2D* h2_perf_pT_tbar;
-    TH2D* h2_perf_eta_tbar;
-    TH2D* h2_perf_phi_tbar;
     TH2D* h2_perf_mass_ttbar;
-    TH2D* h2_perf_pT_ttbar;
-    TH2D* h2_perf_eta_ttbar;
-    TH2D* h2_perf_phi_ttbar;
+
+    TH2D* h2_mass_top_TvR;
+    TH2D* h2_pT_top_TvR;
+    TH2D* h2_eta_top_TvR;
+    TH2D* h2_phi_top_TvR;
+    TH2D* h2_mass_tbar_TvR;
+    TH2D* h2_pT_tbar_TvR;
+    TH2D* h2_eta_tbar_TvR;
+    TH2D* h2_phi_tbar_TvR;
+    TH2D* h2_mass_ttbar_TvR;
+    TH2D* h2_pT_ttbar_TvR;
+    TH2D* h2_eta_ttbar_TvR;
+    TH2D* h2_phi_ttbar_TvR;
 
     // charge asymmetries
     TH1D* h_mtt_tF;
