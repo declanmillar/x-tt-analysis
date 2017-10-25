@@ -417,7 +417,10 @@ void Analysis::EachEvent(double weight)
         h_perf_phi_ttbar->Fill((p_ttbar_truth.Phi() - p_ttbar.Phi()) / p_ttbar_truth.Phi(), weight);
         double perf_mass_ttbar = (mass_ttbar_truth - mass_ttbar) / mass_ttbar_truth;
         h_perf_mass_ttbar->Fill(perf_mass_ttbar, weight);
+
         h2_perf_mass_ttbar->Fill(mass_ttbar_truth, perf_mass_ttbar, weight);
+        h2_perf_mass_ttbar_pTtop->Fill(p_top_truth.Pt(), perf_mass_ttbar, weight);
+        h2_perf_mass_ttbar_pTtbar->Fill(p_tbar_truth.Pt(), perf_mass_ttbar, weight);
 
         h2_pT_top_TvR->Fill(p_top.Pt(), p_top_truth.Pt(), weight);
         h2_eta_top_TvR->Fill(p_top.Eta(), p_top_truth.Eta(), weight);
@@ -1172,6 +1175,8 @@ void Analysis::MakeHistograms()
     h_perf_phi_ttbar = new TH1D("perf_phi_ttbar", "perf_phi_ttbar", 100, -2, 2);
 
     h2_perf_mass_ttbar = new TH2D("perf2_mass_ttbar", "perf2_mass_ttbar", nbins, Emin, Emax, 100, -2, 2);
+    h2_perf_mass_ttbar_pTtop = new TH2D("perf2_mass_ttbar_pTtop", "perf2_mass_ttbar_pTtop", 200, 0, 2000, 100, -2, 2);
+    h2_perf_mass_ttbar_pTtbar = new TH2D("perf2_mass_ttbar_pTtbar", "perf2_mass_ttbar_pTtbar", 200, 0, 2000, 100, -2, 2);
 
     h2_mass_top_TvR = new TH2D("mass_top_TvR", "mass_top_TvR", 40, 100.0, 300.0, 40, 100.0, 300.0);
     h2_pT_top_TvR = new TH2D("pT_top_TvR", "pT_top_TvR", 200, 0.0, 2000.0, 200, 0.0, 2000.0);
@@ -1324,7 +1329,9 @@ void Analysis::MakeDistributions()
         this->MakeDistribution1D(h_perf_pT_ttbar, "");
         this->MakeDistribution1D(h_perf_eta_ttbar, "");
         this->MakeDistribution1D(h_perf_phi_ttbar, "");
-        this->MakeDistribution2D(h2_perf_mass_ttbar, "m_{t\\bar{t}}\\ ", "TeV", "m^{truth}_{t\\bar{t}} - m^{reco}_{t\\bar{t}} / m^{truth}_{t\\bar{t}}\\ ", "");
+        this->MakeDistribution2D(h2_perf_mass_ttbar, "m_^{truth}{t\\bar{t}}\\ ", "TeV", "m^{truth}_{t\\bar{t}} - m^{reco}_{t\\bar{t}} / m^{truth}_{t\\bar{t}}\\ ", "");
+        this->MakeDistribution2D(h2_perf_mass_ttbar_pTtop, "p^{t,truth}_{T}\\ ", "GeV", "m^{truth}_{t\\bar{t}} - m^{reco}_{t\\bar{t}} / m^{truth}_{t\\bar{t}}\\ ", "");
+        this->MakeDistribution2D(h2_perf_mass_ttbar_pTtbar, "p^{\\bar{t},truth}_{T}\\ ", "GeV", "m^{truth}_{t\\bar{t}} - m^{reco}_{t\\bar{t}} / m^{truth}_{t\\bar{t}}\\ ", "");
 
         // rapidity
         this->MakeDistribution1D(h_y_ttbar, "");

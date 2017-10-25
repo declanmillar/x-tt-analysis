@@ -195,6 +195,8 @@ private:
     TH1D* h_perf_eta_ttbar;
     TH1D* h_perf_phi_ttbar;
     TH2D* h2_perf_mass_ttbar;
+    TH2D* h2_perf_mass_ttbar_pTtop;
+    TH2D* h2_perf_mass_ttbar_pTtbar;
 
     TH2D* h2_mass_top_TvR;
     TH2D* h2_pT_top_TvR;
