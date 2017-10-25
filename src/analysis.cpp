@@ -42,6 +42,7 @@ void Analysis::EachEvent(double weight)
     h_eta_tbar_truth->Fill(p_tbar_truth.Eta(), weight);
     h_phi_tbar_truth->Fill(p_tbar_truth.Phi(), weight);
     h_mass_tbar_truth->Fill(p_tbar_truth.M(), weight);
+
     h_pT_ttbar_truth->Fill(p_ttbar_truth.Pt(), weight);
     h_eta_ttbar_truth->Fill(p_ttbar_truth.Eta(), weight);
     h_phi_ttbar_truth->Fill(p_ttbar_truth.Phi(), weight);
@@ -873,6 +874,10 @@ void Analysis::MakeHistograms()
     h_eta_tbar->Sumw2();
     h_eta_tbar_truth = new TH1D("eta_tbar_truth", "\\eta^{truth}_{\\bar{t}}", 200, -5.0, 5.0);
     h_eta_tbar_truth->Sumw2();
+    h_eta_ttbar = new TH1D("eta_ttbar", "\\eta_{t\\bar{t}}", 200, -5.0, 5.0);
+    h_eta_ttbar->Sumw2();
+    h_eta_ttbar_truth = new TH1D("eta_ttbar_truth", "\\eta^{truth}_{t\\bar{t}}", 200, -5.0, 5.0);
+    h_eta_ttbar_truth->Sumw2();
     h_y_ttbar = new TH1D("y_ttbar", "y_{t\\bar{t}}\\ ", 50, -2.5, 2.5);
     h_y_ttbar->Sumw2();
     h_y_ttbar_truth = new TH1D("y_ttbar_truth", "y^{truth}_{t\\bar{t}}\\ ", 50, -2.5, 2.5);
@@ -880,12 +885,16 @@ void Analysis::MakeHistograms()
 
     h_phi_top = new TH1D("phi_top", "\\phi_{t}", 200, -1.0, 1.0);
     h_phi_top->Sumw2();
-    h_phi_tbar = new TH1D("phi_tbar", "\\phi_{\\bar{t}}", 200, -1.0, 1.0);
-    h_phi_tbar->Sumw2();
     h_phi_top_truth = new TH1D("phi_top_truth", "\\phi^{truth}_{t}", 200, -1.0, 1.0);
     h_phi_top_truth->Sumw2();
+    h_phi_tbar = new TH1D("phi_tbar", "\\phi_{\\bar{t}}", 200, -1.0, 1.0);
+    h_phi_tbar->Sumw2();
     h_phi_tbar_truth = new TH1D("phi_tbar_truth", "\\phi^{truth}_{\\bar{t}}", 200, -1.0, 1.0);
     h_phi_tbar_truth->Sumw2();
+    h_phi_ttbar = new TH1D("phi_ttbar", "\\phi_{\\bar{t}}", 200, -1.0, 1.0);
+    h_phi_ttbar->Sumw2();
+    h_phi_ttbar_truth = new TH1D("phi_ttbar_truth", "\\phi^{truth}_{\\bar{t}}", 200, -1.0, 1.0);
+    h_phi_ttbar_truth->Sumw2();
 
     h_mass_W1 = new TH1D("mass_W1", "m_{W^{+}}\\ ", 150, 0.0, 150.0);
     h_mass_W1->Sumw2();
