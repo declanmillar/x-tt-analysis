@@ -1329,9 +1329,9 @@ void Analysis::MakeDistributions()
         this->MakeDistribution1D(h_perf_pT_ttbar, "");
         this->MakeDistribution1D(h_perf_eta_ttbar, "");
         this->MakeDistribution1D(h_perf_phi_ttbar, "");
-        this->MakeDistribution2D(h2_perf_mass_ttbar, "m_^{truth}{t\\bar{t}}\\ ", "TeV", "m^{truth}_{t\\bar{t}} - m^{reco}_{t\\bar{t}} / m^{truth}_{t\\bar{t}}\\ ", "");
-        this->MakeDistribution2D(h2_perf_mass_ttbar_pTtop, "p^{t,truth}_{T}\\ ", "GeV", "m^{truth}_{t\\bar{t}} - m^{reco}_{t\\bar{t}} / m^{truth}_{t\\bar{t}}\\ ", "");
-        this->MakeDistribution2D(h2_perf_mass_ttbar_pTtbar, "p^{\\bar{t},truth}_{T}\\ ", "GeV", "m^{truth}_{t\\bar{t}} - m^{reco}_{t\\bar{t}} / m^{truth}_{t\\bar{t}}\\ ", "");
+        this->MakeDistribution2D(h2_perf_mass_ttbar, "m_^{truth}_{t\\bar{t}}\\ ", "TeV", "\\left(m^{truth}_{t\\bar{t}} - m^{reco}_{t\\bar{t}}\\right) / m^{truth}_{t\\bar{t}}\\ ", "");
+        this->MakeDistribution2D(h2_perf_mass_ttbar_pTtop, "p^{t,truth}_{T}\\ ", "GeV", "\\left(m^{truth}_{t\\bar{t}} - m^{reco}_{t\\bar{t}}\\right) / m^{truth}_{t\\bar{t}}\\ ", "");
+        this->MakeDistribution2D(h2_perf_mass_ttbar_pTtbar, "p^{\\bar{t},truth}_{T}\\ ", "GeV", "\\left(m^{truth}_{t\\bar{t}} - m^{reco}_{t\\bar{t}}\\right) / m^{truth}_{t\\bar{t}}\\ ", "");
 
         // rapidity
         this->MakeDistribution1D(h_y_ttbar, "");
