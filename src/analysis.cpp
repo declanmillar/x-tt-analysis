@@ -1161,22 +1161,22 @@ void Analysis::MakeHistograms()
     h_dR_tbar = new TH1D("dR_tbar", "\\Delta R\\left(\\bar{t}_{truth},\\bar{t}_{reco}\\right)", 25, 0.0, 10.0);
     h_dR_ttbar = new TH1D("dR_ttbar", "\\Delta R\\left(t\\bar{t}_{truth}, t\\bar{t}_{reco}\\right)", 25, 0.0, 10.0);
 
-    h_perf_mass_top = new TH1D("perf_mass_top", "perf_mass_top", 100, -2, 2);
-    h_perf_pT_top = new TH1D("perf_pT_top", "perf_pT_top", 100, -2, 2);
-    h_perf_eta_top = new TH1D("perf_eta_top", "perf_eta_top", 100, -2, 2);
-    h_perf_phi_top = new TH1D("perf_phi_top", "perf_phi_top", 100, -2, 2);
-    h_perf_mass_tbar = new TH1D("perf_mass_tbar", "perf_mass_tbar", 100, -2, 2);
-    h_perf_pT_tbar = new TH1D("perf_pT_tbar", "perf_pT_tbar", 100, -2, 2);
-    h_perf_eta_tbar = new TH1D("perf_eta_tbar", "perf_eta_tbar", 100, -2, 2);
-    h_perf_phi_tbar = new TH1D("perf_phi_tbar", "perf_phi_tbar", 100, -2, 2);
-    h_perf_mass_ttbar = new TH1D("perf_mass_ttbar", "perf_mass_ttbar", 100, -2, 2);
-    h_perf_pT_ttbar = new TH1D("perf_pT_ttbar", "perf_pT_ttbar", 100, -2, 2);
-    h_perf_eta_ttbar = new TH1D("perf_eta_ttbar", "perf_eta_ttbar", 100, -2, 2);
-    h_perf_phi_ttbar = new TH1D("perf_phi_ttbar", "perf_phi_ttbar", 100, -2, 2);
+    h_perf_mass_top = new TH1D("perf_mass_top", "perf_mass_top", 100, -3, 3);
+    h_perf_pT_top = new TH1D("perf_pT_top", "perf_pT_top", 100, -3, 3);
+    h_perf_eta_top = new TH1D("perf_eta_top", "perf_eta_top", 100, -3, 3);
+    h_perf_phi_top = new TH1D("perf_phi_top", "perf_phi_top", 100, -3, 3);
+    h_perf_mass_tbar = new TH1D("perf_mass_tbar", "perf_mass_tbar", 100, -3, 3);
+    h_perf_pT_tbar = new TH1D("perf_pT_tbar", "perf_pT_tbar", 100, -3, 3);
+    h_perf_eta_tbar = new TH1D("perf_eta_tbar", "perf_eta_tbar", 100, -3, 3);
+    h_perf_phi_tbar = new TH1D("perf_phi_tbar", "perf_phi_tbar", 100, -3, 3);
+    h_perf_mass_ttbar = new TH1D("perf_mass_ttbar", "perf_mass_ttbar", 100, -3, 3);
+    h_perf_pT_ttbar = new TH1D("perf_pT_ttbar", "perf_pT_ttbar", 100, -3, 3);
+    h_perf_eta_ttbar = new TH1D("perf_eta_ttbar", "perf_eta_ttbar", 100, -3, 3);
+    h_perf_phi_ttbar = new TH1D("perf_phi_ttbar", "perf_phi_ttbar", 100, -3, 3);
 
-    h2_perf_mass_ttbar = new TH2D("perf2_mass_ttbar", "perf2_mass_ttbar", nbins, Emin, Emax, 100, -2, 2);
-    h2_perf_mass_ttbar_pTtop = new TH2D("perf2_mass_ttbar_pTtop", "perf2_mass_ttbar_pTtop", 200, 0, 2000, 100, -2, 2);
-    h2_perf_mass_ttbar_pTtbar = new TH2D("perf2_mass_ttbar_pTtbar", "perf2_mass_ttbar_pTtbar", 200, 0, 2000, 100, -2, 2);
+    h2_perf_mass_ttbar = new TH2D("perf2_mass_ttbar", "perf2_mass_ttbar", nbins, Emin, Emax, 100, -3, 3);
+    h2_perf_mass_ttbar_pTtop = new TH2D("perf2_mass_ttbar_pTtop", "perf2_mass_ttbar_pTtop", 200, 0, 2000, 100, -3, 3);
+    h2_perf_mass_ttbar_pTtbar = new TH2D("perf2_mass_ttbar_pTtbar", "perf2_mass_ttbar_pTtbar", 200, 0, 2000, 100, -3, 3);
 
     h2_mass_top_TvR = new TH2D("mass_top_TvR", "mass_top_TvR", 40, 100.0, 300.0, 40, 100.0, 300.0);
     h2_pT_top_TvR = new TH2D("pT_top_TvR", "pT_top_TvR", 200, 0.0, 2000.0, 200, 0.0, 2000.0);
