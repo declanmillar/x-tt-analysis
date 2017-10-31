@@ -13,6 +13,7 @@
 #include "TMathText.h"
 #include "TLorentzVector.h"
 #include "TVector2.h"
+#include "TProfile.h"
 #include "TClonesArray.h"
 #include "sys/stat.h"
 #include "TTF.h"
@@ -181,7 +182,7 @@ private:
     TH1D* h_dR_tbar;
     TH1D* h_dR_ttbar;
 
-    // dR between truth and reco
+    // performance plots
     TH1D* h_perf_mass_top;
     TH1D* h_perf_pT_top;
     TH1D* h_perf_eta_top;
@@ -197,6 +198,9 @@ private:
     TH2D* h2_perf_mass_ttbar;
     TH2D* h2_perf_mass_ttbar_pTtop;
     TH2D* h2_perf_mass_ttbar_pTtbar;
+    TProfile* h_eff_mass_ttbar_truth;
+    TProfile* h_eff_pT_top_truth;
+    TProfile* h_eff_pT_tbar_truth;
 
     TH2D* h2_mass_top_TvR;
     TH2D* h2_pT_top_TvR;
@@ -339,7 +343,7 @@ protected:
     void InitialiseCutflow();
     void PrintCutflow();
     void UpdateCutflow(int, bool);
-
+    void FillEfficiencies(const vector<double>&, const int);
 
     // event selection
     bool PassesEventSelection();
