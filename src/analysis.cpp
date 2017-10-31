@@ -39,17 +39,17 @@ void Analysis::EachEvent(double weight)
 
     h_pT_top_truth->Fill(pT_top_truth, weight);
     h_eta_top_truth->Fill(p_top_truth.Eta(), weight);
-    h_phi_top_truth->Fill(p_top_truth.Phi(), weight);
+    h_phi_top_truth->Fill(p_top_truth.Phi() / m_pi, weight);
     h_mass_top_truth->Fill(p_top_truth.M(), weight);
 
     h_pT_tbar_truth->Fill(pT_tbar_truth, weight);
     h_eta_tbar_truth->Fill(p_tbar_truth.Eta(), weight);
-    h_phi_tbar_truth->Fill(p_tbar_truth.Phi(), weight);
+    h_phi_tbar_truth->Fill(p_tbar_truth.Phi() / m_pi, weight);
     h_mass_tbar_truth->Fill(p_tbar_truth.M(), weight);
 
     h_pT_ttbar_truth->Fill(p_ttbar_truth.Pt(), weight);
     h_eta_ttbar_truth->Fill(p_ttbar_truth.Eta(), weight);
-    h_phi_ttbar_truth->Fill(p_ttbar_truth.Phi(), weight);
+    h_phi_ttbar_truth->Fill(p_ttbar_truth.Phi() / m_pi, weight);
     h_mass_ttbar_truth->Fill(mass_ttbar_truth, weight);
     h_y_ttbar_truth->Fill(p_ttbar_truth.Rapidity(), weight);
 
