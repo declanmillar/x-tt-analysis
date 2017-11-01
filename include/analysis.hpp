@@ -198,9 +198,12 @@ private:
     TH2D* h2_perf_mass_ttbar;
     TH2D* h2_perf_mass_ttbar_pTtop;
     TH2D* h2_perf_mass_ttbar_pTtbar;
-    TProfile* h_eff_mass_ttbar_truth;
-    TProfile* h_eff_pT_top_truth;
-    TProfile* h_eff_pT_tbar_truth;
+    TProfile* h_eff_cuts_mass_ttbar_truth;
+    TProfile* h_eff_cuts_pT_top_truth;
+    TProfile* h_eff_cuts_pT_tbar_truth;
+    TProfile* h_eff_reco_mass_ttbar_truth;
+    TProfile* h_eff_reco_pT_top_truth;
+    TProfile* h_eff_reco_pT_tbar_truth;
 
     TH2D* h2_mass_top_TvR;
     TH2D* h2_pT_top_TvR;
@@ -327,6 +330,7 @@ protected:
     // histograms
     void MakeHistograms();
     void MakeDistributions();
+    void WriteEfficiency(TH1D*, const string&);
     void MakeDistribution1D(TH1D*, const string&, bool normalise = false);
     void MakeDistribution2D(TH2D*, string, string, string, string);
     void MakeDistributionAL(TH2D*, const string&, const string&);
@@ -343,7 +347,8 @@ protected:
     void InitialiseCutflow();
     void PrintCutflow();
     void UpdateCutflow(int, bool);
-    void FillEfficiencies(const vector<double>&, const int);
+    void FillCutsEfficiencies(const vector<double>&, const int);
+    void FillRecoEfficiencies(const vector<double>&, const int);
 
     // event selection
     bool PassesEventSelection();
