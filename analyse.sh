@@ -21,4 +21,4 @@ do
     ./analyse.py "${m}_pythia_delphes_${r}_b${b}" -i "${m}_pythia_delphes.root" -p "$p" -r "$r" -b "$b"
 done
 
-./analysis -i "uu-X-tt-bbeevv_GLR-R-2.5-20pc_13TeV_CT14LL_004_pythia_delphes.root" -p "uu-X-tt-bbllvv_GLR-R-2.5-20pc_13TeV_CT14LL.txt" -r "NuW" -b 2
+./analysis -i "uu-X-tt-bbeevv_GLR-R-2.5-20pc_13TeV_CT14LL_000_pythia_delphes.root" -p "uu-X-tt-bbllvv_GLR-R-2.5-20pc_13TeV_CT14LL.txt" -r "NuW" -b 2
