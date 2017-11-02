@@ -110,6 +110,20 @@ private:
 
     // Histograms
     TH1D* h_cutflow;
+    TProfile* h_eff_cuts_mass_ttbar_truth;
+    TProfile* h_eff_cuts_pT_top_truth;
+    TProfile* h_eff_cuts_pT_tbar_truth;
+    TProfile* h_eff_cut_2l_mass_ttbar_truth;
+    TProfile* h_eff_cut_oc_mass_ttbar_truth;
+    TProfile* h_eff_cut_mll_mass_ttbar_truth;
+    TProfile* h_eff_cut_mZ_mass_ttbar_truth;
+    TProfile* h_eff_cut_ETmiss_mass_ttbar_truth;
+    TProfile* h_eff_cut_HT_mass_ttbar_truth;
+    TProfile* h_eff_cut_2j_mass_ttbar_truth;
+    TProfile* h_eff_cut_2b_mass_ttbar_truth;
+    TProfile* h_eff_reco_mass_ttbar_truth;
+    TProfile* h_eff_reco_pT_top_truth;
+    TProfile* h_eff_reco_pT_tbar_truth;
 
     TH1D* h_pT_l1;
     TH1D* h_eta_l1;
@@ -198,12 +212,7 @@ private:
     TH2D* h2_perf_mass_ttbar;
     TH2D* h2_perf_mass_ttbar_pTtop;
     TH2D* h2_perf_mass_ttbar_pTtbar;
-    TProfile* h_eff_cuts_mass_ttbar_truth;
-    TProfile* h_eff_cuts_pT_top_truth;
-    TProfile* h_eff_cuts_pT_tbar_truth;
-    TProfile* h_eff_reco_mass_ttbar_truth;
-    TProfile* h_eff_reco_pT_top_truth;
-    TProfile* h_eff_reco_pT_tbar_truth;
+
 
     TH2D* h2_mass_top_TvR;
     TH2D* h2_pT_top_TvR;

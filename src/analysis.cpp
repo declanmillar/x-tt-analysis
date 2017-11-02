@@ -60,55 +60,74 @@ void Analysis::EachEvent(double weight)
     h_nTruthMuons->Fill(m_truthMuons->size(), weight);
     h_nTruthBquarks->Fill(m_truthBquarks->size(), weight);
 
-    // this->FillCutsEfficiencies(eff_values, 0);
-
     // leptons
     this->GetElectrons();
     this->GetMuons();
     if (!this->ExactlyTwoLeptons()) {
         this->FillCutsEfficiencies(eff_values, 0);
+        h_eff_cut_2l_mass_ttbar_truth->Fill(eff_values.at(0), 0);
         return;
     }
+    h_eff_cut_2l_mass_ttbar_truth->Fill(eff_values.at(0), 1);
+
     this->AssignChannel();
+
     if (!this->OppositeCharge()) {
         this->FillCutsEfficiencies(eff_values, 0);
+        h_eff_cut_oc_mass_ttbar_truth->Fill(eff_values.at(0), 0);
         return;
     }
+    h_eff_cut_oc_mass_ttbar_truth->Fill(eff_values.at(0), 1);
+
     pair<TLorentzVector, TLorentzVector> p_l = this->GetLeptonMomenta();
     if (!this->SufficientMll(p_l)) {
         this->FillCutsEfficiencies(eff_values, 0);
+        h_eff_cut_mll_mass_ttbar_truth->Fill(eff_values.at(0), 0);
         return;
     }
+    h_eff_cut_mll_mass_ttbar_truth->Fill(eff_values.at(0), 1);
+
     if (!this->OutsideZmassWindow(p_l)) {
         this->FillCutsEfficiencies(eff_values, 0);
+        h_eff_cut_mZ_mass_ttbar_truth->Fill(eff_values.at(0), 0);
         return;
     }
+    h_eff_cut_mZ_mass_ttbar_truth->Fill(eff_values.at(0), 1);
 
     MissingET* missingET = (MissingET*) b_MissingET->At(0);
     double ET_miss = missingET->MET;
 
     if (!this->SufficientMET(ET_miss)) {
         this->FillCutsEfficiencies(eff_values, 0);
+        h_eff_cut_ETmiss_mass_ttbar_truth->Fill(eff_values.at(0), 0);
         return;
     }
+    h_eff_cut_ETmiss_mass_ttbar_truth->Fill(eff_values.at(0), 1);
 
     TLorentzVector p_miss;
     p_miss.SetPtEtaPhiM(ET_miss, missingET->Eta, missingET->Phi, 0.0);
 
     if (!this->SufficientHT()) {
         this->FillCutsEfficiencies(eff_values, 0);
+        h_eff_cut_HT_mass_ttbar_truth->Fill(eff_values.at(0), 0);
         return;
     }
+    h_eff_cut_HT_mass_ttbar_truth->Fill(eff_values.at(0), 1);
 
     this->GetJets();
     if (!this->SufficientJets()) {
         this->FillCutsEfficiencies(eff_values, 0);
+        h_eff_cut_2j_mass_ttbar_truth->Fill(eff_values.at(0), 0);
         return;
     }
+    h_eff_cut_2j_mass_ttbar_truth->Fill(eff_values.at(0), 1);
+
     if (!this->SufficientBtags()) {
         this->FillCutsEfficiencies(eff_values, 0);
+        h_eff_cut_2b_mass_ttbar_truth->Fill(eff_values.at(0), 0);
         return;
     }
+    h_eff_cut_2b_mass_ttbar_truth->Fill(eff_values.at(0), 1);
 
     this->FillCutsEfficiencies(eff_values, 1);
     h_nPassElectrons->Fill(m_electrons->size(), weight);
@@ -1215,6 +1234,14 @@ void Analysis::MakeHistograms()
     h_eff_reco_mass_ttbar_truth = new TProfile("eff_reco_mass_ttbar_truth", "eff_reco_mass_ttbar_truth", nbins, Emin, Emax);
     h_eff_reco_pT_top_truth = new TProfile("eff_reco_pT_top_truth", "eff_reco_pT_top_truth", 200, 0, 2000);
     h_eff_reco_pT_tbar_truth = new TProfile("eff_reco_pT_tbar_truth", "eff_reco_pT_tbar_truth", 200, 0, 2000);
+    h_eff_cut_2l_mass_ttbar_truth = new TProfile("eff_cut_2l_mass_ttbar_truth", "eff_cut_2l_mass_ttbar_truth", nbins, Emin, Emax);
+    h_eff_cut_oc_mass_ttbar_truth  = new TProfile("eff_cut_oc_mass_ttbar_truth", "eff_cut_oc_mass_ttbar_truth", nbins, Emin, Emax);
+    h_eff_cut_mll_mass_ttbar_truth  = new TProfile("eff_cut_mll_mass_ttbar_truth", "eff_cut_mll_mass_ttbar_truth", nbins, Emin, Emax);
+    h_eff_cut_mZ_mass_ttbar_truth  = new TProfile("eff_cut_mZ_mass_ttbar_truth", "eff_cut_mZ_mass_ttbar_truth", nbins, Emin, Emax);
+    h_eff_cut_ETmiss_mass_ttbar_truth = new TProfile("eff_cut_ETmiss_mass_ttbar_truth", "eff_cut_ETmiss_mass_ttbar_truth", nbins, Emin, Emax);
+    h_eff_cut_HT_mass_ttbar_truth = new TProfile("eff_cut_HT_mass_ttbar_truth", "eff_cut_HT_mass_ttbar_truth", nbins, Emin, Emax);
+    h_eff_cut_2j_mass_ttbar_truth  = new TProfile("eff_cut_2j_mass_ttbar_truth", "eff_cut_2j_mass_ttbar_truth", nbins, Emin, Emax);
+    h_eff_cut_2b_mass_ttbar_truth = new TProfile("eff_cut_2b_mass_ttbar_truth", "eff_cut_2b_mass_ttbar_truth", nbins, Emin, Emax);
 
     h2_perf_mass_ttbar = new TH2D("perf2_mass_ttbar", "perf2_mass_ttbar", nbins, Emin, Emax, 100, -3, 3);
     h2_perf_mass_ttbar_pTtop = new TH2D("perf2_mass_ttbar_pTtop", "perf2_mass_ttbar_pTtop", 200, 0, 2000, 100, -3, 3);
@@ -1240,6 +1267,21 @@ void Analysis::MakeHistograms()
 void Analysis::MakeDistributions()
 {
     if (m_debug) cout << "Making distributions ...\n";
+
+    this->WriteEfficiency(h_eff_cuts_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]");
+    this->WriteEfficiency(h_eff_cuts_pT_top_truth, "P_{T}^{t}\\ [\\mathrm{GeV}]");
+    this->WriteEfficiency(h_eff_cuts_pT_tbar_truth, "P_{T}^{\\bar{t}}\\ [\\mathrm{GeV}]");
+    this->WriteEfficiency(h_eff_cut_2l_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]");
+    this->WriteEfficiency(h_eff_cut_oc_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]");
+    this->WriteEfficiency(h_eff_cut_mll_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]");
+    this->WriteEfficiency(h_eff_cut_mZ_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]");
+    this->WriteEfficiency(h_eff_cut_ETmiss_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]");
+    this->WriteEfficiency(h_eff_cut_HT_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]");
+    this->WriteEfficiency(h_eff_cut_2j_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]");
+    this->WriteEfficiency(h_eff_cut_2b_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]");
+    this->WriteEfficiency(h_eff_reco_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]");
+    this->WriteEfficiency(h_eff_reco_pT_top_truth, "P_{T}^{t}\\ [\\mathrm{GeV}]");
+    this->WriteEfficiency(h_eff_reco_pT_tbar_truth, "P_{T}^{\\bar{t}}\\ [\\mathrm{GeV}]");
 
     // count
     this->MakeDistribution1D(h_nTruthElectrons, "");
@@ -1358,13 +1400,6 @@ void Analysis::MakeDistributions()
         this->MakeDistribution1D(h_dR_top, "");
         this->MakeDistribution1D(h_dR_tbar, "");
         this->MakeDistribution1D(h_dR_ttbar, "");
-
-        this->WriteEfficiency(h_eff_cuts_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]");
-        this->WriteEfficiency(h_eff_cuts_pT_top_truth, "P_{T}^{t}\\ [\\mathrm{GeV}]");
-        this->WriteEfficiency(h_eff_cuts_pT_tbar_truth, "P_{T}^{\\bar{t}}\\ [\\mathrm{GeV}]");
-        this->WriteEfficiency(h_eff_reco_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]");
-        this->WriteEfficiency(h_eff_reco_pT_top_truth, "P_{T}^{t}\\ [\\mathrm{GeV}]");
-        this->WriteEfficiency(h_eff_reco_pT_tbar_truth, "P_{T}^{\\bar{t}}\\ [\\mathrm{GeV}]");
 
         this->MakeDistribution1D(h_perf_mass_top, "");
         this->MakeDistribution1D(h_perf_pT_top, "");
@@ -1868,7 +1903,6 @@ bool Analysis::OppositeCharge()
 
 
 void Analysis::FillCutsEfficiencies(const vector<double>& eff_values, const int pass) {
-    // h_eff_cuts_mass_ttbar_truth->Fill(0.5, pass);
     h_eff_cuts_mass_ttbar_truth->Fill(eff_values.at(0), pass);
     h_eff_cuts_pT_top_truth->Fill(eff_values.at(1), pass);
     h_eff_cuts_pT_tbar_truth->Fill(eff_values.at(2), pass);
@@ -1876,7 +1910,6 @@ void Analysis::FillCutsEfficiencies(const vector<double>& eff_values, const int 
 
 
 void Analysis::FillRecoEfficiencies(const vector<double>& eff_values, const int pass) {
-    // h_eff_cuts_mass_ttbar_truth->Fill(0.5, pass);
     h_eff_reco_mass_ttbar_truth->Fill(eff_values.at(0), pass);
     h_eff_reco_pT_top_truth->Fill(eff_values.at(1), pass);
     h_eff_reco_pT_tbar_truth->Fill(eff_values.at(2), pass);
