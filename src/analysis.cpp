@@ -2318,5 +2318,7 @@ void Analysis::PrintCutflow()
 
         cout << m_cutNames[cut] << " " << m_cutflow[cut] << "\n";
     }
+    if (m_debug) cout << "Writing cut flow ...\n";
     h_cutflow->Write();
+    if (m_debug) cout << "Written cut flow\n";
 }
