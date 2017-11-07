@@ -556,6 +556,7 @@ void Analysis::CleanupEvent()
     delete m_truthElectrons;
     delete m_truthMuons;
     delete m_truthBquarks;
+    
     m_hardTop = nullptr;
     m_hardTbar = nullptr;
     m_hardB = nullptr;
@@ -1663,9 +1664,11 @@ void Analysis::GetElectrons()
     m_electrons = new vector<Electron*>;
     for (int i = 0; i < b_Electron->GetEntries(); i++)
     {
-        bool passed = false;
+        bool passed = false, outsideCrack = false, insideCaps = false;
         Electron* electron = (Electron*) b_Electron->At(i);
-        if (electron->PT > 25.0 and abs(electron->Eta) < 2.47) passed = true;
+        if (electron->PT > 25.0 and abs(electron->Eta) < 2.47) insideCaps = true;
+        if (electron->PT > 1.37 and electron->PT < 1.52) outsideCrack = true;
+        if (insideCaps and outsideCrack) passed = true;
         if (passed) m_electrons->push_back(electron);
     }
 }
