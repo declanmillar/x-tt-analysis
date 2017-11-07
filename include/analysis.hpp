@@ -98,7 +98,6 @@ private:
         c_sufficientJets,
         c_sufficientBtags,
         c_validSolution,
-        // c_deltaR,
         m_cuts // Keep as last entry
     };
 

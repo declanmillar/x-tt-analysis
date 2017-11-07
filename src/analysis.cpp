@@ -65,69 +65,69 @@ void Analysis::EachEvent(double weight)
     this->GetMuons();
     if (!this->ExactlyTwoLeptons()) {
         this->FillCutsEfficiencies(eff_values, 0);
-        h_eff_cut_2l_mass_ttbar_truth->Fill(eff_values.at(0), 0);
+        h_eff_cut_2l_mass_ttbar_truth->Fill(mass_ttbar_truth, 0);
         return;
     }
-    h_eff_cut_2l_mass_ttbar_truth->Fill(eff_values.at(0), 1);
+    h_eff_cut_2l_mass_ttbar_truth->Fill(mass_ttbar_truth, 1);
 
     this->AssignChannel();
 
     if (!this->OppositeCharge()) {
         this->FillCutsEfficiencies(eff_values, 0);
-        h_eff_cut_oc_mass_ttbar_truth->Fill(eff_values.at(0), 0);
+        h_eff_cut_oc_mass_ttbar_truth->Fill(mass_ttbar_truth, 0);
         return;
     }
-    h_eff_cut_oc_mass_ttbar_truth->Fill(eff_values.at(0), 1);
+    h_eff_cut_oc_mass_ttbar_truth->Fill(mass_ttbar_truth, 1);
 
     pair<TLorentzVector, TLorentzVector> p_l = this->GetLeptonMomenta();
     if (!this->SufficientMll(p_l)) {
         this->FillCutsEfficiencies(eff_values, 0);
-        h_eff_cut_mll_mass_ttbar_truth->Fill(eff_values.at(0), 0);
+        h_eff_cut_mll_mass_ttbar_truth->Fill(mass_ttbar_truth, 0);
         return;
     }
-    h_eff_cut_mll_mass_ttbar_truth->Fill(eff_values.at(0), 1);
+    h_eff_cut_mll_mass_ttbar_truth->Fill(mass_ttbar_truth, 1);
 
     if (!this->OutsideZmassWindow(p_l)) {
         this->FillCutsEfficiencies(eff_values, 0);
-        h_eff_cut_mZ_mass_ttbar_truth->Fill(eff_values.at(0), 0);
+        h_eff_cut_mZ_mass_ttbar_truth->Fill(mass_ttbar_truth, 0);
         return;
     }
-    h_eff_cut_mZ_mass_ttbar_truth->Fill(eff_values.at(0), 1);
+    h_eff_cut_mZ_mass_ttbar_truth->Fill(mass_ttbar_truth, 1);
 
     MissingET* missingET = (MissingET*) b_MissingET->At(0);
     double ET_miss = missingET->MET;
 
     if (!this->SufficientMET(ET_miss)) {
         this->FillCutsEfficiencies(eff_values, 0);
-        h_eff_cut_ETmiss_mass_ttbar_truth->Fill(eff_values.at(0), 0);
+        h_eff_cut_ETmiss_mass_ttbar_truth->Fill(mass_ttbar_truth, 0);
         return;
     }
-    h_eff_cut_ETmiss_mass_ttbar_truth->Fill(eff_values.at(0), 1);
+    h_eff_cut_ETmiss_mass_ttbar_truth->Fill(mass_ttbar_truth, 1);
 
     TLorentzVector p_miss;
     p_miss.SetPtEtaPhiM(ET_miss, missingET->Eta, missingET->Phi, 0.0);
 
     if (!this->SufficientHT()) {
         this->FillCutsEfficiencies(eff_values, 0);
-        h_eff_cut_HT_mass_ttbar_truth->Fill(eff_values.at(0), 0);
+        h_eff_cut_HT_mass_ttbar_truth->Fill(mass_ttbar_truth, 0);
         return;
     }
-    h_eff_cut_HT_mass_ttbar_truth->Fill(eff_values.at(0), 1);
+    h_eff_cut_HT_mass_ttbar_truth->Fill(mass_ttbar_truth, 1);
 
     this->GetJets();
     if (!this->SufficientJets()) {
         this->FillCutsEfficiencies(eff_values, 0);
-        h_eff_cut_2j_mass_ttbar_truth->Fill(eff_values.at(0), 0);
+        h_eff_cut_2j_mass_ttbar_truth->Fill(mass_ttbar_truth, 0);
         return;
     }
-    h_eff_cut_2j_mass_ttbar_truth->Fill(eff_values.at(0), 1);
+    h_eff_cut_2j_mass_ttbar_truth->Fill(mass_ttbar_truth, 1);
 
     if (!this->SufficientBtags()) {
         this->FillCutsEfficiencies(eff_values, 0);
-        h_eff_cut_2b_mass_ttbar_truth->Fill(eff_values.at(0), 0);
+        h_eff_cut_2b_mass_ttbar_truth->Fill(mass_ttbar_truth, 0);
         return;
     }
-    h_eff_cut_2b_mass_ttbar_truth->Fill(eff_values.at(0), 1);
+    h_eff_cut_2b_mass_ttbar_truth->Fill(mass_ttbar_truth, 1);
 
     this->FillCutsEfficiencies(eff_values, 1);
     h_nPassElectrons->Fill(m_electrons->size(), weight);
@@ -489,7 +489,7 @@ void Analysis::EachEvent(double weight)
         h2_pT_ttbar_TvR->Fill(p_ttbar.Pt(), p_ttbar_truth.Pt(), weight);
         h2_eta_ttbar_TvR->Fill(p_ttbar.Eta(), p_ttbar_truth.Eta(), weight);
         h2_phi_ttbar_TvR->Fill(p_ttbar.Phi(), p_ttbar_truth.Phi(), weight);
-        h2_mass_ttbar_TvR->Fill(p_ttbar.M(), p_ttbar_truth.M(), weight);
+        h2_mass_ttbar_TvR->Fill(mass_ttbar, mass_ttbar_truth, weight);
 
         h_mass_W1->Fill(p_W1.M(), weight);
         h_mass_W2->Fill(p_W2.M(), weight);
@@ -2277,7 +2277,6 @@ void Analysis::InitialiseCutflow()
     m_cutNames[c_sufficientBtags]    = "Sufficient b-tags     ";
     m_cutNames[c_sufficientHT]       = "Sufficient HT         ";
     m_cutNames[c_validSolution]      = "Top reco              ";
-    // m_cutNames[c_deltaR]             = "deltaR                ";
 
     m_cutTitles = vector<string>(
     m_cuts,                            "no name");
@@ -2291,7 +2290,6 @@ void Analysis::InitialiseCutflow()
     m_cutTitles[c_sufficientBtags]    = "\\mathrm{Sufficient}\\; b\\mathrm{-tags}";
     m_cutTitles[c_sufficientHT]       = "\\mathrm{Sufficient}\\; H_{\\mathrm{T}}";
     m_cutTitles[c_validSolution]      = "Top reco";
-    // m_cutTitles[c_deltaR]             = "\\Delta R";
 
     h_cutflow = new TH1D("cutflow", "cutflow", m_cuts, 0.0, m_cuts);
 
