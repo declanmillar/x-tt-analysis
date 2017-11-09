@@ -65,7 +65,6 @@ private:
     string m_tag;
     string m_pdf = "CT14LL";
     bool m_use_mass_slices = false;
-    bool m_parallel;
 
     bool m_xSec = false;
     const string m_reconstruction;
@@ -280,19 +279,27 @@ private:
     TH1D* h_deltaY_top;
     TH1D* h_deltaEta_l;
 
-    TH1D* h_nTruthElectrons;
-    TH1D* h_nTruthMuons;
-    TH1D* h_nTruthBquarks;
+    TH1D* h_n_truthElectrons;
+    TH1D* h_n_truthMuons;
+    TH1D* h_n_truthBquarks;
+    
+    TH1D* h_n_selElectrons;
+    TH1D* h_n_selMuons;
+    TH1D* h_n_selJets;
+    
+    TH1D* h_n_uniqueElectrons;
+    TH1D* h_n_uniqueMuons;
+    TH1D* h_n_uniqueJets;
 
-    TH1D* h_nPassElectrons;
-    TH1D* h_nPassMuons;
-    TH1D* h_nPassJets;
-    TH1D* h_nPassBjets;
+    TH1D* h_n_passElectrons;
+    TH1D* h_n_passMuons;
+    TH1D* h_n_passJets;
+    TH1D* h_n_passBjets;
 
-    TH1D* h_nElectrons;
-    TH1D* h_nMuons;
-    TH1D* h_nJets;
-    TH1D* h_nBjets;
+    TH1D* h_n_electrons;
+    TH1D* h_n_muons;
+    TH1D* h_n_jets;
+    TH1D* h_n_bJets;
 
     TH2D* h2_mtt_cosThetaStar;
     TH2D* h2_mtt_delta_yt;
@@ -332,6 +339,7 @@ protected:
     void GetElectrons();
     void GetMuons();
     void GetJets();
+    void OverlapRemoval();
     void AssignChannel();
     pair<TLorentzVector, TLorentzVector> GetLeptonMomenta();
 
@@ -380,7 +388,8 @@ protected:
     TClonesArray* b_Electron;
     TClonesArray* b_Muon;
     TClonesArray* b_MissingET;
-    TClonesArray* b_ScalarHT;
+    // TClonesArray* b_ScalarHT;
+    TClonesArray* b_Track;
 
 public:
     Analysis(const string& model, const string& process, const string& options, const int energy, const int luminosity, const int minBtags, const string& reconstruction, const string& tag, const bool slice):
@@ -401,10 +410,8 @@ public:
         m_input(nullptr),
         m_processes(nullptr),
         m_chain(nullptr),
-        m_tree(nullptr),
-        m_parallel(false)
+        m_tree(nullptr)
     {
-        cout << "parallel: " << m_parallel << "\n";
         this->PreLoop();
     }
 
@@ -426,10 +433,8 @@ public:
         m_input(nullptr),
         m_processes(nullptr),
         m_chain(nullptr),
-        m_tree(nullptr),
-        m_parallel(true)
+        m_tree(nullptr)
     {
-        cout << "parallel: " << m_parallel << "\n";
         this->PreLoopSingle();
     }
     virtual ~Analysis();

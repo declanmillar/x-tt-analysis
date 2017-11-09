@@ -73,19 +73,19 @@ int main(int argc, char* argv[]) {
     }
 
     cout << "SETTINGS\n";
-    cout << "Energy:           " << energy << " [TeV]\n";
-    cout << "Process:          " << process << "\n";
-    cout << "minimum b-tags:   " << minimumBtags << "\n";
-    if (options != "") cout << "Options:          " << options << "\n";
-    if (options != -1) cout << "Luminosity:       " << luminosity << " [fb-1]\n";
+    if (inputfilename == "") cout << "Process:          " << process << "\n";
+    else cout << "Single file mode: " << "on" << "\n";
+    cout << "Minimum b-tags:   " << minimumBtags << "\n";
     cout << "Reconstruction:   " << reconstruction << "\n";
+    if (options != "") cout << "Options:          " << options << "\n";
+    if (luminosity != -1) cout << "Luminosity:       " << luminosity << " [fb-1]\n";
+    cout << "Energy:           " << energy << " [TeV]\n";
 
     if (inputfilename == "") {
         auto analysis = new Analysis(model, process, options, energy, luminosity, minimumBtags, reconstruction, tag, slice);
         analysis->Run();
     }
     else {
-        cout << "Single file mode: " << "on" << "\n";
         auto analysis = new Analysis(inputfilename, processfilename, luminosity, minimumBtags, reconstruction, tag, slice);
         analysis->Run();
     }

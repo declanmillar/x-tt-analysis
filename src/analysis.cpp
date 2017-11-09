@@ -56,13 +56,25 @@ void Analysis::EachEvent(double weight)
     // truth
     this->GetTruthParticles();
 
-    h_nTruthElectrons->Fill(m_truthElectrons->size(), weight);
-    h_nTruthMuons->Fill(m_truthMuons->size(), weight);
-    h_nTruthBquarks->Fill(m_truthBquarks->size(), weight);
+    h_n_truthElectrons->Fill(m_truthElectrons->size(), weight);
+    h_n_truthMuons->Fill(m_truthMuons->size(), weight);
+    h_n_truthBquarks->Fill(m_truthBquarks->size(), weight);
 
-    // leptons
     this->GetElectrons();
     this->GetMuons();
+    this->GetJets();
+
+    h_n_selElectrons->Fill(m_electrons->size(), weight);
+    h_n_selMuons->Fill(m_muons->size(), weight);
+    h_n_selJets->Fill(m_jets->size(), weight);
+    
+    this->OverlapRemoval();
+    
+    h_n_uniqueElectrons->Fill(m_electrons->size(), weight);
+    h_n_uniqueMuons->Fill(m_muons->size(), weight);
+    h_n_uniqueJets->Fill(m_jets->size(), weight);
+    
+    // leptons
     if (!this->ExactlyTwoLeptons()) {
         this->FillCutsEfficiencies(eff_values, 0);
         h_eff_cut_2l_mass_ttbar_truth->Fill(mass_ttbar_truth, 0);
@@ -113,8 +125,7 @@ void Analysis::EachEvent(double weight)
         return;
     }
     h_eff_cut_HT_mass_ttbar_truth->Fill(mass_ttbar_truth, 1);
-
-    this->GetJets();
+    
     if (!this->SufficientJets()) {
         this->FillCutsEfficiencies(eff_values, 0);
         h_eff_cut_2j_mass_ttbar_truth->Fill(mass_ttbar_truth, 0);
@@ -130,10 +141,10 @@ void Analysis::EachEvent(double weight)
     h_eff_cut_2b_mass_ttbar_truth->Fill(mass_ttbar_truth, 1);
 
     this->FillCutsEfficiencies(eff_values, 1);
-    h_nPassElectrons->Fill(m_electrons->size(), weight);
-    h_nPassMuons->Fill(m_muons->size(), weight);
-    h_nPassJets->Fill(m_jets->size(), weight);
-    h_nPassBjets->Fill(m_bTags, weight);
+    h_n_passElectrons->Fill(m_electrons->size(), weight);
+    h_n_passMuons->Fill(m_muons->size(), weight);
+    h_n_passJets->Fill(m_jets->size(), weight);
+    h_n_passBjets->Fill(m_bTags, weight);
 
     // Get jet momenta and sort by b-tag
     vector<TLorentzVector> p_j, p_b, p_q;
@@ -574,9 +585,9 @@ void Analysis::EveryEvent(double weight)
 
     if (m_debug) cout << "Starting EveryEvent ...\n";
 
-    h_nElectrons->Fill(b_Electron->GetEntries(), weight);
-    h_nMuons->Fill(b_Muon->GetEntries(), weight);
-    h_nJets->Fill(b_Jet->GetEntries(), weight);
+    h_n_electrons->Fill(b_Electron->GetEntries(), weight);
+    h_n_muons->Fill(b_Muon->GetEntries(), weight);
+    h_n_jets->Fill(b_Jet->GetEntries(), weight);
 
     if (m_debug) cout << "Fetching all jets ...\n";
     vector<TLorentzVector> p_j;
@@ -592,7 +603,7 @@ void Analysis::EveryEvent(double weight)
         p_j.push_back(p);
     }
 
-    h_nBjets->Fill(bTags, weight);
+    h_n_bJets->Fill(bTags, weight);
 
     if (m_debug) cout << "Fetching all electrons ...\n";
     vector<TLorentzVector> p_el;
@@ -891,7 +902,7 @@ void Analysis::MakeHistograms()
     double Emin = 0.05;
     double Emax = 12.95;
     double nbins = (Emax - Emin) / binWidth;
-     cout << "Plotting range: " << Emin << " - " << Emax << " [TeV]\n";
+    cout << "Plotting range:   " << Emin << " - " << Emax << " [TeV]\n";
 
     h_pT_l1 = new TH1D("pT_l1", "p^{\\ell^{+}}_{\\mathrm{T}}", 200, 0.0, 2000.0);
     h_pT_l1->Sumw2();
@@ -1152,30 +1163,44 @@ void Analysis::MakeHistograms()
     h_cos1cos2 = new TH1D("cos1cos2", "\\cos\\theta^{t}_{\\ell^{+}}\\cos\\theta^{\\bar{t}}_{\\ell^{-}}", 10, -1.0, 1.0);
     h_cos1cos2->Sumw2();
 
-    h_nTruthElectrons = new TH1D("n_truth_electrons", "n_{e}\\ ", 10, 0.0, 10.0);
-    h_nTruthElectrons->Sumw2();
-    h_nTruthMuons = new TH1D("n_truth_muons", "n_{\\mu}\\ ", 10, 0.0, 10.0);
-    h_nTruthMuons->Sumw2();
-    h_nTruthBquarks = new TH1D("n_truth_bQuarks", "n_{b}\\ ", 10, 0.0, 10.0);
-    h_nTruthBquarks->Sumw2();
+    h_n_truthElectrons = new TH1D("n_truth_electrons", "n_{e}\\ ", 10, 0.0, 10.0);
+    h_n_truthElectrons->Sumw2();
+    h_n_truthMuons = new TH1D("n_truth_muons", "n_{\\mu}\\ ", 10, 0.0, 10.0);
+    h_n_truthMuons->Sumw2();
+    h_n_truthBquarks = new TH1D("n_truth_bQuarks", "n_{b}\\ ", 10, 0.0, 10.0);
+    h_n_truthBquarks->Sumw2();
+    
+    h_n_selElectrons = new TH1D("n_sel_electrons", "n_{e}\\ ", 10, 0.0, 10.0);
+    h_n_selElectrons->Sumw2();
+    h_n_selMuons = new TH1D("n_sel_muons", "n_{\\mu}\\ ", 10, 0.0, 10.0);
+    h_n_selMuons->Sumw2();
+    h_n_selJets = new TH1D("n_sel_jets", "n_{jet}\\ ", 10, 0.0, 10.0);
+    h_n_selJets->Sumw2();
+    
+    h_n_uniqueElectrons = new TH1D("n_unique_electrons", "n_{e}\\ ", 10, 0.0, 10.0);
+    h_n_uniqueElectrons->Sumw2();
+    h_n_uniqueMuons = new TH1D("n_unique_muons", "n_{\\mu}\\ ", 10, 0.0, 10.0);
+    h_n_uniqueMuons->Sumw2();
+    h_n_uniqueJets = new TH1D("n_unique_jets", "n_{jet}\\ ", 10, 0.0, 10.0);
+    h_n_uniqueJets->Sumw2();
 
-    h_nElectrons = new TH1D("n_electrons", "n_{e}\\ ", 10, 0.0, 10.0);
-    h_nElectrons->Sumw2();
-    h_nMuons = new TH1D("n_muons", "n_{\\mu}\\ ", 10, 0.0, 10.0);
-    h_nMuons->Sumw2();
-    h_nJets = new TH1D("n_jets", "n_{jet}\\ ", 10, 0.0, 10.0);
-    h_nJets->Sumw2();
-    h_nBjets = new TH1D("n_bJets", "n_{b-jet}\\ ", 10, 0.0, 10.0);
-    h_nBjets->Sumw2();
+    h_n_electrons = new TH1D("n_electrons", "n_{e}\\ ", 10, 0.0, 10.0);
+    h_n_electrons->Sumw2();
+    h_n_muons = new TH1D("n_muons", "n_{\\mu}\\ ", 10, 0.0, 10.0);
+    h_n_muons->Sumw2();
+    h_n_jets = new TH1D("n_jets", "n_{jet}\\ ", 10, 0.0, 10.0);
+    h_n_jets->Sumw2();
+    h_n_bJets = new TH1D("n_bJets", "n_{b-jet}\\ ", 10, 0.0, 10.0);
+    h_n_bJets->Sumw2();
 
-    h_nPassElectrons = new TH1D("n_pass_electrons", "n_{e}\\ ", 10, 0.0, 10.0);
-    h_nPassElectrons->Sumw2();
-    h_nPassMuons = new TH1D("n_pass_muons", "n_{\\mu}\\ ", 10, 0.0, 10.0);
-    h_nPassMuons->Sumw2();
-    h_nPassJets = new TH1D("n_pass_jets", "n_{jet}\\ ", 10, 0.0, 10.0);
-    h_nPassJets->Sumw2();
-    h_nPassBjets = new TH1D("n_pass_bJets", "n_{b-jet}\\ ", 10, 0.0, 10.0);
-    h_nPassBjets->Sumw2();
+    h_n_passElectrons = new TH1D("n_pass_electrons", "n_{e}\\ ", 10, 0.0, 10.0);
+    h_n_passElectrons->Sumw2();
+    h_n_passMuons = new TH1D("n_pass_muons", "n_{\\mu}\\ ", 10, 0.0, 10.0);
+    h_n_passMuons->Sumw2();
+    h_n_passJets = new TH1D("n_pass_jets", "n_{jet}\\ ", 10, 0.0, 10.0);
+    h_n_passJets->Sumw2();
+    h_n_passBjets = new TH1D("n_pass_bJets", "n_{b-jet}\\ ", 10, 0.0, 10.0);
+    h_n_passBjets->Sumw2();
 
     h2_mtt_deltaPhi = new TH2D("mtt_deltaphi", "m_{t\\bar{t}}\\ \\times \\Delta\\phi_{\\ell^{+}\\ell^{-}}", nbins, Emin, Emax, 10, 0.0, 1.0);
     h2_mtt_deltaPhi->GetXaxis()->SetTitle("m_{t\\bar{t}}\\;");
@@ -1285,17 +1310,23 @@ void Analysis::MakeDistributions()
     this->WriteEfficiency(h_eff_reco_pT_tbar_truth, "P_{T}^{\\bar{t}}\\ [\\mathrm{GeV}]");
 
     // count
-    this->MakeDistribution1D(h_nTruthElectrons, "");
-    this->MakeDistribution1D(h_nTruthMuons, "");
-    this->MakeDistribution1D(h_nTruthBquarks, "");
-    this->MakeDistribution1D(h_nElectrons, "");
-    this->MakeDistribution1D(h_nMuons, "");
-    this->MakeDistribution1D(h_nJets, "");
-    this->MakeDistribution1D(h_nBjets, "");
-    this->MakeDistribution1D(h_nPassElectrons, "");
-    this->MakeDistribution1D(h_nPassMuons, "");
-    this->MakeDistribution1D(h_nPassJets, "");
-    this->MakeDistribution1D(h_nPassBjets, "");
+    this->MakeDistribution1D(h_n_truthElectrons, "");
+    this->MakeDistribution1D(h_n_truthMuons, "");
+    this->MakeDistribution1D(h_n_truthBquarks, "");
+    this->MakeDistribution1D(h_n_electrons, "");
+    this->MakeDistribution1D(h_n_muons, "");
+    this->MakeDistribution1D(h_n_jets, "");
+    this->MakeDistribution1D(h_n_bJets, "");
+    this->MakeDistribution1D(h_n_selElectrons, "");
+    this->MakeDistribution1D(h_n_selMuons, "");
+    this->MakeDistribution1D(h_n_selJets, "");
+    this->MakeDistribution1D(h_n_uniqueElectrons, "");
+    this->MakeDistribution1D(h_n_uniqueMuons, "");
+    this->MakeDistribution1D(h_n_uniqueJets, "");
+    this->MakeDistribution1D(h_n_passElectrons, "");
+    this->MakeDistribution1D(h_n_passMuons, "");
+    this->MakeDistribution1D(h_n_passJets, "");
+    this->MakeDistribution1D(h_n_passBjets, "");
 
     // pT
     this->MakeDistribution1D(h_pT_allel, "GeV");
@@ -1659,20 +1690,6 @@ void Analysis::NormalizeSliceY(TH2D* h)
     }
 }
 
-void Analysis::GetElectrons()
-{
-    m_electrons = new vector<Electron*>;
-    for (int i = 0; i < b_Electron->GetEntries(); i++)
-    {
-        bool passed = false, outsideCrack = false, insideCaps = false;
-        Electron* electron = (Electron*) b_Electron->At(i);
-        if (electron->PT > 25.0 and abs(electron->Eta) < 2.47) insideCaps = true;
-        if (electron->PT > 1.37 and electron->PT < 1.52) outsideCrack = true;
-        if (insideCaps and outsideCrack) passed = true;
-        if (passed) m_electrons->push_back(electron);
-    }
-}
-
 
 void Analysis::GetHardParticles()
 {
@@ -1822,15 +1839,56 @@ void Analysis::GetTruthParticles()
     if (m_debug) cout << "Fetched truth particles." << "\n";
 }
 
+void Analysis::GetElectrons()
+{
+    m_electrons = new vector<Electron*>;
+    for (int i = 0; i < b_Electron->GetEntries(); i++)
+    {
+        // cuts
+        Electron* electron = (Electron*) b_Electron->At(i);
+        double pT = electron->PT;
+        if (pT < 25.0) continue;
+        if (abs(electron->Eta) > 2.47) continue;
+        if (pT > 1.37 and pT < 1.52) continue;
+        
+        // isolation
+        double pTsum = 0.0;
+        for (int j = 0; j < b_Track->GetEntries(); j++)
+        {
+            Track* track = (Track*) b_Track->At(j);
+            double deltaR = electron->P4().DeltaR(track->P4());
+            if (deltaR > 10e-15 and deltaR < 0.3) pTsum += track->PT;  
+        }
+        if (pTsum / electron->PT > 0.12) continue;
+        
+        // should only get here if passes cuts and isolation
+        m_electrons->push_back(electron);
+    }
+}
+
 void Analysis::GetMuons()
 {
     m_muons = new vector<Muon*>;
     for (int i = 0; i < b_Muon->GetEntries(); i++)
     {
-        bool passed = false;
+        // cuts
         Muon* muon = (Muon*) b_Muon->At(i);
-        if (muon->PT > 25.0 and abs(muon->Eta) < 2.5) passed = true;
-        if (passed) m_muons->push_back(muon);
+        double pT = muon->PT;
+        if (pT < 25.0) continue;
+        if (abs(muon->Eta) > 2.5) continue;
+        
+        // isolation
+        double pTsum = 0.0;
+        for (int j = 0; j < b_Track->GetEntries(); j++)
+        {
+            Track* track = (Track*) b_Track->At(j);
+            double deltaR = muon->P4().DeltaR(track->P4());
+            if (deltaR > 10e-15 and deltaR < 0.3) pTsum += track->PT;  
+        }
+        if (pTsum / muon->PT > 0.12) continue;
+        
+        // should only get here if passes cuts and isolation
+        m_muons->push_back(muon);
     }
 }
 
@@ -1839,10 +1897,41 @@ void Analysis::GetJets()
     m_jets = new vector<Jet*>;
     for (int i = 0; i < b_Jet->GetEntries(); i++)
     {
-        bool passed = false;
         Jet *jet = (Jet*) b_Jet->At(i);
-        if (jet->PT > 25.0 and abs(jet->Eta) < 2.5) passed = true;
-        if (passed) m_jets->push_back(jet);
+        double pT = jet->PT;
+        if (pT < 25.0) return;
+        if (abs(jet->Eta) > 2.5) return;
+        
+        m_jets->push_back(jet);
+    }
+}
+
+void Analysis::OverlapRemoval()
+{
+    // from arXiv:1708.00727:
+    // Objects can satisfy both the jets and leptons selection criteria and as such a procedure called "overlap removal" is applied in order to associate objects to a unique hypothesis.
+    // To prevent double-counting of electron energy deposits as jets, the closest small-R jet lying ∆R < 0.2 from a reconstructed electron is discarded. 
+    // Subsequently, to reduce the impact of non-prompt leptons, if an electron is ∆R < 0.4 from a small-R jet, then that electron is removed. 
+    // If a small-R jet has fewer than three tracks and is ∆R < 0.4 from a muon, the small-R jet is removed. 
+    // Finally, the muon is removed if it is ∆R < 0.4 from a small-R jet which has at least three tracks.
+    
+    for (int i = 0; i < m_electrons->size(); i++)
+    {
+        Electron* electron = (Electron*) m_electrons->at(i);
+        int jkill = -999;
+        for (int j = 0; j < m_jets->size(); j++)
+        {
+            Jet *jet = (Jet*) m_jets->at(j);
+            double deltaR = electron->P4().DeltaR(jet->P4());
+            if (deltaR < 0.2) {
+                if (jkill == -999) jkill = j;
+                else {
+                    if (deltaR < electron->P4().DeltaR(m_jets->at(jkill)->P4())) jkill = j;
+                }
+            }
+        }
+        // if (jkill != -999) cout << "dR = " << electron->P4().DeltaR(m_jets->at(jkill)->P4()) << "\n";
+        if (jkill != -999) m_jets->erase(m_jets->begin() + jkill);
     }
 }
 
@@ -2062,10 +2151,11 @@ bool Analysis::SufficientHT()
     }
     else if (m_channel == "emu")
     {
-        ScalarHT *scalarHT = (ScalarHT*) b_ScalarHT->At(0);
-        double HT = scalarHT->HT;
-        if (HT > 130.0) sufficientHT = true;
-        else sufficientHT = false;
+        // ScalarHT *scalarHT = (ScalarHT*) b_ScalarHT->At(0);
+        // double HT = scalarHT->HT;
+        // if (HT > 130.0) sufficientHT = true;
+        // else sufficientHT = false;
+        sufficientHT = true;
     }
     else cout << "ERROR: invalid channel\n";
     this->UpdateCutflow(c_sufficientHT, sufficientHT);
@@ -2131,7 +2221,8 @@ void Analysis::GetBranches()
     b_Electron = m_tree->UseBranch("Electron");
     b_Muon = m_tree->UseBranch("Muon");
     b_MissingET = m_tree->UseBranch("MissingET");
-    b_ScalarHT = m_tree->UseBranch("ScalarHT");
+    // b_ScalarHT = m_tree->UseBranch("ScalarHT");
+    b_Track = m_tree->UseBranch("Track");
 }
 
 
