@@ -93,9 +93,9 @@ private:
         c_sufficientMll,
         c_outsideZmassWindow,
         c_sufficientMET,
-        c_sufficientHT,
         c_sufficientJets,
         c_sufficientBtags,
+        c_sufficientHT,
         c_validSolution,
         m_cuts // Keep as last entry
     };
@@ -143,8 +143,13 @@ private:
     TH1D* h_eta_allmu;
 
     TH1D* h_HT;
+    TH1D* h_HTmet;
+    TH1D* h_HTjMET;
     TH1D* h_KT;
+    TH1D* h_KTj;
     TH1D* h_mass_vis;
+    TH1D* h_mass_bbll;
+    
     TH1D* h_HT_all;
     TH1D* h_KT_all;
     TH1D* h_mass_vis_all;
@@ -346,7 +351,7 @@ protected:
     // histograms
     void MakeHistograms();
     void MakeDistributions();
-    void WriteEfficiency(TH1D*, const string&);
+    void WriteEfficiency(TH1D*, const string&, const string&);
     void MakeDistribution1D(TH1D*, const string&, bool normalise = false);
     void MakeDistribution2D(TH2D*, string, string, string, string);
     void MakeDistributionAL(TH2D*, const string&, const string&);
@@ -372,7 +377,7 @@ protected:
     bool OppositeCharge();
     bool SufficientJets();
     bool SufficientBtags();
-    bool SufficientHT();
+    bool SufficientHT(double);
     bool SufficientMET(double);
     bool SufficientMll(const pair<TLorentzVector, TLorentzVector>&);
     bool OutsideZmassWindow(const pair<TLorentzVector, TLorentzVector>&);

@@ -24,7 +24,7 @@ void Analysis::EachEvent(double weight)
     UpdateCutflow(c_events, true);
 
     if (m_debug) cout << "Starting EachEvent ...\n";
-    if (m_debug) cout << "event weight = " << weight << "\n";
+    if (m_debug) cout << "Event weight = " << weight << "\n";
 
     // hard process particles
     this->GetHardParticles();
@@ -118,13 +118,6 @@ void Analysis::EachEvent(double weight)
 
     TLorentzVector p_miss;
     p_miss.SetPtEtaPhiM(ET_miss, missingET->Eta, missingET->Phi, 0.0);
-
-    if (!this->SufficientHT()) {
-        this->FillCutsEfficiencies(eff_values, 0);
-        h_eff_cut_HT_mass_ttbar_truth->Fill(mass_ttbar_truth, 0);
-        return;
-    }
-    h_eff_cut_HT_mass_ttbar_truth->Fill(mass_ttbar_truth, 1);
     
     if (!this->SufficientJets()) {
         this->FillCutsEfficiencies(eff_values, 0);
@@ -140,13 +133,7 @@ void Analysis::EachEvent(double weight)
     }
     h_eff_cut_2b_mass_ttbar_truth->Fill(mass_ttbar_truth, 1);
 
-    this->FillCutsEfficiencies(eff_values, 1);
-    h_n_passElectrons->Fill(m_electrons->size(), weight);
-    h_n_passMuons->Fill(m_muons->size(), weight);
-    h_n_passJets->Fill(m_jets->size(), weight);
-    h_n_passBjets->Fill(m_bTags, weight);
-
-    // Get jet momenta and sort by b-tag
+    // Get jet momenta and split by b-tag
     vector<TLorentzVector> p_j, p_b, p_q;
     for (int i = 0; i < m_jets->size(); i++)
     {
@@ -188,26 +175,84 @@ void Analysis::EachEvent(double weight)
         }
         cout << "p_miss = "; p_miss.Print();
     }
+    
+    // select leading jets (hypothetical b-jets)
+    pair<TLorentzVector, TLorentzVector> p_b_hypo;
+    if (m_bTags >= 2)
+    {
+        if (m_debug) cout << "Selecting two b-tagged jets with highest pT ...\n";
+        p_b_hypo = TwoHighestPt(p_b);
+    }
+    else if (m_bTags == 0)
+    {
+        if (m_debug) cout << "Selecting two jets with highest pT ...\n";
+        p_b_hypo = TwoHighestPt(p_q);
+    }
+    else if (m_bTags == 1)
+    {
+        if (m_debug) cout << "Selecting b-tagged jet and jet with highest pT\n";
+        p_b_hypo.first = p_b.at(0);
+        p_b_hypo.second = HighestPt(p_q);
+    }
+    else
+    {
+        cout << "ERROR: invalid b-tags\n";
+    }
+    if (m_debug) cout << "Collected hypothetical b-quark jets.\n";
+    
+    // HT in arXiv:1604.05538v2 is defined as the scalar sum of the pT of the two leading jets and leptons
+    double HT = p_l.first.Pt() + p_l.second.Pt() + p_b_hypo.first.Pt() + p_b_hypo.second.Pt();
+    
+    if (!this->SufficientHT(HT)) {
+        this->FillCutsEfficiencies(eff_values, 0);
+        h_eff_cut_HT_mass_ttbar_truth->Fill(mass_ttbar_truth, 0);
+        return;
+    }
+    h_eff_cut_HT_mass_ttbar_truth->Fill(mass_ttbar_truth, 1);
+    
+    this->FillCutsEfficiencies(eff_values, 1);
+    h_n_passElectrons->Fill(m_electrons->size(), weight);
+    h_n_passMuons->Fill(m_muons->size(), weight);
+    h_n_passJets->Fill(m_jets->size(), weight);
+    h_n_passBjets->Fill(m_bTags, weight);
+    
+    if (m_debug) cout << "Passed all cuts\n";
+    
+    double HTmet = HT + ET_miss;
+    
+    double HTjMET = p_l.first.Pt() + p_l.second.Pt() + ET_miss;
+    for (auto& p : p_j) HTjMET += p.Pt();
+    
+    TLorentzVector p_bbll = p_l.first + p_l.second + p_b_hypo.first + p_b_hypo.second;
+    double mass_bbll = p_bbll.M();
+    double pT_bbll = p_bbll.Pt();
+    double KT = sqrt(mass_bbll * mass_bbll + pT_bbll * pT_bbll) + ET_miss;
 
-    // ScalarHT *scalarHT = (ScalarHT*) b_ScalarHT->At(0);
-    // double HT = scalarHT->HT;
-    double HT = p_l.first.Pt() + p_l.second.Pt() + ET_miss;
-    for (auto& p : p_b) HT += p.Pt();
-    for (auto& p : p_q) HT += p.Pt();
-
-    TLorentzVector pvis = p_l.first + p_l.second;
-    for (auto& p : p_j) pvis += p;
-    double mass_vis = pvis.M();
-    double pT_vis = pvis.Pt();
-    double KT = sqrt(mass_vis * mass_vis + pT_vis * pT_vis) + ET_miss;
-
-    mass_vis = mass_vis / 1000;
+    TLorentzVector p_vis = p_l.first + p_l.second;
+    for (auto& p : p_j) p_vis += p;
+    double mass_vis = p_vis.M();
+    double pT_vis = p_vis.Pt();
+    double KTj = sqrt(mass_vis * mass_vis + pT_vis * pT_vis) + ET_miss;
+    
+    mass_bbll = mass_bbll / 1000;
     HT = HT / 1000;
+    HTmet = HT / 1000;
     KT = KT / 1000;
+    mass_vis = mass_vis / 1000;
+    HTjMET = HT / 1000;
+    KTj = KT / 1000;
+    
+    if (m_debug) cout << "filling transverse histograms\n";
 
+    h_mass_bbll->Fill(mass_bbll, weight);
     h_HT->Fill(HT, weight);
-    h_mass_vis->Fill(mass_vis, weight);
+    h_HTmet->Fill(HTmet, weight);
     h_KT->Fill(KT, weight);
+    h_mass_vis->Fill(mass_vis, weight);
+    h_HTjMET->Fill(HTjMET, weight);
+    h_KTj->Fill(KTj, weight);
+
+    if (m_debug) cout << "filled transverse histograms\n";
 
     auto delta_abs_etal = abs(p_l.first.Eta()) - abs(p_l.second.Eta());
 
@@ -269,33 +314,10 @@ void Analysis::EachEvent(double weight)
     h2_mvis_deltaPhi->Fill(mass_vis, deltaPhi, weight);
     h2_KT_deltaPhi->Fill(KT, deltaPhi, weight);
 
+    // reconstruction
     if (m_reconstruction == "KIN" or m_reconstruction == "NuW")
     {
         if (m_debug) cout << "Starting reconstruction ...\n";
-
-        pair< TLorentzVector, TLorentzVector> p_b_hypo;
-        if (m_bTags >= 2)
-        {
-            if (m_debug) cout << "Selecting two b-tagged jets with highest pT ...\n";
-            p_b_hypo = TwoHighestPt(p_b);
-        }
-        else if (m_bTags == 0)
-        {
-            if (m_debug) cout << "Selecting two jets with highest pT ...\n";
-            p_b_hypo = TwoHighestPt(p_q);
-        }
-        else if (m_bTags == 1)
-        {
-            if (m_debug) cout << "Selecting b-tagged jet and jet with highest pT\n";
-            p_b_hypo.first = p_b.at(0);
-            p_b_hypo.second = HighestPt(p_q);
-        }
-        else
-        {
-            cout << "ERROR: invalid b-tags\n";
-        }
-
-        if (m_debug) cout << "Collected hypothetical b-quark jets.\n";
 
         TLorentzVector p_top, p_tbar, p_ttbar, p_b1, p_b2, p_v1, p_v2;
 
@@ -1122,20 +1144,28 @@ void Analysis::MakeHistograms()
     h_deltaY_top = new TH1D("DeltaY_top", "\\Delta |y_{t}|", 200, -5.0, 5.0);
     h_deltaY_top->Sumw2();
 
-    h_HT_all = new TH1D("HT_all", "H^{\\mathrm{all}}_{\\mathrm{T}}", 50, 0.0, 6.0);
+    h_HT_all = new TH1D("HT_all", "H^{\\mathrm{all}}_{\\mathrm{T}}", 60, 0.0, 6.0);
     h_HT_all->Sumw2();
     h_HT = new TH1D("HT", "H_{\\mathrm{T}}", 60, 0.0, 6.0);
     h_HT->Sumw2();
+    h_HTmet = new TH1D("HTmet", "H_{\\mathrm{T}} + E^{\\mathrm{miss}}_{\\mathrm{T}}}", 60, 0.0, 6.0);
+    h_HTmet->Sumw2();
+    h_HTjMET = new TH1D("HTjMET", "H^{j}_{\\mathrm{T}} + E^{\\mathrm{miss}}_{\\mathrm{T}}}", 60, 0.0, 6.0);
+    h_HTjMET->Sumw2();
 
     h_KT_all = new TH1D("KT_all", "K^{\\mathrm{all}}_{\\mathrm{T}}", 50, 0.0, 6.0);
     h_KT_all->Sumw2();
     h_KT = new TH1D("KT", "K_{\\mathrm{T}}", 60, 0.0, 6.0);
     h_KT->Sumw2();
+    h_KTj = new TH1D("KTj", "K^{j}_{\\mathrm{T}}", 60, 0.0, 6.0);
+    h_KTj->Sumw2();
 
     h_mass_vis_all = new TH1D("mvis_all", "m^{\\mathrm{\\mathrm{all}}}_{\\mathrm{vis}}", 60, 0.0, 6.0);
     h_mass_vis_all->Sumw2();
     h_mass_vis = new TH1D("mass_vis", "m_{\\mathrm{vis}}", 60, 0.0, 6.0);
     h_mass_vis->Sumw2();
+    h_mass_bbll = new TH1D("mass_bbll", "m_{bbll}\\ ", 60, 0.0, 6.0);
+    h_mass_bbll->Sumw2();
 
     h_pT_alljets = new TH1D("pT_alljets", "p_{\\mathrm{T}}^{jet}", 1000, 0.0, 5000.0);
     h_pT_alljets->Sumw2();
@@ -1237,29 +1267,25 @@ void Analysis::MakeHistograms()
     h2_KT_deltaPhi->GetYaxis()->SetTitle("\\Delta\\phi_{\\ell^{+}\\ell^{-}}\\;[rad/\\pi]");
     h2_KT_deltaPhi->Sumw2();
 
-    h_dR_top = new TH1D("dR_top", "\\Delta R\\left(t_{truth},t_{reco}\\right)", 25, 0.0, 10.0);
-    h_dR_tbar = new TH1D("dR_tbar", "\\Delta R\\left(\\bar{t}_{truth},\\bar{t}_{reco}\\right)", 25, 0.0, 10.0);
-    h_dR_ttbar = new TH1D("dR_ttbar", "\\Delta R\\left(t\\bar{t}_{truth}, t\\bar{t}_{reco}\\right)", 25, 0.0, 10.0);
+    h_dR_top = new TH1D("dR_top", "\\Delta R\\left(t_{\\mathrm{truth}},t_{\\mathrm{reco}}\\right)", 25, 0.0, 10.0);
+    h_dR_tbar = new TH1D("dR_tbar", "\\Delta R\\left(\\bar{t}_{\\mathrm{truth}},\\bar{t}_{\\mathrm{reco}}\\right)", 25, 0.0, 10.0);
+    h_dR_ttbar = new TH1D("dR_ttbar", "\\Delta R\\left(t\\bar{t}_{\\mathrm{truth}}, t\\bar{t}_{\\mathrm{reco}}\\right)", 25, 0.0, 10.0);
 
-    h_perf_mass_top = new TH1D("perf_mass_top", "perf_mass_top", 100, -3, 3);
-    h_perf_pT_top = new TH1D("perf_pT_top", "perf_pT_top", 100, -3, 3);
-    h_perf_eta_top = new TH1D("perf_eta_top", "perf_eta_top", 100, -3, 3);
-    h_perf_phi_top = new TH1D("perf_phi_top", "perf_phi_top", 100, -3, 3);
-    h_perf_mass_tbar = new TH1D("perf_mass_tbar", "perf_mass_tbar", 100, -3, 3);
-    h_perf_pT_tbar = new TH1D("perf_pT_tbar", "perf_pT_tbar", 100, -3, 3);
-    h_perf_eta_tbar = new TH1D("perf_eta_tbar", "perf_eta_tbar", 100, -3, 3);
-    h_perf_phi_tbar = new TH1D("perf_phi_tbar", "perf_phi_tbar", 100, -3, 3);
-    h_perf_mass_ttbar = new TH1D("perf_mass_ttbar", "perf_mass_ttbar", 100, -3, 3);
-    h_perf_pT_ttbar = new TH1D("perf_pT_ttbar", "perf_pT_ttbar", 100, -3, 3);
-    h_perf_eta_ttbar = new TH1D("perf_eta_ttbar", "perf_eta_ttbar", 100, -3, 3);
-    h_perf_phi_ttbar = new TH1D("perf_phi_ttbar", "perf_phi_ttbar", 100, -3, 3);
+    h_perf_mass_top = new TH1D("perf_mass_top", "\\left(m^{\\mathrm{truth}}_{t} - m^{\\mathrm{reco}}_{t}\\right) / m^{\\mathrm{truth}}_{t}\\ ", 100, -3, 3);
+    h_perf_pT_top = new TH1D("perf_pT_top", "\\left(p^{t,\\mathrm{truth}}_{T} - p^{t,\\mathrm{reco}}_{T}\\right) / p^{t,\\mathrm{truth}}_{T}\\ ", 100, -3, 3);
+    h_perf_eta_top = new TH1D("perf_eta_top", "\\left(\\eta^{\\mathrm{truth}}_{t} - \\eta^{\\mathrm{reco}}_{t}\\right) / \\eta^{\\mathrm{truth}}_{t}}\\ ", 100, -3, 3);
+    h_perf_phi_top = new TH1D("perf_phi_top", "\\left(\\phi^{\\mathrm{truth}}_{t} - \\phi^{\\mathrm{reco}}_{t}\\right) / \\phi^{\\mathrm{truth}}_{t}\\ ", 100, -3, 3);
+    
+    h_perf_mass_tbar = new TH1D("perf_mass_tbar", "\\left(m^{\\mathrm{truth}}_{\\bar{t}} - m^{\\mathrm{reco}}_{\\bar{t}}\\right) / m^{\\mathrm{truth}}_{\\bar{t}}\\ ", 100, -3, 3);
+    h_perf_pT_tbar = new TH1D("perf_pT_tbar", "\\left(p^{\\bar{t},\\mathrm{truth}}_{T} - p^{\\bar{t},\\mathrm{reco}}_{T}\\right) / p^{\\bar{t},\\mathrm{truth}}_{T}\\ ", 100, -3, 3);
+    h_perf_eta_tbar = new TH1D("perf_eta_tbar", "\\left(\\eta^{\\mathrm{truth}}_{\\bar{t}} - \\eta^{\\mathrm{reco}}_{\\bar{t}}\\right) / \\eta^{\\mathrm{truth}}_{\\bar{t}}}\\ ", 100, -3, 3);
+    h_perf_phi_tbar = new TH1D("perf_phi_tbar", "\\left(\\phi^{\\mathrm{truth}}_{\\bar{t}} - \\phi^{\\mathrm{reco}}_{\\bar{t}}\\right) / \\phi^{\\mathrm{truth}}_{\\bar{t}}\\ ", 100, -3, 3);
+    
+    h_perf_mass_ttbar = new TH1D("perf_mass_ttbar", "\\left(m^{\\mathrm{truth}}_{t\\bar{t}} - m^{\\mathrm{reco}}_{t\\bar{t}}\\right) / m^{\\mathrm{truth}}_{t\\bar{t}}\\ ", 100, -3, 3);
+    h_perf_pT_ttbar = new TH1D("perf_pT_ttbar", "\\left(p^{t\\bar{t},\\mathrm{truth}}_{T} - p^{t\\bar{t},\\mathrm{reco}}_{T}\\right) / p^{t\\bar{t},\\mathrm{truth}}_{T}\\ ", 100, -3, 3);
+    h_perf_eta_ttbar = new TH1D("perf_eta_ttbar", "\\left(\\eta^{\\mathrm{truth}}_{t\\bar{t}} - \\eta^{\\mathrm{reco}}_{t\\bar{t}}\\right) / \\eta^{\\mathrm{truth}}_{t\\bar{t}}}\\ ", 100, -3, 3);
+    h_perf_phi_ttbar = new TH1D("perf_phi_ttbar", "\\left(\\phi^{\\mathrm{truth}}_{t\\bar{t}} - \\phi^{\\mathrm{reco}}_{t\\bar{t}}\\right) / \\phi^{\\mathrm{truth}}_{t\\bar{t}}\\ ", 100, -3, 3);
 
-    h_eff_cuts_mass_ttbar_truth = new TProfile("eff_cuts_mass_ttbar_truth", "eff_cuts_mass_ttbar_truth", nbins, Emin, Emax);
-    h_eff_cuts_pT_top_truth = new TProfile("eff_cuts_pT_top_truth", "eff_cuts_pT_top_truth", 200, 0, 2000);
-    h_eff_cuts_pT_tbar_truth = new TProfile("eff_cuts_pT_tbar_truth", "eff_cuts_pT_tbar_truth", 200, 0, 2000);
-    h_eff_reco_mass_ttbar_truth = new TProfile("eff_reco_mass_ttbar_truth", "eff_reco_mass_ttbar_truth", nbins, Emin, Emax);
-    h_eff_reco_pT_top_truth = new TProfile("eff_reco_pT_top_truth", "eff_reco_pT_top_truth", 200, 0, 2000);
-    h_eff_reco_pT_tbar_truth = new TProfile("eff_reco_pT_tbar_truth", "eff_reco_pT_tbar_truth", 200, 0, 2000);
     h_eff_cut_2l_mass_ttbar_truth = new TProfile("eff_cut_2l_mass_ttbar_truth", "eff_cut_2l_mass_ttbar_truth", nbins, Emin, Emax);
     h_eff_cut_oc_mass_ttbar_truth  = new TProfile("eff_cut_oc_mass_ttbar_truth", "eff_cut_oc_mass_ttbar_truth", nbins, Emin, Emax);
     h_eff_cut_mll_mass_ttbar_truth  = new TProfile("eff_cut_mll_mass_ttbar_truth", "eff_cut_mll_mass_ttbar_truth", nbins, Emin, Emax);
@@ -1268,6 +1294,12 @@ void Analysis::MakeHistograms()
     h_eff_cut_HT_mass_ttbar_truth = new TProfile("eff_cut_HT_mass_ttbar_truth", "eff_cut_HT_mass_ttbar_truth", nbins, Emin, Emax);
     h_eff_cut_2j_mass_ttbar_truth  = new TProfile("eff_cut_2j_mass_ttbar_truth", "eff_cut_2j_mass_ttbar_truth", nbins, Emin, Emax);
     h_eff_cut_2b_mass_ttbar_truth = new TProfile("eff_cut_2b_mass_ttbar_truth", "eff_cut_2b_mass_ttbar_truth", nbins, Emin, Emax);
+    h_eff_cuts_mass_ttbar_truth = new TProfile("eff_cuts_mass_ttbar_truth", "eff_cuts_mass_ttbar_truth", nbins, Emin, Emax);
+    h_eff_cuts_pT_top_truth = new TProfile("eff_cuts_pT_top_truth", "eff_cuts_pT_top_truth", 200, 0, 2000);
+    h_eff_cuts_pT_tbar_truth = new TProfile("eff_cuts_pT_tbar_truth", "eff_cuts_pT_tbar_truth", 200, 0, 2000);
+    h_eff_reco_mass_ttbar_truth = new TProfile("eff_reco_mass_ttbar_truth", "eff_reco_mass_ttbar_truth", nbins, Emin, Emax);
+    h_eff_reco_pT_top_truth = new TProfile("eff_reco_pT_top_truth", "eff_reco_pT_top_truth", 200, 0, 2000);
+    h_eff_reco_pT_tbar_truth = new TProfile("eff_reco_pT_tbar_truth", "eff_reco_pT_tbar_truth", 200, 0, 2000);
 
     h2_perf_mass_ttbar = new TH2D("perf2_mass_ttbar", "perf2_mass_ttbar", nbins, Emin, Emax, 100, -3, 3);
     h2_perf_mass_ttbar_pTtop = new TH2D("perf2_mass_ttbar_pTtop", "perf2_mass_ttbar_pTtop", 200, 0, 2000, 100, -3, 3);
@@ -1294,20 +1326,21 @@ void Analysis::MakeDistributions()
 {
     if (m_debug) cout << "Making distributions ...\n";
 
-    this->WriteEfficiency(h_eff_cuts_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]");
-    this->WriteEfficiency(h_eff_cuts_pT_top_truth, "P_{T}^{t}\\ [\\mathrm{GeV}]");
-    this->WriteEfficiency(h_eff_cuts_pT_tbar_truth, "P_{T}^{\\bar{t}}\\ [\\mathrm{GeV}]");
-    this->WriteEfficiency(h_eff_cut_2l_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]");
-    this->WriteEfficiency(h_eff_cut_oc_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]");
-    this->WriteEfficiency(h_eff_cut_mll_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]");
-    this->WriteEfficiency(h_eff_cut_mZ_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]");
-    this->WriteEfficiency(h_eff_cut_ETmiss_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]");
-    this->WriteEfficiency(h_eff_cut_HT_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]");
-    this->WriteEfficiency(h_eff_cut_2j_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]");
-    this->WriteEfficiency(h_eff_cut_2b_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]");
-    this->WriteEfficiency(h_eff_reco_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]");
-    this->WriteEfficiency(h_eff_reco_pT_top_truth, "P_{T}^{t}\\ [\\mathrm{GeV}]");
-    this->WriteEfficiency(h_eff_reco_pT_tbar_truth, "P_{T}^{\\bar{t}}\\ [\\mathrm{GeV}]");
+    this->WriteEfficiency(h_eff_cut_2l_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]", "\\mathrm{Two leptons}");
+    this->WriteEfficiency(h_eff_cut_oc_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]", "\\mathrm{Opposite Charge}");
+    this->WriteEfficiency(h_eff_cut_mll_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]", "\\mathrm{Sufficient}\\; m_{\\ell\\ell}");
+    this->WriteEfficiency(h_eff_cut_mZ_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]", "\\mathrm{Outside}\\; m_{Z}\\; window");
+    this->WriteEfficiency(h_eff_cut_ETmiss_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]", "\\mathrm{Sufficient}\\; E^{\\mathrm{miss}}_{\\mathrm{T}}");
+    this->WriteEfficiency(h_eff_cut_HT_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]", "\\mathrm{Sufficient jets}");
+    this->WriteEfficiency(h_eff_cut_2j_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]", "\\mathrm{Sufficient}\\; b\\mathrm{-tags}");
+    this->WriteEfficiency(h_eff_cut_2b_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]", "\\mathrm{Sufficient}\\; H_{\\mathrm{T}}");
+    this->WriteEfficiency(h_eff_cuts_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]", "\\mathrm{All cuts}");
+    this->WriteEfficiency(h_eff_reco_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]", "\\mathrm{Top reco}");
+    
+    this->WriteEfficiency(h_eff_cuts_pT_top_truth, "P_{T}^{t}\\ [\\mathrm{GeV}]", "\\mathrm{All cuts}");
+    this->WriteEfficiency(h_eff_cuts_pT_tbar_truth, "P_{T}^{\\bar{t}}\\ [\\mathrm{GeV}]", "\\mathrm{All cuts}");
+    this->WriteEfficiency(h_eff_reco_pT_top_truth, "P_{T}^{t}\\ [\\mathrm{GeV}]", "\\mathrm{Top reco}");
+    this->WriteEfficiency(h_eff_reco_pT_tbar_truth, "P_{T}^{\\bar{t}}\\ [\\mathrm{GeV}]", "\\mathrm{Top reco}");
 
     // count
     this->MakeDistribution1D(h_n_truthElectrons, "");
@@ -1359,10 +1392,13 @@ void Analysis::MakeDistributions()
     // transverse
     this->MakeDistribution1D(h_HT_all, "TeV");
     this->MakeDistribution1D(h_HT, "TeV");
+    this->MakeDistribution1D(h_HTmet, "TeV");
+    this->MakeDistribution1D(h_HTjMET, "TeV");
     this->MakeDistribution1D(h_KT_all, "TeV");
     this->MakeDistribution1D(h_KT, "TeV");
     this->MakeDistribution1D(h_mass_vis_all, "TeV");
     this->MakeDistribution1D(h_mass_vis, "TeV");
+    this->MakeDistribution1D(h_mass_bbll, "TeV");
 
     this->MakeDistribution1D(h_cosTheta_l, "");
     this->MakeDistribution1D(h_cosThetaStar_l, "");
@@ -1445,9 +1481,9 @@ void Analysis::MakeDistributions()
         this->MakeDistribution1D(h_perf_pT_ttbar, "");
         this->MakeDistribution1D(h_perf_eta_ttbar, "");
         this->MakeDistribution1D(h_perf_phi_ttbar, "");
-        this->MakeDistribution2D(h2_perf_mass_ttbar, "m_^{truth}_{t\\bar{t}}\\ ", "TeV", "\\left(m^{truth}_{t\\bar{t}} - m^{reco}_{t\\bar{t}}\\right) / m^{truth}_{t\\bar{t}}\\ ", "");
-        this->MakeDistribution2D(h2_perf_mass_ttbar_pTtop, "p^{t,truth}_{T}\\ ", "GeV", "\\left(m^{truth}_{t\\bar{t}} - m^{reco}_{t\\bar{t}}\\right) / m^{truth}_{t\\bar{t}}\\ ", "");
-        this->MakeDistribution2D(h2_perf_mass_ttbar_pTtbar, "p^{\\bar{t},truth}_{T}\\ ", "GeV", "\\left(m^{truth}_{t\\bar{t}} - m^{reco}_{t\\bar{t}}\\right) / m^{truth}_{t\\bar{t}}\\ ", "");
+        this->MakeDistribution2D(h2_perf_mass_ttbar, "m_^{\\mathrm{truth}}_{t\\bar{t}}\\ ", "TeV", "\\left(m^{\\mathrm{truth}}_{t\\bar{t}} - m^{\\mathrm{reco}}_{t\\bar{t}}\\right) / m^{\\mathrm{truth}}_{t\\bar{t}}\\ ", "");
+        this->MakeDistribution2D(h2_perf_mass_ttbar_pTtop, "p^{t,\\mathrm{truth}}_{T}\\ ", "GeV", "\\left(m^{\\mathrm{truth}}_{t\\bar{t}} - m^{\\mathrm{reco}}_{t\\bar{t}}\\right) / m^{\\mathrm{truth}}_{t\\bar{t}}\\ ", "");
+        this->MakeDistribution2D(h2_perf_mass_ttbar_pTtbar, "p^{\\bar{t},\\mathrm{truth}}_{T}\\ ", "GeV", "\\left(m^{\\mathrm{truth}}_{t\\bar{t}} - m^{\\mathrm{reco}}_{t\\bar{t}}\\right) / m^{\\mathrm{truth}}_{t\\bar{t}}\\ ", "");
 
         // rapidity
         this->MakeDistribution1D(h_y_ttbar, "");
@@ -1580,9 +1616,10 @@ void Analysis::MakeDistribution1D(TH1D* h, const string& units, bool normalise)
 }
 
 
-void Analysis::WriteEfficiency(TH1D* h, const string& xtitle)
+void Analysis::WriteEfficiency(TH1D* h, const string& xtitle, const string& ytitle)
 {
-    h->GetYaxis()->SetTitle("\\epsilon");
+    const string yTitle = "\\epsilon(" + ytitle + ")";
+    h->GetYaxis()->SetTitle(yTitle.data());
     h->GetXaxis()->SetTitle(xtitle.data());
     h->GetYaxis()->SetTitleOffset(0.9);
     h->GetXaxis()->SetTitleOffset(0.95);
@@ -1693,6 +1730,9 @@ void Analysis::NormalizeSliceY(TH2D* h)
 
 void Analysis::GetHardParticles()
 {
+    // gets particles from the hard process (after initial state radiation)
+    // finds tops (after soft gluon radiation) and daughter particles (after soft radiation)
+    
     if (m_debug) cout << "Fetching truth particles ..." << "\n";
     GenParticle *particle;
     int iTop = -999, iTbar = -999, iWp = -999, iWm = -999;
@@ -1779,31 +1819,6 @@ void Analysis::GetHardParticles()
         }
     }
 
-    // for (int i = 0; i < b_Particle->GetEntriesFast(); i++)
-    // {
-    //     particle = (GenParticle*) b_Particle->At(i);
-    //
-    //     if ((particle->PID == -11 or particle->PID == -13) and particle->M1 == iWp)
-    //     {
-    //         cout << "found l+\n";
-    //     }
-    //
-    //     if ((particle->PID == 11 or particle->PID == 13) and particle->M1 == iWm)
-    //     {
-    //         cout << "found l-\n";
-    //     }
-    //
-    //     if ((particle->PID == 12 or particle->PID == 14) and particle->M1 == iWp)
-    //     {
-    //         cout << "found nu\n";
-    //     }
-    //
-    //     if ((particle->PID == -12 or particle->PID == -14) and particle->M1 == iWm)
-    //     {
-    //         cout << "found nubar\n";
-    //     }
-    //
-    // }
     if (m_debug) cout << "Fetched truth particles." << "\n";
 }
 
@@ -1857,7 +1872,8 @@ void Analysis::GetElectrons()
         {
             Track* track = (Track*) b_Track->At(j);
             double deltaR = electron->P4().DeltaR(track->P4());
-            if (deltaR > 10e-15 and deltaR < 0.3) pTsum += track->PT;  
+            // if (deltaR > 10e-15 and deltaR < 0.3) pTsum += track->PT;
+            if (deltaR > 10e-15 and deltaR < 5.0 / pT) pTsum += track->PT;
         }
         if (pTsum / electron->PT > 0.12) continue;
         
@@ -1874,8 +1890,9 @@ void Analysis::GetMuons()
         // cuts
         Muon* muon = (Muon*) b_Muon->At(i);
         double pT = muon->PT;
+        double eta = muon->Eta;
         if (pT < 25.0) continue;
-        if (abs(muon->Eta) > 2.5) continue;
+        if (abs(eta) > 2.5) continue;
         
         // isolation
         double pTsum = 0.0;
@@ -1883,9 +1900,10 @@ void Analysis::GetMuons()
         {
             Track* track = (Track*) b_Track->At(j);
             double deltaR = muon->P4().DeltaR(track->P4());
-            if (deltaR > 10e-15 and deltaR < 0.3) pTsum += track->PT;  
+            if (deltaR > 10e-15 and deltaR < 10.0 / pT) pTsum += track->PT;
         }
-        if (pTsum / muon->PT > 0.12) continue;
+        // if (pTsum / muon->PT > 0.12) continue;
+        if (pTsum / muon->PT > 0.05) continue;
         
         // should only get here if passes cuts and isolation
         m_muons->push_back(muon);
@@ -1910,28 +1928,76 @@ void Analysis::OverlapRemoval()
 {
     // from arXiv:1708.00727:
     // Objects can satisfy both the jets and leptons selection criteria and as such a procedure called "overlap removal" is applied in order to associate objects to a unique hypothesis.
-    // To prevent double-counting of electron energy deposits as jets, the closest small-R jet lying ∆R < 0.2 from a reconstructed electron is discarded. 
-    // Subsequently, to reduce the impact of non-prompt leptons, if an electron is ∆R < 0.4 from a small-R jet, then that electron is removed. 
-    // If a small-R jet has fewer than three tracks and is ∆R < 0.4 from a muon, the small-R jet is removed. 
-    // Finally, the muon is removed if it is ∆R < 0.4 from a small-R jet which has at least three tracks.
     
+    // To prevent double-counting of electron energy deposits as jets, the closest small-R jet lying ∆R < 0.2 from a reconstructed electron is discarded.    
     for (int i = 0; i < m_electrons->size(); i++)
     {
         Electron* electron = (Electron*) m_electrons->at(i);
+        double pT = electron->PT;
         int jkill = -999;
         for (int j = 0; j < m_jets->size(); j++)
         {
             Jet *jet = (Jet*) m_jets->at(j);
             double deltaR = electron->P4().DeltaR(jet->P4());
-            if (deltaR < 0.2) {
+            // if (deltaR < 0.2)
+            if (deltaR < 5.0 / pT)
+            {
                 if (jkill == -999) jkill = j;
-                else {
+            else
+                {
                     if (deltaR < electron->P4().DeltaR(m_jets->at(jkill)->P4())) jkill = j;
                 }
             }
         }
         // if (jkill != -999) cout << "dR = " << electron->P4().DeltaR(m_jets->at(jkill)->P4()) << "\n";
         if (jkill != -999) m_jets->erase(m_jets->begin() + jkill);
+    }
+    
+    // Subsequently, to reduce the impact of non-prompt leptons, if an electron is ∆R < 0.4 from a small-R jet, then that electron is removed.
+    for (int i = 0; i < m_jets->size(); i++)
+    {
+        Jet *jet = (Jet*) m_jets->at(i);
+        for (int j = 0; j < m_electrons->size(); j++)
+        {
+            Electron *electron = (Electron*) m_electrons->at(j);
+            double deltaR = jet->P4().DeltaR(electron->P4());
+            if (deltaR < 0.4)
+            {
+                m_electrons->erase(m_electrons->begin() + j);
+            }
+        }
+    }
+    
+    // If a small-R jet has fewer than three tracks and is ∆R < 0.4 from a muon, the small-R jet is removed.
+    for (int i = 0; i < m_muons->size(); i++)
+    {
+        Muon* muon = (Muon*) m_muons->at(i);
+        double pT = muon->PT;
+        for (int j = 0; j < m_jets->size(); j++)
+        {
+            Jet *jet = (Jet*) m_jets->at(j);
+            double deltaR = muon->P4().DeltaR(jet->P4());
+            // if (jet->NCharged < 3 and deltaR < 0.4)
+            if (jet->NCharged < 3 and deltaR < 10.0 / pT)
+            {
+                m_jets->erase(m_jets->begin() + j);
+            }
+        }
+    }
+
+    // Finally, the muon is removed if it is ∆R < 0.4 from a small-R jet which has at least three tracks.
+    for (int i = 0; i < m_jets->size(); i++)
+    {
+        Jet *jet = (Jet*) m_jets->at(i);
+        for (int j = 0; j < m_muons->size(); j++)
+        {
+            Muon *muon = (Muon*) m_muons->at(j);
+            double deltaR = jet->P4().DeltaR(muon->P4());
+            if (deltaR < 0.4 and jet->NCharged >= 3)
+            {
+                m_muons->erase(m_muons->begin() + j);
+            }
+        }
     }
 }
 
@@ -2141,7 +2207,7 @@ bool Analysis::SufficientMET(double ET_miss)
 }
 
 
-bool Analysis::SufficientHT()
+bool Analysis::SufficientHT(double HT)
 {
     // suppress Z/gamma* ( \tau^+ \tau^-) + jets$
     bool sufficientHT = false;
@@ -2153,9 +2219,9 @@ bool Analysis::SufficientHT()
     {
         // ScalarHT *scalarHT = (ScalarHT*) b_ScalarHT->At(0);
         // double HT = scalarHT->HT;
-        // if (HT > 130.0) sufficientHT = true;
-        // else sufficientHT = false;
-        sufficientHT = true;
+        if (HT > 130.0) sufficientHT = true;
+        else sufficientHT = false;
+        // sufficientHT = true;
     }
     else cout << "ERROR: invalid channel\n";
     this->UpdateCutflow(c_sufficientHT, sufficientHT);
@@ -2288,6 +2354,7 @@ void Analysis::Loop()
             this->EveryEvent(get<5>(m_processes->at(proc_id)));
             this->EachEvent(get<5>(m_processes->at(proc_id)));
             if (m_debug) cout << "------------------------------\n";
+            ProgressPercentage(jevent, m_nevents - 1, 50);
         }
         this->CleanUp();
     }
@@ -2361,12 +2428,12 @@ void Analysis::InitialiseCutflow()
     m_cutflow = vector<int>(m_cuts, -999);
     m_cutNames = vector<string>(
     m_cuts,                            "no name               ");
-    m_cutNames[c_sufficientMET]      = "Sufficient MET        ";
     m_cutNames[c_events]             = "Events                ";
     m_cutNames[c_twoLeptons]         = "Two leptons           ";
     m_cutNames[c_oppositeCharge]     = "Opposite Charge       ";
     m_cutNames[c_sufficientMll]      = "Sufficient mll        ";
     m_cutNames[c_outsideZmassWindow] = "Outside Z mass window ";
+    m_cutNames[c_sufficientMET]      = "Sufficient MET        ";
     m_cutNames[c_sufficientJets]     = "Sufficient jets       ";
     m_cutNames[c_sufficientBtags]    = "Sufficient b-tags     ";
     m_cutNames[c_sufficientHT]       = "Sufficient HT         ";
@@ -2374,12 +2441,12 @@ void Analysis::InitialiseCutflow()
 
     m_cutTitles = vector<string>(
     m_cuts,                            "no name");
-    m_cutTitles[c_sufficientMET]      = "\\mathrm{Sufficient}\\; E^{\\mathrm{miss}}_{\\mathrm{T}}";
     m_cutTitles[c_events]             = "Events";
     m_cutTitles[c_twoLeptons]         = "Two leptons";
     m_cutTitles[c_oppositeCharge]     = "Opposite Charge";
     m_cutTitles[c_sufficientMll]      = "\\mathrm{Sufficient}\\; m_{\\ell\\ell}";
     m_cutTitles[c_outsideZmassWindow] = "\\mathrm{Outside}\\; m_{Z}\\; window";
+    m_cutTitles[c_sufficientMET]      = "\\mathrm{Sufficient}\\; E^{\\mathrm{miss}}_{\\mathrm{T}}";
     m_cutTitles[c_sufficientJets]     = "Sufficient jets";
     m_cutTitles[c_sufficientBtags]    = "\\mathrm{Sufficient}\\; b\\mathrm{-tags}";
     m_cutTitles[c_sufficientHT]       = "\\mathrm{Sufficient}\\; H_{\\mathrm{T}}";

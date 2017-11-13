@@ -37,6 +37,6 @@ void ProgressPercentage( unsigned int x, unsigned int n, unsigned int w )
     double ratio = x / ( double ) n;
     unsigned int c = ratio * w;
 
-    std::cout << "progress: " << std::setw(3) << ( int )( ratio * 100 ) << "%";
+    std::cout << "Progress: " << std::setw(3) << ( int )( ratio * 100 ) << "%";
     std::cout << "\r" << std::flush;
 }

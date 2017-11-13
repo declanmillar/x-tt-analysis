@@ -133,7 +133,7 @@ NeutrinoWeighter::NeutrinoWeighter( int setting, int event_number, double bmass 
     }
 
     ///-- Do Top Mass Smearing --///
-    //m_top_smears.push_back(170.5);
+    // m_top_smears.push_back(170.5);
     m_top_smears.push_back(171.0);
     m_top_smears.push_back(171.5);
     m_top_smears.push_back(172.0);
@@ -141,7 +141,7 @@ NeutrinoWeighter::NeutrinoWeighter( int setting, int event_number, double bmass 
     m_top_smears.push_back(173.0);
     m_top_smears.push_back(173.5);
     m_top_smears.push_back(174.0);
-    //m_top_smears.push_back(174.5);
+    // m_top_smears.push_back(174.5);
 
     // m_W_smears.push_back(80.3);
     // m_W_smears.push_back(80.35);
@@ -580,10 +580,10 @@ std::vector<TLorentzVector> NeutrinoWeighter::solveForNeutrinoEta(TLorentzVector
     }
 
     //double Wmass2 = 80.4*80.4;
-    double Wmass2 = mW*mW;
+    double Wmass2 = mW * mW;
     // double bmass = 4.5;
-    // double bmass = m_bmass;
-    double bmass = bJet->M();
+    double bmass = m_bmass;
+    // double bmass = bJet->M();
     // std::cout << "bmass = " << bmass << "\n";
     double Elprime = lepton->E() * nu_cosh - lepton->Pz() * nu_sinh;
     double Ebprime = bJet->E()   * nu_cosh - bJet->Pz()   * nu_sinh;
