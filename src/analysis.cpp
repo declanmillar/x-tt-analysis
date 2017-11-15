@@ -1862,9 +1862,10 @@ void Analysis::GetElectrons()
         // cuts
         Electron* electron = (Electron*) b_Electron->At(i);
         double pT = electron->PT;
-        if (pT < 25.0) continue;
-        if (abs(electron->Eta) > 2.47) continue;
-        if (pT > 1.37 and pT < 1.52) continue;
+        double eta = abs(electron->Eta);
+        if (pT < 27.0) continue;
+        if (eta > 2.47) continue;
+        if (eta > 1.37 and eta < 1.52) continue;
         
         // isolation
         double pTsum = 0.0;
@@ -1872,8 +1873,8 @@ void Analysis::GetElectrons()
         {
             Track* track = (Track*) b_Track->At(j);
             double deltaR = electron->P4().DeltaR(track->P4());
-            // if (deltaR > 10e-15 and deltaR < 0.3) pTsum += track->PT;
-            if (deltaR > 10e-15 and deltaR < 5.0 / pT) pTsum += track->PT;
+            if (deltaR > 10e-15 and deltaR < 0.3) pTsum += track->PT;
+            // if (deltaR > 10e-15 and deltaR < 5.0 / pT) pTsum += track->PT;
         }
         if (pTsum / electron->PT > 0.12) continue;
         
@@ -1891,7 +1892,8 @@ void Analysis::GetMuons()
         Muon* muon = (Muon*) b_Muon->At(i);
         double pT = muon->PT;
         double eta = muon->Eta;
-        if (pT < 25.0) continue;
+        // if (pT < 25.0) continue;
+        if (pT < 27.0) continue;
         if (abs(eta) > 2.5) continue;
         
         // isolation
@@ -1939,8 +1941,8 @@ void Analysis::OverlapRemoval()
         {
             Jet *jet = (Jet*) m_jets->at(j);
             double deltaR = electron->P4().DeltaR(jet->P4());
-            // if (deltaR < 0.2)
-            if (deltaR < 5.0 / pT)
+            if (deltaR < 0.2)
+            // if (deltaR < 5.0 / pT)
             {
                 if (jkill == -999) jkill = j;
             else
@@ -1953,22 +1955,7 @@ void Analysis::OverlapRemoval()
         if (jkill != -999) m_jets->erase(m_jets->begin() + jkill);
     }
     
-    // Subsequently, to reduce the impact of non-prompt leptons, if an electron is ∆R < 0.4 from a small-R jet, then that electron is removed.
-    for (int i = 0; i < m_jets->size(); i++)
-    {
-        Jet *jet = (Jet*) m_jets->at(i);
-        for (int j = 0; j < m_electrons->size(); j++)
-        {
-            Electron *electron = (Electron*) m_electrons->at(j);
-            double deltaR = jet->P4().DeltaR(electron->P4());
-            if (deltaR < 0.4)
-            {
-                m_electrons->erase(m_electrons->begin() + j);
-            }
-        }
-    }
-    
-    // If a small-R jet has fewer than three tracks and is ∆R < 0.4 from a muon, the small-R jet is removed.
+    // If a small-R jet has fewer than three tracks and is ∆R < 0.4 from a muon, the small-R jet tagged unsuitable for being a top daughter
     for (int i = 0; i < m_muons->size(); i++)
     {
         Muon* muon = (Muon*) m_muons->at(i);
@@ -1984,16 +1971,34 @@ void Analysis::OverlapRemoval()
             }
         }
     }
+    
+    // Subsequently, to reduce the impact of non-prompt leptons, if an electron is ∆R < 0.4 from a small-R jet, then that electron is removed.
+    for (int i = 0; i < m_jets->size(); i++)
+    {
+        Jet *jet = (Jet*) m_jets->at(i);
+        for (int j = 0; j < m_electrons->size(); j++)
+        {
+            Electron *electron = (Electron*) m_electrons->at(j);
+            double deltaR = jet->P4().DeltaR(electron->P4());
+            // if (deltaR < 0.3)
+            if (deltaR < 0.4)
+            {
+                m_electrons->erase(m_electrons->begin() + j);
+            }
+        }
+    }
 
-    // Finally, the muon is removed if it is ∆R < 0.4 from a small-R jet which has at least three tracks.
+    // Finally, the muon is removed if it is ∆R < 0.4 from a small-R jet which has at least three tracks tagged unsuitable for being a top daughter
     for (int i = 0; i < m_jets->size(); i++)
     {
         Jet *jet = (Jet*) m_jets->at(i);
         for (int j = 0; j < m_muons->size(); j++)
         {
             Muon *muon = (Muon*) m_muons->at(j);
+            double pT = muon->PT;
             double deltaR = jet->P4().DeltaR(muon->P4());
             if (deltaR < 0.4 and jet->NCharged >= 3)
+            // if (jet->NCharged < 3 and deltaR < 10.0 / pT)
             {
                 m_muons->erase(m_muons->begin() + j);
             }
