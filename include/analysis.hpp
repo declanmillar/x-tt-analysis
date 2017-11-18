@@ -198,6 +198,32 @@ private:
     TH1D* h_dR_top;
     TH1D* h_dR_tbar;
     TH1D* h_dR_ttbar;
+    
+    // dR between truth leptons and b-quarks and top quarks
+    TH1D* h_dR_t1t2_truth;
+    TH1D* h_dR_l1b1_truth;
+    TH1D* h_dR_l2b2_truth;
+    TH1D* h_dR_t1l1_truth;
+    TH1D* h_dR_t2l2_truth;
+    TH1D* h_dR_t1b1_truth;
+    TH1D* h_dR_t2b2_truth;
+    
+    // dRy between truth leptons and b-quarks
+    // TH1D* h_dRy_l1b1_truth;
+    // TH1D* h_dRy_l2b2_truth;
+    // TH1D* h_dRy_t1b1_truth;
+    // TH1D* h_dRy_t2b2_truth;
+    // TH1D* h_dRy_t1b1_truth;
+    // TH1D* h_dRy_t2b2_truth;
+    
+    TH2D* h2_dR_l1b1_pTl_truth;
+    TH2D* h2_dR_l2b2_pTl_truth;
+    TH2D* h2_dR_l1b1_mtt_truth;
+    TH2D* h2_dR_l2b2_mtt_truth;
+    TH2D* h2_dR_t1l1_mtt_truth;
+    TH2D* h2_dR_t2l2_mtt_truth;
+    TH2D* h2_dR_t1b1_mtt_truth;
+    TH2D* h2_dR_t2b2_mtt_truth;
 
     // performance plots
     TH1D* h_perf_mass_top;

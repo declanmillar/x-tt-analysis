@@ -29,29 +29,65 @@ void Analysis::EachEvent(double weight)
     // hard process particles
     this->GetHardParticles();
 
-    TLorentzVector p_top_truth = m_hardTop->P4();
-    TLorentzVector p_tbar_truth = m_hardTbar->P4();
-    TLorentzVector p_ttbar_truth = p_top_truth + p_tbar_truth;
+    pair<TLorentzVector, TLorentzVector> p_l_truth = make_pair(m_hardLepP->P4(), m_hardLepM->P4());
+    pair<TLorentzVector, TLorentzVector> p_b_truth = make_pair(m_hardB->P4(), m_hardBbar->P4());
+    pair<TLorentzVector, TLorentzVector> p_t_truth = make_pair(m_hardTop->P4(), m_hardTbar->P4());
+    TLorentzVector p_ttbar_truth = p_t_truth.first + p_t_truth.second;
+    // TLorentzVector p_t_truth.first = m_hardTop->P4();
+    // TLorentzVector p_t_truth.second = m_hardTbar->P4();
+    // TLorentzVector p_ttbar_truth = p_t_truth.first + p_t_truth.second;
     double mass_ttbar_truth = p_ttbar_truth.M() / 1000;
-    double pT_top_truth = p_top_truth.Pt();
-    double pT_tbar_truth = p_tbar_truth.Pt();
-    vector<double> eff_values = {mass_ttbar_truth, pT_top_truth, pT_tbar_truth} ;
+    double pT_top_truth = p_t_truth.first.Pt();
+    double pT_tbar_truth = p_t_truth.second.Pt();
+    double dR_l1b1 = p_l_truth.first.DeltaR(p_b_truth.first);
+    double dR_l2b2 = p_l_truth.second.DeltaR(p_b_truth.second);
+    double dR_t1b1 = p_t_truth.first.DeltaR(p_b_truth.first);
+    double dR_t2b2 = p_t_truth.second.DeltaR(p_b_truth.second);
+    double dR_t1l1 = p_t_truth.first.DeltaR(p_l_truth.first);
+    double dR_t2l2 = p_t_truth.second.DeltaR(p_l_truth.second);
+    double dR_t1t2 = p_t_truth.first.DeltaR(p_t_truth.second);
+    vector<double> eff_values = {mass_ttbar_truth, pT_top_truth, pT_tbar_truth};
+    
+    h_dR_l1b1_truth->Fill(dR_l1b1, weight);
+    h_dR_l2b2_truth->Fill(dR_l2b2, weight);
+    h_dR_t1l1_truth->Fill(dR_t1l1, weight);
+    h_dR_t2l2_truth->Fill(dR_t2l2, weight);
+    h_dR_t1b1_truth->Fill(dR_t1b1, weight);
+    h_dR_t2b2_truth->Fill(dR_t2b2, weight);
+    h_dR_t1t2_truth->Fill(dR_t1t2, weight);
+    
+    // h2_dR_l1b1_mtt_truth->Fill(mass_ttbar_truth, dR_l1b1, weight);
+    // h2_dR_l2b2_mtt_truth->Fill(mass_ttbar_truth, dR_l2b2, weight);
+    // h2_dR_t1l1_mtt_truth->Fill(mass_ttbar_truth, dR_t1l1, weight);
+    // h2_dR_t2l2_mtt_truth->Fill(mass_ttbar_truth, dR_t2l2, weight);
+    // h2_dR_t1b1_mtt_truth->Fill(mass_ttbar_truth, dR_t1b1, weight);
+    // h2_dR_t2b2_mtt_truth->Fill(mass_ttbar_truth, dR_t2b2, weight);
+    h2_dR_l1b1_mtt_truth->Fill(mass_ttbar_truth, dR_l1b1, weight);
+    h2_dR_l2b2_mtt_truth->Fill(mass_ttbar_truth, dR_l2b2, weight);
+    h2_dR_t1l1_mtt_truth->Fill(mass_ttbar_truth, dR_t1l1, weight);
+    h2_dR_t2l2_mtt_truth->Fill(mass_ttbar_truth, dR_t2l2, weight);
+    h2_dR_t1b1_mtt_truth->Fill(mass_ttbar_truth, dR_t1b1, weight);
+    h2_dR_t2b2_mtt_truth->Fill(mass_ttbar_truth, dR_t2b2, weight);
+    h2_dR_l1b1_pTl_truth->Fill(p_l_truth.first.Pt(), dR_t1b1, weight);
+    h2_dR_l2b2_pTl_truth->Fill(p_l_truth.second.Pt(), dR_t2b2, weight);
 
     h_pT_top_truth->Fill(pT_top_truth, weight);
-    h_eta_top_truth->Fill(p_top_truth.Eta(), weight);
-    h_phi_top_truth->Fill(p_top_truth.Phi() / m_pi, weight);
-    h_mass_top_truth->Fill(p_top_truth.M(), weight);
+    h_eta_top_truth->Fill(p_t_truth.first.Eta(), weight);
+    h_phi_top_truth->Fill(p_t_truth.first.Phi() / m_pi, weight);
+    h_mass_top_truth->Fill(p_t_truth.first.M(), weight);
 
     h_pT_tbar_truth->Fill(pT_tbar_truth, weight);
-    h_eta_tbar_truth->Fill(p_tbar_truth.Eta(), weight);
-    h_phi_tbar_truth->Fill(p_tbar_truth.Phi() / m_pi, weight);
-    h_mass_tbar_truth->Fill(p_tbar_truth.M(), weight);
+    h_eta_tbar_truth->Fill(p_t_truth.second.Eta(), weight);
+    h_phi_tbar_truth->Fill(p_t_truth.second.Phi() / m_pi, weight);
+    h_mass_tbar_truth->Fill(p_t_truth.second.M(), weight);
 
     h_pT_ttbar_truth->Fill(p_ttbar_truth.Pt(), weight);
     h_eta_ttbar_truth->Fill(p_ttbar_truth.Eta(), weight);
     h_phi_ttbar_truth->Fill(p_ttbar_truth.Phi() / m_pi, weight);
     h_mass_ttbar_truth->Fill(mass_ttbar_truth, weight);
     h_y_ttbar_truth->Fill(p_ttbar_truth.Rapidity(), weight);
+    
+    
 
     // truth
     this->GetTruthParticles();
@@ -236,7 +272,7 @@ void Analysis::EachEvent(double weight)
     
     mass_bbll = mass_bbll / 1000;
     HT = HT / 1000;
-    HTmet = HT / 1000;
+    HTmet = HTmet / 1000;
     KT = KT / 1000;
     mass_vis = mass_vis / 1000;
     HTjMET = HT / 1000;
@@ -480,24 +516,24 @@ void Analysis::EachEvent(double weight)
         h_mass_ttbar->Fill(mass_ttbar, weight);
         h_y_ttbar->Fill(y_ttbar, weight);
 
-        double dR_top = p_top.DeltaR(p_top_truth);
+        double dR_top = p_top.DeltaR(p_t_truth.first);
         h_dR_top->Fill(dR_top, weight);
 
-        double dR_tbar = p_tbar.DeltaR(p_tbar_truth);
+        double dR_tbar = p_tbar.DeltaR(p_t_truth.second);
         h_dR_tbar->Fill(dR_tbar, weight);
 
         double dR_ttbar = p_ttbar.DeltaR(p_ttbar_truth);
         h_dR_ttbar->Fill(dR_ttbar, weight);
 
-        h_perf_pT_top->Fill((p_top_truth.Pt() - p_top.Pt()) / p_top_truth.Pt(), weight);
-        h_perf_eta_top->Fill((p_top_truth.Eta() - p_top.Eta()) / p_top_truth.Eta(), weight);
-        h_perf_phi_top->Fill((p_top_truth.Phi() - p_top.Phi()) / p_top_truth.Phi(), weight);
-        h_perf_mass_top->Fill((p_top_truth.M() - p_top.M()) / p_top.M(), weight);
+        h_perf_pT_top->Fill((p_t_truth.first.Pt() - p_top.Pt()) / p_t_truth.first.Pt(), weight);
+        h_perf_eta_top->Fill((p_t_truth.first.Eta() - p_top.Eta()) / p_t_truth.first.Eta(), weight);
+        h_perf_phi_top->Fill((p_t_truth.first.Phi() - p_top.Phi()) / p_t_truth.first.Phi(), weight);
+        h_perf_mass_top->Fill((p_t_truth.first.M() - p_top.M()) / p_top.M(), weight);
 
-        h_perf_pT_tbar->Fill((p_tbar_truth.Pt() - p_tbar.Pt()) / p_tbar_truth.Pt(), weight);
-        h_perf_eta_tbar->Fill((p_tbar_truth.Eta() - p_tbar.Eta()) / p_tbar_truth.Eta(), weight);
-        h_perf_phi_tbar->Fill((p_tbar_truth.Phi() - p_tbar.Phi()) / p_tbar_truth.Phi(), weight);
-        h_perf_mass_tbar->Fill((p_tbar_truth.M() - p_tbar.M()) / p_tbar.M(), weight);
+        h_perf_pT_tbar->Fill((p_t_truth.second.Pt() - p_tbar.Pt()) / p_t_truth.second.Pt(), weight);
+        h_perf_eta_tbar->Fill((p_t_truth.second.Eta() - p_tbar.Eta()) / p_t_truth.second.Eta(), weight);
+        h_perf_phi_tbar->Fill((p_t_truth.second.Phi() - p_tbar.Phi()) / p_t_truth.second.Phi(), weight);
+        h_perf_mass_tbar->Fill((p_t_truth.second.M() - p_tbar.M()) / p_tbar.M(), weight);
 
         h_perf_pT_ttbar->Fill((p_ttbar_truth.Pt() - p_ttbar.Pt()) / p_ttbar_truth.Pt(), weight);
         h_perf_eta_ttbar->Fill((p_ttbar_truth.Eta() - p_ttbar.Eta()) / p_ttbar_truth.Eta(), weight);
@@ -506,18 +542,18 @@ void Analysis::EachEvent(double weight)
         h_perf_mass_ttbar->Fill(perf_mass_ttbar, weight);
 
         h2_perf_mass_ttbar->Fill(mass_ttbar_truth, perf_mass_ttbar, weight);
-        h2_perf_mass_ttbar_pTtop->Fill(p_top_truth.Pt(), perf_mass_ttbar, weight);
-        h2_perf_mass_ttbar_pTtbar->Fill(p_tbar_truth.Pt(), perf_mass_ttbar, weight);
+        h2_perf_mass_ttbar_pTtop->Fill(p_t_truth.first.Pt(), perf_mass_ttbar, weight);
+        h2_perf_mass_ttbar_pTtbar->Fill(p_t_truth.second.Pt(), perf_mass_ttbar, weight);
 
-        h2_pT_top_TvR->Fill(p_top.Pt(), p_top_truth.Pt(), weight);
-        h2_eta_top_TvR->Fill(p_top.Eta(), p_top_truth.Eta(), weight);
-        h2_phi_top_TvR->Fill(p_top.Phi(), p_top_truth.Phi(), weight);
-        h2_mass_top_TvR->Fill(p_top.M(), p_top_truth.M(), weight);
+        h2_pT_top_TvR->Fill(p_top.Pt(), p_t_truth.first.Pt(), weight);
+        h2_eta_top_TvR->Fill(p_top.Eta(), p_t_truth.first.Eta(), weight);
+        h2_phi_top_TvR->Fill(p_top.Phi(), p_t_truth.first.Phi(), weight);
+        h2_mass_top_TvR->Fill(p_top.M(), p_t_truth.first.M(), weight);
 
-        h2_pT_tbar_TvR->Fill(p_tbar.Pt(), p_tbar_truth.Pt(), weight);
-        h2_eta_tbar_TvR->Fill(p_tbar.Eta(), p_tbar_truth.Eta(), weight);
-        h2_phi_tbar_TvR->Fill(p_tbar.Phi(), p_tbar_truth.Phi(), weight);
-        h2_mass_tbar_TvR->Fill(p_tbar.M(), p_tbar_truth.M(), weight);
+        h2_pT_tbar_TvR->Fill(p_tbar.Pt(), p_t_truth.second.Pt(), weight);
+        h2_eta_tbar_TvR->Fill(p_tbar.Eta(), p_t_truth.second.Eta(), weight);
+        h2_phi_tbar_TvR->Fill(p_tbar.Phi(), p_t_truth.second.Phi(), weight);
+        h2_mass_tbar_TvR->Fill(p_tbar.M(), p_t_truth.second.M(), weight);
 
         h2_pT_ttbar_TvR->Fill(p_ttbar.Pt(), p_ttbar_truth.Pt(), weight);
         h2_eta_ttbar_TvR->Fill(p_ttbar.Eta(), p_ttbar_truth.Eta(), weight);
@@ -1270,6 +1306,26 @@ void Analysis::MakeHistograms()
     h_dR_top = new TH1D("dR_top", "\\Delta R\\left(t_{\\mathrm{truth}},t_{\\mathrm{reco}}\\right)", 25, 0.0, 10.0);
     h_dR_tbar = new TH1D("dR_tbar", "\\Delta R\\left(\\bar{t}_{\\mathrm{truth}},\\bar{t}_{\\mathrm{reco}}\\right)", 25, 0.0, 10.0);
     h_dR_ttbar = new TH1D("dR_ttbar", "\\Delta R\\left(t\\bar{t}_{\\mathrm{truth}}, t\\bar{t}_{\\mathrm{reco}}\\right)", 25, 0.0, 10.0);
+    
+    // h_dR_l1b1_truth = new TH1D("dR_l1b1_truth", "\\Delta R\\left(\\ell_{\\mathrm{truth}},b_{\\mathrm{truth}}\\right)", 100, 0.0, 7.0);
+    h_dR_l1b1_truth = new TH1D("dR_l1b1_truth", "\\Delta R\\left(\\ell^{+}_{\\mathrm{truth}},b_{\\mathrm{truth}}\\right)", 100, 0.0, 7.0);
+    h_dR_l2b2_truth = new TH1D("dR_l2b2_truth", "\\Delta R\\left(\\ell^{-}_{\\mathrm{truth}},\\bar{b}_{\\mathrm{truth}}\\right)", 100, 0.0, 7.0);
+    // h_dR_t1l1_truth = new TH1D("dR_t1l1_truth", "\\Delta R\\left(t_{\\mathrm{truth}},\\ell_{\\mathrm{truth}}\\right)", 100, 0.0, 7.0);
+    h_dR_t1l1_truth = new TH1D("dR_t1l1_truth", "\\Delta R\\left(t_{\\mathrm{truth}},\\ell^{+}_{\\mathrm{truth}}\\right)", 100, 0.0, 7.0);
+    h_dR_t2l2_truth = new TH1D("dR_t2l2_truth", "\\Delta R\\left(\\bar{t}_{\\mathrm{truth}},\\ell^{-}_{\\mathrm{truth}}\\right)", 100, 0.0, 7.0);
+    // h_dR_t1b1_truth = new TH1D("dR_t1b1_truth", "\\Delta R\\left(t_{\\mathrm{truth}}, b_{\\mathrm{truth}}\\right)", 100, 0.0, 7.0);
+    h_dR_t1b1_truth = new TH1D("dR_t1b1_truth", "\\Delta R\\left(t_{\\mathrm{truth}}, b_{\\mathrm{truth}}\\right)", 100, 0.0, 7.0);
+    h_dR_t2b2_truth = new TH1D("dR_t2b2_truth", "\\Delta R\\left(\\bar{t}_{\\mathrm{truth}}, \\bar{b}_{\\mathrm{truth}}\\right)", 100, 0.0, 7.0);
+    h_dR_t1t2_truth = new TH1D("dR_t1t2_truth", "\\Delta R\\left(t_{\\mathrm{truth}}, \\bar{t}_{\\mathrm{truth}}\\right)", 100, 0.0, 7.0);
+    
+    h2_dR_l1b1_mtt_truth = new TH2D("dR_l1b1_mtt_truth", "dR_l1b1_mtt_truth", nbins, Emin, Emax, 100, 0.0, 7.0);
+    h2_dR_l2b2_mtt_truth = new TH2D("dR_l2b2_mtt_truth", "dR_l2b2_mtt_truth", nbins, Emin, Emax, 100, 0.0, 7.0);
+    h2_dR_t1l1_mtt_truth = new TH2D("dR_t1l1_mtt_truth", "dR_t1l1_mtt_truth", nbins, Emin, Emax, 100, 0.0, 7.0);
+    h2_dR_t2l2_mtt_truth = new TH2D("dR_t2l2_mtt_truth", "dR_t2l2_mtt_truth", nbins, Emin, Emax, 100, 0.0, 7.0);
+    h2_dR_t1b1_mtt_truth = new TH2D("dR_t1b1_mtt_truth", "dR_t1b1_mtt_truth", nbins, Emin, Emax, 100, 0.0, 7.0);
+    h2_dR_t2b2_mtt_truth = new TH2D("dR_t2b2_mtt_truth", "dR_t2b2_mtt_truth", nbins, Emin, Emax, 100, 0.0, 7.0);
+    h2_dR_l1b1_pTl_truth = new TH2D("dR_l1b1_pTl_truth", "dR_l1b1_pTl_truth", 200, 0, 1000, 100, 0.0, 7.0);
+    h2_dR_l2b2_pTl_truth = new TH2D("dR_l2b2_pTl_truth", "dR_l2b2_pTl_truth", 200, 0, 1000, 100, 0.0, 7.0);
 
     h_perf_mass_top = new TH1D("perf_mass_top", "\\left(m^{\\mathrm{truth}}_{t} - m^{\\mathrm{reco}}_{t}\\right) / m^{\\mathrm{truth}}_{t}\\ ", 100, -3, 3);
     h_perf_pT_top = new TH1D("perf_pT_top", "\\left(p^{t,\\mathrm{truth}}_{T} - p^{t,\\mathrm{reco}}_{T}\\right) / p^{t,\\mathrm{truth}}_{T}\\ ", 100, -3, 3);
@@ -1331,9 +1387,9 @@ void Analysis::MakeDistributions()
     this->WriteEfficiency(h_eff_cut_mll_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]", "\\mathrm{Sufficient}\\; m_{\\ell\\ell}");
     this->WriteEfficiency(h_eff_cut_mZ_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]", "\\mathrm{Outside}\\; m_{Z}\\; window");
     this->WriteEfficiency(h_eff_cut_ETmiss_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]", "\\mathrm{Sufficient}\\; E^{\\mathrm{miss}}_{\\mathrm{T}}");
-    this->WriteEfficiency(h_eff_cut_HT_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]", "\\mathrm{Sufficient jets}");
-    this->WriteEfficiency(h_eff_cut_2j_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]", "\\mathrm{Sufficient}\\; b\\mathrm{-tags}");
-    this->WriteEfficiency(h_eff_cut_2b_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]", "\\mathrm{Sufficient}\\; H_{\\mathrm{T}}");
+    this->WriteEfficiency(h_eff_cut_HT_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]","\\mathrm{Sufficient}\\; H_{\\mathrm{T}}");
+    this->WriteEfficiency(h_eff_cut_2j_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]", "\\mathrm{Sufficient jets}");
+    this->WriteEfficiency(h_eff_cut_2b_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]", "\\mathrm{Sufficient}\\; b\\mathrm{-tags}");
     this->WriteEfficiency(h_eff_cuts_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]", "\\mathrm{All cuts}");
     this->WriteEfficiency(h_eff_reco_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]", "\\mathrm{Top reco}");
     
@@ -1468,6 +1524,17 @@ void Analysis::MakeDistributions()
         this->MakeDistribution1D(h_dR_top, "");
         this->MakeDistribution1D(h_dR_tbar, "");
         this->MakeDistribution1D(h_dR_ttbar, "");
+        
+        // this->MakeDistribution1D(h_dR_lb_truth, "");
+        // this->MakeDistribution1D(h_dR_tl_truth, "");
+        // this->MakeDistribution1D(h_dR_tb_truth, "");
+        this->MakeDistribution1D(h_dR_l1b1_truth, "");
+        this->MakeDistribution1D(h_dR_l2b2_truth, "");
+        this->MakeDistribution1D(h_dR_t1l1_truth, "");
+        this->MakeDistribution1D(h_dR_t2l2_truth, "");
+        this->MakeDistribution1D(h_dR_t1b1_truth, "");
+        this->MakeDistribution1D(h_dR_t2b2_truth, "");
+        this->MakeDistribution1D(h_dR_t1t2_truth, "");
 
         this->MakeDistribution1D(h_perf_mass_top, "");
         this->MakeDistribution1D(h_perf_pT_top, "");
@@ -1481,9 +1548,18 @@ void Analysis::MakeDistributions()
         this->MakeDistribution1D(h_perf_pT_ttbar, "");
         this->MakeDistribution1D(h_perf_eta_ttbar, "");
         this->MakeDistribution1D(h_perf_phi_ttbar, "");
-        this->MakeDistribution2D(h2_perf_mass_ttbar, "m_^{\\mathrm{truth}}_{t\\bar{t}}\\ ", "TeV", "\\left(m^{\\mathrm{truth}}_{t\\bar{t}} - m^{\\mathrm{reco}}_{t\\bar{t}}\\right) / m^{\\mathrm{truth}}_{t\\bar{t}}\\ ", "");
+        this->MakeDistribution2D(h2_perf_mass_ttbar, "m^{\\mathrm{truth}}_{t\\bar{t}}\\ ", "TeV", "\\left(m^{\\mathrm{truth}}_{t\\bar{t}} - m^{\\mathrm{reco}}_{t\\bar{t}}\\right) / m^{\\mathrm{truth}}_{t\\bar{t}}\\ ", "");
         this->MakeDistribution2D(h2_perf_mass_ttbar_pTtop, "p^{t,\\mathrm{truth}}_{T}\\ ", "GeV", "\\left(m^{\\mathrm{truth}}_{t\\bar{t}} - m^{\\mathrm{reco}}_{t\\bar{t}}\\right) / m^{\\mathrm{truth}}_{t\\bar{t}}\\ ", "");
         this->MakeDistribution2D(h2_perf_mass_ttbar_pTtbar, "p^{\\bar{t},\\mathrm{truth}}_{T}\\ ", "GeV", "\\left(m^{\\mathrm{truth}}_{t\\bar{t}} - m^{\\mathrm{reco}}_{t\\bar{t}}\\right) / m^{\\mathrm{truth}}_{t\\bar{t}}\\ ", "");
+        
+        this->MakeDistribution2D(h2_dR_l1b1_mtt_truth, "m^{\\mathrm{truth}}_{t\\bar{t}}\\ ", "TeV", "\\Delta R\\left(b_{\\mathrm{truth}},\\ell^{+}_{\\mathrm{truth}}\\right)", "");
+        this->MakeDistribution2D(h2_dR_l2b2_mtt_truth, "m^{\\mathrm{truth}}_{t\\bar{t}}\\ ", "TeV", "\\Delta R\\left(\\bar{b}_{\\mathrm{truth}},\\ell^{-}_{\\mathrm{truth}}\\right)", "");
+        this->MakeDistribution2D(h2_dR_t1l1_mtt_truth, "m^{\\mathrm{truth}}_{t\\bar{t}}\\ ", "TeV", "\\Delta R\\left(t_{\\mathrm{truth}},\\ell^{+}_{\\mathrm{truth}}\\right)", "");
+        this->MakeDistribution2D(h2_dR_t2l2_mtt_truth, "m^{\\mathrm{truth}}_{t\\bar{t}}\\ ", "TeV", "\\Delta R\\left(\\bar{t}_{\\mathrm{truth}},\\ell^{-}_{\\mathrm{truth}}\\right)", "");
+        this->MakeDistribution2D(h2_dR_t1b1_mtt_truth, "m^{\\mathrm{truth}}_{t\\bar{t}}\\ ", "TeV", "\\Delta R\\left(t_{\\mathrm{truth}}, b_{\\mathrm{truth}}\\right)", "");
+        this->MakeDistribution2D(h2_dR_t2b2_mtt_truth, "m^{\\mathrm{truth}}_{t\\bar{t}}\\ ", "TeV", "\\Delta R\\left(\\bar{t}_{\\mathrm{truth}}, \\bar{b}_{\\mathrm{truth}}\\right)", "");
+        this->MakeDistribution2D(h2_dR_l1b1_pTl_truth, "p^{\\ell^{+},\\mathrm{truth}}_{\\mathrm{T}}\\ ", "TeV", "\\Delta R\\left(\\ell^{+}_{\\mathrm{truth}}, b_{\\mathrm{truth}}\\right)", "");
+        this->MakeDistribution2D(h2_dR_l2b2_pTl_truth, "p^{\\ell^{-},\\mathrm{truth}}_{\\mathrm{T}}\\ ", "TeV", "\\Delta R\\left(\\ell^{-}_{\\mathrm{truth}}, \\bar{b}_{\\mathrm{truth}}\\right)", "");
 
         // rapidity
         this->MakeDistribution1D(h_y_ttbar, "");
@@ -1874,7 +1950,7 @@ void Analysis::GetElectrons()
             Track* track = (Track*) b_Track->At(j);
             double deltaR = electron->P4().DeltaR(track->P4());
             if (deltaR > 10e-15 and deltaR < 0.3) pTsum += track->PT;
-            // if (deltaR > 10e-15 and deltaR < 5.0 / pT) pTsum += track->PT;
+            // if (deltaR > 10e-15 and deltaR < 7.5 / pT) pTsum += track->PT;
         }
         if (pTsum / electron->PT > 0.12) continue;
         
@@ -1904,10 +1980,8 @@ void Analysis::GetMuons()
             double deltaR = muon->P4().DeltaR(track->P4());
             if (deltaR > 10e-15 and deltaR < 10.0 / pT) pTsum += track->PT;
         }
-        // if (pTsum / muon->PT > 0.12) continue;
         if (pTsum / muon->PT > 0.05) continue;
         
-        // should only get here if passes cuts and isolation
         m_muons->push_back(muon);
     }
 }
@@ -1918,10 +1992,8 @@ void Analysis::GetJets()
     for (int i = 0; i < b_Jet->GetEntries(); i++)
     {
         Jet *jet = (Jet*) b_Jet->At(i);
-        double pT = jet->PT;
-        if (pT < 25.0) return;
+        if (jet->PT < 25.0) return;
         if (abs(jet->Eta) > 2.5) return;
-        
         m_jets->push_back(jet);
     }
 }
@@ -1951,7 +2023,6 @@ void Analysis::OverlapRemoval()
                 }
             }
         }
-        // if (jkill != -999) cout << "dR = " << electron->P4().DeltaR(m_jets->at(jkill)->P4()) << "\n";
         if (jkill != -999) m_jets->erase(m_jets->begin() + jkill);
     }
     
@@ -1972,7 +2043,7 @@ void Analysis::OverlapRemoval()
         }
     }
     
-    // Subsequently, to reduce the impact of non-prompt leptons, if an electron is ∆R < 0.4 from a small-R jet, then that electron is removed.
+    // electron is removed if it is too close to a small-R jet (reduce the impact of non-prompt leptons)
     for (int i = 0; i < m_jets->size(); i++)
     {
         Jet *jet = (Jet*) m_jets->at(i);
@@ -1980,7 +2051,7 @@ void Analysis::OverlapRemoval()
         {
             Electron *electron = (Electron*) m_electrons->at(j);
             double deltaR = jet->P4().DeltaR(electron->P4());
-            // if (deltaR < 0.3)
+            // if (deltaR > 10e-15 and deltaR < 5.0 / electron->PT) pTsum += track->PT;
             if (deltaR < 0.4)
             {
                 m_electrons->erase(m_electrons->begin() + j);
@@ -1988,17 +2059,15 @@ void Analysis::OverlapRemoval()
         }
     }
 
-    // Finally, the muon is removed if it is ∆R < 0.4 from a small-R jet which has at least three tracks tagged unsuitable for being a top daughter
+    // muon is removed if it is ∆R < 0.4 from a small-R jet which has at least three tracks tagged unsuitable for being a top daughter
     for (int i = 0; i < m_jets->size(); i++)
     {
         Jet *jet = (Jet*) m_jets->at(i);
         for (int j = 0; j < m_muons->size(); j++)
         {
             Muon *muon = (Muon*) m_muons->at(j);
-            double pT = muon->PT;
-            double deltaR = jet->P4().DeltaR(muon->P4());
-            if (deltaR < 0.4 and jet->NCharged >= 3)
-            // if (jet->NCharged < 3 and deltaR < 10.0 / pT)
+            if (jet->P4().DeltaR(muon->P4()) < 0.4 and jet->NCharged >= 3)
+            // if (jet->NCharged < 3 and deltaR < 10.0 / muon->PT)
             {
                 m_muons->erase(m_muons->begin() + j);
             }
