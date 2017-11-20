@@ -45,6 +45,9 @@ private:
     vector<GenParticle*>* m_truthMuons;
     vector<Jet*>* m_jets;
     vector<GenParticle*>* m_truthBquarks;
+    
+    vector<bool>* m_electron_truth_tags;
+    vector<bool>* m_muon_truth_tags;
 
     GenParticle* m_hardTop;
     GenParticle* m_hardTbar;
@@ -371,6 +374,7 @@ protected:
     void GetMuons();
     void GetJets();
     void OverlapRemoval();
+    bool TruthTagLeptons();
     void AssignChannel();
     pair<TLorentzVector, TLorentzVector> GetLeptonMomenta();
 

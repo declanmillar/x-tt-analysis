@@ -87,8 +87,6 @@ void Analysis::EachEvent(double weight)
     h_mass_ttbar_truth->Fill(mass_ttbar_truth, weight);
     h_y_ttbar_truth->Fill(p_ttbar_truth.Rapidity(), weight);
     
-    
-
     // truth
     this->GetTruthParticles();
 
@@ -100,6 +98,7 @@ void Analysis::EachEvent(double weight)
     this->GetMuons();
     this->GetJets();
 
+    // objects pass selection
     h_n_selElectrons->Fill(m_electrons->size(), weight);
     h_n_selMuons->Fill(m_muons->size(), weight);
     h_n_selJets->Fill(m_jets->size(), weight);
@@ -117,6 +116,8 @@ void Analysis::EachEvent(double weight)
         return;
     }
     h_eff_cut_2l_mass_ttbar_truth->Fill(mass_ttbar_truth, 1);
+
+    if (!this->TruthTagLeptons()) return;
 
     this->AssignChannel();
 
@@ -622,6 +623,8 @@ void Analysis::CleanupEvent()
     delete m_electrons;
     delete m_muons;
     delete m_jets;
+    delete m_electron_truth_tags;
+    delete m_muon_truth_tags;
     delete m_truthElectrons;
     delete m_truthMuons;
     delete m_truthBquarks;
@@ -1842,6 +1845,7 @@ void Analysis::GetHardParticles()
             if (m_debug) cout << "found hard W+\n";
         }
 
+        // get W before decay
         if (particle->PID == 24 and particle->M1 == iWp)
         {
             iWp = i;
@@ -1878,13 +1882,13 @@ void Analysis::GetHardParticles()
 
         if ((particle->PID == 11 or particle->PID == 13) and particle->M1 == iWm)
         {
-            m_hardNu = particle;
+            m_hardLepM = particle;
             if (m_debug) cout << "found hard l-\n";
         }
 
         if ((particle->PID == 12 or particle->PID == 14) and particle->M1 == iWp)
         {
-            m_hardLepM = particle;
+            m_hardNu = particle;
             if (m_debug) cout << "found hard nu\n";
         }
 
@@ -2073,6 +2077,63 @@ void Analysis::OverlapRemoval()
             }
         }
     }
+}
+
+bool Analysis::TruthTagLeptons()
+{
+    m_electron_truth_tags = new vector<bool>;
+    for (int i = 0; i < m_electrons->size(); i++)
+    {
+        Electron* electron = (Electron*) m_electrons->at(i);
+        TLorentzVector p_e = electron->P4();
+        double dR_lm = p_e.DeltaR(m_hardLepM->P4());
+        double dR_lp = p_e.DeltaR(m_hardLepP->P4());
+        // cout << "dR_lp = " << dR_lp << ", dR_lm =" << dR_lm << "\n";
+        if (dR_lm < 0.07 or dR_lp < 0.07) m_electron_truth_tags->push_back(true);
+        else m_electron_truth_tags->push_back(false);
+    }
+    
+    m_muon_truth_tags = new vector<bool>;
+    for (int i = 0; i < m_muons->size(); i++)
+    {
+        Muon* muon = (Muon*) m_muons->at(i);
+        TLorentzVector p_mu = muon->P4();
+        double dR_lm = p_mu.DeltaR(m_hardLepM->P4());
+        double dR_lp = p_mu.DeltaR(m_hardLepP->P4());
+        // cout << "dR_lp = " << dR_lp << ", dR_lm =" << dR_lm << "\n";
+        if (dR_lm < 0.07 or dR_lp < 0.07)
+        {
+            m_muon_truth_tags->push_back(true);
+        }
+        else 
+        {
+            m_muon_truth_tags->push_back(false);
+        }
+    }
+    
+    // for (auto tag : *m_electron_truth_tags)
+    // {
+    //     if (!tag) return false;
+    // }
+    // 
+    // for (bool tag : *m_muon_truth_tags)
+    // {
+    //     if (!tag) return false;
+    // }
+    // 
+    // return true;
+    
+    for (auto tag : *m_electron_truth_tags)
+    {
+        if (!tag) return true;
+    }
+        
+    for (bool tag : *m_muon_truth_tags)
+    {
+        if (!tag) return true;
+    }
+    
+    return false;
 }
 
 bool Analysis::ExactlyTwoLeptons()
