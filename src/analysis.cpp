@@ -21,8 +21,6 @@ void Analysis::Run()
 
 void Analysis::EachEvent(double weight)
 {
-    UpdateCutflow(c_events, true);
-
     if (m_debug) cout << "Starting EachEvent ...\n";
     if (m_debug) cout << "Event weight = " << weight << "\n";
 
@@ -32,13 +30,13 @@ void Analysis::EachEvent(double weight)
     pair<TLorentzVector, TLorentzVector> p_l_truth = make_pair(m_hardLepP->P4(), m_hardLepM->P4());
     pair<TLorentzVector, TLorentzVector> p_b_truth = make_pair(m_hardB->P4(), m_hardBbar->P4());
     pair<TLorentzVector, TLorentzVector> p_t_truth = make_pair(m_hardTop->P4(), m_hardTbar->P4());
+    pair<TLorentzVector, TLorentzVector> p_v_truth = make_pair(m_hardNu->P4(), m_hardNuBar->P4());
     TLorentzVector p_ttbar_truth = p_t_truth.first + p_t_truth.second;
-    // TLorentzVector p_t_truth.first = m_hardTop->P4();
-    // TLorentzVector p_t_truth.second = m_hardTbar->P4();
-    // TLorentzVector p_ttbar_truth = p_t_truth.first + p_t_truth.second;
+    TLorentzVector p_miss_truth = p_v_truth.first + p_v_truth.second;
     double mass_ttbar_truth = p_ttbar_truth.M() / 1000;
     double pT_top_truth = p_t_truth.first.Pt();
     double pT_tbar_truth = p_t_truth.second.Pt();
+    double ETmiss_truth = p_miss_truth.Pt();
     double dR_l1b1 = p_l_truth.first.DeltaR(p_b_truth.first);
     double dR_l2b2 = p_l_truth.second.DeltaR(p_b_truth.second);
     double dR_t1b1 = p_t_truth.first.DeltaR(p_b_truth.first);
@@ -48,6 +46,9 @@ void Analysis::EachEvent(double weight)
     double dR_t1t2 = p_t_truth.first.DeltaR(p_t_truth.second);
     vector<double> eff_values = {mass_ttbar_truth, pT_top_truth, pT_tbar_truth};
     
+    double dRmax = min(dR_l1b1, dR_l2b2) / 2;
+    // cout << "dRmax =" << dRmax << "\n";
+    
     h_dR_l1b1_truth->Fill(dR_l1b1, weight);
     h_dR_l2b2_truth->Fill(dR_l2b2, weight);
     h_dR_t1l1_truth->Fill(dR_t1l1, weight);
@@ -56,12 +57,6 @@ void Analysis::EachEvent(double weight)
     h_dR_t2b2_truth->Fill(dR_t2b2, weight);
     h_dR_t1t2_truth->Fill(dR_t1t2, weight);
     
-    // h2_dR_l1b1_mtt_truth->Fill(mass_ttbar_truth, dR_l1b1, weight);
-    // h2_dR_l2b2_mtt_truth->Fill(mass_ttbar_truth, dR_l2b2, weight);
-    // h2_dR_t1l1_mtt_truth->Fill(mass_ttbar_truth, dR_t1l1, weight);
-    // h2_dR_t2l2_mtt_truth->Fill(mass_ttbar_truth, dR_t2l2, weight);
-    // h2_dR_t1b1_mtt_truth->Fill(mass_ttbar_truth, dR_t1b1, weight);
-    // h2_dR_t2b2_mtt_truth->Fill(mass_ttbar_truth, dR_t2b2, weight);
     h2_dR_l1b1_mtt_truth->Fill(mass_ttbar_truth, dR_l1b1, weight);
     h2_dR_l2b2_mtt_truth->Fill(mass_ttbar_truth, dR_l2b2, weight);
     h2_dR_t1l1_mtt_truth->Fill(mass_ttbar_truth, dR_t1l1, weight);
@@ -87,7 +82,9 @@ void Analysis::EachEvent(double weight)
     h_mass_ttbar_truth->Fill(mass_ttbar_truth, weight);
     h_y_ttbar_truth->Fill(p_ttbar_truth.Rapidity(), weight);
     
-    // truth
+    h_ETmiss_truth->Fill(ETmiss_truth, weight);
+    h2_mtt_truth_ETmiss_truth->Fill(mass_ttbar_truth, p_miss_truth.Pt(), weight);
+    
     this->GetTruthParticles();
 
     h_n_truthElectrons->Fill(m_truthElectrons->size(), weight);
@@ -95,7 +92,9 @@ void Analysis::EachEvent(double weight)
     h_n_truthBquarks->Fill(m_truthBquarks->size(), weight);
 
     this->GetElectrons();
+    
     this->GetMuons();
+    
     this->GetJets();
 
     // objects pass selection
@@ -105,9 +104,14 @@ void Analysis::EachEvent(double weight)
     
     this->OverlapRemoval();
     
+    if (!this->TruthTagLeptons(dRmax)) return;
+    
     h_n_uniqueElectrons->Fill(m_electrons->size(), weight);
     h_n_uniqueMuons->Fill(m_muons->size(), weight);
     h_n_uniqueJets->Fill(m_jets->size(), weight);
+    
+    // cuts
+    UpdateCutflow(c_events, true);
     
     // leptons
     if (!this->ExactlyTwoLeptons()) {
@@ -116,8 +120,6 @@ void Analysis::EachEvent(double weight)
         return;
     }
     h_eff_cut_2l_mass_ttbar_truth->Fill(mass_ttbar_truth, 1);
-
-    if (!this->TruthTagLeptons()) return;
 
     this->AssignChannel();
 
@@ -430,8 +432,11 @@ void Analysis::EachEvent(double weight)
         }
         else
         {
-            cout << "Error: Reconstruction = {KIN, NuW}\n";
+            cout << "error: Reconstruction = {KIN, NuW}\n";
         }
+        
+         h_dR_l->Fill(min(p_l.first.DeltaR(p_l_truth.first), p_l.first.DeltaR(p_l_truth.first)));
+         h_dR_l->Fill(min(p_l.second.DeltaR(p_l_truth.second), p_l.second.DeltaR(p_l_truth.second)));
 
         TLorentzVector p_W1 = p_l.first + p_v1;
         TLorentzVector p_W2 = p_l.second + p_v2;
@@ -623,8 +628,6 @@ void Analysis::CleanupEvent()
     delete m_electrons;
     delete m_muons;
     delete m_jets;
-    delete m_electron_truth_tags;
-    delete m_muon_truth_tags;
     delete m_truthElectrons;
     delete m_truthMuons;
     delete m_truthBquarks;
@@ -639,6 +642,8 @@ void Analysis::CleanupEvent()
     m_hardNuBar = nullptr;
     if (m_debug) cout << "Finished cleaning up event\n";
 }
+
+    
 
 void Analysis::EveryEvent(double weight)
 {
@@ -721,21 +726,21 @@ void Analysis::EveryEvent(double weight)
     KT = KT / 1000;
     h_KT_all->Fill(KT, weight);
 
-    if (m_debug) cout << "Finished EveryEvent ...\n";
+    if (m_debug) cout << "Finished EveryEvent.\n";
 }
 
 void Analysis::SetupInputFile()
 {
-    if (m_debug) cout << "Starting SetupInputFile ...\n";
+    if (m_debug) cout << "Setting up single input file...\n";
     m_input = new vector< tuple<string, int> >;
+    m_input->push_back(make_tuple(m_dataDirectory + m_inputfilename, 0));
+    
+    if (m_processfilename != "") m_xSec = true;
     m_processes = new vector< tuple<string, int, int, double, double, double> >;
-    tuple<string, int> input = make_tuple(m_dataDirectory + m_inputfilename, 0);
-    m_input->push_back(input);
-    if (m_input->size() != 1) cout << "no input file found\n";
-    tuple< string, int, int, double, double, double > process = make_tuple(m_dataDirectory + m_processfilename, 0, 1, -999, -999, -999);
-    m_processes->push_back(process);
-
-    if (m_debug) cout << "Finished SetupInputFile\n";
+    if (m_xSec) m_processes->push_back(make_tuple(m_dataDirectory + m_processfilename, 0, 1, -999, -999, -999));
+    else m_processes->push_back(make_tuple("", 0, 1, 1.0, 0.0, 1.0));
+    
+    if (m_debug) cout << "Finished setting up inputfile.\n";
 }
 
 void Analysis::SetupInputFiles()
@@ -752,7 +757,7 @@ void Analysis::SetupInputFiles()
     size_t pos = m_process.find("-tt");
     if (pos == std::string::npos)
     {
-        cout << "Error: final state doesn't contain -tt\n";
+        cout << "error: final state doesn't contain -tt\n";
         exit(false);
     }
     string final_state = m_process.substr(pos);
@@ -857,7 +862,7 @@ void Analysis::SetupInputFiles()
     // check some input files have been specified
     if (m_input->size() < 1)
     {
-        cout << "Error: no input files found.";
+        cout << "error: no input files found.";
         exit(false);
     }
 
@@ -868,7 +873,7 @@ void Analysis::SetupInputFiles()
         bool exists = stat((get<0>(input)).c_str(), &buffer) == 0;
         if (exists == false)
         {
-            cout << "Error: no " << get<0>(input) << "\n";
+            cout << "error: no " << get<0>(input) << "\n";
             exit(exists);
         }
     }
@@ -879,7 +884,7 @@ void Analysis::SetupInputFiles()
         bool exists = stat((get<0>(process)).c_str(), &buffer) == 0;
         if (exists == false)
         {
-            cout << "Error: no " << get<0>(process) << "\n";
+            cout << "error: no " << get<0>(process) << "\n";
             exit(exists);
         }
     }
@@ -918,6 +923,7 @@ void Analysis::SetupOutputFiles()
 void Analysis::PostLoop()
 {
     this->PrintCutflow();
+    this->MakePurityDistribution();
     this->MakeDistributions();
     m_output->Close();
     cout << "\nOUTPUT\n";
@@ -1044,7 +1050,9 @@ void Analysis::MakeHistograms()
     h_mass_ttbar->Sumw2();
     h_mass_ttbar_truth = new TH1D("mass_ttbar_truth", "m^{truth}_{t\\bar{t}}\\ ", nbins, Emin, Emax);
     h_mass_ttbar_truth->Sumw2();
-
+    
+    h_ETmiss_truth = new TH1D("ETmiss_truth", "E^{\\mathrm{miss,truth}}_{\\mathrm{T}}\\ ", 200, 0, 2000.0);
+    h_ETmiss_truth->Sumw2();
 
     h_E_top = new TH1D("E_top", "E_{t}", 100, 0.0, 5000.0);
     h_E_top->Sumw2();
@@ -1145,6 +1153,9 @@ void Analysis::MakeHistograms()
     h2_mtt_cosThetaStar->GetXaxis()->SetTitle("m_{t\\bar{t}}");
     h2_mtt_cosThetaStar->GetYaxis()->SetTitle("\\cos\\theta^{*}");
     h2_mtt_cosThetaStar->Sumw2();
+    
+    h2_mtt_truth_ETmiss_truth = new TH2D("mtt_truth_ETmiss_truth", "m^\\mathrm{truth}_{t\\bar{t}}\\ \\times E^{\\mathrm{miss,truth}}_{\\mathrm{T}}", nbins, Emin, Emax, 200, 0, 2000.0);
+    h2_mtt_truth_ETmiss_truth->Sumw2();
 
     h_cosTheta_ttbar = new TH1D("costheta_tt", "\\cos\\theta_{t,\\bar{t}}", 20, -1.0, 1.0);
     h_cosTheta_ttbar->Sumw2();
@@ -1310,6 +1321,8 @@ void Analysis::MakeHistograms()
     h_dR_tbar = new TH1D("dR_tbar", "\\Delta R\\left(\\bar{t}_{\\mathrm{truth}},\\bar{t}_{\\mathrm{reco}}\\right)", 25, 0.0, 10.0);
     h_dR_ttbar = new TH1D("dR_ttbar", "\\Delta R\\left(t\\bar{t}_{\\mathrm{truth}}, t\\bar{t}_{\\mathrm{reco}}\\right)", 25, 0.0, 10.0);
     
+    h_dR_l = new TH1D("dR_l", "\\Delta R\\left(\\ell_{\\mathrm{reco}}, \\ell_{\\mathrm{truth}}\\right)", 25, 0.0, 10.0);
+    
     // h_dR_l1b1_truth = new TH1D("dR_l1b1_truth", "\\Delta R\\left(\\ell_{\\mathrm{truth}},b_{\\mathrm{truth}}\\right)", 100, 0.0, 7.0);
     h_dR_l1b1_truth = new TH1D("dR_l1b1_truth", "\\Delta R\\left(\\ell^{+}_{\\mathrm{truth}},b_{\\mathrm{truth}}\\right)", 100, 0.0, 7.0);
     h_dR_l2b2_truth = new TH1D("dR_l2b2_truth", "\\Delta R\\left(\\ell^{-}_{\\mathrm{truth}},\\bar{b}_{\\mathrm{truth}}\\right)", 100, 0.0, 7.0);
@@ -1378,6 +1391,8 @@ void Analysis::MakeHistograms()
     h2_pT_ttbar_TvR = new TH2D("pT_ttbar_TvR", "pT_ttbar_TvR", nbins, Emin, Emax, nbins, Emin, Emax);
     h2_eta_ttbar_TvR = new TH2D("eta_ttbar_TvR", "eta_ttbar_TvR", 200, -5.0, 5.0, 200, -5.0, 5.0);
     h2_phi_ttbar_TvR = new TH2D("phi_ttbar_TvR", "phi_ttbar_TvR", 200, -m_pi, m_pi, 200, -m_pi, m_pi);
+    
+    if (m_debug) cout << "Created histograms\n";
 }
 
 
@@ -1400,6 +1415,7 @@ void Analysis::MakeDistributions()
     this->WriteEfficiency(h_eff_cuts_pT_tbar_truth, "P_{T}^{\\bar{t}}\\ [\\mathrm{GeV}]", "\\mathrm{All cuts}");
     this->WriteEfficiency(h_eff_reco_pT_top_truth, "P_{T}^{t}\\ [\\mathrm{GeV}]", "\\mathrm{Top reco}");
     this->WriteEfficiency(h_eff_reco_pT_tbar_truth, "P_{T}^{\\bar{t}}\\ [\\mathrm{GeV}]", "\\mathrm{Top reco}");
+    
 
     // count
     this->MakeDistribution1D(h_n_truthElectrons, "");
@@ -1429,6 +1445,7 @@ void Analysis::MakeDistributions()
     this->MakeDistribution1D(h_pT_jets, "TeV");
     this->MakeDistribution1D(h_pT_bjets, "TeV");
     this->MakeDistribution1D(h_pT_qjets, "TeV");
+    this->MakeDistribution1D(h_ETmiss_truth, "TeV");
 
     // pseudorapidity
     this->MakeDistribution1D(h_eta_allel, "");
@@ -1485,7 +1502,7 @@ void Analysis::MakeDistributions()
     this->MakeDistribution1D(h_KT_DphiF, "TeV");
     this->MakeDistribution1D(h_KT_DphiB, "TeV");
     this->Asymmetry("ADphi_KT", "A_{\\Delta\\phi}", "K_{\\mathrm{T}}", h_KT_DphiF, h_KT_DphiB);
-
+    
     this->MakeDistribution2D(h2_HT_deltaPhi, "H_{\\mathrm{T}}", "GeV", "\\Delta\\phi_{\\ell^{+}\\ell^{-}}", "");
     this->MakeDistribution2D(h2_mvis_deltaPhi, "m_{\\mathrm{vis}}", "GeV", "\\Delta\\phi_{\\ell^{+}\\ell^{-}}", "");
     this->MakeDistribution2D(h2_KT_deltaPhi, "K_{\\mathrm{T}}", "GeV", "\\Delta\\phi_{\\ell^{+}\\ell^{-}}", "");
@@ -1523,10 +1540,12 @@ void Analysis::MakeDistributions()
         this->MakeDistribution1D(h_mass_tbar_truth, "GeV");
         this->MakeDistribution1D(h_mass_ttbar, "TeV");
         this->MakeDistribution1D(h_mass_ttbar_truth, "TeV");
+        this->MakeDistribution2D(h2_mtt_truth_ETmiss_truth, "m_{t\\bar{t}}", "TeV", "E^{\\mathrm{miss,truth}}_{\\mathrm{T}}", "GeV");
 
         this->MakeDistribution1D(h_dR_top, "");
         this->MakeDistribution1D(h_dR_tbar, "");
         this->MakeDistribution1D(h_dR_ttbar, "");
+        this->MakeDistribution1D(h_dR_l, "");
         
         // this->MakeDistribution1D(h_dR_lb_truth, "");
         // this->MakeDistribution1D(h_dR_tl_truth, "");
@@ -2079,9 +2098,9 @@ void Analysis::OverlapRemoval()
     }
 }
 
-bool Analysis::TruthTagLeptons()
-{
-    m_electron_truth_tags = new vector<bool>;
+bool Analysis::TruthTagLeptons(const double dRmax)
+{  
+    vector<bool> lepton_truth_tags;
     for (int i = 0; i < m_electrons->size(); i++)
     {
         Electron* electron = (Electron*) m_electrons->at(i);
@@ -2089,11 +2108,16 @@ bool Analysis::TruthTagLeptons()
         double dR_lm = p_e.DeltaR(m_hardLepM->P4());
         double dR_lp = p_e.DeltaR(m_hardLepP->P4());
         // cout << "dR_lp = " << dR_lp << ", dR_lm =" << dR_lm << "\n";
-        if (dR_lm < 0.07 or dR_lp < 0.07) m_electron_truth_tags->push_back(true);
-        else m_electron_truth_tags->push_back(false);
+        if (dR_lm < dRmax or dR_lp < dRmax) 
+        {
+            lepton_truth_tags.push_back(true);
+        }
+        else 
+        {
+            lepton_truth_tags.push_back(false);
+        }
     }
     
-    m_muon_truth_tags = new vector<bool>;
     for (int i = 0; i < m_muons->size(); i++)
     {
         Muon* muon = (Muon*) m_muons->at(i);
@@ -2101,39 +2125,27 @@ bool Analysis::TruthTagLeptons()
         double dR_lm = p_mu.DeltaR(m_hardLepM->P4());
         double dR_lp = p_mu.DeltaR(m_hardLepP->P4());
         // cout << "dR_lp = " << dR_lp << ", dR_lm =" << dR_lm << "\n";
-        if (dR_lm < 0.07 or dR_lp < 0.07)
+        if (dR_lm < dRmax or dR_lp < dRmax) 
         {
-            m_muon_truth_tags->push_back(true);
+            lepton_truth_tags.push_back(true);
         }
-        else 
-        {
-            m_muon_truth_tags->push_back(false);
+        else
+        { 
+            lepton_truth_tags.push_back(false);
         }
     }
     
-    // for (auto tag : *m_electron_truth_tags)
-    // {
-    //     if (!tag) return false;
-    // }
-    // 
-    // for (bool tag : *m_muon_truth_tags)
-    // {
-    //     if (!tag) return false;
-    // }
-    // 
-    // return true;
-    
-    for (auto tag : *m_electron_truth_tags)
+    for (auto tag : lepton_truth_tags)
     {
-        if (!tag) return true;
-    }
-        
-    for (bool tag : *m_muon_truth_tags)
-    {
-        if (!tag) return true;
+        if (!tag) return false;
     }
     
-    return false;
+    return true;
+    
+    // for (auto tag : *electron_truth_tags) if (!tag) return true;
+    // for (bool tag : *muon_truth_tags) if (!tag) return true;
+    
+    // return false;
 }
 
 bool Analysis::ExactlyTwoLeptons()
@@ -2151,7 +2163,7 @@ void Analysis::AssignChannel()
     if (m_electrons->size() == 2) m_channel = "ee";
     else if (m_muons->size() == 2) m_channel = "mumu";
     else if (m_electrons->size() == 1 and m_muons->size() == 1) m_channel = "emu";
-    else cout << "Error: can't assign channel\n";
+    else cout << "error: can't assign channel\n";
     if (m_debug) cout << "Channel assigned: " << m_channel << "\n";
 }
 
@@ -2183,7 +2195,7 @@ bool Analysis::OppositeCharge()
         charge1 = muon->Charge;
         charge2 = electron->Charge;
     }
-    else cout << "Error: invalid channel\n";
+    else cout << "error: invalid channel\n";
 
     bool oppositeCharge;
 
@@ -2270,7 +2282,7 @@ pair<TLorentzVector, TLorentzVector> Analysis::GetLeptonMomenta()
     }
     else
     {
-        cout << "Error: invalid channel\n";
+        cout << "error: invalid channel\n";
     }
 
     if (m_debug) p_l.first.Print();
@@ -2438,7 +2450,7 @@ void Analysis::GetGenerationCrossSection(int proc_id)
 
     ifstream proc_file;
     proc_file.open(proc_filename);
-    if (!proc_file.is_open()) cout << "Error: Unable to open " << proc_filename << "\n";
+    if (!proc_file.is_open()) cout << "error: Unable to open " << proc_filename << "\n";
     if (m_debug) cout << "m_processes size = " << m_processes->size() << "\n";
     get<3>(m_processes->at(proc_id)) = get_parameter(&proc_file);
     get<4>(m_processes->at(proc_id)) = get_parameter(&proc_file);
@@ -2478,8 +2490,11 @@ void Analysis::Loop()
         std::cout << get<0>(*it) << "\n";
         m_nevents = this->TotalEvents();
         int proc_id = get<1>(m_input->at(i));
-        this->GetGenerationCrossSection(proc_id);
-        this->GetProcessWeight(proc_id);
+        if (m_xSec) 
+        {
+            this->GetGenerationCrossSection(proc_id);
+            this->GetProcessWeight(proc_id);
+        }
         for (Long64_t jevent = 0; jevent < m_nevents; ++jevent)
         {
             Long64_t ievent = this->IncrementEvent(jevent);
@@ -2498,8 +2513,10 @@ void Analysis::Loop()
 
 void Analysis::EachFile (const string& filename)
 {
+    if (m_debug) cout << "starting each file ...\n"; 
     this->SetupTreesForNewFile(filename);
     this->GetBranches();
+    if (m_debug) cout << "finished each file ...\n"; 
 }
 
 
@@ -2588,6 +2605,7 @@ void Analysis::InitialiseCutflow()
     m_cutTitles[c_validSolution]      = "Top reco";
 
     h_cutflow = new TH1D("cutflow", "cutflow", m_cuts, 0.0, m_cuts);
+    h_lepton_purity = new TProfile("lepton_purity", "Lepton purity", m_cuts, 0.0, m_cuts);
 
     if (m_debug) cout << "Initialised cutflow\n";
 }
@@ -2615,4 +2633,16 @@ void Analysis::PrintCutflow()
     if (m_debug) cout << "Writing cut flow ...\n";
     h_cutflow->Write();
     if (m_debug) cout << "Written cut flow\n";
+}
+
+void Analysis::MakePurityDistribution()
+{
+    for (int cut = 0; cut < m_cuts; cut++)
+    {
+        if (m_cutflow[cut] == -999) continue;
+
+        h_lepton_purity->SetBinContent(cut + 1, m_cutflow[cut]);
+        h_lepton_purity->GetXaxis()->SetBinLabel(cut + 1, m_cutTitles[cut].c_str());
+    }
+    h_lepton_purity->Write();
 }

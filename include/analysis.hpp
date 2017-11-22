@@ -35,8 +35,11 @@ private:
     Analysis(const Analysis& rhs);
     void operator = (const Analysis& rhs);
 
-    typedef vector<tuple<string, int>>::const_iterator itr_s;
+     // args: inputfilename, proc_id
     vector<tuple<string, int>>* m_input;
+    typedef vector<tuple<string, int>>::const_iterator itr_s;
+    
+    // args: processfilename, proc_id, n_proc, cross_section, uncertainty, weight
     vector<tuple<string, int, int, double, double, double>>* m_processes;
 
     vector<Electron*>* m_electrons;
@@ -45,9 +48,9 @@ private:
     vector<GenParticle*>* m_truthMuons;
     vector<Jet*>* m_jets;
     vector<GenParticle*>* m_truthBquarks;
-    
-    vector<bool>* m_electron_truth_tags;
-    vector<bool>* m_muon_truth_tags;
+    // 
+    // vector<bool>* m_electron_truth_tags;
+    // vector<bool>* m_muon_truth_tags;
 
     GenParticle* m_hardTop;
     GenParticle* m_hardTbar;
@@ -69,7 +72,7 @@ private:
     string m_pdf = "CT14LL";
     bool m_use_mass_slices = false;
 
-    bool m_xSec = false;
+    bool m_xSec;
     const string m_reconstruction;
     bool m_useLumi;
     const bool m_debug;
@@ -202,6 +205,9 @@ private:
     TH1D* h_dR_tbar;
     TH1D* h_dR_ttbar;
     
+    // dR between each truth lepton and its closest reco lepton
+    TH1D* h_dR_l;
+    
     // dR between truth leptons and b-quarks and top quarks
     TH1D* h_dR_t1t2_truth;
     TH1D* h_dR_l1b1_truth;
@@ -211,14 +217,6 @@ private:
     TH1D* h_dR_t1b1_truth;
     TH1D* h_dR_t2b2_truth;
     
-    // dRy between truth leptons and b-quarks
-    // TH1D* h_dRy_l1b1_truth;
-    // TH1D* h_dRy_l2b2_truth;
-    // TH1D* h_dRy_t1b1_truth;
-    // TH1D* h_dRy_t2b2_truth;
-    // TH1D* h_dRy_t1b1_truth;
-    // TH1D* h_dRy_t2b2_truth;
-    
     TH2D* h2_dR_l1b1_pTl_truth;
     TH2D* h2_dR_l2b2_pTl_truth;
     TH2D* h2_dR_l1b1_mtt_truth;
@@ -227,6 +225,9 @@ private:
     TH2D* h2_dR_t2l2_mtt_truth;
     TH2D* h2_dR_t1b1_mtt_truth;
     TH2D* h2_dR_t2b2_mtt_truth;
+    
+    TH1D* h_ETmiss_truth;
+    TH2D* h2_mtt_truth_ETmiss_truth;
 
     // performance plots
     TH1D* h_perf_mass_top;
@@ -312,6 +313,13 @@ private:
     TH1D* h_cosThetaStar_l;
     TH1D* h_deltaY_top;
     TH1D* h_deltaEta_l;
+    
+    TH1D* h_n_electrons;
+    TH1D* h_n_muons;
+    TH1D* h_n_jets;
+    TH1D* h_n_bJets;
+    
+    TProfile* h_lepton_purity;
 
     TH1D* h_n_truthElectrons;
     TH1D* h_n_truthMuons;
@@ -329,11 +337,6 @@ private:
     TH1D* h_n_passMuons;
     TH1D* h_n_passJets;
     TH1D* h_n_passBjets;
-
-    TH1D* h_n_electrons;
-    TH1D* h_n_muons;
-    TH1D* h_n_jets;
-    TH1D* h_n_bJets;
 
     TH2D* h2_mtt_cosThetaStar;
     TH2D* h2_mtt_delta_yt;
@@ -374,7 +377,7 @@ protected:
     void GetMuons();
     void GetJets();
     void OverlapRemoval();
-    bool TruthTagLeptons();
+    bool TruthTagLeptons(const double);
     void AssignChannel();
     pair<TLorentzVector, TLorentzVector> GetLeptonMomenta();
 
@@ -397,6 +400,7 @@ protected:
     // cutflow
     void InitialiseCutflow();
     void PrintCutflow();
+    void MakePurityDistribution();
     void UpdateCutflow(int, bool);
     void FillCutsEfficiencies(const vector<double>&, const int);
     void FillRecoEfficiencies(const vector<double>&, const int);
@@ -440,6 +444,7 @@ public:
         m_tag(tag),
         m_use_mass_slices(slice),
         m_truth(true),
+        m_xSec(true),
         m_debug(false),
         m_output(nullptr),
         m_input(nullptr),
@@ -463,6 +468,7 @@ public:
         m_tag(tag),
         m_use_mass_slices(slice),
         m_truth(true),
+        m_xSec(false),
         m_debug(false),
         m_output(nullptr),
         m_input(nullptr),
