@@ -375,8 +375,16 @@ protected:
     void GetTruthParticles();
     void GetElectrons();
     void GetMuons();
-    void GetJets();
+    void SelectElectrons();
+    void SelectMuons();
+    void SelectJets();
+    void IsolateElectrons();
+    void IsolateMuons();
     void OverlapRemoval();
+    void RemoveJetsCloseToElectrons();
+    void RemoveJetsCloseToMuons();
+    void RemoveElectronsInsideJets();
+    void RemoveMuonsInsideJets();
     bool TruthTagLeptons(const double);
     void AssignChannel();
     pair<TLorentzVector, TLorentzVector> GetLeptonMomenta();

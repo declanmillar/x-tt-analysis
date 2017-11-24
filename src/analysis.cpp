@@ -90,12 +90,15 @@ void Analysis::EachEvent(double weight)
     h_n_truthElectrons->Fill(m_truthElectrons->size(), weight);
     h_n_truthMuons->Fill(m_truthMuons->size(), weight);
     h_n_truthBquarks->Fill(m_truthBquarks->size(), weight);
+    
+    // this->GetElectrons();
+    // this->GetMuons();
 
-    this->GetElectrons();
-    
-    this->GetMuons();
-    
-    this->GetJets();
+    this->SelectElectrons();
+    this->IsolateElectrons();
+    this->SelectMuons();
+    this->IsolateMuons();
+    this->SelectJets();
 
     // objects pass selection
     h_n_selElectrons->Fill(m_electrons->size(), weight);
@@ -174,7 +177,7 @@ void Analysis::EachEvent(double weight)
 
     // Get jet momenta and split by b-tag
     vector<TLorentzVector> p_j, p_b, p_q;
-    for (int i = 0; i < m_jets->size(); i++)
+    for (int i = 0; i < m_jets->size(); ++i)
     {
         Jet *jet = (Jet*) m_jets->at(i);
         TLorentzVector p;
@@ -202,12 +205,12 @@ void Analysis::EachEvent(double weight)
     {
         cout << "p_l+   = "; p_l.first.Print();
         cout << "p_l-   = "; p_l.second.Print();
-        for (int i = 0; i < p_b.size(); i++)
+        for (int i = 0; i < p_b.size(); ++i)
         {
             cout << "p_b" << i << "   = ";
             p_b.at(i).Print();
         }
-        for (int i = 0; i < p_q.size(); i++)
+        for (int i = 0; i < p_q.size(); ++i)
         {
             cout << "p_q" << i << "   = ";
             p_q.at(i).Print();
@@ -658,7 +661,7 @@ void Analysis::EveryEvent(double weight)
     if (m_debug) cout << "Fetching all jets ...\n";
     vector<TLorentzVector> p_j;
     int bTags = 0;
-    for (int i = 0; i < b_Jet->GetEntries(); i++)
+    for (int i = 0; i < b_Jet->GetEntries(); ++i)
     {
         Jet *jet = (Jet*) b_Jet->At(i);
         if (jet->BTag > 0) bTags++;
@@ -673,7 +676,7 @@ void Analysis::EveryEvent(double weight)
 
     if (m_debug) cout << "Fetching all electrons ...\n";
     vector<TLorentzVector> p_el;
-    for (int i = 0; i < b_Electron->GetEntries(); i++)
+    for (int i = 0; i < b_Electron->GetEntries(); ++i)
     {
         Electron *electron = (Electron*) b_Electron->At(i);
         TLorentzVector p;
@@ -685,7 +688,7 @@ void Analysis::EveryEvent(double weight)
 
     if (m_debug) cout << "Fetching all muons ...\n";
     vector<TLorentzVector> p_mu;
-    for (int i = 0; i < b_Muon->GetEntries(); i++)
+    for (int i = 0; i < b_Muon->GetEntries(); ++i)
     {
         Muon *muon = (Muon*) b_Muon->At(i);
         TLorentzVector p;
@@ -806,7 +809,7 @@ void Analysis::SetupInputFiles()
             int end = 1;
             if (m_use_mass_slices) end =  m_energy;
 
-            for (int j = 0; j < end; j++)
+            for (int j = 0; j < end; ++j)
             {
                 string range = "";
                 if (m_use_mass_slices) range = "_" + to_string(j) + "-" + to_string(j + 1);
@@ -950,7 +953,7 @@ void Analysis::Asymmetry(const string& name, const string& title, const string& 
 void Analysis::AsymmetryUncertainty(TH1D* hA, TH1D* h1, TH1D* h2)
 {
     double A, dA, N, N1, N2;
-    for (int i = 1; i < hA->GetNbinsX() + 1; i++)
+    for (int i = 1; i < hA->GetNbinsX() + 1; ++i)
     {
         A = hA->GetBinContent(i);
         N1 = h1->GetBinContent(i);
@@ -1321,7 +1324,7 @@ void Analysis::MakeHistograms()
     h_dR_tbar = new TH1D("dR_tbar", "\\Delta R\\left(\\bar{t}_{\\mathrm{truth}},\\bar{t}_{\\mathrm{reco}}\\right)", 25, 0.0, 10.0);
     h_dR_ttbar = new TH1D("dR_ttbar", "\\Delta R\\left(t\\bar{t}_{\\mathrm{truth}}, t\\bar{t}_{\\mathrm{reco}}\\right)", 25, 0.0, 10.0);
     
-    h_dR_l = new TH1D("dR_l", "\\Delta R\\left(\\ell_{\\mathrm{reco}}, \\ell_{\\mathrm{truth}}\\right)", 25, 0.0, 10.0);
+    h_dR_l = new TH1D("dR_l", "\\Delta R\\left(\\ell_{\\mathrm{reco}}, \\ell_{\\mathrm{truth}}\\right)", 300, 0.0, 0.3);
     
     // h_dR_l1b1_truth = new TH1D("dR_l1b1_truth", "\\Delta R\\left(\\ell_{\\mathrm{truth}},b_{\\mathrm{truth}}\\right)", 100, 0.0, 7.0);
     h_dR_l1b1_truth = new TH1D("dR_l1b1_truth", "\\Delta R\\left(\\ell^{+}_{\\mathrm{truth}},b_{\\mathrm{truth}}\\right)", 100, 0.0, 7.0);
@@ -1671,7 +1674,7 @@ void Analysis::MakeDistribution1D(TH1D* h, const string& units, bool normalise)
     {
         if (m_luminosity > 0)
         {
-            for (int i = 1; i < h->GetNbinsX() + 1; i++)
+            for (int i = 1; i < h->GetNbinsX() + 1; ++i)
             {
                 h->SetBinError(i, sqrt(h->GetBinContent(i)));
                 // cout << "N  = " << "" << h->GetBinContent(i) << "\n";
@@ -1734,9 +1737,9 @@ void Analysis::MakeDistribution2D(TH2D* h, string xtitle, string xunits, string 
     {
         if (m_luminosity > 0)
         {
-            for (int i = 1; i < h->GetNbinsX() + 1; i++)
+            for (int i = 1; i < h->GetNbinsX() + 1; ++i)
             {
-                for (int j = 1; j < h->GetNbinsY() + 1; j++)
+                for (int j = 1; j < h->GetNbinsY() + 1; ++j)
                 {
                     h->SetBinError(i, j, sqrt(h->GetBinContent(i, j)));
                 }
@@ -1813,10 +1816,10 @@ void Analysis::NormalizeSliceY(TH2D* h)
 {
     double integral = 1;
     int k;
-    for (int i = 1; i < h->GetNbinsX() + 1; i++)
+    for (int i = 1; i < h->GetNbinsX() + 1; ++i)
     {
         integral = h->Integral(i, i, 1, h->GetNbinsY());
-        for (int j = 1; j < h->GetNbinsY() + 1; j++)
+        for (int j = 1; j < h->GetNbinsY() + 1; ++j)
         {
             k = h->GetBin(i, j);
             h->SetBinContent(k, h->GetBinContent(k) / integral);
@@ -1831,91 +1834,46 @@ void Analysis::GetHardParticles()
     // gets particles from the hard process (after initial state radiation)
     // finds tops (after soft gluon radiation) and daughter particles (after soft radiation)
     
-    if (m_debug) cout << "Fetching truth particles ..." << "\n";
-    GenParticle *particle;
     int iTop = -999, iTbar = -999, iWp = -999, iWm = -999;
-    for (int i = 0; i < b_Particle->GetEntriesFast(); i++)
+    for (int i = 0; i < b_Particle->GetEntriesFast(); ++i)
     {
-        particle = (GenParticle*) b_Particle->At(i);
+        GenParticle* particle = (GenParticle*) b_Particle->At(i);
+        int pid = particle->PID;
+        int m1 = particle->M1;
 
-        if (particle->PID == 6)
+        // get top (overwrite with radiating top daughter)
+        if (pid == 6)
         {
             // if (particle->M1 == 0 and particle->M2 == 1)
-            // {
             m_hardTop = particle;
-            if (m_debug) cout << "found hard top\n";
-            // }
             iTop = i;
         }
 
-        if (particle->PID == -6)
+        // get tbar (overwrite with radiating tbar daughter)
+        if (pid == -6)
         {
             // if (particle->M1 == 0 and particle->M2 == 1)
-            // {
             m_hardTbar = particle;
-            if (m_debug) cout << "found hard tbar\n";
-            // }
             iTbar = i;
         }
 
-        if (particle->PID == 24 and particle->M1 == iTop)
-        {
-            iWp = i;
-            if (m_debug) cout << "found hard W+\n";
-        }
+        // get W index (overwrite with radiating daughter)
+        if (pid == 24 and (m1 == iTop or m1 == iWp)) iWp = i;
 
-        // get W before decay
-        if (particle->PID == 24 and particle->M1 == iWp)
-        {
-            iWp = i;
-        }
+        if (pid == 5 and m1 == iTop) m_hardB = particle;
+        
+        if ((pid == -11 or pid == -13) and m1 == iWp) m_hardLepP = particle;
+        
+        if ((pid == 12 or pid == 14) and m1 == iWp) m_hardNu = particle;
+        
+        // get W index (overwrite with radiating daughter)
+        if (pid == -24 and (m1 == iTbar or m1 == iWm)) iWm = i;
 
-        if (particle->PID == 5 and particle->M1 == iTop)
-        {
-            m_hardB = particle;
-            if (m_debug) cout << "found hard b\n";
-        }
+        if (pid == -5 and m1 == iTbar) m_hardBbar = particle;
 
-        if (particle->PID == -24 and particle->M1 == iTbar)
-        {
-            iWm = i;
-            if (m_debug) cout << "found hard W-\n";
-        }
+        if ((pid == 11 or pid == 13) and m1 == iWm) m_hardLepM = particle;
 
-        if (particle->PID == -24 and particle->M1 == iWm)
-        {
-            iWm = i;
-        }
-
-        if (particle->PID == -5 and particle->M1 == iTbar)
-        {
-            m_hardBbar = particle;
-            if (m_debug) cout << "found hard bbar\n";
-        }
-
-        if ((particle->PID == -11 or particle->PID == -13) and particle->M1 == iWp)
-        {
-            m_hardLepP = particle;
-            if (m_debug) cout << "found hard l+\n";
-        }
-
-        if ((particle->PID == 11 or particle->PID == 13) and particle->M1 == iWm)
-        {
-            m_hardLepM = particle;
-            if (m_debug) cout << "found hard l-\n";
-        }
-
-        if ((particle->PID == 12 or particle->PID == 14) and particle->M1 == iWp)
-        {
-            m_hardNu = particle;
-            if (m_debug) cout << "found hard nu\n";
-        }
-
-        if ((particle->PID == -12 or particle->PID == -14) and particle->M1 == iWm)
-        {
-            m_hardNuBar = particle;
-            if (m_debug) cout << "found hard nubar\n";
-        }
+        if ((pid == -12 or pid == -14) and m1 == iWm) m_hardNuBar = particle;
     }
 
     if (m_debug) cout << "Fetched truth particles." << "\n";
@@ -1923,40 +1881,124 @@ void Analysis::GetHardParticles()
 
 void Analysis::GetTruthParticles()
 {
-    if (m_debug) cout << "Fetching truth particles ..." << "\n";
-    GenParticle *particle;
     m_truthElectrons = new vector<GenParticle*>;
     m_truthMuons = new vector<GenParticle*>;
     m_truthBquarks = new vector<GenParticle*>;
-    for (int i = 0; i < b_Particle->GetEntriesFast(); i++)
+    for (int i = 0; i < b_Particle->GetEntriesFast(); ++i)
     {
-        particle = (GenParticle*) b_Particle->At(i);
-
-        // demand that this is a stable particle
+        GenParticle* particle = (GenParticle*) b_Particle->At(i);
+        
+        // skip if unstable
         if (particle->Status != 1) continue;
+        
+        int pid = abs(particle->PID);
+        int pT = particle->PT;
+        int eta = abs(particle->Eta);
 
-        if (abs(particle->PID) == 11 and particle->PT > 25.0 and abs(particle->Eta) < 2.5)
-        {
+        if (pid == 11 and pT > 25.0 and eta < 2.5)
             m_truthElectrons->push_back(particle);
-        }
 
-        if (abs(particle->PID) == 13 and particle->PT > 25.0 and abs(particle->Eta) < 2.5)
-        {
+        if (pid == 13 and pT > 25.0 and eta < 2.5)
             m_truthMuons->push_back(particle);
-        }
 
-        if (abs(particle->PID) == 5 and particle->PT > 25.0 and abs(particle->Eta) < 2.5)
-        {
+        if (pid == 5 and pT > 25.0 and eta < 2.5)
             m_truthBquarks->push_back(particle);
-        }
     }
     if (m_debug) cout << "Fetched truth particles." << "\n";
+}
+
+void Analysis::SelectElectrons()
+{
+    m_electrons = new vector<Electron*>;
+    for (int i = 0; i < b_Electron->GetEntries(); ++i)
+    {
+        Electron* electron = (Electron*) b_Electron->At(i);
+        if (electron->PT < 27.0) continue;
+        double eta = abs(electron->Eta);
+        if (eta > 2.47) continue;
+        if (eta > 1.37 and eta < 1.52) continue;
+        m_electrons->push_back(electron);
+    }
+    
+    if (m_debug) cout << "selected electrons\n";
+}
+
+void Analysis::SelectMuons()
+{
+    m_muons = new vector<Muon*>;
+    for (int i = 0; i < b_Muon->GetEntries(); ++i)
+    {
+        Muon* muon = (Muon*) b_Muon->At(i);
+        if (muon->PT < 27.0) continue;
+        if (abs(muon->Eta) > 2.5) continue;
+        m_muons->push_back(muon);
+    }
+    
+    if (m_debug) cout << "selected muons\n";
+}
+
+void Analysis::IsolateElectrons()
+{
+    if (m_debug) cout << "isolating electrons\n";
+    
+    for (int i = 0; i < m_electrons->size();)
+    {
+        Electron* electron = (Electron*) m_electrons->at(i);
+        double pT = electron->PT;
+        double pTsum = 0.0;
+        for (int j = 0; j < b_Track->GetEntries(); ++j)
+        {
+            Track* track = (Track*) b_Track->At(j);
+            double deltaR = electron->P4().DeltaR(track->P4());
+            if (deltaR > 10e-15 and deltaR < 0.3) pTsum += track->PT;
+            // if (deltaR > 10e-15 and deltaR < 7.5 / pT) pTsum += track->PT;
+        }
+        if (pTsum / pT > 0.12) m_electrons->erase(m_electrons->begin() + i);
+        else ++i;
+    }
+    if (m_debug) cout << "isolated electrons\n";
+}
+
+void Analysis::IsolateMuons()
+{
+    if (m_debug) cout << "isolating muons\n"; 
+    
+    for (int i = 0; i < m_muons->size();)
+    {
+        Muon* muon = (Muon*) m_muons->at(i);
+        double pT = muon->PT;
+        double pTsum = 0.0;
+        for (int j = 0; j < b_Track->GetEntries(); ++j)
+        {
+            Track* track = (Track*) b_Track->At(j);
+            double deltaR = muon->P4().DeltaR(track->P4());
+            if (deltaR > 10e-15 and deltaR < 10.0 / pT) pTsum += track->PT;
+        }
+        // if (pTsum / pT > 0.05) ++i;
+        // else m_muons->erase(m_muons->begin() + i);
+        if (pTsum / pT > 0.05) m_muons->erase(m_muons->begin() + i);
+        else ++i;
+    }
+    
+    if (m_debug) cout << "isolated muons\n"; 
+}
+
+void Analysis::SelectJets()
+{
+    m_jets = new vector<Jet*>;
+    for (int i = 0; i < b_Jet->GetEntries(); ++i)
+    {
+        Jet *jet = (Jet*) b_Jet->At(i);
+        if (jet->PT < 25.0) return;
+        if (abs(jet->Eta) > 2.5) return;
+        m_jets->push_back(jet);
+    }
 }
 
 void Analysis::GetElectrons()
 {
     m_electrons = new vector<Electron*>;
-    for (int i = 0; i < b_Electron->GetEntries(); i++)
+    for (int i = 0; i < b_Electron->GetEntries(); ++i)
     {
         // cuts
         Electron* electron = (Electron*) b_Electron->At(i);
@@ -1968,7 +2010,7 @@ void Analysis::GetElectrons()
         
         // isolation
         double pTsum = 0.0;
-        for (int j = 0; j < b_Track->GetEntries(); j++)
+        for (int j = 0; j < b_Track->GetEntries(); ++j)
         {
             Track* track = (Track*) b_Track->At(j);
             double deltaR = electron->P4().DeltaR(track->P4());
@@ -1985,7 +2027,7 @@ void Analysis::GetElectrons()
 void Analysis::GetMuons()
 {
     m_muons = new vector<Muon*>;
-    for (int i = 0; i < b_Muon->GetEntries(); i++)
+    for (int i = 0; i < b_Muon->GetEntries(); ++i)
     {
         // cuts
         Muon* muon = (Muon*) b_Muon->At(i);
@@ -1997,7 +2039,7 @@ void Analysis::GetMuons()
         
         // isolation
         double pTsum = 0.0;
-        for (int j = 0; j < b_Track->GetEntries(); j++)
+        for (int j = 0; j < b_Track->GetEntries(); ++j)
         {
             Track* track = (Track*) b_Track->At(j);
             double deltaR = muon->P4().DeltaR(track->P4());
@@ -2009,52 +2051,55 @@ void Analysis::GetMuons()
     }
 }
 
-void Analysis::GetJets()
-{
-    m_jets = new vector<Jet*>;
-    for (int i = 0; i < b_Jet->GetEntries(); i++)
-    {
-        Jet *jet = (Jet*) b_Jet->At(i);
-        if (jet->PT < 25.0) return;
-        if (abs(jet->Eta) > 2.5) return;
-        m_jets->push_back(jet);
-    }
-}
-
 void Analysis::OverlapRemoval()
-{
-    // from arXiv:1708.00727:
-    // Objects can satisfy both the jets and leptons selection criteria and as such a procedure called "overlap removal" is applied in order to associate objects to a unique hypothesis.
+{    
+    // Objects can satisfy both the jet and lepton selection criteria 
+    // a procedure called "overlap removal" is applied to
+    // associate objects with a unique hypothesis
+    this->RemoveJetsCloseToElectrons();
+    this->RemoveJetsCloseToMuons();
+    this->RemoveElectronsInsideJets();
+    // this->RemoveMuonsInsideJets();
     
-    // To prevent double-counting of electron energy deposits as jets, the closest small-R jet lying ∆R < 0.2 from a reconstructed electron is discarded.    
-    for (int i = 0; i < m_electrons->size(); i++)
+    if (m_debug) cout << "removed overlapping objects\n";
+}
+    
+void Analysis::RemoveJetsCloseToElectrons()
+{
+    // To prevent double-counting of electron energy deposits as jets
+    // the closest small-R jet lying ∆R < 0.2 from a reconstructed electron is discarded.
+    for (int i = 0; i < m_electrons->size(); ++i)
     {
         Electron* electron = (Electron*) m_electrons->at(i);
         double pT = electron->PT;
         int jkill = -999;
-        for (int j = 0; j < m_jets->size(); j++)
+        for (int j = 0; j < m_jets->size();)
         {
             Jet *jet = (Jet*) m_jets->at(j);
             double deltaR = electron->P4().DeltaR(jet->P4());
             if (deltaR < 0.2)
-            // if (deltaR < 5.0 / pT)
             {
                 if (jkill == -999) jkill = j;
-            else
+                else
                 {
                     if (deltaR < electron->P4().DeltaR(m_jets->at(jkill)->P4())) jkill = j;
                 }
             }
+            ++j;
         }
         if (jkill != -999) m_jets->erase(m_jets->begin() + jkill);
     }
+}
     
-    // If a small-R jet has fewer than three tracks and is ∆R < 0.4 from a muon, the small-R jet tagged unsuitable for being a top daughter
-    for (int i = 0; i < m_muons->size(); i++)
+void Analysis::RemoveJetsCloseToMuons()
+{
+    // if a jet has fewer than three tracks and is ∆R < 0.4 from a muon
+    // the jet is not considered as a top daughter b-quark
+    for (int i = 0; i < m_muons->size(); ++i)
     {
         Muon* muon = (Muon*) m_muons->at(i);
         double pT = muon->PT;
-        for (int j = 0; j < m_jets->size(); j++)
+        for (int j = 0; j < m_jets->size();)
         {
             Jet *jet = (Jet*) m_jets->at(j);
             double deltaR = muon->P4().DeltaR(jet->P4());
@@ -2063,14 +2108,20 @@ void Analysis::OverlapRemoval()
             {
                 m_jets->erase(m_jets->begin() + j);
             }
+            else ++j;
         }
     }
-    
-    // electron is removed if it is too close to a small-R jet (reduce the impact of non-prompt leptons)
-    for (int i = 0; i < m_jets->size(); i++)
+    if (m_debug) cout << "removed jets close to muons\n";
+}
+
+void Analysis::RemoveElectronsInsideJets()
+{
+    // electron is removed if it is too close to a small-R jet
+    // reduce the impact of non-prompt leptons
+    for (int i = 0; i < m_jets->size(); ++i)
     {
         Jet *jet = (Jet*) m_jets->at(i);
-        for (int j = 0; j < m_electrons->size(); j++)
+        for (int j = 0; j < m_electrons->size();)
         {
             Electron *electron = (Electron*) m_electrons->at(j);
             double deltaR = jet->P4().DeltaR(electron->P4());
@@ -2079,29 +2130,39 @@ void Analysis::OverlapRemoval()
             {
                 m_electrons->erase(m_electrons->begin() + j);
             }
+            else ++j;
         }
     }
+    
+    if (m_debug) cout << "removed electrons from jets\n";
+}
 
-    // muon is removed if it is ∆R < 0.4 from a small-R jet which has at least three tracks tagged unsuitable for being a top daughter
-    for (int i = 0; i < m_jets->size(); i++)
+void Analysis::RemoveMuonsInsideJets()
+{
+    // muon is removed if it is ∆R < 0.4 from a small-R jet which has at least three tracks
+    // tagged unsuitable for being a top daughter
+    for (int i = 0; i < m_jets->size(); ++i)
     {
         Jet *jet = (Jet*) m_jets->at(i);
-        for (int j = 0; j < m_muons->size(); j++)
+        for (int j = 0; j < m_muons->size();)
         {
             Muon *muon = (Muon*) m_muons->at(j);
-            if (jet->P4().DeltaR(muon->P4()) < 0.4 and jet->NCharged >= 3)
+            double dR = jet->P4().DeltaR(muon->P4());
+            if (dR < 0.4 and jet->NCharged < 3)
             // if (jet->NCharged < 3 and deltaR < 10.0 / muon->PT)
             {
                 m_muons->erase(m_muons->begin() + j);
             }
+            else ++j;
         }
     }
+    if (m_debug) cout << "removed muons from jets\n";
 }
 
 bool Analysis::TruthTagLeptons(const double dRmax)
 {  
     vector<bool> lepton_truth_tags;
-    for (int i = 0; i < m_electrons->size(); i++)
+    for (int i = 0; i < m_electrons->size(); ++i)
     {
         Electron* electron = (Electron*) m_electrons->at(i);
         TLorentzVector p_e = electron->P4();
@@ -2118,7 +2179,7 @@ bool Analysis::TruthTagLeptons(const double dRmax)
         }
     }
     
-    for (int i = 0; i < m_muons->size(); i++)
+    for (int i = 0; i < m_muons->size(); ++i)
     {
         Muon* muon = (Muon*) m_muons->at(i);
         TLorentzVector p_mu = muon->P4();
@@ -2324,7 +2385,7 @@ bool Analysis::SufficientBtags()
 {
     bool sufficientBtags;
     m_bTags = 0;
-    for (int i = 0; i < m_jets->size(); i++)
+    for (int i = 0; i < m_jets->size(); ++i)
     {
         Jet *jet = (Jet*) m_jets->at(i);
         if (jet->BTag > 0) m_bTags++;
