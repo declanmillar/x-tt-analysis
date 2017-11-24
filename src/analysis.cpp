@@ -1945,15 +1945,14 @@ void Analysis::IsolateElectrons()
     {
         Electron* electron = (Electron*) m_electrons->at(i);
         double pT = electron->PT;
-        double pTsum = 0.0;
+        double pTcone = 0.0;
         for (int j = 0; j < b_Track->GetEntries(); ++j)
         {
             Track* track = (Track*) b_Track->At(j);
-            double deltaR = electron->P4().DeltaR(track->P4());
-            if (deltaR > 10e-15 and deltaR < 0.3) pTsum += track->PT;
-            // if (deltaR > 10e-15 and deltaR < 7.5 / pT) pTsum += track->PT;
+            double dR = electron->P4().DeltaR(track->P4());
+            if (dR > 10e-15 and dR < 0.3) pTcone += track->PT;
         }
-        if (pTsum / pT > 0.12) m_electrons->erase(m_electrons->begin() + i);
+        if (pTcone / pT > 0.12) m_electrons->erase(m_electrons->begin() + i);
         else ++i;
     }
     if (m_debug) cout << "isolated electrons\n";
@@ -1967,16 +1966,14 @@ void Analysis::IsolateMuons()
     {
         Muon* muon = (Muon*) m_muons->at(i);
         double pT = muon->PT;
-        double pTsum = 0.0;
+        double pTcone = 0.0;
         for (int j = 0; j < b_Track->GetEntries(); ++j)
         {
             Track* track = (Track*) b_Track->At(j);
-            double deltaR = muon->P4().DeltaR(track->P4());
-            if (deltaR > 10e-15 and deltaR < 10.0 / pT) pTsum += track->PT;
+            double dR = muon->P4().DeltaR(track->P4());
+            if (dR > 10e-15 and dR < 10.0 / pT) pTcone += track->PT;
         }
-        // if (pTsum / pT > 0.05) ++i;
-        // else m_muons->erase(m_muons->begin() + i);
-        if (pTsum / pT > 0.05) m_muons->erase(m_muons->begin() + i);
+        if (pTcone / pT > 0.05) m_muons->erase(m_muons->begin() + i);
         else ++i;
     }
     
@@ -2013,9 +2010,9 @@ void Analysis::GetElectrons()
         for (int j = 0; j < b_Track->GetEntries(); ++j)
         {
             Track* track = (Track*) b_Track->At(j);
-            double deltaR = electron->P4().DeltaR(track->P4());
-            if (deltaR > 10e-15 and deltaR < 0.3) pTsum += track->PT;
-            // if (deltaR > 10e-15 and deltaR < 7.5 / pT) pTsum += track->PT;
+            double dR = electron->P4().DeltaR(track->P4());
+            if (dR > 10e-15 and dR < 0.3) pTsum += track->PT;
+            // if (dR > 10e-15 and dR < 7.5 / pT) pTsum += track->PT;
         }
         if (pTsum / electron->PT > 0.12) continue;
         
@@ -2042,8 +2039,8 @@ void Analysis::GetMuons()
         for (int j = 0; j < b_Track->GetEntries(); ++j)
         {
             Track* track = (Track*) b_Track->At(j);
-            double deltaR = muon->P4().DeltaR(track->P4());
-            if (deltaR > 10e-15 and deltaR < 10.0 / pT) pTsum += track->PT;
+            double dR = muon->P4().DeltaR(track->P4());
+            if (dR > 10e-15 and dR < 10.0 / pT) pTsum += track->PT;
         }
         if (pTsum / muon->PT > 0.05) continue;
         
@@ -2073,19 +2070,16 @@ void Analysis::RemoveJetsCloseToElectrons()
         Electron* electron = (Electron*) m_electrons->at(i);
         double pT = electron->PT;
         int jkill = -999;
-        for (int j = 0; j < m_jets->size();)
+        for (int j = 0; j < m_jets->size(); ++j)
         {
             Jet *jet = (Jet*) m_jets->at(j);
-            double deltaR = electron->P4().DeltaR(jet->P4());
-            if (deltaR < 0.2)
+            double dRmin = DBL_MAX;
+            double dR = electron->P4().DeltaR(jet->P4());
+            if (dR < 0.2 and dR < dRmin)
             {
-                if (jkill == -999) jkill = j;
-                else
-                {
-                    if (deltaR < electron->P4().DeltaR(m_jets->at(jkill)->P4())) jkill = j;
-                }
+                jkill = j;
+                dRmin = dR;
             }
-            ++j;
         }
         if (jkill != -999) m_jets->erase(m_jets->begin() + jkill);
     }
@@ -2102,9 +2096,9 @@ void Analysis::RemoveJetsCloseToMuons()
         for (int j = 0; j < m_jets->size();)
         {
             Jet *jet = (Jet*) m_jets->at(j);
-            double deltaR = muon->P4().DeltaR(jet->P4());
-            // if (jet->NCharged < 3 and deltaR < 0.4)
-            if (jet->NCharged < 3 and deltaR < 10.0 / pT)
+            double dR = muon->P4().DeltaR(jet->P4());
+            // if (jet->NCharged < 3 and dR < 0.4)
+            if (jet->NCharged < 3 and dR < 10.0 / pT)
             {
                 m_jets->erase(m_jets->begin() + j);
             }
@@ -2124,9 +2118,9 @@ void Analysis::RemoveElectronsInsideJets()
         for (int j = 0; j < m_electrons->size();)
         {
             Electron *electron = (Electron*) m_electrons->at(j);
-            double deltaR = jet->P4().DeltaR(electron->P4());
-            // if (deltaR > 10e-15 and deltaR < 5.0 / electron->PT) pTsum += track->PT;
-            if (deltaR < 0.4)
+            double dR = jet->P4().DeltaR(electron->P4());
+            // if (dR > 10e-15 and dR < 5.0 / electron->PT) pTsum += track->PT;
+            if (dR < 0.4)
             {
                 m_electrons->erase(m_electrons->begin() + j);
             }
@@ -2149,7 +2143,7 @@ void Analysis::RemoveMuonsInsideJets()
             Muon *muon = (Muon*) m_muons->at(j);
             double dR = jet->P4().DeltaR(muon->P4());
             if (dR < 0.4 and jet->NCharged < 3)
-            // if (jet->NCharged < 3 and deltaR < 10.0 / muon->PT)
+            // if (jet->NCharged < 3 and dR < 10.0 / muon->PT)
             {
                 m_muons->erase(m_muons->begin() + j);
             }

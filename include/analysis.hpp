@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <tuple>
+#include <float.h>
 #include "boost/algorithm/string.hpp"
 #include "boost/filesystem.hpp"
 #include "boost/asio.hpp"
