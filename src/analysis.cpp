@@ -36,7 +36,7 @@ void Analysis::EachEvent(double weight)
     double mass_ttbar_truth = p_ttbar_truth.M() / 1000;
     double pT_top_truth = p_t_truth.first.Pt();
     double pT_tbar_truth = p_t_truth.second.Pt();
-    double ETmiss_truth = p_miss_truth.Pt();
+    double ET_miss_truth = p_miss_truth.Pt();
     double dR_l1b1 = p_l_truth.first.DeltaR(p_b_truth.first);
     double dR_l2b2 = p_l_truth.second.DeltaR(p_b_truth.second);
     double dR_t1b1 = p_t_truth.first.DeltaR(p_b_truth.first);
@@ -46,8 +46,17 @@ void Analysis::EachEvent(double weight)
     double dR_t1t2 = p_t_truth.first.DeltaR(p_t_truth.second);
     vector<double> eff_values = {mass_ttbar_truth, pT_top_truth, pT_tbar_truth};
     
-    double dRmax = min(dR_l1b1, dR_l2b2) / 2;
-    // cout << "dRmax =" << dRmax << "\n";
+    double HT_truth = p_l_truth.first.Pt() + p_l_truth.second.Pt() + p_b_truth.first.Pt() + p_b_truth.second.Pt();
+    double HTmet_truth = HT_truth + ET_miss_truth;
+    TLorentzVector p_bbll_truth = p_l_truth.first + p_l_truth.second + p_b_truth.first + p_b_truth.second;
+    double mass_bbll_truth = p_bbll_truth.M();
+    double pT_bbll_truth = p_bbll_truth.Pt();
+    double KT_truth = sqrt(mass_bbll_truth * mass_bbll_truth + pT_bbll_truth * pT_bbll_truth) + ET_miss_truth;
+    HT_truth = HT_truth / 1000;
+    HTmet_truth = HTmet_truth / 1000;
+    KT_truth = KT_truth / 1000;
+    
+    // double dRmax = min(dR_l1b1, dR_l2b2) / 2;
     
     h_dR_l1b1_truth->Fill(dR_l1b1, weight);
     h_dR_l2b2_truth->Fill(dR_l2b2, weight);
@@ -82,7 +91,11 @@ void Analysis::EachEvent(double weight)
     h_mass_ttbar_truth->Fill(mass_ttbar_truth, weight);
     h_y_ttbar_truth->Fill(p_ttbar_truth.Rapidity(), weight);
     
-    h_ETmiss_truth->Fill(ETmiss_truth, weight);
+    h_HT_truth->Fill(HT_truth, weight);
+    h_HTmet_truth->Fill(HTmet_truth, weight);
+    h_KT_truth->Fill(KT_truth, weight);
+    
+    h_ETmiss_truth->Fill(ET_miss_truth, weight);
     h2_mtt_truth_ETmiss_truth->Fill(mass_ttbar_truth, p_miss_truth.Pt(), weight);
     
     this->GetTruthParticles();
@@ -97,10 +110,17 @@ void Analysis::EachEvent(double weight)
     this->SelectMuons();
     this->SelectJets();
     
-    this->TruthTagLeptons(dRmax);    
-    bool event_truth_matched = true;
-    for (auto tag : *m_lepton_truth_tags) if (!tag) event_truth_matched = false;
-    h_lepton_purity->Fill(0.5, (int) event_truth_matched);
+    this->FillPurities(1);
+    // this->FillTaggedHistograms();
+    int n_tagged = 0;
+    for (auto tag : *m_jet_truth_tags) if (tag) ++n_tagged;
+    h_n_jets_truth_tagged->Fill(n_tagged, 1);
+    n_tagged = 0;
+    for (auto tag : *m_electron_truth_tags) if (tag) ++n_tagged;
+    h_n_electrons_truth_tagged->Fill(n_tagged, 1);
+    n_tagged = 0;
+    for (auto tag : *m_muon_truth_tags) if (tag) ++n_tagged;
+    h_n_muons_truth_tagged->Fill(n_tagged, 1);
 
     this->IsolateElectrons();
     this->IsolateMuons();
@@ -110,26 +130,33 @@ void Analysis::EachEvent(double weight)
     h_n_selMuons->Fill(m_muons->size(), weight);
     h_n_selJets->Fill(m_jets->size(), weight);
     
-    this->TruthTagLeptons(dRmax);    
-    event_truth_matched = true;
-    for (auto tag : *m_lepton_truth_tags) if (!tag) event_truth_matched = false;
-    h_lepton_purity->Fill(1.5, (int) event_truth_matched);
+    this->FillPurities(2);
+    n_tagged = 0;
+    for (auto tag : *m_jet_truth_tags) if (tag) ++n_tagged;
+    h_n_selJets_truth_tagged->Fill(n_tagged, 1);
+    n_tagged = 0;
+    for (auto tag : *m_electron_truth_tags) if (tag) ++n_tagged;
+    h_n_selElectrons_truth_tagged->Fill(n_tagged, 1);
+    n_tagged = 0;
+    for (auto tag : *m_muon_truth_tags) if (tag) ++n_tagged;
+    h_n_selMuons_truth_tagged->Fill(n_tagged, 1);
     
     this->OverlapRemoval();
-    
-    // for (auto tag : *m_lepton_truth_tags) 
-    //     if (!tag) return;
-    // for (auto tag : *m_lepton_truth_tags)
-    //     h_lepton_purity->Fill(0.5, (int) tag);
-    
-    this->TruthTagLeptons(dRmax);    
-    event_truth_matched = true;
-    for (auto tag : *m_lepton_truth_tags) if (!tag) event_truth_matched = false;
-    h_lepton_purity->Fill(2.5, (int) event_truth_matched);
     
     h_n_uniqueElectrons->Fill(m_electrons->size(), weight);
     h_n_uniqueMuons->Fill(m_muons->size(), weight);
     h_n_uniqueJets->Fill(m_jets->size(), weight);
+    
+    this->FillPurities(3);
+    n_tagged = 0;
+    for (auto tag : *m_jet_truth_tags) if (tag) ++n_tagged;
+    h_n_uniqueJets_truth_tagged->Fill(n_tagged, 1);
+    n_tagged = 0;
+    for (auto tag : *m_electron_truth_tags) if (tag) ++n_tagged;
+    h_n_uniqueElectrons_truth_tagged->Fill(n_tagged, 1);
+    n_tagged = 0;
+    for (auto tag : *m_muon_truth_tags) if (tag) ++n_tagged;
+    h_n_uniqueMuons_truth_tagged->Fill(n_tagged, 1);
     
     // cuts
     UpdateCutflow(c_events, true);
@@ -652,7 +679,10 @@ void Analysis::CleanupEvent()
     delete m_truthElectrons;
     delete m_truthMuons;
     delete m_truthBquarks;
+    delete m_electron_truth_tags;
+    delete m_muon_truth_tags;
     delete m_lepton_truth_tags;
+    delete m_jet_truth_tags;
     
     m_hardTop = nullptr;
     m_hardTbar = nullptr;
@@ -1072,7 +1102,7 @@ void Analysis::MakeHistograms()
     h_mass_ttbar_truth = new TH1D("mass_ttbar_truth", "m^{truth}_{t\\bar{t}}\\ ", nbins, Emin, Emax);
     h_mass_ttbar_truth->Sumw2();
     
-    h_ETmiss_truth = new TH1D("ETmiss_truth", "E^{\\mathrm{miss,truth}}_{\\mathrm{T}}\\ ", 200, 0, 2000.0);
+    h_ETmiss_truth = new TH1D("ET_miss_truth", "E^{\\mathrm{miss,truth}}_{\\mathrm{T}}\\ ", 200, 0, 2000.0);
     h_ETmiss_truth->Sumw2();
 
     h_E_top = new TH1D("E_top", "E_{t}", 100, 0.0, 5000.0);
@@ -1223,6 +1253,10 @@ void Analysis::MakeHistograms()
     h_HTmet->Sumw2();
     h_HTjMET = new TH1D("HTjMET", "H^{j}_{\\mathrm{T}} + E^{\\mathrm{miss}}_{\\mathrm{T}}}", 60, 0.0, 6.0);
     h_HTjMET->Sumw2();
+    h_HT_truth = new TH1D("HT_truth", "H_{\\mathrm{T}}", 60, 0.0, 6.0);
+    h_HT_truth->Sumw2();
+    h_HTmet_truth = new TH1D("HTmet_truth", "H_{\\mathrm{T}}+ E^{\\mathrm{miss}}_{\\mathrm{T}}}", 60, 0.0, 6.0);
+    h_HTmet_truth->Sumw2();
 
     h_KT_all = new TH1D("KT_all", "K^{\\mathrm{all}}_{\\mathrm{T}}", 50, 0.0, 6.0);
     h_KT_all->Sumw2();
@@ -1230,6 +1264,8 @@ void Analysis::MakeHistograms()
     h_KT->Sumw2();
     h_KTj = new TH1D("KTj", "K^{j}_{\\mathrm{T}}", 60, 0.0, 6.0);
     h_KTj->Sumw2();
+    h_KT_truth = new TH1D("KT_truth", "K_{\\mathrm{T}}", 60, 0.0, 6.0);
+    h_KT_truth->Sumw2();
 
     h_mass_vis_all = new TH1D("mvis_all", "m^{\\mathrm{\\mathrm{all}}}_{\\mathrm{vis}}", 60, 0.0, 6.0);
     h_mass_vis_all->Sumw2();
@@ -1270,29 +1306,38 @@ void Analysis::MakeHistograms()
     h_n_truthMuons->Sumw2();
     h_n_truthBquarks = new TH1D("n_truth_bQuarks", "n_{b}\\ ", 10, 0.0, 10.0);
     h_n_truthBquarks->Sumw2();
-    
-    h_n_selElectrons = new TH1D("n_sel_electrons", "n_{e}\\ ", 10, 0.0, 10.0);
-    h_n_selElectrons->Sumw2();
-    h_n_selMuons = new TH1D("n_sel_muons", "n_{\\mu}\\ ", 10, 0.0, 10.0);
-    h_n_selMuons->Sumw2();
-    h_n_selJets = new TH1D("n_sel_jets", "n_{jet}\\ ", 10, 0.0, 10.0);
-    h_n_selJets->Sumw2();
-    
-    h_n_uniqueElectrons = new TH1D("n_unique_electrons", "n_{e}\\ ", 10, 0.0, 10.0);
-    h_n_uniqueElectrons->Sumw2();
-    h_n_uniqueMuons = new TH1D("n_unique_muons", "n_{\\mu}\\ ", 10, 0.0, 10.0);
-    h_n_uniqueMuons->Sumw2();
-    h_n_uniqueJets = new TH1D("n_unique_jets", "n_{jet}\\ ", 10, 0.0, 10.0);
-    h_n_uniqueJets->Sumw2();
 
     h_n_electrons = new TH1D("n_electrons", "n_{e}\\ ", 10, 0.0, 10.0);
+    h_n_electrons_truth_tagged = new TH1D("n_electrons_truth_tagged", "n_{e} (truth tagged)\\ ", 10, 0.0, 10.0);
     h_n_electrons->Sumw2();
     h_n_muons = new TH1D("n_muons", "n_{\\mu}\\ ", 10, 0.0, 10.0);
     h_n_muons->Sumw2();
+    h_n_muons_truth_tagged = new TH1D("n_muons_truth_tagged", "n_{\\mu}\\ \\mathrm{(truth\\ tagged)}\\ ", 10, 0.0, 10.0);
     h_n_jets = new TH1D("n_jets", "n_{jet}\\ ", 10, 0.0, 10.0);
     h_n_jets->Sumw2();
     h_n_bJets = new TH1D("n_bJets", "n_{b-jet}\\ ", 10, 0.0, 10.0);
     h_n_bJets->Sumw2();
+    h_n_jets_truth_tagged = new TH1D("n_jets_truth_tagged", "n_{jet} (truth tagged)\\ ", 10, 0.0, 10.0);
+    
+    h_n_selElectrons = new TH1D("n_sel_electrons", "n_{e}\\ ", 10, 0.0, 10.0);
+    h_n_selElectrons->Sumw2();
+    h_n_selElectrons_truth_tagged = new TH1D("n_sel_electrons_truth_tagged", "n_{e} (truth tagged)\\ ", 10, 0.0, 10.0);
+    h_n_selMuons = new TH1D("n_sel_muons", "n_{\\mu}\\ ", 10, 0.0, 10.0);
+    h_n_selMuons->Sumw2();
+    h_n_selMuons_truth_tagged = new TH1D("n_sel_muons_truth_tagged", "n_{\\mu}\\ \\mathrm{(truth\\ tagged)}\\ ", 10, 0.0, 10.0);
+    h_n_selJets = new TH1D("n_sel_jets", "n_{jet}\\ ", 10, 0.0, 10.0);
+    h_n_selJets->Sumw2();
+    h_n_selJets_truth_tagged = new TH1D("n_sel_jets_truth_tagged", "n_{jet} (truth tagged)\\ ", 10, 0.0, 10.0);
+    
+    h_n_uniqueElectrons = new TH1D("n_unique_electrons", "n_{e}\\ ", 10, 0.0, 10.0);
+    h_n_uniqueElectrons->Sumw2();
+    h_n_uniqueElectrons_truth_tagged = new TH1D("n_unique_electrons_truth_tagged", "n_{e} (truth tagged)\\ ", 10, 0.0, 10.0);
+    h_n_uniqueMuons = new TH1D("n_unique_muons", "n_{\\mu}\\ ", 10, 0.0, 10.0);
+    h_n_uniqueMuons->Sumw2();
+    h_n_uniqueMuons_truth_tagged = new TH1D("n_unique_muons_truth_tagged", "n_{\\mu}\\ \\mathrm{(truth\\ tagged)}\\ ", 10, 0.0, 10.0);
+    h_n_uniqueJets = new TH1D("n_unique_jets", "n_{jet}\\ ", 10, 0.0, 10.0);
+    h_n_uniqueJets->Sumw2();
+    h_n_uniqueJets_truth_tagged = new TH1D("n_unique_jets_truth_tagged", "n_{jet} (truth tagged)\\ ", 10, 0.0, 10.0);
 
     h_n_passElectrons = new TH1D("n_pass_electrons", "n_{e}\\ ", 10, 0.0, 10.0);
     h_n_passElectrons->Sumw2();
@@ -1395,8 +1440,14 @@ void Analysis::MakeHistograms()
     h_eff_reco_pT_tbar_truth = new TProfile("eff_reco_pT_tbar_truth", "eff_reco_pT_tbar_truth", 200, 0, 2000);
     
     vector<string> purity_titles = {"cuts","isolation", "overlap removal"};
-    for (int i = 0; i < purity_titles.size(); ++i)
+    int n_pure = purity_titles.size();
+    h_lepton_purity = new TProfile("lepton_purity ", "Lepton purity", n_pure, 0.0, n_pure);
+    h_jet_purity = new TProfile("jet_purity", "Jet purity", n_pure, 0.0, n_pure);
+    for (int i = 0; i < n_pure; ++i)
+    {
         h_lepton_purity->GetXaxis()->SetBinLabel(i + 1, purity_titles[i].data());
+        h_jet_purity->GetXaxis()->SetBinLabel(i + 1, purity_titles[i].data());
+    }
 
     h2_perf_mass_ttbar = new TH2D("perf2_mass_ttbar", "perf2_mass_ttbar", nbins, Emin, Emax, 100, -3, 3);
     h2_perf_mass_ttbar_pTtop = new TH2D("perf2_mass_ttbar_pTtop", "perf2_mass_ttbar_pTtop", 200, 0, 2000, 100, -3, 3);
@@ -1426,6 +1477,7 @@ void Analysis::MakeDistributions()
     if (m_debug) cout << "Making distributions ...\n";
     
     h_lepton_purity->Write();
+    h_jet_purity->Write();
 
     this->WriteEfficiency(h_eff_cut_2l_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]", "\\mathrm{Two leptons}");
     this->WriteEfficiency(h_eff_cut_oc_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]", "\\mathrm{Opposite Charge}");
@@ -1449,15 +1501,24 @@ void Analysis::MakeDistributions()
     this->MakeDistribution1D(h_n_truthMuons, "");
     this->MakeDistribution1D(h_n_truthBquarks, "");
     this->MakeDistribution1D(h_n_electrons, "");
+    this->MakeDistribution1D(h_n_electrons_truth_tagged, "");
     this->MakeDistribution1D(h_n_muons, "");
+    this->MakeDistribution1D(h_n_muons_truth_tagged, "");
     this->MakeDistribution1D(h_n_jets, "");
+    this->MakeDistribution1D(h_n_jets_truth_tagged, "");
     this->MakeDistribution1D(h_n_bJets, "");
     this->MakeDistribution1D(h_n_selElectrons, "");
+    this->MakeDistribution1D(h_n_selElectrons_truth_tagged, "");
     this->MakeDistribution1D(h_n_selMuons, "");
+    this->MakeDistribution1D(h_n_selMuons_truth_tagged, "");
     this->MakeDistribution1D(h_n_selJets, "");
+    this->MakeDistribution1D(h_n_selJets_truth_tagged, "");
     this->MakeDistribution1D(h_n_uniqueElectrons, "");
+    this->MakeDistribution1D(h_n_uniqueElectrons_truth_tagged, "");
     this->MakeDistribution1D(h_n_uniqueMuons, "");
+    this->MakeDistribution1D(h_n_uniqueMuons_truth_tagged, "");
     this->MakeDistribution1D(h_n_uniqueJets, "");
+    this->MakeDistribution1D(h_n_uniqueJets_truth_tagged, "");
     this->MakeDistribution1D(h_n_passElectrons, "");
     this->MakeDistribution1D(h_n_passMuons, "");
     this->MakeDistribution1D(h_n_passJets, "");
@@ -1497,8 +1558,11 @@ void Analysis::MakeDistributions()
     this->MakeDistribution1D(h_HT, "TeV");
     this->MakeDistribution1D(h_HTmet, "TeV");
     this->MakeDistribution1D(h_HTjMET, "TeV");
+    this->MakeDistribution1D(h_HT_truth, "TeV");
+    this->MakeDistribution1D(h_HTmet_truth, "TeV");
     this->MakeDistribution1D(h_KT_all, "TeV");
     this->MakeDistribution1D(h_KT, "TeV");
+    this->MakeDistribution1D(h_KT_truth, "TeV");
     this->MakeDistribution1D(h_mass_vis_all, "TeV");
     this->MakeDistribution1D(h_mass_vis, "TeV");
     this->MakeDistribution1D(h_mass_bbll, "TeV");
@@ -2176,9 +2240,13 @@ void Analysis::RemoveMuonsInsideJets()
     if (m_debug) cout << "removed muons from jets\n";
 }
 
-void Analysis::TruthTagLeptons(const double dRmax)
+void Analysis::TruthTagLeptons()
 {  
+    double dRmax = 0.01;
+    
     // delete m_lepton_truth_tags;
+    m_electron_truth_tags = new vector<bool>;
+    m_muon_truth_tags = new vector<bool>;
     m_lepton_truth_tags = new vector<bool>;
     
     TLorentzVector p_lepP = m_hardLepP->P4();
@@ -2191,8 +2259,16 @@ void Analysis::TruthTagLeptons(const double dRmax)
         double dR_lp = p_e.DeltaR(p_lepP);
         double dR_lm = p_e.DeltaR(p_lepM);
         // cout << "dR_lp = " << dR_lp << ", dR_lm =" << dR_lm << "\n";
-        if (dR_lp < dRmax or dR_lm < dRmax) m_lepton_truth_tags->push_back(true);
-        else m_lepton_truth_tags->push_back(false);
+        if (dR_lp < dRmax or dR_lm < dRmax) 
+        {
+            m_electron_truth_tags->push_back(true);
+            m_lepton_truth_tags->push_back(true);
+        }
+        else 
+        {
+            m_electron_truth_tags->push_back(false);
+            m_electron_truth_tags->push_back(false);
+        }
     }
     
     for (int i = 0; i < m_muons->size(); ++i)
@@ -2202,8 +2278,16 @@ void Analysis::TruthTagLeptons(const double dRmax)
         double dR_lp = p_mu.DeltaR(p_lepP);
         double dR_lm = p_mu.DeltaR(p_lepM);
         // cout << "dR_lp = " << dR_lp << ", dR_lm =" << dR_lm << "\n";
-        if (dR_lp < dRmax or dR_lm < dRmax) m_lepton_truth_tags->push_back(true);
-        else m_lepton_truth_tags->push_back(false);
+        if (dR_lp < dRmax or dR_lm < dRmax) 
+        {
+            m_lepton_truth_tags->push_back(true);
+            m_muon_truth_tags->push_back(true);
+        }
+        else
+        {
+            m_lepton_truth_tags->push_back(false);
+            m_muon_truth_tags->push_back(false);
+        }
     }
     
     // for (auto tag : *m_lepton_truth_tags)
@@ -2217,6 +2301,45 @@ void Analysis::TruthTagLeptons(const double dRmax)
     // for (bool tag : *muon_truth_tags) if (!tag) return true;
     
     // return false;
+}
+
+void Analysis::FillPurities(int bin)
+{   
+    double midbin = (double) bin - 0.5;
+    this->TruthTagLeptons();    
+    // bool event_truth_matched = true;
+    // for (auto tag : *m_lepton_truth_tags) if (!tag) event_truth_matched = false;
+    // h_lepton_purity->Fill(midbin, (int) event_truth_matched);
+    int n_tagged = 0;
+    int n_untagged = 0;
+    for (auto tag : *m_lepton_truth_tags) h_lepton_purity->Fill(midbin, (int) tag);
+
+    this->TruthTagJets();
+    // event_truth_matched = true;
+    // for (auto tag : *m_jet_truth_tags) if (!tag) event_truth_matched = false;
+    // h_jet_purity->Fill(midbin, (int) event_truth_matched);
+    for (auto tag : *m_jet_truth_tags) h_jet_purity->Fill(midbin, (int) tag);
+}
+
+void Analysis::TruthTagJets()
+{  
+    const double dRmax = 0.3;
+    
+    m_jet_truth_tags = new vector<bool>;
+    
+    TLorentzVector p_b = m_hardB->P4();
+    TLorentzVector p_bbar = m_hardBbar->P4();
+    
+    for (int i = 0; i < m_jets->size(); ++i)
+    {
+        Jet* jet = (Jet*) m_jets->at(i);
+        TLorentzVector p_j = jet->P4();
+        double dR_b = p_j.DeltaR(p_b);
+        double dR_bbar = p_j.DeltaR(p_bbar);
+        // cout << "dR_lp = " << dR_lp << ", dR_lm =" << dR_lm << "\n";
+        if (dR_b < dRmax or dR_bbar < dRmax) m_jet_truth_tags->push_back(true);
+        else m_jet_truth_tags->push_back(false);
+    }
 }
 
 bool Analysis::ExactlyTwoLeptons()
@@ -2676,9 +2799,6 @@ void Analysis::InitialiseCutflow()
     m_cutTitles[c_validSolution]      = "Top reco";
 
     h_cutflow = new TH1D("cutflow", "cutflow", m_cuts, 0.0, m_cuts);
-    // h_lepton_purity = new TProfile("lepton_purity", "Lepton purity", m_cuts, 0.0, m_cuts);
-    
-    h_lepton_purity = new TProfile("lepton_purity", "Lepton purity", 3, 0.0, 3.0);
 
     if (m_debug) cout << "Initialised cutflow\n";
 }

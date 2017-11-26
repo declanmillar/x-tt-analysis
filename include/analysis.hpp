@@ -63,6 +63,9 @@ private:
     GenParticle* m_hardNuBar;
     
     vector<bool>* m_lepton_truth_tags;
+    vector<bool>* m_electron_truth_tags;
+    vector<bool>* m_muon_truth_tags;
+    vector<bool>* m_jet_truth_tags;
 
     string m_inputfilename;
     string m_processfilename;
@@ -152,8 +155,11 @@ private:
     TH1D* h_eta_allmu;
 
     TH1D* h_HT;
+    TH1D* h_HT_truth;
+    TH1D* h_HTmet_truth;
     TH1D* h_HTmet;
     TH1D* h_HTjMET;
+    TH1D* h_KT_truth;
     TH1D* h_KT;
     TH1D* h_KTj;
     TH1D* h_mass_vis;
@@ -323,6 +329,7 @@ private:
     TH1D* h_n_bJets;
     
     TProfile* h_lepton_purity;
+    TProfile* h_jet_purity;
 
     TH1D* h_n_truthElectrons;
     TH1D* h_n_truthMuons;
@@ -332,9 +339,22 @@ private:
     TH1D* h_n_selMuons;
     TH1D* h_n_selJets;
     
+    TH1D* h_n_jets_no_truth_tag;
     TH1D* h_n_uniqueElectrons;
     TH1D* h_n_uniqueMuons;
     TH1D* h_n_uniqueJets;
+    
+    TH1D* h_n_electrons_truth_tagged;
+    TH1D* h_n_selElectrons_truth_tagged;
+    TH1D* h_n_uniqueElectrons_truth_tagged;
+    
+    TH1D* h_n_muons_truth_tagged;
+    TH1D* h_n_selMuons_truth_tagged;
+    TH1D* h_n_uniqueMuons_truth_tagged;
+    
+    TH1D* h_n_jets_truth_tagged;
+    TH1D* h_n_selJets_truth_tagged;
+    TH1D* h_n_uniqueJets_truth_tagged;
 
     TH1D* h_n_passElectrons;
     TH1D* h_n_passMuons;
@@ -388,8 +408,11 @@ protected:
     void RemoveJetsCloseToMuons();
     void RemoveElectronsInsideJets();
     void RemoveMuonsInsideJets();
-    void TruthTagLeptons(const double);
+    void TruthTagLeptons();
+    void TruthTagJets();
+    void FillPurities(int);
     void AssignChannel();
+    void FillTaggedHistograms();
     pair<TLorentzVector, TLorentzVector> GetLeptonMomenta();
 
     // histograms
