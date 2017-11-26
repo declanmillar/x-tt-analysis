@@ -93,21 +93,39 @@ void Analysis::EachEvent(double weight)
     
     // this->GetElectrons();
     // this->GetMuons();
-
     this->SelectElectrons();
-    this->IsolateElectrons();
     this->SelectMuons();
-    this->IsolateMuons();
     this->SelectJets();
+    
+    this->TruthTagLeptons(dRmax);    
+    bool event_truth_matched = true;
+    for (auto tag : *m_lepton_truth_tags) if (!tag) event_truth_matched = false;
+    h_lepton_purity->Fill(0.5, (int) event_truth_matched);
+
+    this->IsolateElectrons();
+    this->IsolateMuons();
 
     // objects pass selection
     h_n_selElectrons->Fill(m_electrons->size(), weight);
     h_n_selMuons->Fill(m_muons->size(), weight);
     h_n_selJets->Fill(m_jets->size(), weight);
     
+    this->TruthTagLeptons(dRmax);    
+    event_truth_matched = true;
+    for (auto tag : *m_lepton_truth_tags) if (!tag) event_truth_matched = false;
+    h_lepton_purity->Fill(1.5, (int) event_truth_matched);
+    
     this->OverlapRemoval();
     
-    if (!this->TruthTagLeptons(dRmax)) return;
+    // for (auto tag : *m_lepton_truth_tags) 
+    //     if (!tag) return;
+    // for (auto tag : *m_lepton_truth_tags)
+    //     h_lepton_purity->Fill(0.5, (int) tag);
+    
+    this->TruthTagLeptons(dRmax);    
+    event_truth_matched = true;
+    for (auto tag : *m_lepton_truth_tags) if (!tag) event_truth_matched = false;
+    h_lepton_purity->Fill(2.5, (int) event_truth_matched);
     
     h_n_uniqueElectrons->Fill(m_electrons->size(), weight);
     h_n_uniqueMuons->Fill(m_muons->size(), weight);
@@ -634,6 +652,7 @@ void Analysis::CleanupEvent()
     delete m_truthElectrons;
     delete m_truthMuons;
     delete m_truthBquarks;
+    delete m_lepton_truth_tags;
     
     m_hardTop = nullptr;
     m_hardTbar = nullptr;
@@ -926,7 +945,6 @@ void Analysis::SetupOutputFiles()
 void Analysis::PostLoop()
 {
     this->PrintCutflow();
-    this->MakePurityDistribution();
     this->MakeDistributions();
     m_output->Close();
     cout << "\nOUTPUT\n";
@@ -1375,6 +1393,10 @@ void Analysis::MakeHistograms()
     h_eff_reco_mass_ttbar_truth = new TProfile("eff_reco_mass_ttbar_truth", "eff_reco_mass_ttbar_truth", nbins, Emin, Emax);
     h_eff_reco_pT_top_truth = new TProfile("eff_reco_pT_top_truth", "eff_reco_pT_top_truth", 200, 0, 2000);
     h_eff_reco_pT_tbar_truth = new TProfile("eff_reco_pT_tbar_truth", "eff_reco_pT_tbar_truth", 200, 0, 2000);
+    
+    vector<string> purity_titles = {"cuts","isolation", "overlap removal"};
+    for (int i = 0; i < purity_titles.size(); ++i)
+        h_lepton_purity->GetXaxis()->SetBinLabel(i + 1, purity_titles[i].data());
 
     h2_perf_mass_ttbar = new TH2D("perf2_mass_ttbar", "perf2_mass_ttbar", nbins, Emin, Emax, 100, -3, 3);
     h2_perf_mass_ttbar_pTtop = new TH2D("perf2_mass_ttbar_pTtop", "perf2_mass_ttbar_pTtop", 200, 0, 2000, 100, -3, 3);
@@ -1402,6 +1424,8 @@ void Analysis::MakeHistograms()
 void Analysis::MakeDistributions()
 {
     if (m_debug) cout << "Making distributions ...\n";
+    
+    h_lepton_purity->Write();
 
     this->WriteEfficiency(h_eff_cut_2l_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]", "\\mathrm{Two leptons}");
     this->WriteEfficiency(h_eff_cut_oc_mass_ttbar_truth, "m_{t\\bar{t}}\\ [\\mathrm{TeV}]", "\\mathrm{Opposite Charge}");
@@ -1992,61 +2016,61 @@ void Analysis::SelectJets()
     }
 }
 
-void Analysis::GetElectrons()
-{
-    m_electrons = new vector<Electron*>;
-    for (int i = 0; i < b_Electron->GetEntries(); ++i)
-    {
-        // cuts
-        Electron* electron = (Electron*) b_Electron->At(i);
-        double pT = electron->PT;
-        double eta = abs(electron->Eta);
-        if (pT < 27.0) continue;
-        if (eta > 2.47) continue;
-        if (eta > 1.37 and eta < 1.52) continue;
-        
-        // isolation
-        double pTsum = 0.0;
-        for (int j = 0; j < b_Track->GetEntries(); ++j)
-        {
-            Track* track = (Track*) b_Track->At(j);
-            double dR = electron->P4().DeltaR(track->P4());
-            if (dR > 10e-15 and dR < 0.3) pTsum += track->PT;
-            // if (dR > 10e-15 and dR < 7.5 / pT) pTsum += track->PT;
-        }
-        if (pTsum / electron->PT > 0.12) continue;
-        
-        // should only get here if passes cuts and isolation
-        m_electrons->push_back(electron);
-    }
-}
+// void Analysis::GetElectrons()
+// {
+//     m_electrons = new vector<Electron*>;
+//     for (int i = 0; i < b_Electron->GetEntries(); ++i)
+//     {
+//         // cuts
+//         Electron* electron = (Electron*) b_Electron->At(i);
+//         double pT = electron->PT;
+//         double eta = abs(electron->Eta);
+//         if (pT < 27.0) continue;
+//         if (eta > 2.47) continue;
+//         if (eta > 1.37 and eta < 1.52) continue;
+// 
+//         // isolation
+//         double pTsum = 0.0;
+//         for (int j = 0; j < b_Track->GetEntries(); ++j)
+//         {
+//             Track* track = (Track*) b_Track->At(j);
+//             double dR = electron->P4().DeltaR(track->P4());
+//             if (dR > 10e-15 and dR < 0.3) pTsum += track->PT;
+//             // if (dR > 10e-15 and dR < 7.5 / pT) pTsum += track->PT;
+//         }
+//         if (pTsum / electron->PT > 0.12) continue;
+// 
+//         // should only get here if passes cuts and isolation
+//         m_electrons->push_back(electron);
+//     }
+// }
 
-void Analysis::GetMuons()
-{
-    m_muons = new vector<Muon*>;
-    for (int i = 0; i < b_Muon->GetEntries(); ++i)
-    {
-        // cuts
-        Muon* muon = (Muon*) b_Muon->At(i);
-        double pT = muon->PT;
-        double eta = muon->Eta;
-        // if (pT < 25.0) continue;
-        if (pT < 27.0) continue;
-        if (abs(eta) > 2.5) continue;
-        
-        // isolation
-        double pTsum = 0.0;
-        for (int j = 0; j < b_Track->GetEntries(); ++j)
-        {
-            Track* track = (Track*) b_Track->At(j);
-            double dR = muon->P4().DeltaR(track->P4());
-            if (dR > 10e-15 and dR < 10.0 / pT) pTsum += track->PT;
-        }
-        if (pTsum / muon->PT > 0.05) continue;
-        
-        m_muons->push_back(muon);
-    }
-}
+// void Analysis::GetMuons()
+// {
+//     m_muons = new vector<Muon*>;
+//     for (int i = 0; i < b_Muon->GetEntries(); ++i)
+//     {
+//         // cuts
+//         Muon* muon = (Muon*) b_Muon->At(i);
+//         double pT = muon->PT;
+//         double eta = muon->Eta;
+//         // if (pT < 25.0) continue;
+//         if (pT < 27.0) continue;
+//         if (abs(eta) > 2.5) continue;
+// 
+//         // isolation
+//         double pTsum = 0.0;
+//         for (int j = 0; j < b_Track->GetEntries(); ++j)
+//         {
+//             Track* track = (Track*) b_Track->At(j);
+//             double dR = muon->P4().DeltaR(track->P4());
+//             if (dR > 10e-15 and dR < 10.0 / pT) pTsum += track->PT;
+//         }
+//         if (pTsum / muon->PT > 0.05) continue;
+// 
+//         m_muons->push_back(muon);
+//     }
+// }
 
 void Analysis::OverlapRemoval()
 {    
@@ -2056,7 +2080,7 @@ void Analysis::OverlapRemoval()
     this->RemoveJetsCloseToElectrons();
     this->RemoveJetsCloseToMuons();
     this->RemoveElectronsInsideJets();
-    // this->RemoveMuonsInsideJets();
+    this->RemoveMuonsInsideJets();
     
     if (m_debug) cout << "removed overlapping objects\n";
 }
@@ -2097,8 +2121,8 @@ void Analysis::RemoveJetsCloseToMuons()
         {
             Jet *jet = (Jet*) m_jets->at(j);
             double dR = muon->P4().DeltaR(jet->P4());
-            // if (jet->NCharged < 3 and dR < 0.4)
-            if (jet->NCharged < 3 and dR < 10.0 / pT)
+            if (jet->NCharged < 3 and dR < 0.4)
+            // if (jet->NCharged < 3 and dR < 10.0 / pT)
             {
                 m_jets->erase(m_jets->begin() + j);
             }
@@ -2119,7 +2143,6 @@ void Analysis::RemoveElectronsInsideJets()
         {
             Electron *electron = (Electron*) m_electrons->at(j);
             double dR = jet->P4().DeltaR(electron->P4());
-            // if (dR > 10e-15 and dR < 5.0 / electron->PT) pTsum += track->PT;
             if (dR < 0.4)
             {
                 m_electrons->erase(m_electrons->begin() + j);
@@ -2142,7 +2165,7 @@ void Analysis::RemoveMuonsInsideJets()
         {
             Muon *muon = (Muon*) m_muons->at(j);
             double dR = jet->P4().DeltaR(muon->P4());
-            if (dR < 0.4 and jet->NCharged < 3)
+            if (jet->NCharged < 3 and dR < 0.4)
             // if (jet->NCharged < 3 and dR < 10.0 / muon->PT)
             {
                 m_muons->erase(m_muons->begin() + j);
@@ -2153,49 +2176,42 @@ void Analysis::RemoveMuonsInsideJets()
     if (m_debug) cout << "removed muons from jets\n";
 }
 
-bool Analysis::TruthTagLeptons(const double dRmax)
+void Analysis::TruthTagLeptons(const double dRmax)
 {  
-    vector<bool> lepton_truth_tags;
+    // delete m_lepton_truth_tags;
+    m_lepton_truth_tags = new vector<bool>;
+    
+    TLorentzVector p_lepP = m_hardLepP->P4();
+    TLorentzVector p_lepM = m_hardLepM->P4();
+    
     for (int i = 0; i < m_electrons->size(); ++i)
     {
         Electron* electron = (Electron*) m_electrons->at(i);
         TLorentzVector p_e = electron->P4();
-        double dR_lm = p_e.DeltaR(m_hardLepM->P4());
-        double dR_lp = p_e.DeltaR(m_hardLepP->P4());
+        double dR_lp = p_e.DeltaR(p_lepP);
+        double dR_lm = p_e.DeltaR(p_lepM);
         // cout << "dR_lp = " << dR_lp << ", dR_lm =" << dR_lm << "\n";
-        if (dR_lm < dRmax or dR_lp < dRmax) 
-        {
-            lepton_truth_tags.push_back(true);
-        }
-        else 
-        {
-            lepton_truth_tags.push_back(false);
-        }
+        if (dR_lp < dRmax or dR_lm < dRmax) m_lepton_truth_tags->push_back(true);
+        else m_lepton_truth_tags->push_back(false);
     }
     
     for (int i = 0; i < m_muons->size(); ++i)
     {
         Muon* muon = (Muon*) m_muons->at(i);
         TLorentzVector p_mu = muon->P4();
-        double dR_lm = p_mu.DeltaR(m_hardLepM->P4());
-        double dR_lp = p_mu.DeltaR(m_hardLepP->P4());
+        double dR_lp = p_mu.DeltaR(p_lepP);
+        double dR_lm = p_mu.DeltaR(p_lepM);
         // cout << "dR_lp = " << dR_lp << ", dR_lm =" << dR_lm << "\n";
-        if (dR_lm < dRmax or dR_lp < dRmax) 
-        {
-            lepton_truth_tags.push_back(true);
-        }
-        else
-        { 
-            lepton_truth_tags.push_back(false);
-        }
+        if (dR_lp < dRmax or dR_lm < dRmax) m_lepton_truth_tags->push_back(true);
+        else m_lepton_truth_tags->push_back(false);
     }
     
-    for (auto tag : lepton_truth_tags)
-    {
-        if (!tag) return false;
-    }
-    
-    return true;
+    // for (auto tag : *m_lepton_truth_tags)
+    // {
+    //     if (!tag) return false;
+    // }
+    // 
+    // return true;
     
     // for (auto tag : *electron_truth_tags) if (!tag) return true;
     // for (bool tag : *muon_truth_tags) if (!tag) return true;
@@ -2660,7 +2676,9 @@ void Analysis::InitialiseCutflow()
     m_cutTitles[c_validSolution]      = "Top reco";
 
     h_cutflow = new TH1D("cutflow", "cutflow", m_cuts, 0.0, m_cuts);
-    h_lepton_purity = new TProfile("lepton_purity", "Lepton purity", m_cuts, 0.0, m_cuts);
+    // h_lepton_purity = new TProfile("lepton_purity", "Lepton purity", m_cuts, 0.0, m_cuts);
+    
+    h_lepton_purity = new TProfile("lepton_purity", "Lepton purity", 3, 0.0, 3.0);
 
     if (m_debug) cout << "Initialised cutflow\n";
 }
@@ -2676,7 +2694,7 @@ void Analysis::UpdateCutflow(const int cut, const bool passed)
 void Analysis::PrintCutflow()
 {
     cout << "\nCUTFLOW\n";
-    for (int cut = 0; cut < m_cuts; cut++)
+    for (int cut = 0; cut < m_cuts; ++cut)
     {
         if (m_cutflow[cut] == -999) continue;
 
@@ -2690,14 +2708,3 @@ void Analysis::PrintCutflow()
     if (m_debug) cout << "Written cut flow\n";
 }
 
-void Analysis::MakePurityDistribution()
-{
-    for (int cut = 0; cut < m_cuts; cut++)
-    {
-        if (m_cutflow[cut] == -999) continue;
-
-        h_lepton_purity->SetBinContent(cut + 1, m_cutflow[cut]);
-        h_lepton_purity->GetXaxis()->SetBinLabel(cut + 1, m_cutTitles[cut].c_str());
-    }
-    h_lepton_purity->Write();
-}

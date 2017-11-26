@@ -61,6 +61,8 @@ private:
     GenParticle* m_hardLepM;
     GenParticle* m_hardNu;
     GenParticle* m_hardNuBar;
+    
+    vector<bool>* m_lepton_truth_tags;
 
     string m_inputfilename;
     string m_processfilename;
@@ -374,8 +376,8 @@ protected:
     void CleanupEvent();
     void GetHardParticles();
     void GetTruthParticles();
-    void GetElectrons();
-    void GetMuons();
+    // void GetElectrons();
+    // void GetMuons();
     void SelectElectrons();
     void SelectMuons();
     void SelectJets();
@@ -386,7 +388,7 @@ protected:
     void RemoveJetsCloseToMuons();
     void RemoveElectronsInsideJets();
     void RemoveMuonsInsideJets();
-    bool TruthTagLeptons(const double);
+    void TruthTagLeptons(const double);
     void AssignChannel();
     pair<TLorentzVector, TLorentzVector> GetLeptonMomenta();
 
@@ -409,7 +411,6 @@ protected:
     // cutflow
     void InitialiseCutflow();
     void PrintCutflow();
-    void MakePurityDistribution();
     void UpdateCutflow(int, bool);
     void FillCutsEfficiencies(const vector<double>&, const int);
     void FillRecoEfficiencies(const vector<double>&, const int);
