@@ -8,8 +8,10 @@
 #include "boost/filesystem.hpp"
 #include "boost/asio.hpp"
 #include "TH2.h"
+#include "TGraph.h"
 #include "TF1.h"
 #include "TSystem.h"
+#include "TVector.h"
 #include "TLatex.h"
 #include "TMathText.h"
 #include "TLorentzVector.h"
@@ -117,6 +119,9 @@ private:
 
     const int m_minBtags;
     int m_bTags;
+    
+    vector<double>* m_dR_lb_truth;
+    vector<double>* m_mass_ttbar_truth;
 
     // Histograms
     TH1D* h_cutflow;
@@ -219,8 +224,9 @@ private:
     
     // dR between truth leptons and b-quarks and top quarks
     TH1D* h_dR_t1t2_truth;
-    TH1D* h_dR_l1b1_truth;
-    TH1D* h_dR_l2b2_truth;
+    TH1D* h_dR_lb_truth;
+    // TH1D* h_dR_l1b1_truth;
+    // TH1D* h_dR_l2b2_truth;
     TH1D* h_dR_t1l1_truth;
     TH1D* h_dR_t2l2_truth;
     TH1D* h_dR_t1b1_truth;
@@ -228,8 +234,9 @@ private:
     
     TH2D* h2_dR_l1b1_pTl_truth;
     TH2D* h2_dR_l2b2_pTl_truth;
-    TH2D* h2_dR_l1b1_mtt_truth;
-    TH2D* h2_dR_l2b2_mtt_truth;
+    TH2D* h2_dR_lb_mtt_truth;
+    // TH2D* h2_dR_l1b1_mtt_truth;
+    // TH2D* h2_dR_l2b2_mtt_truth;
     TH2D* h2_dR_t1l1_mtt_truth;
     TH2D* h2_dR_t2l2_mtt_truth;
     TH2D* h2_dR_t1b1_mtt_truth;
@@ -423,6 +430,7 @@ protected:
     void MakeDistribution2D(TH2D*, string, string, string, string);
     void MakeDistributionAL(TH2D*, const string&, const string&);
     void NormalizeSliceY(TH2D*);
+    void AverageEachXbin(TH2D*);
 
     void GetGenerationCrossSection(int);
     void GetProcessWeight(int);
@@ -508,7 +516,7 @@ public:
         m_processes(nullptr),
         m_chain(nullptr),
         m_tree(nullptr)
-    {
+    {   
         this->PreLoopSingle();
     }
     virtual ~Analysis();
