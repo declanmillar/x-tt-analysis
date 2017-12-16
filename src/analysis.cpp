@@ -2075,6 +2075,9 @@ void Analysis::IsolateElectrons()
 {
     if (m_debug) cout << "isolating electrons\n";
     
+    // do not include primary track
+    double dRmin = 10e-15
+    
     for (int i = 0; i < m_electrons->size();)
     {
         Electron* electron = (Electron*) m_electrons->at(i);
@@ -2085,7 +2088,8 @@ void Analysis::IsolateElectrons()
         {
             Track* track = (Track*) b_Track->At(j);
             double dR = electron->P4().DeltaR(track->P4());
-            if (dR > 10e-15 and dR < dRmax) pTcone += track->PT;
+            if (dR < dRmin) continue;
+            if (dR < dRmax) pTcone += track->PT;
         }
         if (pTcone / pT > 0.1) m_electrons->erase(m_electrons->begin() + i);
         else ++i;
@@ -2097,16 +2101,21 @@ void Analysis::IsolateMuons()
 {
     if (m_debug) cout << "isolating muons\n"; 
     
+    // do not include primary track
+    double dRmin = 10e-15
+    
     for (int i = 0; i < m_muons->size();)
     {
         Muon* muon = (Muon*) m_muons->at(i);
         double pT = muon->PT;
+        double dRmax = 10.0 / pT;
         double pTcone = 0.0;
         for (int j = 0; j < b_Track->GetEntries(); ++j)
         {
             Track* track = (Track*) b_Track->At(j);
             double dR = muon->P4().DeltaR(track->P4());
-            if (dR > 10e-15 and dR < 10.0 / pT) pTcone += track->PT;
+            if (dR < dRmin) continue;
+            if (dR < dRmax) pTcone += track->PT;
         }
         if (pTcone / pT > 0.05) m_muons->erase(m_muons->begin() + i);
         else ++i;
@@ -2189,9 +2198,9 @@ void Analysis::OverlapRemoval()
     // a procedure called "overlap removal" is applied to
     // associate objects with a unique hypothesis
     this->RemoveJetsCloseToElectrons();
-    this->RemoveJetsCloseToMuons();
+    // this->RemoveJetsCloseToMuons();
     this->RemoveElectronsInsideJets();
-    this->RemoveMuonsInsideJets();
+    // this->RemoveMuonsInsideJets();
     
     if (m_debug) cout << "removed overlapping objects\n";
 }
@@ -2199,18 +2208,20 @@ void Analysis::OverlapRemoval()
 void Analysis::RemoveJetsCloseToElectrons()
 {
     // To prevent double-counting of electron energy deposits as jets
-    // the closest small-R jet lying ∆R < 0.2 from a reconstructed electron is discarded.
+    // the closest small-R jet lying dR < 0.2 from a reconstructed electron is discarded.
     for (int i = 0; i < m_electrons->size(); ++i)
     {
         Electron* electron = (Electron*) m_electrons->at(i);
         double pT = electron->PT;
+        double dRmax = 0.2;
+        // double dRmax = min(0.2, 10.0 / pT);
         int jkill = -999;
         for (int j = 0; j < m_jets->size(); ++j)
         {
             Jet *jet = (Jet*) m_jets->at(j);
             double dRmin = DBL_MAX;
             double dR = electron->P4().DeltaR(jet->P4());
-            if (dR < 0.2 and dR < dRmin)
+            if (dR < dRmax and dR < dRmin)
             {
                 jkill = j;
                 dRmin = dR;
@@ -2222,7 +2233,7 @@ void Analysis::RemoveJetsCloseToElectrons()
     
 void Analysis::RemoveJetsCloseToMuons()
 {
-    // if a jet has fewer than three tracks and is ∆R < 0.4 from a muon
+    // if a jet has fewer than three tracks and is dR < 0.4 from a muon
     // the jet is not considered as a top daughter b-quark
     for (int i = 0; i < m_muons->size(); ++i)
     {
@@ -2267,7 +2278,7 @@ void Analysis::RemoveElectronsInsideJets()
 
 void Analysis::RemoveMuonsInsideJets()
 {
-    // muon is removed if it is ∆R < 0.4 from a small-R jet which has at least three tracks
+    // muon is removed if it is dR < 0.4 from a small-R jet which has at least three tracks
     // tagged unsuitable for being a top daughter
     for (int i = 0; i < m_jets->size(); ++i)
     {
