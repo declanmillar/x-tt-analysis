@@ -2076,7 +2076,7 @@ void Analysis::IsolateElectrons()
     if (m_debug) cout << "isolating electrons\n";
     
     // do not include primary track
-    double dRmin = 10e-15
+    double dRmin = 10e-15;
     
     for (int i = 0; i < m_electrons->size();)
     {
@@ -2102,7 +2102,7 @@ void Analysis::IsolateMuons()
     if (m_debug) cout << "isolating muons\n"; 
     
     // do not include primary track
-    double dRmin = 10e-15
+    double dRmin = 10e-15;
     
     for (int i = 0; i < m_muons->size();)
     {
