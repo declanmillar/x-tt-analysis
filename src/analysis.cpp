@@ -2157,8 +2157,8 @@ void Analysis::RemoveJetsCloseToElectrons()
     {
         Electron* electron = (Electron*) m_electrons->at(i);
         double pT = electron->PT;
-        // double dRmax = 0.2;
-        double dRmax = min(0.2, 10.0 / pT);
+        double dRmax = 0.2;
+        // double dRmax = min(0.2, 10.0 / pT);
         int jkill = -999;
         for (int j = 0; j < m_jets->size(); ++j)
         {
