@@ -2136,62 +2136,6 @@ void Analysis::SelectJets()
     }
 }
 
-// void Analysis::GetElectrons()
-// {
-//     m_electrons = new vector<Electron*>;
-//     for (int i = 0; i < b_Electron->GetEntries(); ++i)
-//     {
-//         // cuts
-//         Electron* electron = (Electron*) b_Electron->At(i);
-//         double pT = electron->PT;
-//         double eta = abs(electron->Eta);
-//         if (pT < 27.0) continue;
-//         if (eta > 2.47) continue;
-//         if (eta > 1.37 and eta < 1.52) continue;
-// 
-//         // isolation
-//         double pTsum = 0.0;
-//         for (int j = 0; j < b_Track->GetEntries(); ++j)
-//         {
-//             Track* track = (Track*) b_Track->At(j);
-//             double dR = electron->P4().DeltaR(track->P4());
-//             if (dR > 10e-15 and dR < 0.3) pTsum += track->PT;
-//             // if (dR > 10e-15 and dR < 7.5 / pT) pTsum += track->PT;
-//         }
-//         if (pTsum / electron->PT > 0.12) continue;
-// 
-//         // should only get here if passes cuts and isolation
-//         m_electrons->push_back(electron);
-//     }
-// }
-
-// void Analysis::GetMuons()
-// {
-//     m_muons = new vector<Muon*>;
-//     for (int i = 0; i < b_Muon->GetEntries(); ++i)
-//     {
-//         // cuts
-//         Muon* muon = (Muon*) b_Muon->At(i);
-//         double pT = muon->PT;
-//         double eta = muon->Eta;
-//         // if (pT < 25.0) continue;
-//         if (pT < 27.0) continue;
-//         if (abs(eta) > 2.5) continue;
-// 
-//         // isolation
-//         double pTsum = 0.0;
-//         for (int j = 0; j < b_Track->GetEntries(); ++j)
-//         {
-//             Track* track = (Track*) b_Track->At(j);
-//             double dR = muon->P4().DeltaR(track->P4());
-//             if (dR > 10e-15 and dR < 10.0 / pT) pTsum += track->PT;
-//         }
-//         if (pTsum / muon->PT > 0.05) continue;
-// 
-//         m_muons->push_back(muon);
-//     }
-// }
-
 void Analysis::OverlapRemoval()
 {    
     // Objects can satisfy both the jet and lepton selection criteria 
