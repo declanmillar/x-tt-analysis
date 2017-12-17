@@ -83,3 +83,21 @@ Merge all subprocesses - AZZ' only
 ```bash
 hadd -f uu-AZX-tt-bbllvv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW.root uu-AZX-tt-bbeevv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW.root uu-AZX-tt-bbemuvv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW.root uu-AZX-tt-bbmuevv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW.root uu-AZX-tt-bbmumuvv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW.root
 ```
+
+## Rename trees
+
+```bash
+root
+TFile *file = new TFile("dd-AZX-tt-bbllvv.GLR-R-3.13TeV.CT14LL.root", "update")
+RootTuple->SetName("events")
+RootTuple->SetTitle("events")
+gDirectory->Delete("RootTuple;1")
+file->Write()
+file->Close()
+TTree* process = new TTree("process", "process")
+double cross_section = 1.1911627439683250E-003
+process->Branch("cross_section", &cross_section)
+process->Fill()
+file->Write()
+file->Close()
+```
