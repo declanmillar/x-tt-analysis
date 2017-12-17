@@ -14,8 +14,8 @@ ifeq ($(HOSTNAME), cyan03)
 	BOOSTINC = -I/local/software/boost/1.61.0/include
 	BOOSTLIB = -L/local/software/boost/1.61.0/lib
 # elifeq
-# 	BOOSTINC = -I/afs/cern.ch/user/d/demillar/boost_1_64_0
-# 	BOOSTLIB = -L/afs/cern.ch/user/d/demillar/boost_1_64_0/bin.v2/libs
+	# BOOSTINC = ../boost
+	# BOOSTLIB = ../boost/bin.v2/libs
 endif
 BOOSTLIBS = $(BOOSTLIB) -lboost_system -lboost_program_options -lboost_filesystem
 
