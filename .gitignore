@@ -8,3 +8,6 @@ LSFJOB_*
 *.log
 *.run*
 core.*
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
