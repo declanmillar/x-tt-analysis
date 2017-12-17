@@ -51,7 +51,7 @@ EQUALS = =
 CMAKE_SOURCE_DIR = /Users/declan/Projects/apsis
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/declan/Projects/apsis
+CMAKE_BINARY_DIR = /Users/declan/Projects/apsis/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -80,9 +80,9 @@ edit_cache/fast: edit_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/declan/Projects/apsis/CMakeFiles /Users/declan/Projects/apsis/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/declan/Projects/apsis/build/CMakeFiles /Users/declan/Projects/apsis/build/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/declan/Projects/apsis/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/declan/Projects/apsis/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -366,33 +366,6 @@ src/neutrino-weighter.cpp.s:
 	$(MAKE) -f CMakeFiles/analysis.dir/build.make CMakeFiles/analysis.dir/src/neutrino-weighter.cpp.s
 .PHONY : src/neutrino-weighter.cpp.s
 
-src/neutrino-weighting-depreciated.o: src/neutrino-weighting-depreciated.cpp.o
-
-.PHONY : src/neutrino-weighting-depreciated.o
-
-# target to build an object file
-src/neutrino-weighting-depreciated.cpp.o:
-	$(MAKE) -f CMakeFiles/analysis.dir/build.make CMakeFiles/analysis.dir/src/neutrino-weighting-depreciated.cpp.o
-.PHONY : src/neutrino-weighting-depreciated.cpp.o
-
-src/neutrino-weighting-depreciated.i: src/neutrino-weighting-depreciated.cpp.i
-
-.PHONY : src/neutrino-weighting-depreciated.i
-
-# target to preprocess a source file
-src/neutrino-weighting-depreciated.cpp.i:
-	$(MAKE) -f CMakeFiles/analysis.dir/build.make CMakeFiles/analysis.dir/src/neutrino-weighting-depreciated.cpp.i
-.PHONY : src/neutrino-weighting-depreciated.cpp.i
-
-src/neutrino-weighting-depreciated.s: src/neutrino-weighting-depreciated.cpp.s
-
-.PHONY : src/neutrino-weighting-depreciated.s
-
-# target to generate assembly for a file
-src/neutrino-weighting-depreciated.cpp.s:
-	$(MAKE) -f CMakeFiles/analysis.dir/build.make CMakeFiles/analysis.dir/src/neutrino-weighting-depreciated.cpp.s
-.PHONY : src/neutrino-weighting-depreciated.cpp.s
-
 src/progress-bar.o: src/progress-bar.cpp.o
 
 .PHONY : src/progress-bar.o
@@ -564,9 +537,6 @@ help:
 	@echo "... src/neutrino-weighter.o"
 	@echo "... src/neutrino-weighter.i"
 	@echo "... src/neutrino-weighter.s"
-	@echo "... src/neutrino-weighting-depreciated.o"
-	@echo "... src/neutrino-weighting-depreciated.i"
-	@echo "... src/neutrino-weighting-depreciated.s"
 	@echo "... src/progress-bar.o"
 	@echo "... src/progress-bar.i"
 	@echo "... src/progress-bar.s"

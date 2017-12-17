@@ -1,0 +1,3 @@
+[submodule "delphes"]
+  path = delphes
+  url = ../delphes.git

@@ -1,0 +1,3 @@
+/Users/declan/Projects/apsis/build/CMakeFiles/rebuild_cache.dir
+/Users/declan/Projects/apsis/build/CMakeFiles/edit_cache.dir
+/Users/declan/Projects/apsis/build/CMakeFiles/analysis.dir
