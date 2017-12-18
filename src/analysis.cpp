@@ -2193,9 +2193,9 @@ void Analysis::RemoveJetsCloseToMuons()
             int nTracks = 0;
             for (j = 0; j < jet->Constituents.GetEntriesFast(); ++j)
             {
-                 TObject* object = jet->Constituents.At(j);
+                TObject* object = jet->Constituents.At(j);
                 if (object == 0) continue;
-                if(object->IsA() == Track::Class()) nTracks++;
+                if (object->IsA() == Track::Class()) nTracks++;
             }
             cout << "nTracks = " << nTracks << "\n";
             if (nTracks < 3 and dR < dRmax)
@@ -2241,7 +2241,14 @@ void Analysis::RemoveMuonsInsideJets()
         {
             Muon *muon = (Muon*) m_muons->at(j);
             double dR = jet->P4().DeltaR(muon->P4());
-            if (jet->NCharged < 3 and dR < 0.4)
+            int nTracks = 0;
+            for (j = 0; j < jet->Constituents.GetEntriesFast(); ++j)
+            {
+                TObject* object = jet->Constituents.At(j);
+                if (object == 0) continue;
+                if (object->IsA() == Track::Class()) nTracks++;
+            }
+            if (nTracks >= 3 and dR < 0.4)
             // if (jet->NCharged < 3 and dR < 10.0 / muon->PT)
             {
                 m_muons->erase(m_muons->begin() + j);
