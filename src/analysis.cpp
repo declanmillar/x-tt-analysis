@@ -2242,9 +2242,9 @@ void Analysis::RemoveMuonsInsideJets()
             Muon *muon = (Muon*) m_muons->at(j);
             double dR = jet->P4().DeltaR(muon->P4());
             int nTracks = 0;
-            for (j = 0; j < jet->Constituents.GetEntriesFast(); ++j)
+            for (int k = 0; k < jet->Constituents.GetEntriesFast(); ++k)
             {
-                TObject* object = jet->Constituents.At(j);
+                TObject* object = jet->Constituents.At(k);
                 if (object == 0) continue;
                 if (object->IsA() == Track::Class()) nTracks++;
             }
