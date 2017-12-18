@@ -2191,7 +2191,7 @@ void Analysis::RemoveJetsCloseToMuons()
             Jet *jet = (Jet*) m_jets->at(j);
             double dR = muon->P4().DeltaR(jet->P4());
             int nTracks = 0;
-            for (k = 0; k < jet->Constituents.GetEntriesFast(); ++k)
+            for (int k = 0; k < jet->Constituents.GetEntriesFast(); ++k)
             {
                 TObject* object = jet->Constituents.At(k);
                 if (object == 0) continue;
