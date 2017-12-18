@@ -2142,9 +2142,9 @@ void Analysis::OverlapRemoval()
     // a procedure called "overlap removal" is applied to
     // associate objects with a unique hypothesis
     this->RemoveJetsCloseToElectrons();
-    // this->RemoveJetsCloseToMuons();
+    this->RemoveJetsCloseToMuons();
     this->RemoveElectronsInsideJets();
-    // this->RemoveMuonsInsideJets();
+    this->RemoveMuonsInsideJets();
     
     if (m_debug) cout << "removed overlapping objects\n";
 }
@@ -2191,9 +2191,9 @@ void Analysis::RemoveJetsCloseToMuons()
             Jet *jet = (Jet*) m_jets->at(j);
             double dR = muon->P4().DeltaR(jet->P4());
             int nTracks = 0;
-            for (j = 0; j < jet->Constituents.GetEntriesFast(); ++j)
+            for (k = 0; k < jet->Constituents.GetEntriesFast(); ++k)
             {
-                TObject* object = jet->Constituents.At(j);
+                TObject* object = jet->Constituents.At(k);
                 if (object == 0) continue;
                 if (object->IsA() == Track::Class()) nTracks++;
             }
@@ -2248,8 +2248,7 @@ void Analysis::RemoveMuonsInsideJets()
                 if (object == 0) continue;
                 if (object->IsA() == Track::Class()) nTracks++;
             }
-            if (nTracks >= 3 and dR < 0.4)
-            // if (jet->NCharged < 3 and dR < 10.0 / muon->PT)
+            if (nTracks > 2 and dR < 0.4)
             {
                 m_muons->erase(m_muons->begin() + j);
             }
