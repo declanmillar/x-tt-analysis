@@ -1,6 +1,8 @@
-# Apsis
+# Acolyte
 
-Code to analyse top pair production events  [Delphes](https://cp3.irmp.ucl.ac.be/projects/delphes).
+Analyse Characteristics Of Leptonically decaYing Ttbar Events
+
+Code to analyse top pair production events following processing by [Delphes](https://cp3.irmp.ucl.ac.be/projects/delphes).
 
 The input is stored in a `std::vector` of `std::tuple` with number of entries equal to the number of separate event files: `{string event_file, int proc_id}`.
 
@@ -28,7 +30,7 @@ For example
 
 For example
 ```bash
-./analyse.py -i "uu-X-tt-bbeevv_GLR-R-2.5-20pc_13TeV_CT14LL_000_pythia_delphes.root" -p "uu-X-tt-bbllvv_GLR-R-2.5-20pc_13TeV_CT14LL.txt" -r "NuW" -b 2
+./analyse.py "gg-tt-bbmumuvv_SM_13TeV_CT14LL_246_pythia_delphes_NuW_b1" -i "gg-tt-bbmumuvv_SM_13TeV_CT14LL_246_pythia_delphes.root" -p "gg-tt-bbllvv_SM_13TeV_CT14LL.txt" -r "NuW" -b 1
 ```
 
 ## Batch submission commands
