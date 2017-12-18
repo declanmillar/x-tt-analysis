@@ -50,6 +50,7 @@ if "cyan" or "blue" in hostname:
     print >> handler, "cd %s" % run_directory
     print >> handler, "echo 'running code ...'"
     print >> handler, "%s/%s %s > %s/%s" % (run_directory, executable, argstring, run_directory, logfile)
+    print >> handler, 'rm -- "$0"'
 else:
     sys.exit("ERROR: Unrecognised hostname")
 
