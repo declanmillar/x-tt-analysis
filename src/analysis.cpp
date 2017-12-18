@@ -2094,6 +2094,7 @@ void Analysis::RemoveJetsCloseToElectrons()
         }
         if (jkill != -999) m_jets->erase(m_jets->begin() + jkill);
     }
+    if (m_debug) cout << "removed jets close to electrons\n";
 }
     
 void Analysis::RemoveJetsCloseToMuons()
@@ -2102,7 +2103,6 @@ void Analysis::RemoveJetsCloseToMuons()
     // the jet is not considered as a top daughter b-quark
     
     double dRmax = 0.4;
-    
     for (int i = 0; i < m_muons->size(); ++i) {
         Muon* muon = (Muon*) m_muons->at(i);
         double pT = muon->PT;
@@ -2114,9 +2114,8 @@ void Analysis::RemoveJetsCloseToMuons()
                 for (int k = 0; k < jet->Constituents.GetEntriesFast(); ++k) {
                     TObject* object = jet->Constituents.At(k);
                     if (object == 0) continue;
-                    if (object->IsA() == Track::Class()) nTracks++;
+                    if (object->IsA() == Track::Class()) ++nTracks;
                 }
-                cout << "nTracks = " << nTracks << "\n";
                 if (nTracks < 3) m_jets->erase(m_jets->begin() + j);
                 else ++j;
             }
@@ -2130,18 +2129,18 @@ void Analysis::RemoveElectronsInsideJets()
 {
     // electron is removed if it is too close to a small-R jet
     // reduce the impact of non-prompt leptons
+    double dRmax = 0.4;
     for (int i = 0; i < m_jets->size(); ++i) {
         Jet *jet = (Jet*) m_jets->at(i);
         for (int j = 0; j < m_electrons->size();) {
             Electron *electron = (Electron*) m_electrons->at(j);
             double dR = jet->P4().DeltaR(electron->P4());
-            if (dR < 0.4) {
+            if (dR < dRmax) {
                 m_electrons->erase(m_electrons->begin() + j);
             }
             else ++j;
         }
     }
-    
     if (m_debug) cout << "removed electrons from jets\n";
 }
 
@@ -2149,19 +2148,22 @@ void Analysis::RemoveMuonsInsideJets()
 {
     // muon is removed if it is dR < 0.4 from a small-R jet which has at least three tracks
     // tagged unsuitable for being a top daughter
+    
+    double dRmax = 0.4;
     for (int i = 0; i < m_jets->size(); ++i) {
         Jet *jet = (Jet*) m_jets->at(i);
         for (int j = 0; j < m_muons->size();) {
             Muon *muon = (Muon*) m_muons->at(j);
             double dR = jet->P4().DeltaR(muon->P4());
-            int nTracks = 0;
-            for (int k = 0; k < jet->Constituents.GetEntriesFast(); ++k) {
-                TObject* object = jet->Constituents.At(k);
-                if (object == 0) continue;
-                if (object->IsA() == Track::Class()) nTracks++;
-            }
-            if (nTracks > 2 and dR < 0.4) {
-                m_muons->erase(m_muons->begin() + j);
+            if (dR < dRmax) {
+                int nTracks = 0;
+                for (int k = 0; k < jet->Constituents.GetEntriesFast(); ++k) {
+                    TObject* object = jet->Constituents.At(k);
+                    if (object == 0) continue;
+                    if (object->IsA() == Track::Class()) ++nTracks;
+                }
+                if (nTracks > 2) m_muons->erase(m_muons->begin() + j);
+                else ++j;
             }
             else ++j;
         }
