@@ -2179,6 +2179,9 @@ void Analysis::RemoveJetsCloseToMuons()
 {
     // if a jet has fewer than three tracks and is dR < 0.4 from a muon
     // the jet is not considered as a top daughter b-quark
+    
+    double dRmax = 0.4;
+    
     for (int i = 0; i < m_muons->size(); ++i)
     {
         Muon* muon = (Muon*) m_muons->at(i);
@@ -2187,8 +2190,15 @@ void Analysis::RemoveJetsCloseToMuons()
         {
             Jet *jet = (Jet*) m_jets->at(j);
             double dR = muon->P4().DeltaR(jet->P4());
-            if (jet->NCharged < 3 and dR < 0.4)
-            // if (jet->NCharged < 3 and dR < 10.0 / pT)
+            int nTracks = 0;
+            for (j = 0; j < jet->Constituents.GetEntriesFast(); ++j)
+            {
+                 TObject* object = jet->Constituents.At(j);
+                if (object == 0) continue;
+                if(object->IsA() == Track::Class()) nTracks++;
+            }
+            cout << "nTracks = " << nTracks << "\n";
+            if (nTracks < 3 and dR < dRmax)
             {
                 m_jets->erase(m_jets->begin() + j);
             }
@@ -2626,11 +2636,13 @@ void Analysis::SetDataDirectory()
 void Analysis::GetBranches()
 {
     b_Particle = m_tree->UseBranch("Particle");
+    b_EFlowTrack = m_tree->UseBranch("EFlowTrack");
+    b_EFlowPhoton = m_tree->UseBranch("EFlowPhoton");
+    b_EFlowNeutralHadron = m_tree->UseBranch("EFlowNeutralHadron");
     b_Jet = m_tree->UseBranch("Jet");
     b_Electron = m_tree->UseBranch("Electron");
     b_Muon = m_tree->UseBranch("Muon");
     b_MissingET = m_tree->UseBranch("MissingET");
-    // b_ScalarHT = m_tree->UseBranch("ScalarHT");
     b_Track = m_tree->UseBranch("Track");
 }
 

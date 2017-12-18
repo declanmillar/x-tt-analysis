@@ -468,6 +468,9 @@ protected:
     TClonesArray* b_Electron;
     TClonesArray* b_Muon;
     TClonesArray* b_MissingET;
+    TClonesArray* b_EFlowTrack;
+    TClonesArray* b_EFlowPhoton;
+    TClonesArray* b_EFlowNeutralHadron;
     // TClonesArray* b_ScalarHT;
     TClonesArray* b_Track;
 
