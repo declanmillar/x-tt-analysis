@@ -35,7 +35,8 @@ for arg in iterarg:
     argstring = argstring + " " + arg
 
 handler_name = filename + ".sh"
-logfile = filename + ".log"
+# logfile = filename + ".log"
+logfile = "/dev/null"
 
 # print handler
 handler = StringIO.StringIO()
