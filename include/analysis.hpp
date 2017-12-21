@@ -362,6 +362,7 @@ private:
     TH1D* h_n_jets_truth_tagged;
     TH1D* h_n_selJets_truth_tagged;
     TH1D* h_n_uniqueJets_truth_tagged;
+    TH1D* h_ntracks_truth_tagged_jets;
 
     TH1D* h_n_passElectrons;
     TH1D* h_n_passMuons;

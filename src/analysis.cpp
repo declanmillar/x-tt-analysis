@@ -116,14 +116,31 @@ void Analysis::EachEvent(double weight)
     this->FillPurities(1);
     // this->FillTaggedHistograms();
     int n_tagged = 0;
-    for (auto tag : *m_jet_truth_tags) if (tag) ++n_tagged;
-    h_n_jets_truth_tagged->Fill(n_tagged, 1);
+    for (auto tag : *m_muon_truth_tags) if (tag) ++n_tagged;
+    h_n_muons_truth_tagged->Fill(n_tagged, 1);
     n_tagged = 0;
     for (auto tag : *m_electron_truth_tags) if (tag) ++n_tagged;
     h_n_electrons_truth_tagged->Fill(n_tagged, 1);
     n_tagged = 0;
-    for (auto tag : *m_muon_truth_tags) if (tag) ++n_tagged;
-    h_n_muons_truth_tagged->Fill(n_tagged, 1);
+    
+    int ijet = 0;
+    for (auto tag : *m_jet_truth_tags) {
+        Jet *jet = m_jets->at(ijet);
+        if (tag) 
+        {
+            int nTracks = 0;
+            for (int k = 0; k < jet->Constituents.GetEntriesFast(); ++k) {
+                TObject* object = jet->Constituents.At(k);
+                if (object == 0) continue;
+                if (object->IsA() == Track::Class()) ++nTracks;
+            }
+            h_ntracks_truth_tagged_jets->Fill(nTracks);
+            ++n_tagged;
+        }
+        ++ijet;
+    }
+        
+    h_n_jets_truth_tagged->Fill(n_tagged, 1);
 
     this->IsolateElectrons();
     this->IsolateMuons();
@@ -1283,6 +1300,7 @@ void Analysis::MakeHistograms()
     h_n_bJets = new TH1D("n_bJets", "n_{b-jet}\\ ", 10, 0.0, 10.0);
     h_n_bJets->Sumw2();
     h_n_jets_truth_tagged = new TH1D("n_jets_truth_tagged", "n_{jet}\\,\\mathrm{(truth\\, tagged)}\\ ", 4, 0.0, 4.0);
+    h_ntracks_truth_tagged_jets = new TH1D("ntracks_truth_tagged_jets", "n_{tracks}\\,\\mathrm{(truth\\, tagged\\, jets)}\\ ", 50, 0.0, 50.0);
     
     h_n_selElectrons = new TH1D("n_sel_electrons", "n_{e}\\ ", 10, 0.0, 10.0);
     h_n_selElectrons->Sumw2();
@@ -1486,6 +1504,7 @@ void Analysis::MakeDistributions()
     this->MakeDistribution1D(h_n_muons_truth_tagged, "");
     this->MakeDistribution1D(h_n_jets, "");
     this->MakeDistribution1D(h_n_jets_truth_tagged, "");
+    this->MakeDistribution1D(h_ntracks_truth_tagged_jets, "");
     this->MakeDistribution1D(h_n_bJets, "");
     this->MakeDistribution1D(h_n_selElectrons, "");
     this->MakeDistribution1D(h_n_selElectrons_truth_tagged, "");
@@ -2066,9 +2085,9 @@ void Analysis::OverlapRemoval()
     // a procedure called "overlap removal" is applied to
     // associate objects with a unique hypothesis
     this->RemoveJetsCloseToElectrons();
-    this->RemoveJetsCloseToMuons();
+    // this->RemoveJetsCloseToMuons();
     this->RemoveElectronsInsideJets();
-    this->RemoveMuonsInsideJets();
+    // this->RemoveMuonsInsideJets();
     
     if (m_debug) cout << "removed overlapping objects\n";
 }
@@ -2248,7 +2267,7 @@ void Analysis::FillPurities(int bin)
 
 void Analysis::TruthTagJets()
 {  
-    const double dRmax = 0.3;
+    const double dRmax = 0.4;
     
     m_jet_truth_tags = new vector<bool>;
     
