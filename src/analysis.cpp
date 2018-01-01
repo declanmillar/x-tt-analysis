@@ -929,8 +929,7 @@ void Analysis::SetupOutputFile()
     string E = to_string(m_energy) + "TeV";
     string L = to_string(m_luminosity) + "fb-1";
 
-    m_outputName = m_dataDirectory + m_inputfilename.substr(0,m_inputfilename.size() - 5) + "_" + m_reconstruction;
-    if (m_minBtags != 2) m_outputName += "_b" + to_string(m_minBtags);
+    m_outputName = m_dataDirectory + m_inputfilename.substr(0,m_inputfilename.size() - 5) + "_" + m_reconstruction + "_b" + to_string(m_minBtags);
     if (m_luminosity > 0) m_outputName += L;
     m_outputName += ".root";
     m_output = new TFile(m_outputName.c_str(), "RECREATE");
