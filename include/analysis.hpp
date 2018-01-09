@@ -85,7 +85,6 @@ private:
     bool m_useLumi;
     const bool m_debug;
     string m_channel;
-    bool m_truth;
 
     double m_crossSection;
     Long64_t m_nevents;
@@ -488,8 +487,7 @@ public:
         m_reconstruction(reconstruction),
         m_tag(tag),
         m_use_mass_slices(slice),
-        m_truth(true),
-        m_xSec(true),
+        m_xSec(false),
         m_debug(false),
         m_output(nullptr),
         m_input(nullptr),
@@ -512,7 +510,6 @@ public:
         m_reconstruction(reconstruction),
         m_tag(tag),
         m_use_mass_slices(slice),
-        m_truth(true),
         m_xSec(false),
         m_debug(false),
         m_output(nullptr),

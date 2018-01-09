@@ -37,6 +37,18 @@ For example
 
 Submit jobs using a wildcard.
 ```bash
+r="NuW"
+b="2"
+for f in $(ls -1 /scratch/dam1g09/zprime/qq-tt-bbmumuvv_SM_13TeV_CT14LL_???.lhef.gz)
+do
+    c=$(echo $f | cut -d '/' -f 5)
+    k=$(echo $c | cut -d '.' -f 1)
+    ./analyse.py "${k}_pythia_delphes_${r}_b${b}" -i "${k}_pythia_delphes.root" -r "$r" -b "$b"
+done
+```
+
+Submit jobs using a wildcard.
+```bash
 p="gg-tt-bbllvv_SM_13TeV_CT14LL.txt"
 r="NuW"
 b="1"
@@ -50,16 +62,15 @@ done
 
 Submit jobs using a wildcard with a period in the filename.
 ```bash
-p="uu-X-tt-bbllvv_GLR-R-2.5-20pc_13TeV_CT14LL.txt"
 r="NuW"
 b="2"
-for f in $(ls -1 /scratch/dam1g09/zprime/uu-X-tt-bbeevv_GLR-R-2.5-20pc_13TeV_CT14LL_???.lhef.gz)
+for f in $(ls -1 /scratch/dam1g09/zprime/??-AZX-tt-bbmumuvv_GLR-R-2.5-20pc_13TeV_CT14LL_???.lhef.gz)
 do
     c=$(echo $f | cut -d '/' -f 5)
     k=$(echo $c | cut -d '.' -f 1)
     l=$(echo $c | cut -d '.' -f 2)
     m=$(echo $k.$l)
-    ./analyse.py "${m}_pythia_delphes_${r}_b${b}" -i "${m}_pythia_delphes.root" -p "$p" -r "$r" -b "$b"
+    ./analyse.py "${m}_pythia_delphes_${r}_b${b}" -i "${m}_pythia_delphes.root" -r "$r" -b "$b"
 done
 ```
 
