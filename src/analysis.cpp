@@ -779,7 +779,7 @@ void Analysis::SetupInputFile()
     m_input = new vector< tuple<string, int> >;
     m_input->push_back(make_tuple(m_dataDirectory + m_inputfilename, 0));
     
-    if (m_processfilename != "") m_xSec = true;
+    // processfilename, proc_id, n_proc, cross_section, uncertainty, weight
     m_processes = new vector< tuple<string, int, int, double, double, double> >;
     if (m_xSec) m_processes->push_back(make_tuple(m_dataDirectory + m_processfilename, 0, 1, -999, -999, -999));
     else m_processes->push_back(make_tuple("", 0, 1, 1.0, 0.0, 1.0));
