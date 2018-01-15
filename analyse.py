@@ -4,7 +4,8 @@ import os, StringIO, subprocess, sys, socket
 
 # handler_name = sys.argv[1] + ".sh"
 executable = "analysis"
-walltime = "02:00:00"
+# walltime = "02:00:00"
+walltime = "00:02:00"
 queue = "1nw"
 
 # set directories

@@ -30,7 +30,7 @@ For example
 
 For example
 ```bash
-./analyse.py "gg-tt-bbmumuvv_SM_13TeV_CT14LL_246_pythia_delphes_NuW_b1" -i "gg-tt-bbmumuvv_SM_13TeV_CT14LL_246_pythia_delphes.root" -p "gg-tt-bbllvv_SM_13TeV_CT14LL.txt" -r "NuW" -b 1
+./analyse.py "gg-tt-bbmumuvv_SM_13TeV_CT14LL_148_pythia_delphes_NuW_b1" -i "gg-tt-bbmumuvv_SM_13TeV_CT14LL_148_pythia_delphes.root" -r "NuW" -b 1
 ```
 
 ## Batch submission commands
@@ -64,7 +64,7 @@ Submit jobs using a wildcard with a period in the filename.
 ```bash
 r="NuW"
 b="2"
-for f in $(ls -1 /scratch/dam1g09/zprime/??-AZX-tt-bbmumuvv_GLR-R-2.5-20pc_13TeV_CT14LL_???.lhef.gz)
+for f in $(ls -1 /scratch/dam1g09/zprime/??-AZX-tt-bbmumuvv_GLR-R-2.5_13TeV_CT14LL_???.lhef.gz)
 do
     c=$(echo $f | cut -d '/' -f 5)
     k=$(echo $c | cut -d '.' -f 1)
