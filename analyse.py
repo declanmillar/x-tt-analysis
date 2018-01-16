@@ -71,4 +71,4 @@ except IOERROR:
 subprocess.call("chmod a+x %s" % handler_name, shell = True)
 print "submitting batch job ..."
 if "lxplus" in hostname: subprocess.call('bsub -q %s %s/%s' % (queue, run_directory, handler_name), shell = True)
-elif "cyan" in hostname: subprocess.call('qsub -l -l nodes=%s:ppn=%s walltime=%s %s/%s' % (nodes, ppn, walltime, run_directory, handler_name), shell = True)
+elif "cyan" in hostname: subprocess.call('qsub -l walltime=%s,nodes=%s:ppn=%s %s/%s' % (walltime, nodes, ppn, run_directory, handler_name), shell = True)
