@@ -8,7 +8,7 @@ walltime = "02:00:00"
 # walltime = "00:02:00"
 queue = "1nw"
 nodes = "25"
-ppn = "8"
+ppn = "16"
 
 # set directories
 hostname = socket.gethostname()
