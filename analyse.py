@@ -7,7 +7,7 @@ executable = "analysis"
 walltime = "02:00:00"
 # walltime = "00:02:00"
 queue = "1nw"
-nodes = "125"
+nodes = "25"
 ppn = "8"
 
 # set directories
