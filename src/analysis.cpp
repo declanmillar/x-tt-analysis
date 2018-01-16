@@ -994,7 +994,7 @@ void Analysis::AsymmetryUncertainty(TH1D* hA, TH1D* h1, TH1D* h2)
 
 void Analysis::MakeHistograms()
 {
-    double binWidth = 0.01;
+    double binWidth = 0.1;
     double Emin = 0.05;
     double Emax = 12.95;
     double nbins = (Emax - Emin) / binWidth;
