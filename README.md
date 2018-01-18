@@ -47,7 +47,7 @@ do
 done
 ```
 
-Submit jobs using a wildcard.
+Submit jobs using a wildcard and a process file.
 ```bash
 p="gg-tt-bbllvv_SM_13TeV_CT14LL.txt"
 r="NuW"
