@@ -39,7 +39,7 @@ Submit jobs using a wildcard.
 ```bash
 r="NuW"
 b="2"
-for f in $(ls -1 /scratch/dam1g09/zprime/qq-tt-bbmumuvv_SM_13TeV_CT14LL_???.lhef.gz)
+for f in $(ls -1 /scratch/dam1g09/zprime/dd-AZ-tt-bbmumuvv_SM_13TeV_CT14LL_???.lhef.gz)
 do
     c=$(echo $f | cut -d '/' -f 5)
     k=$(echo $c | cut -d '.' -f 1)

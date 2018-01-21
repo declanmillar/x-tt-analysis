@@ -995,8 +995,10 @@ void Analysis::AsymmetryUncertainty(TH1D* hA, TH1D* h1, TH1D* h2)
 void Analysis::MakeHistograms()
 {
     double binWidth = 0.25;
-    double Emin = 0.0;
-    double Emax = 13.0;
+    // double Emin = 0.0;
+    ouble Emin = 0.05;
+    // double Emax = 13.0;
+    ouble Emax = 12.95;
     double nbins = (Emax - Emin) / binWidth;
     cout << "Plotting range:   " << Emin << " - " << Emax << " [TeV]\n";
     
