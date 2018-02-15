@@ -885,14 +885,13 @@ void Analysis::SetupInputFiles()
                     cout << "no files in energy range " << range << " [TeV]\n";
                     continue;
                 }
-                if (m_xSec) {
-                    string proc_filename = m_dataDirectory + initial + intermediates + "-tt-bbllvv" + "_" + model + "_" + E + "TeV" + "_" + m_pdf + options + range + ".txt";
-                    cout << "Process file:   " << proc_filename << " ...\n";
-                    cout << "No. files:      " << nfiles << "\n";
-                    tuple< string, int, int, double, double, double > process = make_tuple(proc_filename, proc_id, nfiles, -999, -999, -999);
-                    m_processes->push_back(process);
-                    proc_id++;
-                }
+                string proc_filename = "";
+                if (m_xSec) string proc_filename = m_dataDirectory + initial + intermediates + "-tt-bbllvv" + "_" + model + "_" + E + "TeV" + "_" + m_pdf + options + range + ".txt";
+                cout << "Process file:   " << proc_filename << " ...\n";
+                cout << "No. files:      " << nfiles << "\n";
+                tuple< string, int, int, double, double, double > process = make_tuple(proc_filename, proc_id, nfiles, -999, -999, -999);
+                m_processes->push_back(process);
+                proc_id++;
             }
         }
         std::sort(m_input->begin(), m_input->end());
