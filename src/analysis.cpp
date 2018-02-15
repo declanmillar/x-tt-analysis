@@ -891,7 +891,7 @@ void Analysis::SetupInputFiles()
                 cout << "No. files:      " << nfiles << "\n";
                 tuple< string, int, int, double, double, double > process = make_tuple(proc_filename, proc_id, nfiles, -999, -999, -999);
                 m_processes->push_back(process);
-                proc_id++;
+                // proc_id++;
             }
         }
         std::sort(m_input->begin(), m_input->end());
