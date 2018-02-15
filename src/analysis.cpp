@@ -841,7 +841,7 @@ void Analysis::SetupInputFiles()
             boost::filesystem::directory_iterator end_itr; // Default ctor yields past-the-end
             int nfiles = 0;
 
-            if (m_use_mass_slices) cout << "I AM USING MASS SLICES\n";
+            if (m_use_mass_slices) cout << "WARNING: I AM USING MASS SLICES\n";
 
             int end = 1;
             if (m_use_mass_slices) end =  m_energy;
@@ -912,12 +912,14 @@ void Analysis::SetupInputFiles()
             exit(exists);
         }
     }
-    for (auto process : *m_processes) {
-        struct stat buffer;
-        bool exists = stat((get<0>(process)).c_str(), &buffer) == 0;
-        if (exists == false) {
-            cout << "error: no " << get<0>(process) << "\n";
-            exit(exists);
+    if (m_xSec) {
+        for (auto process : *m_processes) {
+            struct stat buffer;
+            bool exists = stat((get<0>(process)).c_str(), &buffer) == 0;
+            if (exists == false) {
+                cout << "error: no " << get<0>(process) << "\n";
+                exit(exists);
+            }
         }
     }
 }
