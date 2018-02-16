@@ -889,7 +889,7 @@ void Analysis::SetupInputFiles()
                 if (m_xSec) string proc_filename = m_dataDirectory + initial + intermediates + "-tt-bbllvv" + "_" + model + "_" + E + "TeV" + "_" + m_pdf + options + range + ".txt";
                 cout << "Process file:   " << proc_filename << " ...\n";
                 cout << "No. files:      " << nfiles << "\n";
-                tuple< string, int, int, double, double, double > process = make_tuple(proc_filename, proc_id, nfiles, -999, -999, -999);
+                tuple< string, int, int, double, double, double > process = make_tuple(proc_filename, proc_id, nfiles, 1.0, 0.0, 1.0);
                 m_processes->push_back(process);
                 // proc_id++;
             }
