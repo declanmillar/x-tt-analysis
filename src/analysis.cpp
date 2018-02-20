@@ -835,7 +835,7 @@ void Analysis::SetupInputFiles()
             // combine for file name
             filename = initial + intermediates + fin + "_" + model + "_" + E + "TeV" + "_" + m_pdf + options;
 
-            cout << "Adding:         " << m_dataDirectory << filename << "*_pythia_delphes.root ...\n";
+            cout << "Inputs:         " << m_dataDirectory << filename << "_*_pythia_delphes.root ...\n";
 
             // loop over all matching files (e.g. *_01.root and *_02.root)
             boost::filesystem::directory_iterator end_itr; // Default ctor yields past-the-end
@@ -886,9 +886,11 @@ void Analysis::SetupInputFiles()
                     continue;
                 }
                 string proc_filename = "";
-                if (m_xSec) string proc_filename = m_dataDirectory + initial + intermediates + "-tt-bbllvv" + "_" + model + "_" + E + "TeV" + "_" + m_pdf + options + range + ".txt";
-                cout << "Process file:   " << proc_filename << " ...\n";
-                cout << "No. files:      " << nfiles << "\n";
+                if (m_xSec) {
+                    string proc_filename = m_dataDirectory + initial + intermediates + "-tt-bbllvv" + "_" + model + "_" + E + "TeV" + "_" + m_pdf + options + range + ".txt";
+                    cout << "Process file:    " << proc_filename << " ...\n";
+                }
+                cout << "No. files:        " << nfiles << "\n";
                 tuple< string, int, int, double, double, double > process = make_tuple(proc_filename, proc_id, nfiles, 1.0, 0.0, 1.0);
                 m_processes->push_back(process);
                 // proc_id++;
