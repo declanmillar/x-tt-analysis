@@ -69,7 +69,7 @@ private:
     vector<bool>* m_muon_truth_tags;
     vector<bool>* m_jet_truth_tags;
 
-    string m_inputfilename;
+    string m_inputFileName;
     string m_processfilename;
     string m_model;
     string m_process;
@@ -78,7 +78,7 @@ private:
     int m_luminosity;
     string m_tag;
     string m_pdf = "CT14LL";
-    bool m_use_mass_slices = false;
+    bool m_useMassSlices = false;
 
     bool m_xSec;
     const string m_reconstruction;
@@ -91,8 +91,8 @@ private:
 
     vector<double> iteration_weights;
     string m_dataDirectory;
-    string m_outputName;
-    TFile* m_output;
+    string m_outputFileName;
+    TFile* m_outputFile;
     TChain* m_chain;
     ExRootTreeReader* m_tree;
 
@@ -388,8 +388,6 @@ protected:
     void SetupTreesForNewFile(const string&);
     void CleanUp();
     void SetupInputFiles();
-    void SetupOutputFiles();
-
     void SetupInputFile();
     void SetupOutputFile();
 
@@ -476,7 +474,7 @@ protected:
 
 public:
     Analysis(const string& model, const string& process, const string& options, const int energy, const int luminosity, const int minBtags, const string& reconstruction, const string& tag, const bool slice):
-        m_inputfilename(""),
+        m_inputFileName(""),
         m_processfilename(""),
         m_model(model),
         m_process(process),
@@ -486,10 +484,10 @@ public:
         m_minBtags(minBtags),
         m_reconstruction(reconstruction),
         m_tag(tag),
-        m_use_mass_slices(slice),
+        m_useMassSlices(slice),
         m_xSec(false),
         m_debug(false),
-        m_output(nullptr),
+        m_outputFile(nullptr),
         m_input(nullptr),
         m_processes(nullptr),
         m_chain(nullptr),
@@ -499,7 +497,7 @@ public:
     }
 
     Analysis(const string& inputfilename, const string& processfilename, const int luminosity, const int minBtags, const string& reconstruction, const string& tag, const bool slice):
-        m_inputfilename(inputfilename),
+        m_inputFileName(inputfilename),
         m_processfilename(processfilename),
         m_model(""),
         m_process(""),
@@ -509,10 +507,10 @@ public:
         m_minBtags(minBtags),
         m_reconstruction(reconstruction),
         m_tag(tag),
-        m_use_mass_slices(slice),
+        m_useMassSlices(slice),
         m_xSec(false),
         m_debug(false),
-        m_output(nullptr),
+        m_outputFile(nullptr),
         m_input(nullptr),
         m_processes(nullptr),
         m_chain(nullptr),

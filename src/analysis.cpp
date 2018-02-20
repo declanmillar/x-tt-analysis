@@ -777,7 +777,7 @@ void Analysis::SetupInputFile()
 {
     if (m_debug) cout << "Setting up single input file...\n";
     m_input = new vector< tuple<string, int> >;
-    m_input->push_back(make_tuple(m_dataDirectory + m_inputfilename, 0));
+    m_input->push_back(make_tuple(m_dataDirectory + m_inputFileName, 0));
     
     // processfilename, proc_id, n_proc, cross_section, uncertainty, weight
     m_processes = new vector< tuple<string, int, int, double, double, double> >;
@@ -841,14 +841,14 @@ void Analysis::SetupInputFiles()
             boost::filesystem::directory_iterator end_itr; // Default ctor yields past-the-end
             int nfiles = 0;
 
-            if (m_use_mass_slices) cout << "WARNING: I AM USING MASS SLICES\n";
+            if (m_useMassSlices) cout << "WARNING: I AM USING MASS SLICES\n";
 
             int end = 1;
-            if (m_use_mass_slices) end =  m_energy;
+            if (m_useMassSlices) end =  m_energy;
 
             for (int j = 0; j < end; ++j) {
                 string range = "";
-                if (m_use_mass_slices) range = "_" + to_string(j) + "-" + to_string(j + 1);
+                if (m_useMassSlices) range = "_" + to_string(j) + "-" + to_string(j + 1);
 
                 int nfiles_per_slice = 0;
                 for (boost::filesystem::directory_iterator i(m_dataDirectory); i != end_itr; ++i) {
@@ -865,8 +865,8 @@ void Analysis::SetupInputFiles()
                     if (!boost::filesystem::is_regular_file(i->status())) continue;
 
                     regex reg(filename + "_[0-9]+-[0-9]+_[0-9]+_pythia_delphes");
-                    if (!m_use_mass_slices and regex_search(file, reg)) continue;
-                    if (m_use_mass_slices and !regex_search(file, reg)) continue;
+                    if (!m_useMassSlices and regex_search(file, reg)) continue;
+                    if (m_useMassSlices and !regex_search(file, reg)) continue;
 
                     nfiles++;
                     nfiles_per_slice++;
@@ -881,7 +881,7 @@ void Analysis::SetupInputFiles()
                     }
                 }
 
-                if (m_use_mass_slices and nfiles_per_slice == 0) {
+                if (m_useMassSlices and nfiles_per_slice == 0) {
                     cout << "no files in energy range " << range << " [TeV]\n";
                     continue;
                 }
@@ -931,35 +931,27 @@ void Analysis::SetupOutputFile()
     string E = to_string(m_energy) + "TeV";
     string L = to_string(m_luminosity) + "fb-1";
 
-    m_outputName = m_dataDirectory + m_inputfilename.substr(0,m_inputfilename.size() - 5) + "_" + m_reconstruction + "_b" + to_string(m_minBtags);
-    if (m_luminosity > 0) m_outputName += L;
-    m_outputName += ".root";
-    m_output = new TFile(m_outputName.c_str(), "RECREATE");
+    m_outputFileName = m_dataDirectory;
+    if (m_inputFileName != "") m_outputFileName += m_inputFileName.substr(0,m_inputFileName.size() - 5);
+    else m_outputFileName = m_dataDirectory + m_process + "_" + m_model + "_" + E + "_" + m_pdf + m_options + "_pythia_delphes";
+    if (m_useMassSlices) m_outputFileName += "_sliced";
+    m_outputFileName += "_" + m_reconstruction;
+    m_outputFileName += "_b" + to_string(m_minBtags);
+    m_outputFileName += m_tag;
+    if (m_luminosity > 0) m_outputFileName += L;
+    m_outputFileName += ".root";
+    m_outputFile = new TFile(m_outputFileName.c_str(), "RECREATE");
     if (m_debug) cout << "Finished SetupOutputFile.\n";
 }
 
-void Analysis::SetupOutputFiles()
-{
-    string E = to_string(m_energy) + "TeV";
-    string L = to_string(m_luminosity) + "fb-1";
-
-    m_outputName = m_dataDirectory + m_process + "_" + m_model + "_" + E + "_" + m_pdf + m_options;
-    m_outputName += "_pythia_delphes";
-    if (m_use_mass_slices) m_outputName += "_sliced";
-    m_outputName += "_" + m_reconstruction + m_tag;
-    if (m_minBtags != 2) m_outputName += "_b" + to_string(m_minBtags);
-    if (m_luminosity > 0) m_outputName += L;
-    m_outputName += ".root";
-    m_output = new TFile(m_outputName.c_str(), "RECREATE");
-}
 
 void Analysis::PostLoop()
 {
     this->PrintCutflow();
     this->MakeDistributions();
-    m_output->Close();
+    m_outputFile->Close();
     cout << "\nOUTPUT\n";
-    cout << m_outputName << "\n";
+    cout << m_outputFileName << "\n";
 }
 
 
@@ -1791,8 +1783,8 @@ void Analysis::MakeDistribution1D(TH1D* h, const string& units, bool normalise)
     h->GetXaxis()->SetTitle((h->GetTitle() + xunits).data());
     h->GetYaxis()->SetTitleOffset(0.9);
     h->GetXaxis()->SetTitleOffset(0.95);
-    m_output->cd();
-    m_output->cd("/");
+    m_outputFile->cd();
+    m_outputFile->cd("/");
     h->Write();
 }
 
@@ -1804,8 +1796,8 @@ void Analysis::WriteEfficiency(TH1D* h, const string& xtitle, const string& ytit
     h->GetXaxis()->SetTitle(xtitle.data());
     h->GetYaxis()->SetTitleOffset(0.9);
     h->GetXaxis()->SetTitleOffset(0.95);
-    m_output->cd();
-    m_output->cd("/");
+    m_outputFile->cd();
+    m_outputFile->cd("/");
     h->Write();
 }
 
@@ -1856,8 +1848,8 @@ void Analysis::MakeDistribution2D(TH2D* h, string xtitle, string xunits, string 
     h->GetXaxis()->SetTitle((xtitle + xunits).data());
     h->GetYaxis()->SetTitleOffset(0.9);
     h->GetXaxis()->SetTitleOffset(0.95);
-    m_output->cd();
-    m_output->cd("/");
+    m_outputFile->cd();
+    m_outputFile->cd("/");
     h->Write();
 }
 
@@ -1875,8 +1867,8 @@ void Analysis::MakeDistributionAL(TH2D* h, const string& name, const string& tit
     h_AL->SetTitle(title.data());
     h_AL->GetXaxis()->SetTitle("m_{t\\bar{t}}\\;[TeV]");
     h_AL->GetYaxis()->SetTitle(title.data());
-    m_output->cd();
-    m_output->cd("/");
+    m_outputFile->cd();
+    m_outputFile->cd("/");
     h_AL->Write();
 }
 
@@ -2511,7 +2503,7 @@ void Analysis::PreLoop()
 {
     this->SetDataDirectory();
     this->SetupInputFiles();
-    this->SetupOutputFiles();
+    this->SetupOutputFile();
     this->InitialiseCutflow();
     this->MakeHistograms();
     cout << "\n";
@@ -2642,7 +2634,7 @@ void Analysis::EachFile (const string& filename)
 Analysis::~Analysis()
 {
     delete m_input;
-    delete m_output;
+    delete m_outputFile;
 }
 
 
