@@ -924,7 +924,7 @@ void Analysis::SetupInputFiles()
     }
 }
 
-void Analysis::SetupOutputFile()
+bool Analysis::SetupOutputFile()
 {
     if (m_debug) cout << "Starting SetupOutputFile ...\n";
 
@@ -940,8 +940,9 @@ void Analysis::SetupOutputFile()
     m_outputFileName += m_tag;
     if (m_luminosity > 0) m_outputFileName += L;
     m_outputFileName += ".root";
+    cout << "Output file:      " << m_outputFileName << "\n";
     m_outputFile = new TFile(m_outputFileName.c_str(), "RECREATE");
-    if (m_debug) cout << "Finished SetupOutputFile.\n";
+    return m_outputFile->IsOpen();
 }
 
 

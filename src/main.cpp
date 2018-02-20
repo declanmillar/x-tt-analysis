@@ -24,8 +24,8 @@ int main(int argc, char* argv[]) {
     ("reconstruction,r", po::value<string>()->default_value("NuW"))
     ("tag,t",            po::value<string>()->default_value(""))
     ("slice,s",          po::value<bool>()->default_value(false)->implicit_value(true))
-    ("inputfilename,i",  po::value<string>()->default_value(""))
-    ("processfilename,p",po::value<string>()->default_value(""))
+    ("inputFileName,i",  po::value<string>()->default_value(""))
+    ("processFileName,p",po::value<string>()->default_value(""))
     ;
     po::variables_map opt;
     po::store(po::parse_command_line(argc, argv, desc), opt);
@@ -41,8 +41,8 @@ int main(int argc, char* argv[]) {
     if (dd) initial_state += "dd";
     if (uu) initial_state += "uu";
     auto final_state = opt["final_state"].as<string>();
-    auto inputfilename = opt["inputfilename"].as<string>();
-    auto processfilename = opt["processfilename"].as<string>();
+    auto inputFileName = opt["inputFileName"].as<string>();
+    auto processFileName = opt["processFileName"].as<string>();
     auto options = opt["options"].as<string>();
     auto energy = opt["energy"].as<int>();
     auto luminosity = opt["luminosity"].as<double>();
@@ -73,20 +73,20 @@ int main(int argc, char* argv[]) {
     }
 
     cout << "SETTINGS\n";
-    if (inputfilename == "") cout << "Process:          " << process << "\n";
-    else cout << "Single file mode: " << "on" << "\n";
+    if (inputFileName == "") cout << "Process:          " << process << "\n";
+    else cout                     << "Input file:       " << inputFileName << "\n";
     cout << "Minimum b-tags:   " << minimumBtags << "\n";
     cout << "Reconstruction:   " << reconstruction << "\n";
     if (options != "") cout << "Options:          " << options << "\n";
     if (luminosity != -1) cout << "Luminosity:       " << luminosity << " [fb-1]\n";
     cout << "Energy:           " << energy << " [TeV]\n";
 
-    if (inputfilename == "") {
+    if (inputFileName == "") {
         auto analysis = new Analysis(model, process, options, energy, luminosity, minimumBtags, reconstruction, tag, slice);
         analysis->Run();
     }
     else {
-        auto analysis = new Analysis(inputfilename, processfilename, luminosity, minimumBtags, reconstruction, tag, slice);
+        auto analysis = new Analysis(inputFileName, processFileName, luminosity, minimumBtags, reconstruction, tag, slice);
         analysis->Run();
     }
 

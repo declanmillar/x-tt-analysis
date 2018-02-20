@@ -389,7 +389,7 @@ protected:
     void CleanUp();
     void SetupInputFiles();
     void SetupInputFile();
-    void SetupOutputFile();
+    bool SetupOutputFile();
 
     void PreLoop();
     void PreLoopSingle();
