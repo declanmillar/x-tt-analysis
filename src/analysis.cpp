@@ -835,7 +835,7 @@ void Analysis::SetupInputFiles()
             // combine for file name
             filename = initial + intermediates + fin + "_" + model + "_" + E + "TeV" + "_" + m_pdf + options;
 
-            cout << "Inputs:         " << m_dataDirectory << filename << "_*_pythia_delphes.root ...\n";
+            cout << "Inputs:         " << m_dataDirectory << filename << "_*_delphes.root ...\n";
 
             // loop over all matching files (e.g. *_01.root and *_02.root)
             boost::filesystem::directory_iterator end_itr; // Default ctor yields past-the-end
@@ -860,11 +860,11 @@ void Analysis::SetupInputFiles()
                     if (boost::contains(file, "KIN")) continue;
                     if (boost::contains(file, "NuW")) continue;
                     if (boost::contains(file, "TRN")) continue;
-                    if (!boost::contains(file, "_pythia_delphes")) continue;
+                    if (!boost::contains(file, "_delphes")) continue;
                     if (!boost::contains(file, range)) continue;
                     if (!boost::filesystem::is_regular_file(i->status())) continue;
 
-                    regex reg(filename + "_[0-9]+-[0-9]+_[0-9]+_pythia_delphes");
+                    regex reg(filename + "_[0-9]+-[0-9]+_[0-9]+_delphes");
                     if (!m_useMassSlices and regex_search(file, reg)) continue;
                     if (m_useMassSlices and !regex_search(file, reg)) continue;
 
@@ -935,7 +935,7 @@ bool Analysis::SetupOutputFile()
 
     m_outputFileName = m_dataDirectory;
     if (m_inputFileName != "") m_outputFileName += m_inputFileName.substr(0,m_inputFileName.size() - 5);
-    else m_outputFileName = m_dataDirectory + m_process + "_" + m_model + "_" + E + "_" + m_pdf + m_options + "_pythia_delphes";
+    else m_outputFileName = m_dataDirectory + m_process + "_" + m_model + "_" + E + "_" + m_pdf + m_options + "_delphes";
     if (m_useMassSlices) m_outputFileName += "_sliced";
     m_outputFileName += "_" + m_reconstruction;
     m_outputFileName += "_b" + to_string(m_minBtags);
