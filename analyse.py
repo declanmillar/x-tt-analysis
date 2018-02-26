@@ -43,18 +43,19 @@ logfile = "/dev/null"
 
 # print handler
 handler = StringIO.StringIO()
-print >> handler, "#!/bin/bash"
 if "lxplus" in hostname:
-    print >> handler, "source /afs/cern.ch/sw/lcg/external/gcc/4.9/x86_64-slc6/setup.sh"
+    print >> handler, "#!/bin/bash"
     print >> handler, "cd %s" % run_directory
+    print >> handler, "source /afs/cern.ch/sw/lcg/external/gcc/4.9/x86_64-slc6/setup.sh"
     print >> handler, "%s/%s %s" % (run_directory, executable, argstring)
 if "cyan" or "blue" in hostname:
-    print >> handler, "source /home/dam1g09/.bash_profile"
-    print >> handler, "echo 'changing to run directory ...'"
+    print >> handler, "#PBS -N {}".format(job_name)
+    print >> handler, "#PBS -l walltime={}".format(walltime)
+    print >> handler, "#PBS -l nodes={}".format(nodes)
+    print >> handler, "#!/bin/bash"
     print >> handler, "cd %s" % run_directory
-    print >> handler, "echo 'running code ...'"
+    print >> handler, "source /home/dam1g09/.bash_profile"
     print >> handler, "%s/%s %s > %s" % (run_directory, executable, argstring, logfile)
-    print >> handler, 'rm -- "$0"'
 else:
     sys.exit("ERROR: Unrecognised hostname")
 
@@ -71,4 +72,4 @@ except IOERROR:
 subprocess.call("chmod a+x %s" % handler_name, shell = True)
 print "submitting batch job ..."
 if "lxplus" in hostname: subprocess.call('bsub -q %s %s/%s' % (queue, run_directory, handler_name), shell = True)
-elif "cyan" in hostname: subprocess.call('qsub -l walltime=%s,nodes=%s:ppn=%s %s/%s' % (walltime, nodes, ppn, run_directory, handler_name), shell = True)
+elif "cyan" in hostname: subprocess.call('qsub %s/%s' % (walltime, nodes, ppn, run_directory, handler_name), shell = True)
