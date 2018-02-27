@@ -49,7 +49,7 @@ if "lxplus" in hostname:
     print >> handler, "source /afs/cern.ch/sw/lcg/external/gcc/4.9/x86_64-slc6/setup.sh"
     print >> handler, "%s/%s %s" % (run_directory, executable, argstring)
 if "cyan" or "blue" in hostname:
-    print >> handler, "#PBS -N {}".format(job_name)
+    # print >> handler, "#PBS -N {}".format(job_name)
     print >> handler, "#PBS -l walltime={}".format(walltime)
     print >> handler, "#PBS -l nodes={}".format(nodes)
     print >> handler, "#!/bin/bash"
