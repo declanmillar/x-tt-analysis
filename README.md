@@ -1,13 +1,8 @@
 # Acolyte
 
-Analyse Characteristics Of Leptonically decaYing Ttbar Events
+[Prophet](https://gitlab.cern.ch/demillar/prophet) -> [Delphes](https://gitlab.cern.ch/demillar/delphes) -> Acolyte -> [Disciple](https://gitlab.cern.ch/demillar/disciple)
 
-Code to analyse top pair production events following processing by [Delphes](https://cp3.irmp.ucl.ac.be/projects/delphes).
-
-The input is stored in a `std::vector` of `std::tuple` with number of entries equal to the number of separate event files: `{string event_file, int proc_id}`.
-
-While an additional `std::vector` of `std::tuple` is created for each individual subprocess: `{string proc_file, int proc_id, int nfiles, double cross_section, double uncertainty, double weight}`, where `nfiles` is the number of input files for the process with `proc_id`.
-
+Analyse Characteristics Of Leptonically decaYing Ttbar Events. Code to analyse top pair production events following processing by [Delphes](https://cp3.irmp.ucl.ac.be/projects/delphes).
 
 ## Installation
 
@@ -22,6 +17,13 @@ Dependencies: `boost`, `delphes`
 
 * Run locally: `./analysis [options]`
 * Submit job: `./analyse.py handler_name [options]`
+
+## Reminder 
+
+The input is stored in a `std::vector` of `std::tuple` with number of entries equal to the number of separate event files: `{string event_file, int proc_id}`.
+While an additional `std::vector` of `std::tuple` is created for each individual subprocess: `{string proc_file, int proc_id, int nfiles, double cross_section, double uncertainty, double weight}`, where `nfiles` is the number of input files for the process with `proc_id`.
+
+## Examples commands
 
 For example
 ```bash
