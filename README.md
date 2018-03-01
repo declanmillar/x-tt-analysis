@@ -40,12 +40,12 @@ For example
 Submit jobs using a wildcard.
 ```bash
 r="NuW"
-b="2"
-for f in $(ls -1 /scratch/dam1g09/zprime/uu-AZ-tt-bbmumuvv_SM_13TeV_CT14LL_???.lhef.gz)
+b="1"
+for f in $(ls -1 /scratch/dam1g09/zprime/gg-tt-bbmumuvv_SM_13TeV_CT14LL_???.lhef.gz)
 do
     c=$(echo $f | cut -d '/' -f 5)
     k=$(echo $c | cut -d '.' -f 1)
-    ./analyse.py "${k}_pythia_delphes_${r}_b${b}" -i "${k}_pythia_delphes.root" -r "$r" -b "$b"
+    ./analyse.py "${k}_delphes_${r}_b${b}" -i "${k}_delphes.root" -r "$r" -b "$b"
 done
 ```
 
