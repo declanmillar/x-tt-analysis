@@ -32,7 +32,7 @@ For example
 
 For example
 ```bash
-./analyse.py "gg-tt-bbmumuvv_SM_13TeV_CT14LL_148_pythia_delphes_NuW_b1" -i "gg-tt-bbmumuvv_SM_13TeV_CT14LL_148_pythia_delphes.root" -r "NuW" -b 1
+./analyse.py "gg-tt-bbmumuvv_SM_13TeV_CT14LL_148_delphes_NuW_b1" -i "gg-tt-bbmumuvv_SM_13TeV_CT14LL_148_delphes.root" -r "NuW" -b 1
 ```
 
 ## Batch submission commands
