@@ -241,6 +241,7 @@ private:
     TH2D* h2_dR_t1b1_mtt_truth;
     TH2D* h2_dR_t2b2_mtt_truth;
     
+    TH1D* h_ETmiss;
     TH1D* h_ETmiss_truth;
     TH2D* h2_mtt_truth_ETmiss_truth;
 
