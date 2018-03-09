@@ -383,6 +383,7 @@ private:
     TH2D* h2_mtt_cos1cos2;
     TH2D* h2_mvis_deltaPhi;
     TH2D* h2_HT_deltaPhi;
+    TH2D* h2_HTmet_deltaPhi;
     TH2D* h2_KT_deltaPhi;
 
 protected:

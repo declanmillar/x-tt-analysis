@@ -401,8 +401,9 @@ void Analysis::EachEvent(double weight)
         h_HT_lCB->Fill(HT, weight);
         h_KT_lCB->Fill(KT, weight);
     }
-
+    
     h2_HT_deltaPhi->Fill(HT, deltaPhi, weight);
+    h2_HTmet_deltaPhi->Fill(HTmet, deltaPhi, weight);
     h2_mvis_deltaPhi->Fill(mass_vis, deltaPhi, weight);
     h2_KT_deltaPhi->Fill(KT, deltaPhi, weight);
 
@@ -1350,11 +1351,16 @@ void Analysis::MakeHistograms()
     h2_mtt_cos1cos2->GetXaxis()->SetTitle("m_{t\\bar{t}}");
     h2_mtt_cos1cos2->GetYaxis()->SetTitle("\\cos\\theta_{\\ell^{+}}\\cos\\theta_{\\ell^{-}}");
     h2_mtt_cos1cos2->Sumw2();
-
+    
     h2_HT_deltaPhi = new TH2D("HT_deltaphi", "H_{\\mathrm{T}} \\times \\Delta\\phi_{\\ell^{+}\\ell^{-}}", 40, 0.0, 4.0, 10, 0.0, 1.0);
     h2_HT_deltaPhi->GetXaxis()->SetTitle("H_{\\mathrm{T}}\\;[TeV]");
     h2_HT_deltaPhi->GetYaxis()->SetTitle("\\Delta\\phi_{\\ell^{+}\\ell^{-}}\\; [rad/\\pi]");
     h2_HT_deltaPhi->Sumw2();
+    
+    h2_HTmet_deltaPhi = new TH2D("HTmet_deltaphi", "(H_{\\mathrm{T}} + E^{\\mathrm{miss}}_{\\mathrm{T}}) \\times \\Delta\\phi_{\\ell^{+}\\ell^{-}}", 40, 0.0, 4.0, 10, 0.0, 1.0);
+    h2_HTmet_deltaPhi->GetXaxis()->SetTitle("H_{\\mathrm{T}} + E^{\\mathrm{miss}}_{\\mathrm{T}}\\;[TeV]");
+    h2_HTmet_deltaPhi->GetYaxis()->SetTitle("\\Delta\\phi_{\\ell^{+}\\ell^{-}}\\; [rad/\\pi]");
+    h2_HTmet_deltaPhi->Sumw2();
 
     h2_mvis_deltaPhi = new TH2D("mvis_deltaphi", "m_{\\mathrm{vis}} \\times \\Delta\\phi_{\\ell^{+}\\ell^{-}}", 40, 0.0, 4.0, 10, 0.0, 1.0);
     h2_mvis_deltaPhi->GetXaxis()->SetTitle("m_{\\mathrm{vis}}\\;[TeV]");
@@ -1594,6 +1600,7 @@ void Analysis::MakeDistributions()
     this->Asymmetry("ADphi_KT", "A_{\\Delta\\phi}", "K_{\\mathrm{T}}", h_KT_DphiF, h_KT_DphiB);
     
     this->MakeDistribution2D(h2_HT_deltaPhi, "H_{\\mathrm{T}}", "GeV", "\\Delta\\phi_{\\ell^{+}\\ell^{-}}", "");
+    this->MakeDistribution2D(h2_HTmet_deltaPhi, "H_{\\mathrm{T}} + E^{\\mathrm{miss}}_{\\mathrm{T}}", "GeV", "\\Delta\\phi_{\\ell^{+}\\ell^{-}}", "");
     this->MakeDistribution2D(h2_mvis_deltaPhi, "m_{\\mathrm{vis}}", "GeV", "\\Delta\\phi_{\\ell^{+}\\ell^{-}}", "");
     this->MakeDistribution2D(h2_KT_deltaPhi, "K_{\\mathrm{T}}", "GeV", "\\Delta\\phi_{\\ell^{+}\\ell^{-}}", "");
 
