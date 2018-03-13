@@ -1231,7 +1231,7 @@ void Analysis::MakeHistograms()
     h_HT_all->Sumw2();
     h_HT = new TH1D("HT", "H_{\\mathrm{T}}", 60, 0.0, 6.0);
     h_HT->Sumw2();
-    h_HTmet = new TH1D("HTmet", "H_{\\mathrm{T}} + E^{\\mathrm{miss}}_{\\mathrm{T}}}", 60, 0.0, 6.0);
+    h_HTmet = new TH1D("HTmet", "H_{\\mathrm{T}} + E^{\\mathrm{miss}}_{\\mathrm{T}}", 60, 0.0, 6.0);
     h_HTmet->Sumw2();
     h_HTjMET = new TH1D("HTjMET", "H^{j}_{\\mathrm{T}} + E^{\\mathrm{miss}}_{\\mathrm{T}}}", 60, 0.0, 6.0);
     h_HTjMET->Sumw2();
