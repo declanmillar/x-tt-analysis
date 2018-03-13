@@ -1237,7 +1237,7 @@ void Analysis::MakeHistograms()
     h_HTjMET->Sumw2();
     h_HT_truth = new TH1D("HT_truth", "H_{\\mathrm{T}}", 60, 0.0, 6.0);
     h_HT_truth->Sumw2();
-    h_HTmet_truth = new TH1D("HTmet_truth", "H_{\\mathrm{T}} + E^{\\mathrm{miss}}_{\\mathrm{T}}\\, (\\mathrm{truth})", 60, 0.0, 6.0);
+    h_HTmet_truth = new TH1D("HTmet_truth", "H_{\\mathrm{T}} + E^{\\mathrm{miss}}_{\\mathrm{T}}\\,(\\mathrm{truth})", 60, 0.0, 6.0);
     h_HTmet_truth->Sumw2();
 
     h_KT_all = new TH1D("KT_all", "K^{\\mathrm{all}}_{\\mathrm{T}}", 50, 0.0, 6.0);
@@ -1246,7 +1246,7 @@ void Analysis::MakeHistograms()
     h_KT->Sumw2();
     h_KTj = new TH1D("KTj", "K^{j}_{\\mathrm{T}}", 60, 0.0, 6.0);
     h_KTj->Sumw2();
-    h_KT_truth = new TH1D("KT_truth", "K_{\\mathrm{T}}", 60, 0.0, 6.0);
+    h_KT_truth = new TH1D("KT_truth", "K_{\\mathrm{T}}\\,(\\mathrm{truth})", 60, 0.0, 6.0);
     h_KT_truth->Sumw2();
 
     h_mass_vis_all = new TH1D("mvis_all", "m^{\\mathrm{\\mathrm{all}}}_{\\mathrm{vis}}", 60, 0.0, 6.0);
