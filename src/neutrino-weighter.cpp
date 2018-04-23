@@ -105,7 +105,7 @@ NeutrinoWeighter::NeutrinoWeighter( int setting, int event_number, double bmass 
     m_include_mtop  = false; /// Use MTop smearing in weight function
     m_include_mtbar = false; /// Use MTbar smearing in weight function
     m_do_crystalball_smearing = false; /// Use crystal ball smearing instead of Gaussian
-    if (setting ==2)
+    if (setting == 2)
     {
         m_include_phi   = true;
         m_include_mWp   = true;
@@ -144,11 +144,11 @@ NeutrinoWeighter::NeutrinoWeighter( int setting, int event_number, double bmass 
     // m_top_smears.push_back(174.5);
     
     ///-- Do W-boson Mass Smearing --///
-    m_W_smears.push_back(80.3);
-    m_W_smears.push_back(80.35);
+    // m_W_smears.push_back(80.3);
+    // m_W_smears.push_back(80.35);
     m_W_smears.push_back(80.4);
-    m_W_smears.push_back(80.45);
-    m_W_smears.push_back(80.5);
+    // m_W_smears.push_back(80.45);
+    // m_W_smears.push_back(80.5);
 
     ///-- Crystal Ball Setup --///
 
@@ -183,12 +183,12 @@ NeutrinoWeighter::NeutrinoWeighter( int setting, int event_number, double bmass 
         0.000225937634241, 0.00011296881712,  0.00011296881712, 0.0,              0.00011296881712
     };
 
-    for (int i=0; i < 20; i++)
+    for (int i = 0; i < 20; i++)
     {
-        pt_25_50.SetBinContent(   i+1, pt_25_50_hist[i]);
-        pt_50_100.SetBinContent(  i+1, pt_50_100_hist[i]);
-        pt_100_200.SetBinContent( i+1, pt_100_200_hist[i]);
-        pt_200_inf.SetBinContent( i+1, pt_200_inf_hist[i]);
+        pt_25_50.SetBinContent(i + 1, pt_25_50_hist[i]);
+        pt_50_100.SetBinContent(i + 1, pt_50_100_hist[i]);
+        pt_100_200.SetBinContent(i + 1, pt_100_200_hist[i]);
+        pt_200_inf.SetBinContent(i + 1, pt_200_inf_hist[i]);
     }
 
 }
@@ -231,8 +231,9 @@ double NeutrinoWeighter::Reconstruct(TLorentzVector lepton_pos, TLorentzVector l
                     calculateWeight(lepton_pos, lepton_neg, jet_2, jet_1, met_ex, met_ey, met_phi, m_top_smears[mtop_counter], m_top_smears[mtbar_counter], m_W_smears[mWp_counter], m_W_smears[mWn_counter]);
 
                     ///-- Jet Smearing --///
-                    //   for (int smears = 0; smears < 15; ++smears)
+                    // for (int smears = 0; smears < 15; ++smears)
                     for (int smears = 0; smears < 5; ++smears)
+                    // for (int smears = 0; smears < 100; ++smears)
                     {
                         TLorentzVector jet_1_smeared, jet_2_smeared;
 
