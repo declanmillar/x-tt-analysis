@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
     ("qq,q",             po::value<bool>()->default_value(false)->implicit_value(true))
     ("uu,u",             po::value<bool>()->default_value(false)->implicit_value(true))
     ("dd,d",             po::value<bool>()->default_value(false)->implicit_value(true))
-    ("final_state,f",    po::value<string>()->default_value("tt-bbeevv"))
+    ("final_state,F",    po::value<string>()->default_value("tt-bbeevv"))
     ("add_gg,G",         po::value<bool>()->default_value(false)->implicit_value(true))
     ("add_qq,Q",         po::value<bool>()->default_value(false)->implicit_value(true))
     ("energy,E",         po::value<int>()->default_value(13))
@@ -24,7 +24,7 @@ int main(int argc, char* argv[]) {
     ("reconstruction,r", po::value<string>()->default_value("NuW"))
     ("tag,t",            po::value<string>()->default_value(""))
     ("slice,s",          po::value<bool>()->default_value(false)->implicit_value(true))
-    ("inputFileName,i",  po::value<string>()->default_value(""))
+    ("inputFileName,f",  po::value<string>()->default_value(""))
     ("processFileName,p",po::value<string>()->default_value(""))
     ;
     po::variables_map opt;
