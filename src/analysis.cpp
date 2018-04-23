@@ -2753,6 +2753,7 @@ void Analysis::PrintCutflow()
 
         cout << m_cutNames[cut] << " " << m_cutflow[cut] << "\n";
     }
+    cout << "Reconstruction efficiency = " << double(double(m_cutflow[m_cuts - 1]) / double(m_cutflow[m_cuts - 2]) * 100.0) << "[\%]" << "\n";
     if (m_debug) cout << "Writing cut flow ...\n";
     h_cutflow->Write();
     if (m_debug) cout << "Written cut flow\n";
