@@ -21,6 +21,7 @@
 #include "sys/stat.h"
 #include "TTF.h"
 #include "TCanvas.h"
+#include <boost/timer/timer.hpp>
 
 #include "classes/DelphesClasses.h"
 #include "ExRootAnalysis/ExRootTreeReader.h"
@@ -88,6 +89,8 @@ private:
 
     double m_crossSection;
     Long64_t m_nevents;
+    Long64_t m_nevents_max;
+    double m_event_time;
 
     vector<double> iteration_weights;
     string m_dataDirectory;
@@ -511,7 +514,7 @@ public:
         this->PreLoop();
     }
 
-    Analysis(const string& inputfilename, const string& processfilename, const int luminosity, const int minBtags, const string& reconstruction, const string& tag, const bool slice):
+    Analysis(const string& inputfilename, const string& processfilename, const int luminosity, const int minBtags, const string& reconstruction, const Long64_t nevents_max = 0, const string& tag = "", const bool slice = false):
         m_inputFileName(inputfilename),
         m_processfilename(processfilename),
         m_model(""),
@@ -521,6 +524,7 @@ public:
         m_luminosity(luminosity),
         m_minBtags(minBtags),
         m_reconstruction(reconstruction),
+        m_nevents_max(nevents_max),
         m_tag(tag),
         m_useMassSlices(slice),
         m_xSec(false),

@@ -2651,10 +2651,12 @@ void Analysis::GetProcessWeight(int proc_id)
 
 
 void Analysis::Loop()
-{
+{    
     cout << "PROGRESS\n";
     int nfiles = m_input->size();
     for (itr_s it = m_input->begin(); it != m_input->end(); ++it) {
+        // boost::timer::auto_cpu_timer auto_timer;
+        boost::timer::cpu_timer timer;
         int i = it - m_input->begin();
         if (i + 1 < 10) cout << "   ";
         else if (i + 1 < 100) cout << "  ";
@@ -2662,7 +2664,8 @@ void Analysis::Loop()
         cout << i + 1 << "/" << nfiles << ": ";
         this->EachFile(get<0>(*it));
         std::cout << get<0>(*it) << "\n";
-        m_nevents = this->TotalEvents();
+        if (m_nevents_max > 0) m_nevents = m_nevents_max;
+        else m_nevents = this->TotalEvents();
         int proc_id = get<1>(m_input->at(i));
         if (m_xSec)  {
             this->GetGenerationCrossSection(proc_id);
@@ -2679,6 +2682,13 @@ void Analysis::Loop()
             ProgressPercentage(jevent, m_nevents - 1, 50);
         }
         this->CleanUp();
+        boost::timer::cpu_times elapsed_time(timer.elapsed());
+        auto user_time = elapsed_time.user;
+        auto system_time = elapsed_time.system;
+        auto loop_time = (user_time + system_time) / 1e9;
+        m_event_time = loop_time / m_nevents;
+        // cout << "elapsed time = " << loop_time << "\n";
+        // cout << "event time = " << m_event_time << "\n";
     }
 }
 
@@ -2802,7 +2812,8 @@ void Analysis::PrintCutflow()
     }
     cout << "\nRECONSTRUCTION PERFORMANCE\n";
     cout << "Reconstruction efficiency [%]   " << double(double(m_cutflow[m_cuts - 1]) / double(m_cutflow[m_cuts - 2]) * 100.0) << "\n";
-    cout << "Reconstruction quality    [%]   " << 100.0 * h_reco_quality->GetBinContent(1) << "\n";
+    cout << "Reconstruction quality [%]      " << 100.0 * h_reco_quality->GetBinContent(1) << "\n";
+    cout << "Average CPU time per event [s]  " << m_event_time << "\n";
     cout << "Resolution (RMS) - top and tbar\n";
     cout << "pT [GeV]                        " << h_res_pT_tops->GetRMS() << "\n";
     cout << "y                               " << h_res_y_tops->GetRMS() << "\n";

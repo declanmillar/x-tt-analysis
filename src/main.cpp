@@ -1,7 +1,7 @@
 #include "analysis.hpp"
 #include "boost/program_options.hpp"
 #include "atlas-style.hpp"
-#include <boost/timer/timer.hpp>
+// #include <boost/timer/timer.hpp>
 
 using namespace std;
 
@@ -9,7 +9,7 @@ namespace po = boost::program_options;
 
 int main(int argc, char* argv[]) {
     
-    boost::timer::auto_cpu_timer timer;
+    // boost::timer::auto_cpu_timer timer;
     
     po::options_description desc("options");
     desc.add_options()
@@ -26,6 +26,7 @@ int main(int argc, char* argv[]) {
     ("minimumBtags,b",   po::value<int>()->default_value(1))
     ("options,o",        po::value<string>()->default_value(""))
     ("reconstruction,r", po::value<string>()->default_value("NuW"))
+    ("nevents_max,n",  po::value<Long64_t>()->default_value(0))
     ("tag,t",            po::value<string>()->default_value(""))
     ("slice,s",          po::value<bool>()->default_value(false)->implicit_value(true))
     ("inputFileName,f",  po::value<string>()->default_value(""))
@@ -54,6 +55,7 @@ int main(int argc, char* argv[]) {
     auto add_qq = opt["add_qq"].as<bool>();
     auto minimumBtags = opt["minimumBtags"].as<int>();
     auto reconstruction = opt["reconstruction"].as<const string>();
+    auto nevents_max = opt["nevents_max"].as<const Long64_t>();
     auto tag = opt["tag"].as<string>();
     auto slice = opt["slice"].as<bool>();
 
@@ -95,7 +97,7 @@ int main(int argc, char* argv[]) {
         analysis->Run();
     }
     else {
-        auto analysis = new Analysis(inputFileName, processFileName, luminosity, minimumBtags, reconstruction, tag, slice);
+        auto analysis = new Analysis(inputFileName, processFileName, luminosity, minimumBtags, reconstruction, nevents_max, tag, slice);
         analysis->Run();
     }
 
