@@ -75,12 +75,17 @@ int main(int argc, char* argv[]) {
         cout << "ERROR: invalid reconstruction \"" << reconstruction << "\"\n";
         return 0;
     }
+    
+    string reconstruction_long = "";
+    if (reconstruction == "TRN") reconstruction_long = "Transverse variables only; no reconstruction";
+    else if (reconstruction == "KIN") reconstruction_long = "Minimise invariant top pair mass";
+    else if (reconstruction == "NuW") reconstruction_long = "Neutrino Weighting";
 
     cout << "SETTINGS\n";
     if (inputFileName == "") cout << "Process:          " << process << "\n";
     else cout                     << "Input file:       " << inputFileName << "\n";
     cout << "Minimum b-tags:   " << minimumBtags << "\n";
-    cout << "Reconstruction:   " << reconstruction << "\n";
+    cout << "Reconstruction:   " << reconstruction_long << "\n";
     if (options != "") cout << "Options:          " << options << "\n";
     if (luminosity != -1) cout << "Luminosity:       " << luminosity << " [fb-1]\n";
     cout << "Energy:           " << energy << " [TeV]\n";

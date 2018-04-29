@@ -126,8 +126,7 @@ void Analysis::EachEvent(double weight)
     int ijet = 0;
     for (auto tag : *m_jet_truth_tags) {
         Jet *jet = m_jets->at(ijet);
-        if (tag) 
-        {
+        if (tag) {
             int nTracks = 0;
             for (int k = 0; k < jet->Constituents.GetEntriesFast(); ++k) {
                 TObject* object = jet->Constituents.At(k);
@@ -481,8 +480,8 @@ void Analysis::EachEvent(double weight)
             cout << "error: Reconstruction = {KIN, NuW}\n";
         }
         
-         h_dR_l->Fill(min(p_l.first.DeltaR(p_l_truth.first), p_l.first.DeltaR(p_l_truth.first)));
-         h_dR_l->Fill(min(p_l.second.DeltaR(p_l_truth.second), p_l.second.DeltaR(p_l_truth.second)));
+        h_dR_l->Fill(min(p_l.first.DeltaR(p_l_truth.first), p_l.first.DeltaR(p_l_truth.first)));
+        h_dR_l->Fill(min(p_l.second.DeltaR(p_l_truth.second), p_l.second.DeltaR(p_l_truth.second)));
 
         TLorentzVector p_W1 = p_l.first + p_v1;
         TLorentzVector p_W2 = p_l.second + p_v2;
@@ -576,6 +575,9 @@ void Analysis::EachEvent(double weight)
 
         double dR_ttbar = p_ttbar.DeltaR(p_ttbar_truth);
         h_dR_ttbar->Fill(dR_ttbar, weight);
+        
+        if (dR_top < 0.3 and dR_tbar < 0.3) h_reco_quality->Fill(0.5, 1);
+        else h_reco_quality->Fill(0.5, 0);
 
         h_perf_pT_top->Fill((p_t_truth.first.Pt() - p_top.Pt()) / p_t_truth.first.Pt(), weight);
         h_perf_eta_top->Fill((p_t_truth.first.Eta() - p_top.Eta()) / p_t_truth.first.Eta(), weight);
@@ -592,6 +594,20 @@ void Analysis::EachEvent(double weight)
         h_perf_phi_ttbar->Fill((p_ttbar_truth.Phi() - p_ttbar.Phi()) / p_ttbar_truth.Phi(), weight);
         double perf_mass_ttbar = (mass_ttbar_truth - mass_ttbar) / mass_ttbar_truth;
         h_perf_mass_ttbar->Fill(perf_mass_ttbar, weight);
+        
+        h_res_pT_tops->Fill(p_t_truth.first.Pt() - p_top.Pt(), weight);
+        h_res_y_tops->Fill(p_t_truth.first.Rapidity() - p_top.Rapidity(), weight);
+        h_res_phi_tops->Fill(p_t_truth.first.Phi() - p_top.Phi(), weight);
+        h_res_eta_tops->Fill(p_t_truth.first.Eta() - p_top.Eta(), weight);
+        h_res_pT_tops->Fill(p_t_truth.second.Pt() - p_tbar.Pt(), weight);
+        h_res_y_tops->Fill(p_t_truth.second.Rapidity() - p_tbar.Rapidity(), weight);
+        h_res_phi_tops->Fill(p_t_truth.second.Phi() - p_tbar.Phi(), weight);
+        h_res_eta_tops->Fill(p_t_truth.second.Eta() - p_tbar.Eta(), weight);
+        
+        h_res_pT_ttbar->Fill(p_ttbar_truth.Pt() - p_ttbar.Pt(), weight);
+        h_res_y_ttbar->Fill(p_ttbar_truth.Rapidity() - p_ttbar.Rapidity(), weight);
+        h_res_mass_ttbar->Fill(1000* (mass_ttbar_truth - mass_ttbar), weight);
+        h_res_eta_ttbar->Fill(p_ttbar_truth.Eta() - p_ttbar.Eta(), weight);
 
         h2_perf_mass_ttbar->Fill(mass_ttbar_truth, perf_mass_ttbar, weight);
         h2_perf_mass_ttbar_pTtop->Fill(p_t_truth.first.Pt(), perf_mass_ttbar, weight);
@@ -1372,9 +1388,9 @@ void Analysis::MakeHistograms()
     h2_KT_deltaPhi->GetYaxis()->SetTitle("\\Delta\\phi_{\\ell^{+}\\ell^{-}}\\;[rad/\\pi]");
     h2_KT_deltaPhi->Sumw2();
 
-    h_dR_top = new TH1D("dR_top", "\\Delta R\\left(t_{\\mathrm{truth}},t_{\\mathrm{reco}}\\right)", 25, 0.0, 10.0);
-    h_dR_tbar = new TH1D("dR_tbar", "\\Delta R\\left(\\bar{t}_{\\mathrm{truth}},\\bar{t}_{\\mathrm{reco}}\\right)", 25, 0.0, 10.0);
-    h_dR_ttbar = new TH1D("dR_ttbar", "\\Delta R\\left(t\\bar{t}_{\\mathrm{truth}}, t\\bar{t}_{\\mathrm{reco}}\\right)", 25, 0.0, 10.0);
+    h_dR_top = new TH1D("dR_top", "\\Delta R\\left(t_{\\mathrm{truth}},t_{\\mathrm{reco}}\\right)", 100, 0.0, 10.0);
+    h_dR_tbar = new TH1D("dR_tbar", "\\Delta R\\left(\\bar{t}_{\\mathrm{truth}},\\bar{t}_{\\mathrm{reco}}\\right)", 100, 0.0, 10.0);
+    h_dR_ttbar = new TH1D("dR_ttbar", "\\Delta R\\left(t\\bar{t}_{\\mathrm{truth}}, t\\bar{t}_{\\mathrm{reco}}\\right)", 100, 0.0, 10.0);
     
     h_dR_l = new TH1D("dR_l", "\\Delta R\\left(\\ell_{\\mathrm{reco}}, \\ell_{\\mathrm{truth}}\\right)", 20, 0.0, 0.2);
     
@@ -1413,6 +1429,20 @@ void Analysis::MakeHistograms()
     h_perf_pT_ttbar = new TH1D("perf_pT_ttbar", "\\left(p^{t\\bar{t},\\mathrm{truth}}_{T} - p^{t\\bar{t},\\mathrm{reco}}_{T}\\right) / p^{t\\bar{t},\\mathrm{truth}}_{T}\\ ", 100, -3, 3);
     h_perf_eta_ttbar = new TH1D("perf_eta_ttbar", "\\left(\\eta^{\\mathrm{truth}}_{t\\bar{t}} - \\eta^{\\mathrm{reco}}_{t\\bar{t}}\\right) / \\eta^{\\mathrm{truth}}_{t\\bar{t}}}\\ ", 100, -3, 3);
     h_perf_phi_ttbar = new TH1D("perf_phi_ttbar", "\\left(\\phi^{\\mathrm{truth}}_{t\\bar{t}} - \\phi^{\\mathrm{reco}}_{t\\bar{t}}\\right) / \\phi^{\\mathrm{truth}}_{t\\bar{t}}\\ ", 100, -3, 3);
+    
+    h_res_bjet = new TH1D("res_bjet", "\\left(p^{b,\\mathrm{truth}}_{\\mathrm{T}} - p^{b,\\mathrm{reco}}_{\\mathrm{T}}\\right) / p^{b,\\mathrm{truth}}_{\\mathrm{T}}\\ ", 100, -3, 3);
+    
+    h_res_pT_tops = new TH1D("res_pT_tops", "p_{\\mathrm{T}}^{t}\\ resolution", 100, -2000.0, 2000.0);
+    h_res_y_tops = new TH1D("res_y_tops", "y_{t}\\ resolution", 100, -5.0, 5.0);
+    h_res_phi_tops = new TH1D("res_phi_tops", "\\phi_{t}\\ resolution", 100, -10.0, 10.0);
+    h_res_eta_tops = new TH1D("res_eta_tops", "\\eta_{t}\\ resolution", 100, -5.0, 5.0);
+    
+    h_res_pT_ttbar = new TH1D("res_pT_ttbar", "p_{\\mathrm{T}}^{t\\bar{t}}\\ resolution", 100, -2000.0, 2000.0);
+    h_res_y_ttbar = new TH1D("res_y_ttbar", "y_{t\\bar{t}}\\ resolution", 100, -5.0, 5.0);
+    h_res_mass_ttbar = new TH1D("res_mass_ttbar", "\\m_{t\\bar{t}}\\ resolution", 100, -5000.0, 5000.0);
+    h_res_eta_ttbar = new TH1D("res_eta_ttbar", "\\eta_{t\\bar{t}}\\ resolution", 100, -5.0, 5.0);
+    
+    h_reco_quality = new TProfile("reco_quality", "Reconstruction Quality", 1, 0, 1);
 
     h_eff_cut_2l_mass_ttbar_truth = new TProfile("eff_cut_2l_mass_ttbar_truth", "eff_cut_2l_mass_ttbar_truth", nbins, Emin, Emax);
     h_eff_cut_oc_mass_ttbar_truth  = new TProfile("eff_cut_oc_mass_ttbar_truth", "eff_cut_oc_mass_ttbar_truth", nbins, Emin, Emax);
@@ -1664,6 +1694,16 @@ void Analysis::MakeDistributions()
         this->MakeDistribution1D(h_perf_pT_ttbar, "");
         this->MakeDistribution1D(h_perf_eta_ttbar, "");
         this->MakeDistribution1D(h_perf_phi_ttbar, "");
+        this->MakeDistribution1D(h_res_bjet, "");
+        this->MakeDistribution1D(h_res_pT_tops, "");
+        this->MakeDistribution1D(h_res_y_tops, "");
+        this->MakeDistribution1D(h_res_phi_tops, "");
+        this->MakeDistribution1D(h_res_eta_tops, "");
+        this->MakeDistribution1D(h_res_pT_ttbar, "");
+        this->MakeDistribution1D(h_res_y_ttbar, "");
+        this->MakeDistribution1D(h_res_mass_ttbar, "");
+        this->MakeDistribution1D(h_res_eta_ttbar, "");
+        this->MakeDistribution1D(h_reco_quality, "");
         this->MakeDistribution2D(h2_perf_mass_ttbar, "m^{\\mathrm{truth}}_{t\\bar{t}}\\ ", "TeV", "\\left(m^{\\mathrm{truth}}_{t\\bar{t}} - m^{\\mathrm{reco}}_{t\\bar{t}}\\right) / m^{\\mathrm{truth}}_{t\\bar{t}}\\ ", "");
         this->MakeDistribution2D(h2_perf_mass_ttbar_pTtop, "p^{t,\\mathrm{truth}}_{T}\\ ", "GeV", "\\left(m^{\\mathrm{truth}}_{t\\bar{t}} - m^{\\mathrm{reco}}_{t\\bar{t}}\\right) / m^{\\mathrm{truth}}_{t\\bar{t}}\\ ", "");
         this->MakeDistribution2D(h2_perf_mass_ttbar_pTtbar, "p^{\\bar{t},\\mathrm{truth}}_{T}\\ ", "GeV", "\\left(m^{\\mathrm{truth}}_{t\\bar{t}} - m^{\\mathrm{reco}}_{t\\bar{t}}\\right) / m^{\\mathrm{truth}}_{t\\bar{t}}\\ ", "");
@@ -2287,7 +2327,14 @@ void Analysis::TruthTagJets()
         double dR_b = p_j.DeltaR(p_b);
         double dR_bbar = p_j.DeltaR(p_bbar);
         // cout << "dR_lp = " << dR_lp << ", dR_lm =" << dR_lm << "\n";
-        if (dR_b < dRmax or dR_bbar < dRmax) m_jet_truth_tags->push_back(true);
+        if (dR_b < dRmax) {
+            h_res_bjet->Fill((p_b.Pt() - jet->PT) /  jet->PT);
+            m_jet_truth_tags->push_back(true);
+        }
+        else if (dR_bbar < dRmax) {
+            h_res_bjet->Fill((p_bbar.Pt() - jet->PT) /  jet->PT);
+            m_jet_truth_tags->push_back(true);
+        }
         else m_jet_truth_tags->push_back(false);
     }
 }
@@ -2744,7 +2791,7 @@ void Analysis::UpdateCutflow(const int cut, const bool passed)
 
 void Analysis::PrintCutflow()
 {
-    cout << "\nCUTFLOW\n";
+    cout << "\n\nCUTFLOW\n";
     for (int cut = 0; cut < m_cuts; ++cut) {
         if (m_cutflow[cut] == -999) continue;
 
@@ -2753,7 +2800,20 @@ void Analysis::PrintCutflow()
 
         cout << m_cutNames[cut] << " " << m_cutflow[cut] << "\n";
     }
-    cout << "Reconstruction efficiency = " << double(double(m_cutflow[m_cuts - 1]) / double(m_cutflow[m_cuts - 2]) * 100.0) << "[\%]" << "\n";
+    cout << "\nRECONSTRUCTION PERFORMANCE\n";
+    cout << "Reconstruction efficiency [%]   " << double(double(m_cutflow[m_cuts - 1]) / double(m_cutflow[m_cuts - 2]) * 100.0) << "\n";
+    cout << "Reconstruction quality    [%]   " << 100.0 * h_reco_quality->GetBinContent(1) << "\n";
+    cout << "Resolution (RMS) - top and tbar\n";
+    cout << "pT [GeV]                        " << h_res_pT_tops->GetRMS() << "\n";
+    cout << "y                               " << h_res_y_tops->GetRMS() << "\n";
+    cout << "phi                             " << h_res_phi_tops->GetRMS() << " \n";
+    cout << "eta                             " << h_res_eta_tops->GetRMS() << "\n";
+    cout << "Resolution (RMS) - ttbar system\n";
+    cout << "pT [GeV]                        " << h_res_pT_ttbar->GetRMS() << "\n";
+    cout << "y                               " << h_res_y_ttbar->GetRMS() << "\n";
+    cout << "mass [GeV]                      " << h_res_mass_ttbar->GetRMS() << "\n";
+    cout << "eta                             " << h_res_eta_ttbar->GetRMS() << "\n";
+    
     if (m_debug) cout << "Writing cut flow ...\n";
     h_cutflow->Write();
     if (m_debug) cout << "Written cut flow\n";

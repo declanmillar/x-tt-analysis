@@ -205,7 +205,7 @@ double NeutrinoWeighter::Reconstruct(TLorentzVector lepton_pos, TLorentzVector l
     else if (jet_1.Pt() < 80.0) width_1 = 0.09;
     else if (jet_1.Pt() < 150.0) width_1 = 0.08;
     else width_1 = 0.06;
-
+    
     if (jet_2.Pt() < 40.0) width_2 = 0.13;
     else if (jet_2.Pt() < 50.0) width_2 = 0.14;
     else if (jet_2.Pt() < 60.0) width_2 = 0.12;
@@ -213,6 +213,9 @@ double NeutrinoWeighter::Reconstruct(TLorentzVector lepton_pos, TLorentzVector l
     else if (jet_2.Pt() < 80.0) width_2 = 0.09;
     else if (jet_2.Pt() < 150.0) width_2 = 0.08;
     else width_2 = 0.06;
+    
+    // width_1 = 0.5;
+    // width_2 = 0.5;
 
     for(size_t mtop_counter = 0; mtop_counter < m_top_smears.size(); ++mtop_counter)
     {
@@ -233,7 +236,7 @@ double NeutrinoWeighter::Reconstruct(TLorentzVector lepton_pos, TLorentzVector l
                     ///-- Jet Smearing --///
                     // for (int smears = 0; smears < 15; ++smears)
                     for (int smears = 0; smears < 5; ++smears)
-                    // for (int smears = 0; smears < 100; ++smears)
+                    // for (int smears = 0; smears < 50; ++smears)
                     {
                         TLorentzVector jet_1_smeared, jet_2_smeared;
 
@@ -490,10 +493,10 @@ double NeutrinoWeighter::neutrino_weight(TLorentzVector neutrino1, TLorentzVecto
     double dmtop = mtop - top.M();
     double dmtbar = mtbar - tbar.M();
 
-    //double m_sigma_met_ex = m_met_sumet * 0.023 + 6.5;
-    //double m_sigma_met_ey = m_met_sumet * 0.023 + 6.5;
-    double m_sigma_met_ex  = 0.2 * met_ex;
-    double m_sigma_met_ey  = 0.2 * met_ey;
+    // double m_sigma_met_ex = m_met_sumet * 0.023 + 6.5;
+    // double m_sigma_met_ey = m_met_sumet * 0.023 + 6.5;
+    double m_sigma_met_ex  = 0.3 * met_ex;
+    double m_sigma_met_ey  = 0.3 * met_ey;
     double m_sigma_met_phi = 0.05;//0.15
     double m_sigma_mWp     = 0.015;
     double m_sigma_mWn     = 0.015;

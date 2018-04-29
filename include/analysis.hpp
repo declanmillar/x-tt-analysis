@@ -261,7 +261,20 @@ private:
     TH2D* h2_perf_mass_ttbar;
     TH2D* h2_perf_mass_ttbar_pTtop;
     TH2D* h2_perf_mass_ttbar_pTtbar;
-
+    
+    // resolution
+    TH1D* h_res_bjet;
+    TH1D* h_res_pT_tops;
+    TH1D* h_res_y_tops;
+    TH1D* h_res_phi_tops;
+    TH1D* h_res_eta_tops;
+    
+    TH1D* h_res_pT_ttbar;
+    TH1D* h_res_y_ttbar;
+    TH1D* h_res_mass_ttbar;
+    TH1D* h_res_eta_ttbar;
+    
+    TProfile* h_reco_quality;
 
     TH2D* h2_mass_top_TvR;
     TH2D* h2_pT_top_TvR;
