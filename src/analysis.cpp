@@ -1430,17 +1430,21 @@ void Analysis::MakeHistograms()
     h_perf_eta_ttbar = new TH1D("perf_eta_ttbar", "\\left(\\eta^{\\mathrm{truth}}_{t\\bar{t}} - \\eta^{\\mathrm{reco}}_{t\\bar{t}}\\right) / \\eta^{\\mathrm{truth}}_{t\\bar{t}}}\\ ", 100, -3, 3);
     h_perf_phi_ttbar = new TH1D("perf_phi_ttbar", "\\left(\\phi^{\\mathrm{truth}}_{t\\bar{t}} - \\phi^{\\mathrm{reco}}_{t\\bar{t}}\\right) / \\phi^{\\mathrm{truth}}_{t\\bar{t}}\\ ", 100, -3, 3);
     
-    h_res_bjet = new TH1D("res_bjet", "\\left(p^{b,\\mathrm{truth}}_{\\mathrm{T}} - p^{b,\\mathrm{reco}}_{\\mathrm{T}}\\right) / p^{b,\\mathrm{truth}}_{\\mathrm{T}}\\ ", 100, -3, 3);
+    h_res_pT_bjets = new TH1D("res_bjet", "p^{b,\\mathrm{truth}}_{\\mathrm{T}} - p^{b,\\mathrm{reco}}_{\\mathrm{T}} (high pT)", 100, -3.0, 3.0);
     
-    h_res_pT_tops = new TH1D("res_pT_tops", "p_{\\mathrm{T}}^{t}\\ resolution", 100, -2000.0, 2000.0);
-    h_res_y_tops = new TH1D("res_y_tops", "y_{t}\\ resolution", 100, -5.0, 5.0);
-    h_res_phi_tops = new TH1D("res_phi_tops", "\\phi_{t}\\ resolution", 100, -10.0, 10.0);
-    h_res_eta_tops = new TH1D("res_eta_tops", "\\eta_{t}\\ resolution", 100, -5.0, 5.0);
+    double pT_bins[26] = {0, 40, 50, 60, 70, 80, 150, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000}; 
+    h2_resPtBjets_pT = new TH2D("res_bjet_pT", "p^{b,\\mathrm{truth}}_{\\mathrm{T}} - p^{b,\\mathrm{reco}}_{\\mathrm{T}} \\times p_{\\mathrm{T}}", 25, pT_bins, 100, -3, 3);
+    // h2_resPtBjets_pT = new TH2D("res_bjet_pT", "p^{b,\\mathrm{truth}}_{\\mathrm{T}} - p^{b,\\mathrm{reco}}_{\\mathrm{T}} \\times p_{\\mathrm{T}}", 10, 0.0, 2000.0, 100, -3.0, 3.0);
     
-    h_res_pT_ttbar = new TH1D("res_pT_ttbar", "p_{\\mathrm{T}}^{t\\bar{t}}\\ resolution", 100, -2000.0, 2000.0);
-    h_res_y_ttbar = new TH1D("res_y_ttbar", "y_{t\\bar{t}}\\ resolution", 100, -5.0, 5.0);
-    h_res_mass_ttbar = new TH1D("res_mass_ttbar", "\\m_{t\\bar{t}}\\ resolution", 100, -5000.0, 5000.0);
-    h_res_eta_ttbar = new TH1D("res_eta_ttbar", "\\eta_{t\\bar{t}}\\ resolution", 100, -5.0, 5.0);
+    h_res_pT_tops = new TH1D("res_pT_tops", "p_{\\mathrm{T}}^{t}\\ resolution", 1000, -2000.0, 2000.0);
+    h_res_y_tops = new TH1D("res_y_tops", "y_{t}\\ resolution", 1000, -5.0, 5.0);
+    h_res_phi_tops = new TH1D("res_phi_tops", "\\phi_{t}\\ resolution", 1000, -10.0, 10.0);
+    h_res_eta_tops = new TH1D("res_eta_tops", "\\eta_{t}\\ resolution", 1000, -5.0, 5.0);
+    
+    h_res_pT_ttbar = new TH1D("res_pT_ttbar", "p_{\\mathrm{T}}^{t\\bar{t}}\\ resolution", 1000, -2000.0, 2000.0);
+    h_res_y_ttbar = new TH1D("res_y_ttbar", "y_{t\\bar{t}}\\ resolution", 1000, -5.0, 5.0);
+    h_res_mass_ttbar = new TH1D("res_mass_ttbar", "\\m_{t\\bar{t}}\\ resolution", 1000, -5000.0, 5000.0);
+    h_res_eta_ttbar = new TH1D("res_eta_ttbar", "\\eta_{t\\bar{t}}\\ resolution", 1000, -5.0, 5.0);
     
     h_reco_quality = new TProfile("reco_quality", "Reconstruction Quality", 1, 0, 1);
 
@@ -1694,7 +1698,8 @@ void Analysis::MakeDistributions()
         this->MakeDistribution1D(h_perf_pT_ttbar, "");
         this->MakeDistribution1D(h_perf_eta_ttbar, "");
         this->MakeDistribution1D(h_perf_phi_ttbar, "");
-        this->MakeDistribution1D(h_res_bjet, "");
+        this->MakeDistribution1D(h_res_pT_bjets, "");
+        this->MakeDistribution2D(h2_resPtBjets_pT, "p^{b}_{\\mathrm{T}}\\, ", "GeV",  "(p^{b,\\mathrm{truth}}_{\\mathrm{T}} - p^{b,\\mathrm{reco}}_{\\mathrm{T}})/p^{b,\\mathrm{truth}}_{\\mathrm{T}}", "");
         this->MakeDistribution1D(h_res_pT_tops, "");
         this->MakeDistribution1D(h_res_y_tops, "");
         this->MakeDistribution1D(h_res_phi_tops, "");
@@ -2328,11 +2333,13 @@ void Analysis::TruthTagJets()
         double dR_bbar = p_j.DeltaR(p_bbar);
         // cout << "dR_lp = " << dR_lp << ", dR_lm =" << dR_lm << "\n";
         if (dR_b < dRmax) {
-            h_res_bjet->Fill((p_b.Pt() - jet->PT) /  jet->PT);
+            h2_resPtBjets_pT->Fill(p_b.Pt(), (p_b.Pt() - jet->PT) /  p_b.Pt());
+            if (p_b.Pt() < 200.0) h_res_pT_bjets->Fill((p_b.Pt() - jet->PT) / p_b.Pt());
             m_jet_truth_tags->push_back(true);
         }
         else if (dR_bbar < dRmax) {
-            h_res_bjet->Fill((p_bbar.Pt() - jet->PT) /  jet->PT);
+            h2_resPtBjets_pT->Fill(p_bbar.Pt(), (p_bbar.Pt() - jet->PT) / p_bbar.Pt());
+            if (p_bbar.Pt() < 200.0) h_res_pT_bjets->Fill((p_bbar.Pt() - jet->PT) /  p_bbar.Pt());
             m_jet_truth_tags->push_back(true);
         }
         else m_jet_truth_tags->push_back(false);
@@ -2824,7 +2831,17 @@ void Analysis::PrintCutflow()
     cout << "y                               " << h_res_y_ttbar->GetRMS() << "\n";
     cout << "mass [GeV]                      " << h_res_mass_ttbar->GetRMS() << "\n";
     cout << "eta                             " << h_res_eta_ttbar->GetRMS() << "\n";
-    
+    cout << "Resolution (RMS) - b jets\n";
+    cout << "pT [GeV]                        " << h_res_pT_bjets->GetRMS() << "\n";
+    // cout << "y                               " << h_res_y_ttbar->GetRMS() << "\n";
+    // cout << "mass [GeV]                      " << h_res_mass_ttbar->GetRMS() << "\n";
+    // cout << "eta                             " << h_res_eta_ttbar->GetRMS() << "\n";
+    // cout << "pT [GeV]                        " << h2_resPtBjets_pT->GetRMS(2) << "\n";
+    cout << "Resolution (RMS) - b jets in PT ranges \n";
+    for (int i = 0; i < h2_resPtBjets_pT->GetNbinsX(); ++i) {
+        h2_resPtBjets_pT->GetXaxis()->SetRange(i, i + 1);
+        cout << i + 1 << "  pT [GeV]                        " << h2_resPtBjets_pT->GetRMS(2) << "\n";
+    }
     if (m_debug) cout << "Writing cut flow ...\n";
     h_cutflow->Write();
     if (m_debug) cout << "Written cut flow\n";

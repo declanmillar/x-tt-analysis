@@ -266,7 +266,9 @@ private:
     TH2D* h2_perf_mass_ttbar_pTtbar;
     
     // resolution
-    TH1D* h_res_bjet;
+    TH1D* h_res_pT_bjets;
+    TH2D* h2_resPtBjets_pT;
+    
     TH1D* h_res_pT_tops;
     TH1D* h_res_y_tops;
     TH1D* h_res_phi_tops;

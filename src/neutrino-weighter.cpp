@@ -214,8 +214,24 @@ double NeutrinoWeighter::Reconstruct(TLorentzVector lepton_pos, TLorentzVector l
     else if (jet_2.Pt() < 150.0) width_2 = 0.08;
     else width_2 = 0.06;
     
-    // width_1 = 0.5;
-    // width_2 = 0.5;
+    // if (jet_1.Pt() < 40.0) width_1 = 0.52;
+    // else if (jet_1.Pt() < 50.0) width_1 = 0.56;
+    // else if (jet_1.Pt() < 60.0) width_1 = 0.48;
+    // else if (jet_1.Pt() < 70.0) width_1 = 0.44;
+    // else if (jet_1.Pt() < 80.0) width_1 = 0.36;
+    // else if (jet_1.Pt() < 150.0) width_1 = 0.32;
+    // else width_1 = 0.24;
+    // 
+    // if (jet_2.Pt() < 40.0) width_2 = 0.52;
+    // else if (jet_2.Pt() < 50.0) width_2 = 0.56;
+    // else if (jet_2.Pt() < 60.0) width_2 = 0.48;
+    // else if (jet_2.Pt() < 70.0) width_2 = 0.44;
+    // else if (jet_2.Pt() < 80.0) width_2 = 0.36;
+    // else if (jet_2.Pt() < 150.0) width_2 = 0.32;
+    // else width_2 = 0.24;
+    
+    width_1 = 0.5;
+    width_2 = 0.5;
 
     for(size_t mtop_counter = 0; mtop_counter < m_top_smears.size(); ++mtop_counter)
     {
