@@ -1,5 +1,6 @@
 cmake_minimum_required (VERSION 3.0 FATAL_ERROR)
-project (apsis)
+set(CMAKE_CXX_FLAGS "-O2")
+project (acolyte)
 
 find_package(Boost COMPONENTS system program_options filesystem timer REQUIRED)
 
