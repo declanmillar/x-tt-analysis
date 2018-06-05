@@ -4,6 +4,13 @@ project (acolyte)
 
 find_package(Boost COMPONENTS system program_options filesystem timer REQUIRED)
 
+# necessary for finding boost libraries on iridis 
+include_directories(/local/software/boost/1.61.0/include)
+find_library(boost_program_options boost_program_options /local/software/boost/1.61.0/lib)
+find_library(boost_system boost_system /local/software/boost/1.61.0/lib)
+find_library(boost_filesystem boost_filesystem /local/software/boost/1.61.0/lib)
+find_library(boost_timer boost_filesystem /local/software/boost/1.61.0/lib)
+
 list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
 find_package(ROOT REQUIRED COMPONENTS RIO Net)
 include(${ROOT_USE_FILE})
