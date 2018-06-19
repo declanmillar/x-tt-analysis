@@ -58,6 +58,9 @@ void Analysis::EachEvent(double weight)
     HTmet_truth = HTmet_truth / 1000;
     KT_truth = KT_truth / 1000;
     
+    double deltaPhi_tt_truth = p_t_truth.first.DeltaPhi(p_t_truth.first);
+    h_deltaPhi_tt_truth->Fill(deltaPhi_tt_truth, weight);
+    
     // double dRmax = min(dR_l1b1, dR_l2b2) / 2;
     // cout << mass_ttbar_truth << " " << dR_l1b1 << "\n";
     
@@ -107,8 +110,6 @@ void Analysis::EachEvent(double weight)
     h_n_truthMuons->Fill(m_truthMuons->size(), weight);
     h_n_truthBquarks->Fill(m_truthBquarks->size(), weight);
     
-    // this->GetElectrons();
-    // this->GetMuons();
     this->SelectElectrons();
     this->SelectMuons();
     this->SelectJets();
@@ -351,17 +352,17 @@ void Analysis::EachEvent(double weight)
 
     if (m_debug) cout << "filled transverse histograms\n";
 
-    auto delta_abs_etal = abs(p_l.first.Eta()) - abs(p_l.second.Eta());
+    auto deltaAbsEta_l = abs(p_l.first.Eta()) - abs(p_l.second.Eta());
 
     TLorentzVector p_ll = p_l.first + p_l.second;
-    auto yll = p_ll.Rapidity();
+    auto y_ll = p_ll.Rapidity();
     auto pll_l = p_l.first;
     TVector3 v_ll = - (p_ll).BoostVector();
     pll_l.Boost(v_ll);
     double cosTheta_l = pll_l.CosTheta();
-    double cosThetaStar_l = int(yll / abs(yll)) * cosTheta_l;
+    double cosThetaStar_l = int(y_ll / abs(y_ll)) * cosTheta_l;
 
-    double deltaPhi = p_l.first.DeltaPhi(p_l.second) / m_pi;
+    double deltaPhi_ll = p_l.first.DeltaPhi(p_l.second) / m_pi;
 
     h_cosTheta_l->Fill(cosTheta_l, weight);
     h_cosThetaStar_l->Fill(cosThetaStar_l, weight);
@@ -371,12 +372,12 @@ void Analysis::EachEvent(double weight)
     h_eta_l1->Fill(p_l.first.Eta(), weight);
     h_eta_l2->Fill(p_l.second.Eta(), weight);
 
-    h_deltaPhi_ll->Fill(deltaPhi, weight);
-    if (deltaPhi > 0.5) {
+    h_deltaPhi_ll->Fill(deltaPhi_ll, weight);
+    if (deltaPhi_ll > 0.5) {
         h_HT_DphiF->Fill(HT, weight);
         h_KT_DphiF->Fill(KT, weight);
     }
-    if (deltaPhi < 0.5) {
+    if (deltaPhi_ll < 0.5) {
         h_HT_DphiB->Fill(HT, weight);
         h_KT_DphiB->Fill(KT, weight);
     }
@@ -391,20 +392,20 @@ void Analysis::EachEvent(double weight)
         h_KT_lB->Fill(KT, weight);
     }
 
-    h_deltaEta_l->Fill(delta_abs_etal, weight);
-    if (delta_abs_etal > 0) {
+    h_deltaEta_l->Fill(deltaAbsEta_l, weight);
+    if (deltaAbsEta_l > 0) {
         h_HT_lCF->Fill(HT, weight);
         h_KT_lCF->Fill(KT, weight);
     }
-    if (delta_abs_etal < 0) {
+    if (deltaAbsEta_l < 0) {
         h_HT_lCB->Fill(HT, weight);
         h_KT_lCB->Fill(KT, weight);
     }
     
-    h2_HT_deltaPhi->Fill(HT, deltaPhi, weight);
-    h2_HTmet_deltaPhi->Fill(HTmet, deltaPhi, weight);
-    h2_mvis_deltaPhi->Fill(mass_vis, deltaPhi, weight);
-    h2_KT_deltaPhi->Fill(KT, deltaPhi, weight);
+    h2_HT_deltaPhi->Fill(HT, deltaPhi_ll, weight);
+    h2_HTmet_deltaPhi->Fill(HTmet, deltaPhi_ll, weight);
+    h2_mvis_deltaPhi->Fill(mass_vis, deltaPhi_ll, weight);
+    h2_KT_deltaPhi->Fill(KT, deltaPhi_ll, weight);
 
     // reconstruction
     if (m_reconstruction == "KIN" or m_reconstruction == "NuW") {
@@ -490,11 +491,13 @@ void Analysis::EachEvent(double weight)
         auto y_ttbar = p_ttbar.Rapidity();
         auto cosTheta_ttbar = cos(p_top.Angle(p_tbar.Vect()));
         auto DeltaY_top = abs(p_top.Rapidity()) - abs(p_tbar.Rapidity());
+        double deltaPhi_tt = p_top.DeltaPhi(p_tbar);
+        h_deltaPhi_tt->Fill(deltaPhi_tt, weight);
 
+        // get 4-momenta in reconstructed ttbar frame
         auto pttbar_top = p_top, pttbar_tbar = p_tbar, pttbar_ttbar = p_ttbar;
         auto pttbar_b1 = p_b1, pttbar_b2 = p_b2, pttbar_v1 = p_v1, pttbar_v2 = p_v2;
         auto pttbar_l = p_l;
-
         TVector3 v_ttbar = - (p_ttbar).BoostVector();
         pttbar_top.Boost(v_ttbar);
         pttbar_tbar.Boost(v_ttbar);
@@ -506,13 +509,13 @@ void Analysis::EachEvent(double weight)
         pttbar_v1.Boost(v_ttbar);
         pttbar_v2.Boost(v_ttbar);
 
-        auto ptop_top = p_top, ptop_tbar = p_tbar, ptop_ttbar = p_ttbar;
+        // get momenta in reconstructed top frame
+        auto ptop_top = p_top, ptt = p_tbar, ptop_ttbar = p_ttbar;
         auto ptop_b1 = p_b1, ptop_b2 = p_b2, ptop_v1 = p_v1, ptop_v2 = p_v2;
         auto ptop_l = p_l;
-
         TVector3 v_top = - (p_top).BoostVector();
         ptop_top.Boost(v_top);
-        ptop_tbar.Boost(v_top);
+        ptt.Boost(v_top);
         ptop_ttbar.Boost(v_top);
         ptop_b1.Boost(v_top);
         ptop_b2.Boost(v_top);
@@ -520,11 +523,11 @@ void Analysis::EachEvent(double weight)
         ptop_l.second.Boost(v_top);
         ptop_v1.Boost(v_top);
         ptop_v2.Boost(v_top);
-
+        
+        // get momenta in reconstructed tbar frame
         auto ptbar_top = p_top, ptbar_tbar = p_tbar, ptbar_ttbar = p_ttbar;
         auto ptbar_b1 = p_b1, ptbar_b2 = p_b2, ptbar_v1 = p_v1, ptbar_v2 = p_v2;
         auto ptbar_l = p_l;
-
         TVector3 v_tbar = - (p_tbar).BoostVector();
         ptbar_top.Boost(v_tbar);
         ptbar_tbar.Boost(v_tbar);
@@ -631,8 +634,8 @@ void Analysis::EachEvent(double weight)
         h_mass_W1->Fill(p_W1.M(), weight);
         h_mass_W2->Fill(p_W2.M(), weight);
 
-        if (deltaPhi > 0.5) h_mtt_DphiF->Fill(mass_ttbar, weight);
-        if (deltaPhi < 0.5) h_mtt_DphiB->Fill(mass_ttbar, weight);
+        if (deltaPhi_ll > 0.5) h_mtt_DphiF->Fill(mass_ttbar, weight);
+        if (deltaPhi_ll < 0.5) h_mtt_DphiB->Fill(mass_ttbar, weight);
 
         h_cosPhi->Fill(cosPhi, weight);
         if (cosPhi > 0) h_mtt_cPhiF->Fill(mass_ttbar, weight);
@@ -648,9 +651,9 @@ void Analysis::EachEvent(double weight)
         if (cosThetaStar_l > 0) h_mtt_lF->Fill(mass_ttbar, weight);
         if (cosThetaStar_l < 0) h_mtt_lB->Fill(mass_ttbar, weight);
 
-        h_deltaEta_l->Fill(delta_abs_etal, weight);
-        if (delta_abs_etal > 0) h_mtt_lCF->Fill(mass_ttbar, weight);
-        if (delta_abs_etal < 0) h_mtt_lCB->Fill(mass_ttbar, weight);
+        h_deltaEta_l->Fill(deltaAbsEta_l, weight);
+        if (deltaAbsEta_l > 0) h_mtt_lCF->Fill(mass_ttbar, weight);
+        if (deltaAbsEta_l < 0) h_mtt_lCB->Fill(mass_ttbar, weight);
 
         h_deltaY_top->Fill(DeltaY_top, weight);
         if (DeltaY_top > 0) h_mtt_tCF->Fill(mass_ttbar, weight);
@@ -670,7 +673,7 @@ void Analysis::EachEvent(double weight)
         if (cos1cos2 < 0) h_mtt_c1c2B->Fill(mass_ttbar, weight);
 
         h2_mtt_cosThetaStar->Fill(mass_ttbar, cosThetaStar, weight);
-        h2_mtt_deltaPhi->Fill(mass_ttbar, deltaPhi, weight);
+        h2_mtt_deltaPhi->Fill(mass_ttbar, deltaPhi_ll, weight);
         h2_mtt_cosTheta1->Fill(mass_ttbar, cosTheta_tl1, weight);
         h2_mtt_cosTheta2->Fill(mass_ttbar, cosTheta_tl2, weight);
         h2_mtt_cos1cos2->Fill(mass_ttbar, cos1cos2, weight);
@@ -1290,6 +1293,12 @@ void Analysis::MakeHistograms()
 
     h_deltaPhi_ll = new TH1D("delta_phi", "\\Delta\\phi_{\\ell^{+}\\ell^{-}}", 10, 0.0, 1.0);
     h_deltaPhi_ll->Sumw2();
+    
+    h_deltaPhi_tt_truth = new TH1D("deltaPhi_tt_truth", "\\Delta\\phi_{t\\bar{t}} (truth)", 10, -m_pi, m_pi);
+    h_deltaPhi_tt_truth->Sumw2();
+    
+    h_deltaPhi_tt = new TH1D("deltaPhi_tt", "\\Delta\\phi_{t\\bar{t}}", 10, -m_pi, m_pi);
+    h_deltaPhi_tt->Sumw2();
 
     h_cosTheta1 = new TH1D("cosTheta_tl1", "\\cos\\theta^{t}_{\\ell^{+}}", 10, -1.0, 1.0);
     h_cosTheta1->Sumw2();
@@ -1587,6 +1596,8 @@ void Analysis::MakeDistributions()
 
     // azimuthal angle
     this->MakeDistribution1D(h_deltaPhi_ll, "rad / \\pi");
+    this->MakeDistribution1D(h_deltaPhi_tt_truth, "rad");
+    this->MakeDistribution1D(h_deltaPhi_tt_truth, "rad");
 
     // energy
     this->MakeDistribution1D(h_E_top, "GeV");

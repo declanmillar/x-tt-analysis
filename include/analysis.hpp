@@ -215,6 +215,10 @@ private:
     TH1D* h_mass_ttbar_truth;
     TH1D* h_y_ttbar;
     TH1D* h_y_ttbar_truth;
+    
+    // delta 
+    TH1D* h_deltaPhi_tt_truth;
+    TH1D* h_deltaPhi_tt;
 
     // dR between truth and reco
     TH1D* h_dR_top;
