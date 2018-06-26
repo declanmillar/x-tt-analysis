@@ -1614,10 +1614,33 @@ void Analysis::MakeDistributions()
     this->MakeDistribution1D(h_deltaPhi_ll, "rad / \\pi");
     this->MakeDistribution1D(h_deltaPhi_tt, "rad");
     this->MakeDistribution1D(h_deltaPhi_tt_truth, "rad");
+    
+    this->MakeDistribution1D(h_pT_top_truth, "GeV");
+    this->MakeDistribution1D(h_pT_tbar_truth, "GeV");
+    this->MakeDistribution1D(h_pT_ttbar_truth, "GeV");
+    this->MakeDistribution1D(h_y_top_truth, "");
+    this->MakeDistribution1D(h_y_tbar_truth, "");
+    this->MakeDistribution1D(h_y_ttbar_truth, "");
+    this->MakeDistribution1D(h_eta_top_truth, "");
+    this->MakeDistribution1D(h_eta_tbar_truth, "");
+    this->MakeDistribution1D(h_eta_ttbar_truth, "");
+    this->MakeDistribution1D(h_phi_top_truth, "");
+    this->MakeDistribution1D(h_phi_tbar_truth, "");
+    this->MakeDistribution1D(h_phi_ttbar_truth, "");
+    this->MakeDistribution1D(h_mass_top_truth, "GeV");
+    this->MakeDistribution1D(h_mass_tbar_truth, "GeV");
+    this->MakeDistribution1D(h_mass_ttbar_truth, "TeV");
+    this->MakeDistribution2D(h2_mtt_truth_ETmiss_truth, "m_{t\\bar{t}}", "TeV", "E^{\\mathrm{miss,truth}}_{\\mathrm{T}}", "GeV");
+    
+    this->MakeDistribution1D(h_dR_lb_truth, "");
+    // this->MakeDistribution1D(h_dR_l1b1_truth, "");
+    // this->MakeDistribution1D(h_dR_l2b2_truth, "");
+    this->MakeDistribution1D(h_dR_t1l1_truth, "");
+    this->MakeDistribution1D(h_dR_t2l2_truth, "");
+    this->MakeDistribution1D(h_dR_t1b1_truth, "");
+    this->MakeDistribution1D(h_dR_t2b2_truth, "");
+    this->MakeDistribution1D(h_dR_t1t2_truth, "");
 
-    // energy
-    this->MakeDistribution1D(h_E_top, "GeV");
-    this->MakeDistribution1D(h_E_tbar, "GeV");
 
     // transverse
     this->MakeDistribution1D(h_HT_all, "TeV");
@@ -1666,53 +1689,35 @@ void Analysis::MakeDistributions()
     this->MakeDistribution2D(h2_KT_deltaPhi, "K_{\\mathrm{T}}", "GeV", "\\Delta\\phi_{\\ell^{+}\\ell^{-}}", "");
 
     if (m_reconstruction == "KIN" or m_reconstruction == "NuW") {
+        
+        // energy
+        this->MakeDistribution1D(h_E_top, "GeV");
+        this->MakeDistribution1D(h_E_tbar, "GeV");
+        
         this->MakeDistribution1D(h_pT_top, "GeV");
-        this->MakeDistribution1D(h_pT_top_truth, "GeV");
         this->MakeDistribution1D(h_pT_tbar, "GeV");
-        this->MakeDistribution1D(h_pT_tbar_truth, "GeV");
         this->MakeDistribution1D(h_pT_ttbar, "GeV");
-        this->MakeDistribution1D(h_pT_ttbar_truth, "GeV");
         
         this->MakeDistribution1D(h_eta_top, "");
-        this->MakeDistribution1D(h_eta_top_truth, "");
         this->MakeDistribution1D(h_eta_tbar, "");
-        this->MakeDistribution1D(h_eta_tbar_truth, "");
         this->MakeDistribution1D(h_eta_ttbar, "");
-        this->MakeDistribution1D(h_eta_ttbar_truth, "");
 
         this->MakeDistribution1D(h_phi_top, "");
-        this->MakeDistribution1D(h_phi_top_truth, "");
         this->MakeDistribution1D(h_phi_tbar, "");
-        this->MakeDistribution1D(h_phi_tbar_truth, "");
         this->MakeDistribution1D(h_phi_ttbar, "");
-        this->MakeDistribution1D(h_phi_ttbar_truth, "");
         this->MakeDistribution1D(h_cosPhi, "");
 
         // invariant mass
         this->MakeDistribution1D(h_mass_W1, "GeV");
         this->MakeDistribution1D(h_mass_W2, "GeV");
         this->MakeDistribution1D(h_mass_top, "GeV");
-        this->MakeDistribution1D(h_mass_top_truth, "GeV");
         this->MakeDistribution1D(h_mass_tbar, "GeV");
-        this->MakeDistribution1D(h_mass_tbar_truth, "GeV");
         this->MakeDistribution1D(h_mass_ttbar, "TeV");
-        this->MakeDistribution1D(h_mass_ttbar_truth, "TeV");
-        this->MakeDistribution2D(h2_mtt_truth_ETmiss_truth, "m_{t\\bar{t}}", "TeV", "E^{\\mathrm{miss,truth}}_{\\mathrm{T}}", "GeV");
-
         this->MakeDistribution1D(h_dR_top, "");
         this->MakeDistribution1D(h_dR_tbar, "");
         this->MakeDistribution1D(h_dR_ttbar, "");
         this->MakeDistribution1D(h_dR_l, "");
         
-        this->MakeDistribution1D(h_dR_lb_truth, "");
-        // this->MakeDistribution1D(h_dR_l1b1_truth, "");
-        // this->MakeDistribution1D(h_dR_l2b2_truth, "");
-        this->MakeDistribution1D(h_dR_t1l1_truth, "");
-        this->MakeDistribution1D(h_dR_t2l2_truth, "");
-        this->MakeDistribution1D(h_dR_t1b1_truth, "");
-        this->MakeDistribution1D(h_dR_t2b2_truth, "");
-        this->MakeDistribution1D(h_dR_t1t2_truth, "");
-
         this->MakeDistribution1D(h_perf_mass_top, "");
         this->MakeDistribution1D(h_perf_pT_top, "");
         this->MakeDistribution1D(h_perf_eta_top, "");
@@ -1753,11 +1758,8 @@ void Analysis::MakeDistributions()
 
         // rapidity
         this->MakeDistribution1D(h_y_top, "");
-        this->MakeDistribution1D(h_y_top_truth, "");
         this->MakeDistribution1D(h_y_tbar, "");
-        this->MakeDistribution1D(h_y_tbar_truth, "");
         this->MakeDistribution1D(h_y_ttbar, "");
-        this->MakeDistribution1D(h_y_ttbar_truth, "");
         this->MakeDistribution1D(h_deltaY_top, "");
 
         // polar angle
