@@ -58,11 +58,11 @@ void Analysis::EachEvent(double weight)
     HTmet_truth = HTmet_truth / 1000;
     KT_truth = KT_truth / 1000;
     
+    // double deltaEta_tt_truth = p_t_truth.first.DeltaEta(p_t_truth.first);
+    // h_deltaEta_tt_truth->Fill(deltaEta_tt_truth, weight);
+    
     double deltaPhi_tt_truth = p_t_truth.first.DeltaPhi(p_t_truth.first);
     h_deltaPhi_tt_truth->Fill(deltaPhi_tt_truth, weight);
-    
-    double deltaEta_tt_truth = p_t_truth.first.DeltaEta(p_t_truth.first);
-    h_deltaEta_tt_truth->Fill(deltaPhi_tt_truth, weight);
     
     // double dRmax = min(dR_l1b1, dR_l2b2) / 2;
     // cout << mass_ttbar_truth << " " << dR_l1b1 << "\n";
@@ -86,11 +86,13 @@ void Analysis::EachEvent(double weight)
 
     h_pT_top_truth->Fill(pT_top_truth, weight);
     h_eta_top_truth->Fill(p_t_truth.first.Eta(), weight);
+    h_y_top_truth->Fill(p_t_truth.first.Rapidity(), weight);
     h_phi_top_truth->Fill(p_t_truth.first.Phi() / m_pi, weight);
     h_mass_top_truth->Fill(p_t_truth.first.M(), weight);
 
     h_pT_tbar_truth->Fill(pT_tbar_truth, weight);
     h_eta_tbar_truth->Fill(p_t_truth.second.Eta(), weight);
+    h_y_tbar_truth->Fill(p_t_truth.second.Rapidity(), weight);
     h_phi_tbar_truth->Fill(p_t_truth.second.Phi() / m_pi, weight);
     h_mass_tbar_truth->Fill(p_t_truth.second.M(), weight);
 
@@ -496,8 +498,6 @@ void Analysis::EachEvent(double weight)
         auto DeltaY_top = abs(p_top.Rapidity()) - abs(p_tbar.Rapidity());
         double deltaPhi_tt = p_top.DeltaPhi(p_tbar);
         h_deltaPhi_tt->Fill(deltaPhi_tt, weight);
-        double deltaPhi_tt = p_top.DeltaPhi(p_tbar);
-        h_deltaPhi_tt->Fill(deltaPhi_tt, weight);
 
         // get 4-momenta in reconstructed ttbar frame
         auto pttbar_top = p_top, pttbar_tbar = p_tbar, pttbar_ttbar = p_ttbar;
@@ -560,12 +560,14 @@ void Analysis::EachEvent(double weight)
         h_E_top->Fill(p_top.E(), weight);
         h_pT_top->Fill(p_top.Pt(), weight);
         h_eta_top->Fill(p_top.Eta(), weight);
+        h_y_top->Fill(p_top.Rapidity(), weight);
         h_phi_top->Fill(p_top.Phi() / m_pi, weight);
         h_mass_top->Fill(p_top.M(), weight);
 
         h_E_tbar->Fill(p_tbar.E(), weight);
         h_pT_tbar->Fill(p_tbar.Pt(), weight);
         h_eta_tbar->Fill(p_tbar.Eta(), weight);
+        h_y_tbar->Fill(p_tbar.Rapidity(), weight);
         h_phi_tbar->Fill(p_tbar.Phi() / m_pi, weight);
         h_mass_tbar->Fill(p_tbar.M(), weight);
 
@@ -1071,6 +1073,15 @@ void Analysis::MakeHistograms()
     h_eta_ttbar->Sumw2();
     h_eta_ttbar_truth = new TH1D("eta_ttbar_truth", "\\eta^{truth}_{t\\bar{t}}", 200, -5.0, 5.0);
     h_eta_ttbar_truth->Sumw2();
+    
+    h_y_top = new TH1D("y_top", "\\y_{t}", 200, -5.0, 5.0);
+    h_y_top->Sumw2();
+    h_y_top_truth = new TH1D("y_top_truth", "\\y_{t}^{truth}", 200, -5.0, 5.0);
+    h_y_top_truth->Sumw2();
+    h_y_tbar = new TH1D("y_tbar", "\\y_{\\bar{t}}", 200, -5.0, 5.0);
+    h_y_tbar->Sumw2();
+    h_y_tbar_truth = new TH1D("y_tbar_truth", "\\y^{truth}_{\\bar{t}}", 200, -5.0, 5.0);
+    h_y_tbar_truth->Sumw2();
     h_y_ttbar = new TH1D("y_ttbar", "y_{t\\bar{t}}\\ ", 50, -2.5, 2.5);
     h_y_ttbar->Sumw2();
     h_y_ttbar_truth = new TH1D("y_ttbar_truth", "y^{truth}_{t\\bar{t}}\\ ", 50, -2.5, 2.5);
@@ -1601,7 +1612,7 @@ void Analysis::MakeDistributions()
 
     // azimuthal angle
     this->MakeDistribution1D(h_deltaPhi_ll, "rad / \\pi");
-    this->MakeDistribution1D(h_deltaPhi_tt_truth, "rad");
+    this->MakeDistribution1D(h_deltaPhi_tt, "rad");
     this->MakeDistribution1D(h_deltaPhi_tt_truth, "rad");
 
     // energy
@@ -1661,7 +1672,7 @@ void Analysis::MakeDistributions()
         this->MakeDistribution1D(h_pT_tbar_truth, "GeV");
         this->MakeDistribution1D(h_pT_ttbar, "GeV");
         this->MakeDistribution1D(h_pT_ttbar_truth, "GeV");
-
+        
         this->MakeDistribution1D(h_eta_top, "");
         this->MakeDistribution1D(h_eta_top_truth, "");
         this->MakeDistribution1D(h_eta_tbar, "");
@@ -1677,7 +1688,7 @@ void Analysis::MakeDistributions()
         this->MakeDistribution1D(h_phi_ttbar_truth, "");
         this->MakeDistribution1D(h_cosPhi, "");
 
-        // invarient mass
+        // invariant mass
         this->MakeDistribution1D(h_mass_W1, "GeV");
         this->MakeDistribution1D(h_mass_W2, "GeV");
         this->MakeDistribution1D(h_mass_top, "GeV");
@@ -1741,6 +1752,10 @@ void Analysis::MakeDistributions()
         this->MakeDistribution2D(h2_dR_l2b2_pTl_truth, "p^{\\ell^{-},\\mathrm{truth}}_{\\mathrm{T}}\\, ", "TeV", "\\Delta R\\left(\\ell^{-}_{\\mathrm{truth}}, \\bar{b}_{\\mathrm{truth}}\\right)", "");
 
         // rapidity
+        this->MakeDistribution1D(h_y_top, "");
+        this->MakeDistribution1D(h_y_top_truth, "");
+        this->MakeDistribution1D(h_y_tbar, "");
+        this->MakeDistribution1D(h_y_tbar_truth, "");
         this->MakeDistribution1D(h_y_ttbar, "");
         this->MakeDistribution1D(h_y_ttbar_truth, "");
         this->MakeDistribution1D(h_deltaY_top, "");

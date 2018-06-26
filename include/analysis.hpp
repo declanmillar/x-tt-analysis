@@ -185,22 +185,26 @@ private:
     // top
     TH1D* h_pT_top;
     TH1D* h_eta_top;
+    TH1D* h_y_top;
     TH1D* h_phi_top;
     TH1D* h_mass_top;
     TH1D* h_E_top;
     TH1D* h_pT_top_truth;
     TH1D* h_eta_top_truth;
+    TH1D* h_y_top_truth;
     TH1D* h_phi_top_truth;
     TH1D* h_mass_top_truth;
 
     // tbar
     TH1D* h_pT_tbar;
     TH1D* h_eta_tbar;
+    TH1D* h_y_tbar;
     TH1D* h_phi_tbar;
     TH1D* h_mass_tbar;
     TH1D* h_E_tbar;
     TH1D* h_pT_tbar_truth;
     TH1D* h_eta_tbar_truth;
+    TH1D* h_y_tbar_truth;
     TH1D* h_phi_tbar_truth;
     TH1D* h_mass_tbar_truth;
 
