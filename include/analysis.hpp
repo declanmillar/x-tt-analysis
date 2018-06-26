@@ -219,6 +219,8 @@ private:
     // delta 
     TH1D* h_deltaPhi_tt_truth;
     TH1D* h_deltaPhi_tt;
+    TH1D* h_deltaEta_tt_truth;
+    TH1D* h_deltaEta_tt;
 
     // dR between truth and reco
     TH1D* h_dR_top;

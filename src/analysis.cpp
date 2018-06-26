@@ -61,6 +61,9 @@ void Analysis::EachEvent(double weight)
     double deltaPhi_tt_truth = p_t_truth.first.DeltaPhi(p_t_truth.first);
     h_deltaPhi_tt_truth->Fill(deltaPhi_tt_truth, weight);
     
+    double deltaEta_tt_truth = p_t_truth.first.DeltaEta(p_t_truth.first);
+    h_deltaEta_tt_truth->Fill(deltaPhi_tt_truth, weight);
+    
     // double dRmax = min(dR_l1b1, dR_l2b2) / 2;
     // cout << mass_ttbar_truth << " " << dR_l1b1 << "\n";
     
@@ -491,6 +494,8 @@ void Analysis::EachEvent(double weight)
         auto y_ttbar = p_ttbar.Rapidity();
         auto cosTheta_ttbar = cos(p_top.Angle(p_tbar.Vect()));
         auto DeltaY_top = abs(p_top.Rapidity()) - abs(p_tbar.Rapidity());
+        double deltaPhi_tt = p_top.DeltaPhi(p_tbar);
+        h_deltaPhi_tt->Fill(deltaPhi_tt, weight);
         double deltaPhi_tt = p_top.DeltaPhi(p_tbar);
         h_deltaPhi_tt->Fill(deltaPhi_tt, weight);
 
