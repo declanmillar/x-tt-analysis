@@ -102,6 +102,9 @@ void Analysis::EachEvent(double weight)
     h_mass_ttbar_truth->Fill(mass_ttbar_truth, weight);
     h_y_ttbar_truth->Fill(p_ttbar_truth.Rapidity(), weight);
     
+    auto deltaY_top_truth = abs(p_t_truth.first.Rapidity()) - abs(p_t_truth.second.Rapidity());
+    h_deltaY_top_truth->Fill(deltaY_top_truth, weight);
+    
     h_HT_truth->Fill(HT_truth, weight);
     h_HTmet_truth->Fill(HTmet_truth, weight);
     h_KT_truth->Fill(KT_truth, weight);
@@ -1258,6 +1261,9 @@ void Analysis::MakeHistograms()
 
     h_deltaEta_l = new TH1D("deltaEta_l", "\\Delta |\\eta_{\\ell}|", 200, -5.0, 5.0);
     h_deltaEta_l->Sumw2();
+    
+    h_deltaY_top_truth = new TH1D("DeltaY_top_truth", "\\Delta |y_{t}| (truth)", 200, -5.0, 5.0);
+    h_deltaY_top_truth->Sumw2();
 
     h_deltaY_top = new TH1D("DeltaY_top", "\\Delta |y_{t}|", 200, -5.0, 5.0);
     h_deltaY_top->Sumw2();
@@ -1630,6 +1636,7 @@ void Analysis::MakeDistributions()
     this->MakeDistribution1D(h_mass_top_truth, "GeV");
     this->MakeDistribution1D(h_mass_tbar_truth, "GeV");
     this->MakeDistribution1D(h_mass_ttbar_truth, "TeV");
+    this->MakeDistribution1D(h_deltaY_top_truth, "");
     this->MakeDistribution2D(h2_mtt_truth_ETmiss_truth, "m_{t\\bar{t}}", "TeV", "E^{\\mathrm{miss,truth}}_{\\mathrm{T}}", "GeV");
     
     this->MakeDistribution1D(h_dR_lb_truth, "");

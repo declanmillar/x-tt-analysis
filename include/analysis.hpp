@@ -356,6 +356,7 @@ private:
     TH1D* h_cosTheta_l;
     TH1D* h_cosThetaStar_l;
     TH1D* h_deltaY_top;
+    TH1D* h_deltaY_top_truth;
     TH1D* h_deltaEta_l;
     
     TH1D* h_n_electrons;
