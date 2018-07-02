@@ -1077,13 +1077,13 @@ void Analysis::MakeHistograms()
     h_eta_ttbar_truth = new TH1D("eta_ttbar_truth", "\\eta^{truth}_{t\\bar{t}}", 200, -5.0, 5.0);
     h_eta_ttbar_truth->Sumw2();
     
-    h_y_top = new TH1D("y_top", "\\y_{t}", 200, -5.0, 5.0);
+    h_y_top = new TH1D("y_top", "\\y_{t}", 100, -5.0, 5.0);
     h_y_top->Sumw2();
-    h_y_top_truth = new TH1D("y_top_truth", "\\y_{t}^{truth}", 200, -5.0, 5.0);
+    h_y_top_truth = new TH1D("y_top_truth", "\\y_{t}^{truth}", 100, -5.0, 5.0);
     h_y_top_truth->Sumw2();
-    h_y_tbar = new TH1D("y_tbar", "\\y_{\\bar{t}}", 200, -5.0, 5.0);
+    h_y_tbar = new TH1D("y_tbar", "\\y_{\\bar{t}}", 100, -5.0, 5.0);
     h_y_tbar->Sumw2();
-    h_y_tbar_truth = new TH1D("y_tbar_truth", "\\y^{truth}_{\\bar{t}}", 200, -5.0, 5.0);
+    h_y_tbar_truth = new TH1D("y_tbar_truth", "\\y^{truth}_{\\bar{t}}", 100, -5.0, 5.0);
     h_y_tbar_truth->Sumw2();
     h_y_ttbar = new TH1D("y_ttbar", "y_{t\\bar{t}}\\ ", 50, -2.5, 2.5);
     h_y_ttbar->Sumw2();
