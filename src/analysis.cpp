@@ -1371,7 +1371,7 @@ void Analysis::MakeHistograms()
     h_deltaPhi_tt = new TH1D("deltaPhi_tt", "\\Delta\\phi_{t\\bar{t}}", 10, -m_pi, m_pi);
     h_deltaPhi_tt->Sumw2();
     
-    h_cosTheta1_truth = new TH1D("cosTheta_tl1_truth", "\\cos\\theta^{t}_{\\ell^{+}} (truth)", 10, -1.0, 1.0);
+    h_cosTheta1_truth = new TH1D("cosTheta_tl1_truth", "\\cos\\theta^{t}_{\\ell^{+}} (truth)", 100, -1.0, 1.0);
     h_cosTheta1_truth->Sumw2();
     // h_cosTheta2_truth = new TH1D("cosTheta_tl2_truth", "\\cos\\theta^{\\bar{t}}_{\\ell^{-}} (truth)", 10, -1.0, 1.0);
     // h_cosTheta2_truth->Sumw2();
