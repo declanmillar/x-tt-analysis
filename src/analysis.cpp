@@ -102,6 +102,55 @@ void Analysis::EachEvent(double weight)
     h_mass_ttbar_truth->Fill(mass_ttbar_truth, weight);
     h_y_ttbar_truth->Fill(p_ttbar_truth.Rapidity(), weight);
     
+    // get truth 4-momenta in reconstructed truth ttbar frame
+    auto pttbar_top_truth = p_t_truth.first;
+    // , pttbar_tbar = p_tbar, pttbar_ttbar = p_ttbar;
+    // auto pttbar_b1 = p_b1, pttbar_b2 = p_b2, pttbar_v1 = p_v1, pttbar_v2 = p_v2;
+    // auto pttbar_l = p_l;
+    TVector3 v_ttbar_truth = - (p_ttbar_truth).BoostVector();
+    pttbar_top_truth.Boost(v_ttbar_truth);
+    // pttbar_tbar.Boost(v_ttbar);
+    // pttbar_ttbar.Boost(v_ttbar);
+    // pttbar_b1.Boost(v_ttbar);
+    // pttbar_b2.Boost(v_ttbar);
+    // pttbar_l.first.Boost(v_ttbar);
+    // pttbar_l.second.Boost(v_ttbar);
+    // pttbar_v1.Boost(v_ttbar);
+    // pttbar_v2.Boost(v_ttbar);
+
+    // get momenta in reconstructed top frame
+    // auto ptop_top = p_top, ptop_tbar = p_tbar, ptop_ttbar = p_ttbar;
+    // auto ptop_b1 = p_b1, ptop_b2 = p_b2, ptop_v1 = p_v1, ptop_v2 = p_v2;
+    auto ptop_l_truth = p_l_truth;
+    TVector3 v_top_truth = - (p_t_truth.first).BoostVector();
+    // ptop_top.Boost(v_top);
+    // ptop_tbar.Boost(v_top);
+    // ptop_ttbar.Boost(v_top);
+    // ptop_b1.Boost(v_top);
+    // ptop_b2.Boost(v_top);
+    ptop_l_truth.first.Boost(v_top_truth);
+    // ptop_l.second.Boost(v_top);
+    // ptop_v1.Boost(v_top);
+    // ptop_v2.Boost(v_top);
+    
+    // get momenta in reconstructed tbar frame
+    // auto ptbar_top = p_top, ptbar_tbar = p_tbar, ptbar_ttbar = p_ttbar;
+    // auto ptbar_b1 = p_b1, ptbar_b2 = p_b2, ptbar_v1 = p_v1, ptbar_v2 = p_v2;
+    // auto ptbar_l = p_l;
+    // TVector3 v_tbar = - (p_tbar).BoostVector();
+    // ptbar_top.Boost(v_tbar);
+    // ptbar_tbar.Boost(v_tbar);
+    // ptbar_ttbar.Boost(v_tbar);
+    // ptbar_b1.Boost(v_tbar);
+    // ptbar_b2.Boost(v_tbar);
+    // ptbar_l.first.Boost(v_tbar);
+    // ptbar_l.second.Boost(v_tbar);
+    // ptbar_v1.Boost(v_tbar);
+    // ptbar_v2.Boost(v_tbar);
+    
+    double cosTheta_tl1_truth = cos(ptop_l_truth.first.Angle(pttbar_top_truth.Vect()));
+    h_cosTheta1_truth->Fill(cosTheta_tl1_truth, weight);
+    
     auto deltaY_top_truth = abs(p_t_truth.first.Rapidity()) - abs(p_t_truth.second.Rapidity());
     h_deltaY_top_truth->Fill(deltaY_top_truth, weight);
     
@@ -1321,6 +1370,13 @@ void Analysis::MakeHistograms()
     
     h_deltaPhi_tt = new TH1D("deltaPhi_tt", "\\Delta\\phi_{t\\bar{t}}", 10, -m_pi, m_pi);
     h_deltaPhi_tt->Sumw2();
+    
+    h_cosTheta1_truth = new TH1D("cosTheta_tl1_truth", "\\cos\\theta^{t}_{\\ell^{+}} (truth)", 10, -1.0, 1.0);
+    h_cosTheta1_truth->Sumw2();
+    // h_cosTheta2_truth = new TH1D("cosTheta_tl2_truth", "\\cos\\theta^{\\bar{t}}_{\\ell^{-}} (truth)", 10, -1.0, 1.0);
+    // h_cosTheta2_truth->Sumw2();
+    // h_cos1cos2_truth = new TH1D("cos1cos2_truth", "\\cos\\theta^{t}_{\\ell^{+}}\\cos\\theta^{\\bar{t}}_{\\ell^{-}} (truth)", 10, -1.0, 1.0);
+    // h_cos1cos2_truth->Sumw2();
 
     h_cosTheta1 = new TH1D("cosTheta_tl1", "\\cos\\theta^{t}_{\\ell^{+}}", 10, -1.0, 1.0);
     h_cosTheta1->Sumw2();
@@ -1665,6 +1721,10 @@ void Analysis::MakeDistributions()
 
     this->MakeDistribution1D(h_cosTheta_l, "");
     this->MakeDistribution1D(h_cosThetaStar_l, "");
+    
+    this->MakeDistribution1D(h_cosTheta1_truth, "");
+    // this->MakeDistribution1D(h_cosTheta2_truth, "");
+    // this->MakeDistribution1D(h_cos1cos2_truth, "");
 
     this->MakeDistribution1D(h_HT_lF, "TeV");
     this->MakeDistribution1D(h_HT_lB, "TeV");
