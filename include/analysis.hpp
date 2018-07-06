@@ -348,6 +348,7 @@ private:
     TH1D* h_KT_DphiB;
 
     TH1D* h_cosTheta1_truth;
+    TH1D* h_cosTheta2_truth;
     TH1D* h_cosTheta;
     TH1D* h_cosTheta1;
     TH1D* h_cosTheta2;
