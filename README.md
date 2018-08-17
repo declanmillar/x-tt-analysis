@@ -35,6 +35,11 @@ For example
 ./analyse.py "gg-tt-bbmumuvv_SM_13TeV_CT14LL_148_delphes_NuW_b1" -i "gg-tt-bbmumuvv_SM_13TeV_CT14LL_148_delphes.root" -r "NuW" -b 1
 ```
 
+For example
+```bash
+b=2; r=KIN; for f in $(ls -1 /scratch/dam1g09/zprime/??-AZ-tt-bbemuvv_SM_13TeV_CT14LL_???.lhef.gz); do c=$(echo $f | cut -d '/' -f 5); k=$(echo $c | cut -d '.' -f 1); l=$(echo $c | cut -d '.' -f 1);  ./analyse.py "${l}_delphes_${r}_b${b}" -f "${l}_delphes.root" -r "$r" -b "$b"; done
+```
+
 ## Batch submission commands
 
 Submit jobs using a wildcard.
