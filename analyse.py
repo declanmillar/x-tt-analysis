@@ -5,7 +5,7 @@ import os, StringIO, subprocess, sys, socket
 # handler_name = sys.argv[1] + ".sh"
 executable = "analysis"
 # walltime = "02:00:00" # NuW
-walltime = "00:00:30" # KIN
+walltime = "00:01:00" # KIN
 queue = "1nw"
 nodes = "1"
 ppn = "1"
