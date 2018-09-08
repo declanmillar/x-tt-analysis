@@ -2880,7 +2880,7 @@ void Analysis::InitialiseCutflow()
     m_cutNames[c_sufficientJets]     = "Sufficient jets       ";
     m_cutNames[c_sufficientBtags]    = "Sufficient b-tags     ";
     m_cutNames[c_sufficientHT]       = "Sufficient HT         ";
-    m_cutNames[c_validSolution]      = "Top reco              ";
+    m_cutNames[c_validSolution]      = "Top reconstruction    ";
 
     m_cutTitles = vector<string>(
     m_cuts,                            "no name");
@@ -2893,7 +2893,7 @@ void Analysis::InitialiseCutflow()
     m_cutTitles[c_sufficientJets]     = "Sufficient jets";
     m_cutTitles[c_sufficientBtags]    = "\\mathrm{Sufficient}\\; b\\mathrm{-tags}";
     m_cutTitles[c_sufficientHT]       = "\\mathrm{Sufficient}\\; H_{\\mathrm{T}}";
-    m_cutTitles[c_validSolution]      = "Top reco";
+    m_cutTitles[c_validSolution]      = "Top reconstruction";
 
     h_cutflow = new TH1D("cutflow", "cutflow", m_cuts, 0.0, m_cuts);
 
