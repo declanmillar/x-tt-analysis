@@ -2870,8 +2870,8 @@ void Analysis::InitialiseCutflow()
     if (m_debug) cout << "Initialising cutflow\n";
     m_cutflow = vector<int>(m_cuts, -999);
     m_cutNames = vector<string>(
-    m_cuts,                            "no name               ");
-    m_cutNames[c_events]             = "Events                ";
+    m_cuts,                            "No name               ");
+    m_cutNames[c_events]             = "Generated Events      ";
     m_cutNames[c_twoLeptons]         = "Two leptons           ";
     m_cutNames[c_oppositeCharge]     = "Opposite Charge       ";
     m_cutNames[c_sufficientMll]      = "Sufficient mll        ";
@@ -2883,8 +2883,8 @@ void Analysis::InitialiseCutflow()
     m_cutNames[c_validSolution]      = "Top reconstruction    ";
 
     m_cutTitles = vector<string>(
-    m_cuts,                            "no name");
-    m_cutTitles[c_events]             = "Events";
+    m_cuts,                             "No name");
+    m_cutTitles[c_events]             = "Generated Events";
     m_cutTitles[c_twoLeptons]         = "Two leptons";
     m_cutTitles[c_oppositeCharge]     = "Opposite Charge";
     m_cutTitles[c_sufficientMll]      = "\\mathrm{Sufficient}\\; m_{\\ell\\ell}";
