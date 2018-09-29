@@ -33,12 +33,12 @@ if not os.path.isdir(data_directory):
 argstring = ""
 iterarg = iter(sys.argv)
 next(iterarg)
-filen_ame = next(iterarg)
+file_name = next(iterarg)
 for arg in iterarg:
     argstring = argstring + " " + arg
 
-handler_name = filen_ame + ".sh"
-# logfile = filen_ame + ".log"
+handler_name = file_name + ".sh"
+logfile = file_name + ".log"
 logfile = "/dev/null"
 
 # print handler
@@ -49,7 +49,7 @@ if "lxplus" in hostname:
     print >> handler, "source /afs/cern.ch/sw/lcg/external/gcc/4.9/x86_64-slc6/setup.sh"
     print >> handler, "%s/%s %s" % (run_directory, executable, argstring)
 if "cyan" or "blue" in hostname:
-    print >> handler, "#PBS -N {}".format(filen_ame)
+    print >> handler, "#PBS -N {}".format(file_name)
     print >> handler, "#PBS -l walltime={}".format(walltime)
     print >> handler, "#PBS -l nodes={}".format(nodes)
     print >> handler, "#!/bin/bash"
