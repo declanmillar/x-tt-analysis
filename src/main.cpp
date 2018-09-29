@@ -2,7 +2,6 @@
 #include "boost/program_options.hpp"
 #include "atlas-style.hpp"
 // #include <boost/timer/timer.hpp>
-
 using namespace std;
 
 namespace po = boost::program_options;
@@ -10,6 +9,7 @@ namespace po = boost::program_options;
 int main(int argc, char* argv[]) {
     
     // boost::timer::auto_cpu_timer timer;
+    gSystem->Load("/libDelphes");
     
     po::options_description desc("options");
     desc.add_options()
