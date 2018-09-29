@@ -39,7 +39,7 @@ for arg in iterarg:
 
 handler_name = file_name + ".sh"
 logfile = file_name + ".log"
-logfile = "/dev/null"
+# logfile = "/dev/null"
 
 # print handler
 handler = StringIO.StringIO()
