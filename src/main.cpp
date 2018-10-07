@@ -7,10 +7,8 @@ using namespace std;
 namespace po = boost::program_options;
 
 int main(int argc, char* argv[]) {
-    
     // boost::timer::auto_cpu_timer timer;
     gSystem->Load("/libDelphes");
-    
     po::options_description desc("options");
     desc.add_options()
     ("model,m",          po::value<string>()->default_value("SM"))
@@ -64,41 +62,47 @@ int main(int argc, char* argv[]) {
 
     string intermediates;
     if (boost::contains(initial_state, "uu") or boost::contains(initial_state, "dd")) {
-        if (model == "SM") intermediates = "-AZ-";
-        else intermediates = "-AZX-";
-    }
-    else {
+        if (model == "SM") {
+            intermediates = "-AZ-";
+        } else {
+            intermediates = "-AZX-";
+        }
+    } else {
         intermediates = "-";
     }
-
     auto process = initial_state + intermediates + final_state;
-
     if (reconstruction != "TRN" and reconstruction != "KIN" and reconstruction != "NuW") {
         cout << "ERROR: invalid reconstruction \"" << reconstruction << "\"\n";
         return 0;
     }
-    
     string reconstruction_long = "";
-    if (reconstruction == "TRN") reconstruction_long = "Transverse variables only; no reconstruction";
-    else if (reconstruction == "KIN") reconstruction_long = "Minimise invariant top pair mass";
-    else if (reconstruction == "NuW") reconstruction_long = "Neutrino Weighting";
-
+    if (reconstruction == "TRN") {
+        reconstruction_long = "Transverse variables only; no reconstruction";
+    } else if (reconstruction == "KIN") {
+        reconstruction_long = "Minimise invariant top pair mass";
+    } else if (reconstruction == "NuW") {
+        reconstruction_long = "Neutrino Weighting";
+    }
     cout << "SETTINGS\n";
-    if (inputFileName == "") cout << "Process:          " << process << "\n";
-    else cout                     << "Input file:       " << inputFileName << "\n";
+    if (inputFileName == "") {
+        cout << "Process:          " << process << "\n";
+    } else {
+        cout                     << "Input file:       " << inputFileName << "\n";
+    }
     cout << "Minimum b-tags:   " << minimumBtags << "\n";
     cout << "Reconstruction:   " << reconstruction_long << "\n";
-    if (options != "") cout << "Options:          " << options << "\n";
-    if (luminosity != -1) cout << "Luminosity:       " << luminosity << " [fb-1]\n";
+    if (options != "") {
+        cout << "Options:          " << options << "\n";
+    }
+    if (luminosity != -1) {
+        cout << "Luminosity:       " << luminosity << " [fb-1]\n";
+    }
     cout << "Energy:           " << energy << " [TeV]\n";
-
     if (inputFileName == "") {
         auto analysis = new Analysis(model, process, options, energy, luminosity, minimumBtags, reconstruction, tag, slice);
         analysis->Run();
-    }
-    else {
+    } else {
         auto analysis = new Analysis(inputFileName, processFileName, luminosity, minimumBtags, reconstruction, nevents_max, tag, slice);
         analysis->Run();
     }
-
 }
