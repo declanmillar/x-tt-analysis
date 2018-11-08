@@ -2,7 +2,7 @@ image: gcc
 
 before_script:
  - apt-get update --yes
- - apt-get install --yes cmake boost
+ - apt-get install --yes cmake libboost-all-dev
 
 build:
   script:
