@@ -5,7 +5,7 @@ before_script:
  - apt-get update --yes
  - apt-get install --yes cmake libboost-all-dev git cmake dpkg-dev python-dev make g++ gcc binutils libx11-dev libxpm-dev libxft-dev libxext-dev 
  # - apt-get install --yes gfortran libssl-dev libpcre3-dev xlibmesa-glu-dev libglew1.5-dev libftgl-dev libfftw3-dev graphviz-dev libavahi-compat-libdnssd-dev libldap2-dev libxml2-dev libkrb5-dev libgsl0-dev libqt4-dev
- - git clone git@github.com:root-project/root.git
+ - git clone https://github.com/root-project/root.git
  - cd root
  - PREFIX_PATH=$(pwd)
  - mkdir compile
