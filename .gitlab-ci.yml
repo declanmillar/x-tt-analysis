@@ -2,6 +2,7 @@ image: gcc
 
 build:
   script:
+  - cmake .
   - make
   artifacts:
     paths:
