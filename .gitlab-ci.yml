@@ -1,10 +1,19 @@
-image: rootproject/root-ubuntu16
+image: gcc
 
 before_script:
  - mkdir /var/lib/apt/lists/partial
  - apt-get update --yes
- - apt-get install --yes cmake libboost-all-dev 
-
+ - apt-get install --yes cmake libboost-all-dev git cmake dpkg-dev python-dev make g++ gcc binutils libx11-dev libxpm-dev libxft-dev libxext-dev gfortran libssl-dev libpcre3-dev xlibmesa-glu-dev libglew1.5-dev libftgl-dev libmysqlclient-dev libfftw3-dev graphviz-dev libavahi-compat-libdnssd-dev libldap2-dev libxml2-dev libkrb5-dev libgsl0-dev libqt4-dev
+ - git clone git@github.com:declan-millar/root.git
+ - cd root
+ - PREFIX_PATH=$(pwd)
+ - mkdir compile
+ - cd compile
+ - cmake -Dpython=ON -Droofit=ON -DCMAKE_INSTALL_PREFIX:PATH=$(PREFIX_PATH) ..
+ - make -j$(nproc)
+ - make install
+ - source $(PREFIX_PATH)/bin/thisroot.sh
+ 
 build:
   script:
   - cmake .
