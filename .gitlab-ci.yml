@@ -1,8 +1,8 @@
-image: gcc
+image: rootproject/root-ubuntu16
 
 before_script:
  - apt-get update --yes
- - apt-get install --yes cmake libboost-all-dev apt-get install root-system
+ - apt-get install --yes cmake libboost-all-dev 
 
 build:
   script:
