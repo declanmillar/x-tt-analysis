@@ -1,0 +1,5 @@
+image: g++
+
+build:
+  script: make
+
