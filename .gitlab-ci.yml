@@ -1,5 +1,7 @@
-image: g++
+image: gcc
 
 build:
-  script: make
-
+  script:
+  - make
+    paths:
+    - analysis
