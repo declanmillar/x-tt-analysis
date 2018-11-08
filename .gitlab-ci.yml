@@ -3,5 +3,6 @@ image: gcc
 build:
   script:
   - make
+  artifacts:
     paths:
     - analysis
