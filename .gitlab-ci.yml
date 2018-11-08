@@ -1,6 +1,7 @@
 image: rootproject/root-ubuntu16
 
 before_script:
+ - mkdir /var/lib/apt/lists/partial
  - apt-get update --yes
  - apt-get install --yes cmake libboost-all-dev 
 
