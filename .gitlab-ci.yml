@@ -10,10 +10,11 @@ before_script:
  - PREFIX_PATH=$(pwd)
  - mkdir compile
  - cd compile
- - cmake -Dpython=ON -Droofit=ON -DCMAKE_INSTALL_PREFIX:PATH=$PREFIX_PATH ..
+ - cmake -Dpython=ON -Droofit=ON -DCMAKE_INSTALL_PREFIX:PATH=/builds/demillar/acolyte ..
  - make -j$(nproc)
  - make install
- - source $PREFIX_PATH/bin/thisroot.sh
+ - source /builds/demillar/acolyte/root/bin/thisroot.sh
+ - cd ..
  
 build:
   script:
