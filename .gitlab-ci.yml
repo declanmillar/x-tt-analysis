@@ -9,7 +9,7 @@ before_script:
  - cd root
  - mkdir compile
  - cd compile
- - cmake -Dpython=ON -Droofit=ON -DCMAKE_INSTALL_PREFIX:PATH=/builds/demillar/acolyte ..
+ - cmake -Dpython=ON -Droofit=ON -DCMAKE_INSTALL_PREFIX:PATH=/builds/demillar/acolyte/root ..
  - make -j$(nproc)
  - make install
  - source /builds/demillar/acolyte/root/bin/thisroot.sh
