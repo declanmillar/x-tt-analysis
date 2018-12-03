@@ -4,15 +4,10 @@ before_script:
  - mkdir /var/lib/apt/lists/partial
  - apt-get update --yes
  - apt-get install --yes cmake libboost-all-dev git cmake dpkg-dev python-dev make g++ gcc binutils libx11-dev libxpm-dev libxft-dev libxext-dev 
- # - apt-get install --yes gfortran libssl-dev libpcre3-dev xlibmesa-glu-dev libglew1.5-dev libftgl-dev libfftw3-dev graphviz-dev libavahi-compat-libdnssd-dev libldap2-dev libxml2-dev libkrb5-dev libgsl0-dev libqt4-dev
- - git clone https://github.com/root-project/root.git
- - cd root
- - mkdir compile
- - cd compile
- - cmake -Dpython=ON -Droofit=ON -DCMAKE_INSTALL_PREFIX:PATH=/builds/demillar/acolyte/root ..
- - make -j$(nproc)
- - make install
- - source /builds/demillar/acolyte/root/bin/thisroot.sh
+ - wget https://root.cern.ch/download/root_v6.14.06.Linux-ubuntu18-x86_64-gcc7.3.tar.gz
+ - tar xvfz root_v6.14.06.Linux-ubuntu18-x86_64-gcc7.3.tar.gz
+ - sed -i '1s/^/set -x\n/' root/bin/thisroot.sh
+ - source root/bin/thisroot.sh
  - cd ..
  
 build:

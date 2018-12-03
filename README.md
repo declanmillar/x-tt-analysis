@@ -37,7 +37,7 @@ For example
 
 For example
 ```bash
-b=2; r=KIN; for f in $(ls -1 /scratch/dam1g09/zprime/??-AZ-tt-bbemuvv_SM_13TeV_CT14LL_???.lhef.gz); do c=$(echo $f | cut -d '/' -f 5); k=$(echo $c | cut -d '.' -f 1); l=$(echo $c | cut -d '.' -f 1);  ./analyse.py "${l}_delphes_${r}_b${b}" -f "${l}_delphes.root" -r "$r" -b "$b"; done
+b=2; r=NuW; for f in $(ls -1 /scratch/dam1g09/zprime/??-AZ-tt-bb*vv_SM_13TeV_CT14LL_3??.lhef.gz); do c=$(echo $f | cut -d '/' -f 5); k=$(echo $c | cut -d '.' -f 1); l=$(echo $c | cut -d '.' -f 1);  ./analyse.py "${l}_delphes_${r}_b${b}" -f "${l}_delphes.root" -r "$r" -b "$b"; done
 ```
 
 ## Batch submission commands
