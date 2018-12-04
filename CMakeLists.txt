@@ -6,10 +6,7 @@ find_package(Boost COMPONENTS system program_options filesystem timer REQUIRED)
 
 # necessary for finding boost libraries on iridis 
 include_directories(/local/software/boost/1.61.0/include)
-find_library(boost_program_options boost_program_options /local/software/boost/1.61.0/lib)
-find_library(boost_system boost_system /local/software/boost/1.61.0/lib)
-find_library(boost_filesystem boost_filesystem /local/software/boost/1.61.0/lib)
-find_library(boost_timer boost_filesystem /local/software/boost/1.61.0/lib)
+find_library(Boost_LIBRARIES /local/software/boost/1.61.0/lib)
 
 list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
 find_package(ROOT REQUIRED COMPONENTS RIO Net)
@@ -22,9 +19,5 @@ include_directories(include)
 include_directories(../delphes ../delphes/external)
 find_library(Delphes_LIBRARIES Delphes ../delphes)
 
-include_directories(/home/dam1g09/delphes)
-include_directories(/home/dam1g09/delphes/external)
-find_library(Delphes_LIBRARIES Delphes /home/dam1g09/delphes)
-
 add_executable(analysis ${src})
-target_link_libraries(analysis ${ROOT_LIBRARIES} ${Boost_LIBRARIES} ${Delphes_LIBRARIES} ${boost_program_options} ${boost_system} ${boost_filesystem})
+target_link_libraries(analysis ${ROOT_LIBRARIES} ${Boost_LIBRARIES} ${Delphes_LIBRARIES})
