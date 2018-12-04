@@ -1,4 +1,7 @@
 image: rootproject/root-ubuntu16
+before_script:
+ - apt-get update --yes
+ - apt-get install --yes cmake libboost-all-dev git cmake dpkg-dev python-dev make g++ gcc binutils libx11-dev libxpm-dev libxft-dev libxext-dev 
 build:
   script:
   - mkdir -p build
