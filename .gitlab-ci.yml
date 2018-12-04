@@ -2,6 +2,10 @@ image: rootproject/root-ubuntu16
 before_script:
  - sudo apt-get update --yes
  - sudo apt-get install --yes cmake libboost-all-dev git cmake dpkg-dev python-dev make g++ gcc binutils libx11-dev libxpm-dev libxft-dev libxext-dev
+ - cd ..
+ - git clone https://github.com/delphes/delphes.git
+ - cd delphes
+ - make -j 4
  - echo "Finished before script"
 build:
   script:
