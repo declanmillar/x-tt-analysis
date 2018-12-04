@@ -17,6 +17,7 @@ before_script:
  - echo "Finished before script"
 build:
   script:
+  - ls ../delphes
   - mkdir -p build
   - cd build
   - cmake ..
