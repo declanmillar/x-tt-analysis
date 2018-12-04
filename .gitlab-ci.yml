@@ -3,9 +3,16 @@ before_script:
  - sudo apt-get update --yes
  - sudo apt-get install --yes cmake libboost-all-dev git cmake dpkg-dev python-dev make g++ gcc binutils libx11-dev libxpm-dev libxft-dev libxext-dev
  - cd ..
+ - wget http://home.thep.lu.se/~torbjorn/pythia8/pythia8235.tgz
+ - tar xzvf pythia8235.tgz
+ - cd pythia8235
+ - ./configure --prefix=$(pwd)/install
+ - make install
+ - export PYTHIA8=$(pwd)/install
+ - cd ..
  - git clone https://github.com/delphes/delphes.git
  - cd delphes
- - make -j 4
+ - make HAS_PYTHIA8=true DelphesPythia8
  - echo "Finished before script"
 build:
   script:
