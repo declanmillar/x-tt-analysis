@@ -13,6 +13,7 @@ before_script:
  - git clone https://github.com/delphes/delphes.git
  - cd delphes
  - make HAS_PYTHIA8=true DelphesPythia8
+ - make
  - cd ../acolyte
  - echo "Finished before script"
 build:
