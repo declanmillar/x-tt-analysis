@@ -5,7 +5,7 @@
 #include "lester_mt2_bisect.h"
 #include "neutrino-weighter.hpp"
 #include "atlas-style.hpp"
-#include "solve-poly.hpp"
+#include "poly34.h"
 #include "kinematic-reconstructer.hpp"
 #include "highest-pt.hpp"
 #include "match-bjets-to-leps.hpp"

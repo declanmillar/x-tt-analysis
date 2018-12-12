@@ -2,7 +2,7 @@
 #define SEMILEPTON_RECONSTRUCTER_H
 #include <iostream>
 #include "TLorentzVector.h"
-#include "solve-poly.hpp"
+#include "poly34.h"
 
 class SemileptonReconstructer{
 

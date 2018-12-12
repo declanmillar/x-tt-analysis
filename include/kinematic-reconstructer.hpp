@@ -3,10 +3,9 @@
 #include <iostream>
 #include <cmath>
 #include "TLorentzVector.h"
-#include "solve-poly.hpp"
-#include "solve-quartic.hpp"
+#include "poly34.h"
 
-class KinematicReconstructer{
+class KinematicReconstructer {
 
 private:
     TLorentzVector m_top;
