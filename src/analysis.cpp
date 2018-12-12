@@ -1,6 +1,6 @@
 #include "analysis.hpp"
 #include "trim.hpp"
-#include "progress-bar.hpp"
+#include "progress.hpp"
 #include "bool-to-string.hpp"
 #include "lester_mt2_bisect.h"
 #include "neutrino-weighter.hpp"
