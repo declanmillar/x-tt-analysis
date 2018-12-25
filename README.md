@@ -27,12 +27,12 @@ While an additional `std::vector` of `std::tuple` is created for each individual
 
 For example
 ```bash
-./analysis -i "uu-X-tt-bbeevv_GLR-R-2.5-20pc_13TeV_CT14LL_000_pythia_delphes.root" -p "uu-X-tt-bbllvv_GLR-R-2.5-20pc_13TeV_CT14LL.txt" -r "NuW" -b 2
+./analysis -f "uu-X-tt-bbeevv_GLR-R-2.5-20pc_13TeV_CT14LL_000_pythia_delphes.root" -p "uu-X-tt-bbllvv_GLR-R-2.5-20pc_13TeV_CT14LL.txt" -r "NuW" -b 2
 ```
 
 For example
 ```bash
-./analyse.py "gg-tt-bbmumuvv_SM_13TeV_CT14LL_148_delphes_NuW_b1" -i "gg-tt-bbmumuvv_SM_13TeV_CT14LL_148_delphes.root" -r "NuW" -b 1
+./analyse.py "gg-tt-bbmumuvv_SM_13TeV_CT14LL_148_delphes_NuW_b1" -f "gg-tt-bbmumuvv_SM_13TeV_CT14LL_148_delphes.root" -r "NuW" -b 1
 ```
 
 For example
@@ -50,7 +50,7 @@ for f in $(ls -1 /scratch/dam1g09/zprime/??-AZ-tt-bb*vv_SM_13TeV_CT14LL_4??.lhef
 do
     c=$(echo $f | cut -d '/' -f 5)
     k=$(echo $c | cut -d '.' -f 1)
-    ./build/analyse.py "${k}_delphes_${r}_b${b}" -i "${k}_delphes.root" -r "$r" -b "$b"
+    ./build/analyse.py "${k}_delphes_${r}_b${b}" -f "${k}_delphes.root" -r "$r" -b "$b"
 done
 ```
 
@@ -63,7 +63,7 @@ for f in $(ls -1 /scratch/dam1g09/zprime/gg-tt-bbmumuvv_SM_13TeV_CT14LL_???.lhef
 do
     c=$(echo $f | cut -d '/' -f 5)
     k=$(echo $c | cut -d '.' -f 1)
-    ./analyse.py "${k}_pythia_delphes_${r}_b${b}" -i "${k}_pythia_delphes.root" -p "$p" -r "$r" -b "$b"
+    ./analyse.py "${k}_pythia_delphes_${r}_b${b}" -f "${k}_pythia_delphes.root" -p "$p" -r "$r" -b "$b"
 done
 ```
 
@@ -77,7 +77,7 @@ do
     k=$(echo $c | cut -d '.' -f 1)
     l=$(echo $c | cut -d '.' -f 2)
     m=$(echo $k.$l)
-    ./analyse.py "${m}_pythia_delphes_${r}_b${b}" -i "${m}_pythia_delphes.root" -r "$r" -b "$b"
+    ./analyse.py "${m}_pythia_delphes_${r}_b${b}" -f "${m}_pythia_delphes.root" -r "$r" -b "$b"
 done
 ```
 
