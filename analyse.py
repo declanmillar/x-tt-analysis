@@ -61,7 +61,7 @@ else:
 
 # write handler
 try:
-    with open('%s' % handler_name, 'w') as handler_file:
+    with open('%s/%s' % (run_directory, handler_name), 'w') as handler_file:
         handler_file.write(handler.getvalue())
     print "handler file: %s" % handler_name
     print "log file:     %s" % logfile
