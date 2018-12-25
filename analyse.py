@@ -15,10 +15,10 @@ hostname = socket.gethostname()
 run_directory = "."
 data_directory = "."
 if "lxplus" in hostname:
-    run_directory = "/afs/cern.ch/user/d/demillar/acolyte"
+    run_directory = "/afs/cern.ch/user/d/demillar/acolyte/build"
     data_directory = "/afs/cern.ch/work/d/demillar/zprime"
 elif "cyan" in hostname:
-    run_directory = "/home/dam1g09/acolyte"
+    run_directory = "/home/dam1g09/acolyte/build"
     data_directory = "/scratch/dam1g09/zprime"
 else:
     sys.exit("Error: unrecognised hostname")
