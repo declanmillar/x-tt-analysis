@@ -37,8 +37,6 @@ for arg in iterarg:
     argstring = argstring + " " + arg
 
 handler_name = file_name + ".sh"
-logfile = file_name + ".log"
-# logfile = "/dev/null"
 
 # print handler
 handler = StringIO.StringIO()
@@ -54,7 +52,7 @@ if "cyan" or "blue" in hostname:
     print >> handler, "#!/bin/bash"
     print >> handler, "cd %s" % run_directory
     print >> handler, "source /home/dam1g09/.bash_profile"
-    print >> handler, "%s/%s %s > %s" % (run_directory, executable, argstring, logfile)
+    print >> handler, "%s/%s %s" % (run_directory, executable, argstring)
 else:
     sys.exit("ERROR: Unrecognised hostname")
 
@@ -62,13 +60,11 @@ else:
 try:
     with open('%s/%s' % (run_directory, handler_name), 'w') as handler_file:
         handler_file.write(handler.getvalue())
-    print "handler file: %s" % handler_name
-    print "log file:     %s" % logfile
+    print "run script: %s" % handler_name
 except IOERROR:
-    sys.exit("ERROR: Cannot write handler file.")
+    sys.exit("ERROR: Cannot write run script.")
 
 # run command
 subprocess.call("chmod a+x %s/%s" % (run_directory,handler_name), shell = True)
-print "submitting batch job ..."
 if "lxplus" in hostname: subprocess.call('bsub -q %s %s/%s' % (queue, run_directory, handler_name), shell = True)
 elif "cyan" in hostname: subprocess.call('qsub %s/%s' % (run_directory, handler_name), shell = True)
