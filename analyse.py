@@ -2,7 +2,6 @@
 
 import os, StringIO, subprocess, sys, socket
 
-# handler_name = sys.argv[1] + ".sh"
 executable = "analysis"
 walltime = "00:30:00"
 queue = "1nw"
@@ -10,9 +9,9 @@ nodes = "1"
 ppn = "1"
 
 # set directories
-hostname = socket.gethostname()
 run_directory = "."
 data_directory = "."
+hostname = socket.gethostname()
 if "lxplus" in hostname:
     run_directory = "/afs/cern.ch/user/d/demillar/acolyte/build"
     data_directory = "/afs/cern.ch/work/d/demillar/zprime"
@@ -36,8 +35,6 @@ file_name = next(iterarg)
 for arg in iterarg:
     argstring = argstring + " " + arg
 
-handler_name = file_name + ".sh"
-
 # print handler
 handler = StringIO.StringIO()
 if "lxplus" in hostname:
@@ -57,6 +54,7 @@ else:
     sys.exit("ERROR: Unrecognised hostname")
 
 # write handler
+handler_name = file_name + ".sh"
 try:
     with open('%s/%s' % (run_directory, handler_name), 'w') as handler_file:
         handler_file.write(handler.getvalue())
@@ -66,5 +64,9 @@ except IOERROR:
 
 # run command
 subprocess.call("chmod a+x %s/%s" % (run_directory,handler_name), shell = True)
-if "lxplus" in hostname: subprocess.call('bsub -q %s %s/%s' % (queue, run_directory, handler_name), shell = True)
-elif "cyan" in hostname: subprocess.call('qsub %s/%s' % (run_directory, handler_name), shell = True)
+if "lxplus" in hostname:
+    subprocess.call('bsub -q %s %s/%s' % (queue, run_directory, handler_name), shell = True)
+elif "cyan" in hostname:
+    subprocess.call('qsub %s/%s' % (run_directory, handler_name), shell = True)
+else:
+    sys.exit("Error: unrecognised hostname")
