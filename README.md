@@ -12,7 +12,7 @@ Dependencies: `boost` package must be available, `delphes` project must be a sib
   mkdir -p build && cd build && cmake .. && make
 ```
 
-## Running the Program
+## Running the program
 
 * Run locally: `./analysis [options]`
 * Submit job: `./analyse.py handler_name [options]`
