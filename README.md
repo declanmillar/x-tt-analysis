@@ -82,31 +82,31 @@ done
 
 Merge all files for each process - Z' only, 1 b-tag
 ```bash
-hadd -f uu-X-tt-bbeevv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW_b1.root uu-X-tt-bbeevv_GLR-R-2.5-20pc_13TeV_CT14LL_???_pythia_delphes_NuW_b1.root
-hadd -f uu-X-tt-bbemuvv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW_b1.root uu-X-tt-bbemuvv_GLR-R-2.5-20pc_13TeV_CT14LL_???_pythia_delphes_NuW_b1.root
-hadd -f uu-X-tt-bbmuevv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW_b1.root uu-X-tt-bbmuevv_GLR-R-2.5-20pc_13TeV_CT14LL_???_pythia_delphes_NuW_b1.root
-hadd -f uu-X-tt-bbmumuvv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW_b1.root uu-X-tt-bbmumuvv_GLR-R-2.5-20pc_13TeV_CT14LL_???_pythia_delphes_NuW_b1.root
+  hadd -f uu-X-tt-bbeevv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW_b1.root uu-X-tt-bbeevv_GLR-R-2.5-20pc_13TeV_CT14LL_???_pythia_delphes_NuW_b1.root
+  hadd -f uu-X-tt-bbemuvv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW_b1.root uu-X-tt-bbemuvv_GLR-R-2.5-20pc_13TeV_CT14LL_???_pythia_delphes_NuW_b1.root
+  hadd -f uu-X-tt-bbmuevv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW_b1.root uu-X-tt-bbmuevv_GLR-R-2.5-20pc_13TeV_CT14LL_???_pythia_delphes_NuW_b1.root
+  hadd -f uu-X-tt-bbmumuvv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW_b1.root uu-X-tt-bbmumuvv_GLR-R-2.5-20pc_13TeV_CT14LL_???_pythia_delphes_NuW_b1.root
 ```
 
 Merge all files for each process - Z' only
 ```bash
-hadd -f uu-X-tt-bbeevv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW.root uu-X-tt-bbeevv_GLR-R-2.5-20pc_13TeV_CT14LL_???_pythia_delphes_NuW.root
-hadd -f uu-X-tt-bbemuvv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW.root uu-X-tt-bbemuvv_GLR-R-2.5-20pc_13TeV_CT14LL_???_pythia_delphes_NuW.root
-hadd -f uu-X-tt-bbmuevv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW.root uu-X-tt-bbmuevv_GLR-R-2.5-20pc_13TeV_CT14LL_???_pythia_delphes_NuW.root
-hadd -f uu-X-tt-bbmumuvv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW.root uu-X-tt-bbmumuvv_GLR-R-2.5-20pc_13TeV_CT14LL_???_pythia_delphes_NuW.root
+  hadd -f uu-X-tt-bbeevv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW.root uu-X-tt-bbeevv_GLR-R-2.5-20pc_13TeV_CT14LL_???_pythia_delphes_NuW.root
+  hadd -f uu-X-tt-bbemuvv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW.root uu-X-tt-bbemuvv_GLR-R-2.5-20pc_13TeV_CT14LL_???_pythia_delphes_NuW.root
+  hadd -f uu-X-tt-bbmuevv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW.root uu-X-tt-bbmuevv_GLR-R-2.5-20pc_13TeV_CT14LL_???_pythia_delphes_NuW.root
+  hadd -f uu-X-tt-bbmumuvv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW.root uu-X-tt-bbmumuvv_GLR-R-2.5-20pc_13TeV_CT14LL_???_pythia_delphes_NuW.root
 ```
 
 Merge all files for each process - AZZ' only
 ```bash
-hadd -f uu-AZX-tt-bbeevv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW.root uu-AZX-tt-bbeevv_GLR-R-2.5-20pc_13TeV_CT14LL_???_pythia_delphes_NuW.root
-hadd -f uu-AZX-tt-bbemuvv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW.root uu-AZX-tt-bbemuvv_GLR-R-2.5-20pc_13TeV_CT14LL_???_pythia_delphes_NuW.root
-hadd -f uu-AZX-tt-bbmuevv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW.root uu-AZX-tt-bbmuevv_GLR-R-2.5-20pc_13TeV_CT14LL_???_pythia_delphes_NuW.root
-hadd -f uu-AZX-tt-bbmumuvv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW.root uu-AZX-tt-bbmumuvv_GLR-R-2.5-20pc_13TeV_CT14LL_???_pythia_delphes_NuW.root
+  hadd -f uu-AZX-tt-bbeevv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW.root uu-AZX-tt-bbeevv_GLR-R-2.5-20pc_13TeV_CT14LL_???_pythia_delphes_NuW.root
+  hadd -f uu-AZX-tt-bbemuvv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW.root uu-AZX-tt-bbemuvv_GLR-R-2.5-20pc_13TeV_CT14LL_???_pythia_delphes_NuW.root
+  hadd -f uu-AZX-tt-bbmuevv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW.root uu-AZX-tt-bbmuevv_GLR-R-2.5-20pc_13TeV_CT14LL_???_pythia_delphes_NuW.root
+  hadd -f uu-AZX-tt-bbmumuvv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW.root uu-AZX-tt-bbmumuvv_GLR-R-2.5-20pc_13TeV_CT14LL_???_pythia_delphes_NuW.root
 ```
 
 Merge all subprocesses - AZZ' only
 ```bash
-hadd -f uu-AZX-tt-bbllvv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW.root uu-AZX-tt-bbeevv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW.root uu-AZX-tt-bbemuvv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW.root uu-AZX-tt-bbmuevv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW.root uu-AZX-tt-bbmumuvv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW.root
+  hadd -f uu-AZX-tt-bbllvv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW.root uu-AZX-tt-bbeevv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW.root uu-AZX-tt-bbemuvv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW.root uu-AZX-tt-bbmuevv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW.root uu-AZX-tt-bbmumuvv_GLR-R-2.5-20pc_13TeV_CT14LL_pythia_delphes_NuW.root
 ```
 
 ## Rename trees
