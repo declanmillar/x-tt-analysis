@@ -2,7 +2,7 @@
 
 ## Research pipeline
 
-[Prophet](https://gitlabcom/zprime-ttbar-phenomenology/generator) -> [Delphes](https://gitlabcom/zprime-ttbar-phenomenology/delphes) -> Analysis -> [Statistics](https://gitlabcom/zprime-ttbar-phenomenology/statistics)
+[Generator](https://gitlab.com/zprime-ttbar-phenomenology/generator) -> [Delphes](https://gitlab.com/zprime-ttbar-phenomenology/delphes) -> Analysis -> [Statistics](https://gitlab.com/zprime-ttbar-phenomenology/statistics)
 
 ## Installation
 
