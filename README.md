@@ -17,8 +17,6 @@ Dependencies: `boost` package must be available, `delphes` project must be a sib
 * Run locally: `./analysis [options]`
 * Submit job: `./analyse.py handler_name [options]`
 
-## Reminder
-
 ## Important files
 
 * `analysis` -- complied `C++` executable. Use directly when running locally.
