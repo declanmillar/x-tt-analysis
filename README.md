@@ -1,17 +1,22 @@
 # Acolyte
 
-[Prophet](https://gitlab.cern.ch/demillar/prophet) -> [Delphes](https://gitlab.cern.ch/demillar/delphes) -> Acolyte -> [Disciple](https://gitlab.cern.ch/demillar/disciple)
+## Research pipeline
 
-Analyse Characteristics Of Leptonically decaYing Ttbar Events. Code to analyse top pair production events following processing by [Delphes](https://cp3.irmp.ucl.ac.be/projects/delphes).
+[Prophet](https://gitlabcom/zprime-ttbar-phenomenology/generator) -> [Delphes](https://gitlabcom/zprime-ttbar-phenomenology/delphes) -> Analysis -> [Statistics](https://gitlabcom/zprime-ttbar-phenomenology/statistics)
 
 ## Installation
 
-Dependencies: `boost`, `delphes`
+Dependencies: `boost` package must be available, `delphes` project must be a sibling to this one.
+
+```sh
+  mkdir -p build && cd build && cmake .. && make
+```
 
 ## Important files
 
-* `analysis`: complied `C++` executable. Use directly when running locally.
-* `analyse.py`: run file to submit analysis as a batch job on `lxplus` or `iridis`.
+* `analysis` -- complied `C++` executable. Use directly when running locally.
+* `analyse.py`: -- run file to submit analysis as a batch job on `lxplus` or `iridis`.
+* include/* --  
 
 ## Running the Program
 
@@ -22,6 +27,8 @@ Dependencies: `boost`, `delphes`
 
 The input is stored in a `std::vector` of `std::tuple` with number of entries equal to the number of separate event files: `{string event_file, int proc_id}`.
 While an additional `std::vector` of `std::tuple` is created for each individual subprocess: `{string proc_file, int proc_id, int nfiles, double cross_section, double uncertainty, double weight}`, where `nfiles` is the number of input files for the process with `proc_id`.
+
+---
 
 ## Examples commands
 

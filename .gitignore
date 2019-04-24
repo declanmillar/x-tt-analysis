@@ -1,16 +1,6 @@
 analysis
-gmon.out
 *.root
-.__afs*
 .DS_Store
-LSFJOB_*
-*-tt-*.sh*
 *.log
-*.run*
-core.*
-CMakeCache.txt
-CMakeFiles/
-cmake_install.cmake
 Makefile
-*.e???????
-*.o???????
+build
