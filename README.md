@@ -111,7 +111,7 @@ Merge all subprocesses - AZZ' only
 
 ## Rename trees
 
-```C++
+```cpp
   // ROOT script 
   TFile *file = new TFile("dd-AZX-tt-bbllvv.GLR-R-3.13TeV.CT14LL.root", "update")
   RootTuple->SetName("events")
