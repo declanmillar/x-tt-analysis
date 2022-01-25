@@ -5,6 +5,8 @@ project (analysis VERSION 1.0.0 LANGUAGES CXX)
 # load boost libraries
 find_package(Boost COMPONENTS system program_options filesystem timer REQUIRED)
 
+find_package(Delphes REQUIRED)
+
 # necessary for finding boost libraries on iridis
 # include_directories(/local/software/boost/1.61.0/include)
 # find_library(Boost_LIBRARIES /local/software/boost/1.61.0/lib)
@@ -27,4 +29,4 @@ include_directories(include)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 add_executable(analysis ${src})
-target_link_libraries(analysis ${ROOT_LIBRARIES} ${Boost_LIBRARIES}) # ${Delphes_LIBRARIES})
+target_link_libraries(analysis ${ROOT_LIBRARIES} ${Boost_LIBRARIES}) ${Delphes_LIBRARIES})
