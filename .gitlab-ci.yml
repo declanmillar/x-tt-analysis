@@ -16,6 +16,7 @@
 #   - cd ../x-tt-analysis
 image: delphes/ubuntu:20.04
 before_script:
+    - apt-get update --yes
     - apt-get install --yes libboost-all-dev
 build:
   script:
