@@ -27,4 +27,4 @@ include_directories(include)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 add_executable(analysis ${src})
-target_link_libraries(analysis ${ROOT_LIBRARIES} ${Boost_LIBRARIES}
+target_link_libraries(analysis ${ROOT_LIBRARIES} ${Boost_LIBRARIES}) # ${Delphes_LIBRARIES})
