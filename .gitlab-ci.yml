@@ -1,23 +1,23 @@
-# image: rootproject/root
-# before_script:
-#   - apt-get update --yes
-#   - apt-get install --yes wget rsync cmake libboost-all-dev git cmake dpkg-dev python-dev make g++ gcc binutils libx11-dev libxpm-dev libxft-dev libxext-dev
-#   - cd ..
-#   - wget https://pythia.org/download/pythia83/pythia8306.tgz
-#   - tar xzvf pythia8306.tgz
-#   - cd pythia8306
-#   - ./configure --prefix=$(pwd)/install
-#   - make install
-#   - export PYTHIA8=$(pwd)/install
-#   - cd ..
-#   - git clone https://github.com/delphes/delphes.git
-#   - cd delphes
-#   - make HAS_PYTHIA8=true
-#   - cd ../x-tt-analysis
-image: delphes/ubuntu:20.04
+image: rootproject/root
 before_script:
-    - apt-get update --yes
-    - apt-get install --yes libboost-all-dev
+  - apt-get update --yes
+  - apt-get install --yes wget rsync cmake libboost-all-dev git cmake dpkg-dev python-dev make g++ gcc binutils libx11-dev libxpm-dev libxft-dev libxext-dev
+  - cd ..
+  - wget https://pythia.org/download/pythia83/pythia8306.tgz
+  - tar xzvf pythia8306.tgz
+  - cd pythia8306
+  - ./configure --prefix=$(pwd)/install
+  - make install
+  - export PYTHIA8=$(pwd)/install
+  - cd ..
+  - git clone https://github.com/delphes/delphes.git
+  - cd delphes
+  - make HAS_PYTHIA8=true
+  - cd ../x-tt-analysis
+# image: delphes/ubuntu:20.04
+# before_script:
+#     - apt-get update --yes
+#     - apt-get install --yes libboost-all-dev
 build:
   script:
     - mkdir -p build
