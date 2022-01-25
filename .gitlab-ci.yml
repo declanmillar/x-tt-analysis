@@ -5,7 +5,7 @@ before_script:
   - cd ..
   - wget https://pythia.org/download/pythia83/pythia8306.tgz
   - tar xzvf pythia8306.tgz
-  - cd pythia8235
+  - cd pythia8306
   - ./configure --prefix=$(pwd)/install
   - make install
   - export PYTHIA8=$(pwd)/install
