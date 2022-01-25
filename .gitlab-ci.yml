@@ -14,7 +14,7 @@
 #   - cd delphes
 #   - make HAS_PYTHIA8=true
 #   - cd ../x-tt-analysis
-image: delphes/ubuntu
+image: delphes/ubuntu:20.04
 build:
   script:
     - mkdir -p build
